@@ -59,4 +59,21 @@ public sealed class Optional1Tests
         Assert.False(new Optional<int>(5).Equals((object)5));
         Assert.False(new Optional<int>().Equals(null));
     }
+
+    [Fact]
+    public void Equality_HashCode()
+    {
+        Assert.Equal(-1, new Optional<int>().GetHashCode());
+        Assert.Equal(0, new Optional<string?>(null).GetHashCode());
+#pragma warning disable CA1307 // Specify StringComparison for clarity
+        Assert.Equal("hello".GetHashCode(), new Optional<string>("hello").GetHashCode());
+#pragma warning restore CA1307 // Specify StringComparison for clarity
+    }
+
+    [Fact]
+    public void Equality_HashCode_Custom()
+    {
+        Assert.Equal(-1, new Optional<string>().GetHashCode(StringComparer.OrdinalIgnoreCase));
+        Assert.Equal(StringComparer.OrdinalIgnoreCase.GetHashCode("hello"), new Optional<string>("hello").GetHashCode(StringComparer.OrdinalIgnoreCase));
+    }
 }
