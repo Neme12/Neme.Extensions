@@ -1,4 +1,6 @@
-﻿[*.cs]
+﻿root = true
+
+[*.cs]
 
 csharp_indent_labels = one_less_than_current
 csharp_using_directive_placement = outside_namespace:silent
@@ -34,6 +36,9 @@ dotnet_diagnostic.RS0027.severity = none
 
 # RS0026: Do not add multiple public overloads with optional parameters
 dotnet_diagnostic.RS0026.severity = none
+
+# CA1805: Do not initialize unnecessarily
+dotnet_diagnostic.CA1805.severity = none
 
 [*.{cs,vb}]
 #### Naming styles ####
