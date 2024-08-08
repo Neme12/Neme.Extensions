@@ -5,7 +5,8 @@ using System.Runtime.InteropServices;
 namespace Neme.Extensions;
 
 [StructLayout(LayoutKind.Auto)]
-public readonly struct Optional<T>
+public readonly partial struct Optional<T> :
+    IEquatable<Optional<T>>
 {
     private readonly bool _hasValue;
     private readonly T? _value;
