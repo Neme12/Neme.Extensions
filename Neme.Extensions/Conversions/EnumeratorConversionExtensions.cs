@@ -5,7 +5,11 @@ namespace Neme.Extensions.Conversions;
 public static class EnumeratorConversionExtensions
 {
     public static IEnumerator AsNonGeneric<T>(this IEnumerator<T> enumerator) =>
-        enumerator;
+        enumerator switch
+        {
+            NonGenericEnumeratorWrapper<T> nonGenericEnumeratorWrapper => nonGenericEnumeratorWrapper.Enumerator,
+            _ => enumerator,
+        };
 
     public static IEnumerator<T> AsGeneric<T>(this IEnumerator enumerator) =>
         enumerator switch
@@ -16,6 +20,8 @@ public static class EnumeratorConversionExtensions
 
     private sealed class NonGenericEnumeratorWrapper<T>(IEnumerator enumerator) : IEnumerator<T>
     {
+        public IEnumerator Enumerator => enumerator;
+
         public T Current => (T)enumerator.Current;
 
         object IEnumerator.Current => enumerator.Current;

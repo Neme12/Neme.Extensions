@@ -13,6 +13,14 @@ public sealed class EnumeratorConversionExtensionsTests
     }
 
     [Fact]
+    public void TestAsNonGeneric_NonGenericWrapper()
+    {
+        var enumerator = new CustomNonGenericEnumerator();
+        var asGeneric = enumerator.AsGeneric<int>();
+        Assert.Same(enumerator, asGeneric.AsNonGeneric());
+    }
+
+    [Fact]
     public void TestAsGeneric_AlreadyGeneric()
     {
         var enumerator = (IEnumerator)new List<int> { 1, 2, 3 }.GetEnumerator();
