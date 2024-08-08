@@ -61,7 +61,7 @@ public sealed class EnumeratorConversionExtensionsTests
         Assert.Throws<InvalidCastException>(() => enumerator.Current);
     }
 
-    private sealed class CustomNonGenericEnumerator : IEnumerator
+    internal sealed class CustomNonGenericEnumerator : IEnumerator
     {
         private readonly int[] _array = [1, 2];
         private int _nextPosition = 0;
