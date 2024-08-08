@@ -4,11 +4,17 @@ namespace Neme.Extensions;
 
 public readonly partial struct Optional<T>
 {
-	public bool Equals(Optional<T> other)
+	public bool Equals(Optional<T> other) =>
+        Equals(other, EqualityComparer<T>.Default);
+
+    public bool Equals(Optional<T> other, IEqualityComparer<T> elementComparer)
 	{
+        if (elementComparer is null)
+            throw new ArgumentNullException(nameof(elementComparer));
+
         return (_hasValue, other._hasValue) switch
         {
-            (true, true) => EqualityComparer<T>.Default.Equals(_value!, other._value!),
+            (true, true) => elementComparer.Equals(_value!, other._value!),
             (false, false) => true,
             _ => false,
         };

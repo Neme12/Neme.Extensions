@@ -48,6 +48,15 @@ public sealed class Optional1Tests
     }
 
     [Fact]
+    public void Equality_Custom()
+    {
+        Assert.True(new Optional<string>().Equals(default, StringComparer.OrdinalIgnoreCase));
+        Assert.True(new Optional<string>("hello").Equals(new Optional<string>("HELLO"), StringComparer.OrdinalIgnoreCase));
+        Assert.False(new Optional<string>().Equals(new Optional<string>("hello"), StringComparer.OrdinalIgnoreCase));
+        Assert.False(new Optional<string>("hello").Equals(new Optional<string>("hello2"), StringComparer.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public void Equality_Override()
     {
         Assert.True(new Optional<int>().Equals((object)default(Optional<int>)));
