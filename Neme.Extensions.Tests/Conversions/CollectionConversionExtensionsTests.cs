@@ -47,6 +47,17 @@ public sealed class CollectionConversionExtensionsTests
     }
 
     [Fact]
+    public void TestAsGeneric_WrongType()
+    {
+        var collection = (ICollection)new List<int> { 1, 2, 3 };
+        var asGeneric = collection.AsGeneric<string>();
+
+        using var enumerator = asGeneric.GetEnumerator();
+        enumerator.MoveNext();
+        Assert.Throws<InvalidCastException>(() => enumerator.Current);
+    }
+
+    [Fact]
     public void TestAsGeneric_Wrapper()
     {
         var collection = new NonGenericCollection<int>([1, 2, 3]);
