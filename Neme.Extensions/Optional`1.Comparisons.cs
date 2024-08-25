@@ -43,6 +43,10 @@ public readonly partial struct Optional<T>
     private static bool s_opEqualityMethodInitialized;
     private static object? s_opEqualityMethodLock;
 
+    private static Func<T, T, bool>? s_opInequalityMethod;
+    private static bool s_opInequalityMethodInitialized;
+    private static object? s_opInequalityMethodLock;
+
     public static bool operator ==(Optional<T> left, Optional<T> right)
     {
         return (left._hasValue, right._hasValue) switch
@@ -53,8 +57,15 @@ public readonly partial struct Optional<T>
         };
     }
 
-    public static bool operator !=(Optional<T> left, Optional<T> right) =>
-        !(left == right);
+    public static bool operator !=(Optional<T> left, Optional<T> right)
+    {
+        return (left._hasValue, right._hasValue) switch
+        {
+            (true, true) => OperatorNotEquals(left._value!, right._value!),
+            (false, false) => false,
+            _ => true,
+        };
+    }
 
     private static bool OperatorEquals(T left, T right)
     {
@@ -62,35 +73,7 @@ public readonly partial struct Optional<T>
             ref s_opEqualityMethod,
             ref s_opEqualityMethodInitialized,
             ref s_opEqualityMethodLock,
-            static () =>
-            {
-                var method = typeof(T).GetMethod(
-                    "op_Equality",
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-                    genericParameterCount: 0,
-#endif
-                    BindingFlags.Public | BindingFlags.Static | BindingFlags.ExactBinding | BindingFlags.DeclaredOnly,
-                    binder: null,
-                    [typeof(T), typeof(T)],
-                    modifiers: null);
-
-                if (method is null)
-                    return null;
-
-#if !(NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
-                if (method.ContainsGenericParameters)
-                    return null;
-#endif
-
-                if (method.ReturnType != typeof(bool))
-                    return null;
-
-#if NET5_0_OR_GREATER
-                return method.CreateDelegate<Func<T, T, bool>>();
-#else
-                return (Func<T, T, bool>)method.CreateDelegate(typeof(Func<T, T, bool>));
-#endif
-            });
+            static () => GetEqualityOperatorMethod("op_Equality"));
 
         Debug.Assert(s_opEqualityMethodInitialized);
 
@@ -98,5 +81,53 @@ public readonly partial struct Optional<T>
             return method.Invoke(left, right);
 
         return EqualityComparer<T>.Default.Equals(left, right);
+    }
+
+    private static bool OperatorNotEquals(T left, T right)
+    {
+        var method = LazyInitializer.EnsureInitialized(
+            ref s_opInequalityMethod,
+            ref s_opInequalityMethodInitialized,
+            ref s_opInequalityMethodLock,
+            static () => GetEqualityOperatorMethod("op_Inequality"));
+
+        Debug.Assert(s_opInequalityMethodInitialized);
+
+        if (method is not null)
+            return method.Invoke(left, right);
+
+        return !EqualityComparer<T>.Default.Equals(left, right);
+    }
+
+    private static Func<T, T, bool>? GetEqualityOperatorMethod(string methodName)
+    {
+        Debug.Assert(methodName is "op_Equality" or "op_Inequality");
+
+        var method = typeof(T).GetMethod(
+            methodName,
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            genericParameterCount: 0,
+#endif
+            BindingFlags.Public | BindingFlags.Static | BindingFlags.ExactBinding | BindingFlags.DeclaredOnly,
+            binder: null,
+            [typeof(T), typeof(T)],
+            modifiers: null);
+
+        if (method is null)
+            return null;
+
+#if !(NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
+        if (method.ContainsGenericParameters)
+            return null;
+#endif
+
+        if (method.ReturnType != typeof(bool))
+            return null;
+
+#if NET5_0_OR_GREATER
+        return method.CreateDelegate<Func<T, T, bool>>();
+#else
+        return (Func<T, T, bool>)method.CreateDelegate(typeof(Func<T, T, bool>));
+#endif
     }
 }

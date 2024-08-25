@@ -50,6 +50,7 @@ public sealed class Optional1Tests
         Assert.True(new Optional<T>().Equals(default));
         Assert.True(new Optional<T>(value1).Equals(new Optional<T>(value1)));
         Assert.False(new Optional<T>().Equals(new Optional<T>(value1)));
+        Assert.False(new Optional<T>(value1).Equals(new Optional<T>()));
         Assert.False(new Optional<T>(value1).Equals(new Optional<T>(value2)));
 
         if (nan is { } nanValue)
@@ -62,6 +63,7 @@ public sealed class Optional1Tests
         Assert.True(new Optional<string>().Equals(default, StringComparer.OrdinalIgnoreCase));
         Assert.True(new Optional<string>("hello").Equals(new Optional<string>("HELLO"), StringComparer.OrdinalIgnoreCase));
         Assert.False(new Optional<string>().Equals(new Optional<string>("hello"), StringComparer.OrdinalIgnoreCase));
+        Assert.False(new Optional<string>("hello").Equals(new Optional<string>(), StringComparer.OrdinalIgnoreCase));
         Assert.False(new Optional<string>("hello").Equals(new Optional<string>("hello2"), StringComparer.OrdinalIgnoreCase));
     }
 
@@ -71,6 +73,7 @@ public sealed class Optional1Tests
         Assert.True(new Optional<int>().Equals((object)default(Optional<int>)));
         Assert.True(new Optional<int>(42).Equals((object)new Optional<int>(42)));
         Assert.False(new Optional<int>().Equals((object)new Optional<int>(42)));
+        Assert.False(new Optional<int>(42).Equals((object)new Optional<int>()));
         Assert.False(new Optional<int>(42).Equals((object)new Optional<int>(43)));
 
         Assert.False(new Optional<int>().Equals(new Optional<string>()));
@@ -89,14 +92,53 @@ public sealed class Optional1Tests
         Assert.True(new Optional<T>() == default);
         Assert.True(new Optional<T>(value1) == new Optional<T>(value1));
         Assert.False(new Optional<T>() == new Optional<T>(value1));
+        Assert.False(new Optional<T>(value1) == new Optional<T>());
         Assert.False(new Optional<T>(value1) == new Optional<T>(value2));
 
         if (nan is { } nanValue)
             Assert.False(new Optional<T>(nanValue) == new Optional<T>(nanValue));
     }
 
+    [Theory]
+    [InlineData(42, 43, null)]
+#pragma warning disable xUnit1010
+    [InlineData(42f, 43f, float.NaN)]
+#pragma warning restore xUnit1010
+    public void InequalityOperators<T>(T value1, T value2, T? nan)
+        where T : struct
+    {
+        Assert.False(new Optional<T>() != default);
+        Assert.False(new Optional<T>(value1) != new Optional<T>(value1));
+        Assert.True(new Optional<T>() != new Optional<T>(value1));
+        Assert.True(new Optional<T>(value1) != new Optional<T>());
+        Assert.True(new Optional<T>(value1) != new Optional<T>(value2));
+
+        if (nan is { } nanValue)
+            Assert.True(new Optional<T>(nanValue) != new Optional<T>(nanValue));
+    }
+
     [Fact]
-    public void Equality_HashCode()
+    public void EqualityOperators_Custom()
+    {
+        Assert.True(new Optional<CustomComparable>() == default);
+        Assert.True(new Optional<CustomComparable>(new(1)) == new Optional<CustomComparable>(new(2)));
+        Assert.False(new Optional<CustomComparable>() == new Optional<CustomComparable>(new(1)));
+        Assert.False(new Optional<CustomComparable>(new(1)) == new Optional<CustomComparable>());
+        Assert.False(new Optional<CustomComparable>(new(2)) == new Optional<CustomComparable>(new(2)));
+    }
+
+    [Fact]
+    public void InequalityOperators_Custom()
+    {
+        Assert.False(new Optional<CustomComparable>() != default);
+        Assert.False(new Optional<CustomComparable>(new(1)) != new Optional<CustomComparable>(new(2)));
+        Assert.True(new Optional<CustomComparable>() != new Optional<CustomComparable>(new(1)));
+        Assert.True(new Optional<CustomComparable>(new(1)) != new Optional<CustomComparable>());
+        Assert.True(new Optional<CustomComparable>(new(-1)) != new Optional<CustomComparable>(new(1)));
+    }
+
+    [Fact]
+    public void HashCode()
     {
         Assert.Equal(-1, new Optional<int>().GetHashCode());
         Assert.Equal(0, new Optional<string?>(null).GetHashCode());
@@ -106,9 +148,24 @@ public sealed class Optional1Tests
     }
 
     [Fact]
-    public void Equality_HashCode_Custom()
+    public void HashCode_Custom()
     {
         Assert.Equal(-1, new Optional<string>().GetHashCode(StringComparer.OrdinalIgnoreCase));
         Assert.Equal(StringComparer.OrdinalIgnoreCase.GetHashCode("hello"), new Optional<string>("hello").GetHashCode(StringComparer.OrdinalIgnoreCase));
+    }
+
+#pragma warning disable CS0660 // Type defines operator == or operator != but does not override Object.Equals(object o)
+#pragma warning disable CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
+    private readonly struct CustomComparable(int value)
+#pragma warning restore CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
+#pragma warning restore CS0660 // Type defines operator == or operator != but does not override Object.Equals(object o)
+    {
+        public int Value => value;
+
+        public static bool operator ==(CustomComparable a, CustomComparable b) =>
+            a.Value == 1;
+
+        public static bool operator !=(CustomComparable a, CustomComparable b) =>
+            a.Value == -1;
     }
 }
