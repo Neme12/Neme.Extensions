@@ -137,6 +137,8 @@ dotnet_style_object_initializer = true:suggestion
 # CA1720: Identifier contains type name
 dotnet_diagnostic.CA1720.severity = none
 
+dotnet_code_quality.CA1304.excluded_symbol_names = M:System.Resources.ResourceManager.GetString(System.String)
+
 [*.Tests/**.{cs,vb}]
 # CA1707: Identifiers should not contain underscores
 dotnet_diagnostic.CA1707.severity = none

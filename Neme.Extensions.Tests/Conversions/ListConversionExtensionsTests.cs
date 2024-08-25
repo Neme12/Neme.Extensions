@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Neme.Extensions.Tests.Utilities;
+using System.Collections;
 using System.Collections.ObjectModel;
 using Xunit.Sdk;
 
@@ -35,12 +36,12 @@ public sealed class ListConversionExtensionsTests
         Assert.False(asNonGeneric.Contains(4));
         Assert.Equal(-1, asNonGeneric.IndexOf(4));
 
-        Assert.Throws<NotSupportedException>(() => asNonGeneric[0] = 0);
-        Assert.Throws<NotSupportedException>(() => asNonGeneric.Add(4));
-        Assert.Throws<NotSupportedException>(() => asNonGeneric.Insert(1, 1));
-        Assert.Throws<NotSupportedException>(() => asNonGeneric.Remove(3));
-        Assert.Throws<NotSupportedException>(() => asNonGeneric.RemoveAt(2));
-        Assert.Throws<NotSupportedException>(() => asNonGeneric.Clear());
+        AssertThrows.NotSupported_ReadOnlyCollection(() => asNonGeneric[0] = 0);
+        AssertThrows.NotSupported_ReadOnlyCollection(() => asNonGeneric.Add(4));
+        AssertThrows.NotSupported_ReadOnlyCollection(() => asNonGeneric.Insert(1, 1));
+        AssertThrows.NotSupported_ReadOnlyCollection(() => asNonGeneric.Remove(3));
+        AssertThrows.NotSupported_ReadOnlyCollection(() => asNonGeneric.RemoveAt(2));
+        AssertThrows.NotSupported_ReadOnlyCollection(() => asNonGeneric.Clear());
 
         var array = new int[3];
         asNonGeneric.CopyTo(array, 0);
@@ -146,12 +147,12 @@ public sealed class ListConversionExtensionsTests
         Assert.False(asGeneric.Contains(4));
         Assert.Equal(-1, asGeneric.IndexOf(4));
 
-        Assert.Throws<NotSupportedException>(() => asGeneric[0] = 0);
-        Assert.Throws<NotSupportedException>(() => asGeneric.Add(4));
-        Assert.Throws<NotSupportedException>(() => asGeneric.Insert(1, 1));
-        Assert.Throws<NotSupportedException>(() => asGeneric.Remove(3));
-        Assert.Throws<NotSupportedException>(() => asGeneric.RemoveAt(2));
-        Assert.Throws<NotSupportedException>(() => asGeneric.Clear());
+        AssertThrows.NotSupported_ReadOnlyCollection(() => asGeneric[0] = 0);
+        AssertThrows.NotSupported_ReadOnlyCollection(() => asGeneric.Add(4));
+        AssertThrows.NotSupported_ReadOnlyCollection(() => asGeneric.Insert(1, 1));
+        AssertThrows.NotSupported_ReadOnlyCollection(() => asGeneric.Remove(3));
+        AssertThrows.NotSupported_ReadOnlyCollection(() => asGeneric.RemoveAt(2));
+        AssertThrows.NotSupported_ReadOnlyCollection(() => asGeneric.Clear());
 
         var array = new int[3];
         asGeneric.CopyTo(array, 0);
@@ -272,12 +273,12 @@ public sealed class ListConversionExtensionsTests
         Assert.False(asIList.Contains(4));
         Assert.Equal(-1, asIList.IndexOf(4));
 
-        Assert.Throws<NotSupportedException>(() => asIList[0] = 0);
-        Assert.Throws<NotSupportedException>(() => asIList.Add(4));
-        Assert.Throws<NotSupportedException>(() => asIList.Insert(1, 1));
-        Assert.Throws<NotSupportedException>(() => asIList.Remove(3));
-        Assert.Throws<NotSupportedException>(() => asIList.RemoveAt(2));
-        Assert.Throws<NotSupportedException>(() => asIList.Clear());
+        AssertThrows.NotSupported_ReadOnlyCollection(() => asIList[0] = 0);
+        AssertThrows.NotSupported_ReadOnlyCollection(() => asIList.Add(4));
+        AssertThrows.NotSupported_ReadOnlyCollection(() => asIList.Insert(1, 1));
+        AssertThrows.NotSupported_ReadOnlyCollection(() => asIList.Remove(3));
+        AssertThrows.NotSupported_ReadOnlyCollection(() => asIList.RemoveAt(2));
+        AssertThrows.NotSupported_ReadOnlyCollection(() => asIList.Clear());
 
         var array = new int[3];
         asIList.CopyTo(array, 0);

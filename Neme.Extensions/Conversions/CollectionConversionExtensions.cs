@@ -31,13 +31,16 @@ public static class CollectionConversionExtensions
             true;
 
         public void Add(T item) =>
-            throw ReadOnly();
+            ThrowHelper.ThrowNotSupported_ReadOnlyCollection();
 
-        public bool Remove(T item) =>
-            throw ReadOnly();
+        public bool Remove(T item)
+        {
+            ThrowHelper.ThrowNotSupported_ReadOnlyCollection();
+            return default;
+        }
 
         public void Clear() =>
-            throw ReadOnly();
+            ThrowHelper.ThrowNotSupported_ReadOnlyCollection();
 
         public bool Contains(T item) =>
             ((IEnumerable)collection).AsGeneric<T>().Contains(item);
@@ -50,9 +53,6 @@ public static class CollectionConversionExtensions
 
         IEnumerator IEnumerable.GetEnumerator() =>
             collection.GetEnumerator();
-
-        private static NotSupportedException ReadOnly() =>
-            new NotSupportedException("Collection is read-only.");
     }
 
     private sealed class GenericCollectionWrapper<T>(ICollection<T> collection) : ICollection

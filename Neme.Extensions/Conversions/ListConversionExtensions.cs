@@ -172,44 +172,50 @@ public static class ListConversionExtensions
         public T this[int index]
         {
             get => list[index];
-            set => throw new NotSupportedException();
+            set => ThrowHelper.ThrowNotSupported_ReadOnlyCollection();
         }
 
         object? IList.this[int index]
         {
             get => list[index];
-            set => throw new NotSupportedException();
+            set => ThrowHelper.ThrowNotSupported_ReadOnlyCollection();
         }
 
         public void Add(T item) =>
-            throw new NotSupportedException();
+            ThrowHelper.ThrowNotSupported_ReadOnlyCollection();
 
-        int IList.Add(object? value) =>
-            throw new NotSupportedException();
+        int IList.Add(object? value)
+        {
+            ThrowHelper.ThrowNotSupported_ReadOnlyCollection();
+            return default;
+        }
 
         public void Insert(int index, T item) =>
-            throw new NotSupportedException();
+            ThrowHelper.ThrowNotSupported_ReadOnlyCollection();
 
         void IList.Insert(int index, object? value) =>
-            throw new NotSupportedException();
+            ThrowHelper.ThrowNotSupported_ReadOnlyCollection();
 
-        public bool Remove(T item) =>
-            throw new NotSupportedException();
+        public bool Remove(T item)
+        {
+            ThrowHelper.ThrowNotSupported_ReadOnlyCollection();
+            return default;
+        }
 
         void IList.Remove(object? value) =>
-            throw new NotSupportedException();
+            ThrowHelper.ThrowNotSupported_ReadOnlyCollection();
 
         public void RemoveAt(int index) =>
-            throw new NotSupportedException();
+            ThrowHelper.ThrowNotSupported_ReadOnlyCollection();
 
         void IList.RemoveAt(int index) =>
-            throw new NotSupportedException();
+            ThrowHelper.ThrowNotSupported_ReadOnlyCollection();
 
         public void Clear() =>
-            throw new NotSupportedException();
+            ThrowHelper.ThrowNotSupported_ReadOnlyCollection();
 
         void IList.Clear() =>
-            throw new NotSupportedException();
+            ThrowHelper.ThrowNotSupported_ReadOnlyCollection();
 
         public bool Contains(T item) =>
             list.Contains(item);

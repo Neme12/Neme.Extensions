@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Neme.Extensions.Tests.Utilities;
+using System.Collections;
 using System.Collections.Generic;
 using Xunit.Sdk;
 
@@ -66,9 +67,9 @@ public sealed class CollectionConversionExtensionsTests
         Assert.NotSame(collection, asGeneric);
         Assert.Equal(3, asGeneric.Count);
         Assert.True(asGeneric.IsReadOnly);
-        Assert.Throws<NotSupportedException>(() => asGeneric.Add(1));
-        Assert.Throws<NotSupportedException>(() => asGeneric.Remove(1));
-        Assert.Throws<NotSupportedException>(() => asGeneric.Clear());
+        AssertThrows.NotSupported_ReadOnlyCollection(() => asGeneric.Add(1));
+        AssertThrows.NotSupported_ReadOnlyCollection(() => asGeneric.Remove(1));
+        AssertThrows.NotSupported_ReadOnlyCollection(() => asGeneric.Clear());
         Assert.True(asGeneric.Contains(1));
         Assert.False(asGeneric.Contains(0));
         Assert.Equal([1, 2, 3], asGeneric);
