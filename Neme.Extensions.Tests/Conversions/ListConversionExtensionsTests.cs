@@ -217,7 +217,83 @@ public sealed class ListConversionExtensionsTests
         Assert.Same(list, asGeneric);
     }
 
-    // A wrapper class is needed to ensure that is only implements IList and not IList<T>.
+    [Fact]
+    public void TestAsIReadOnlyList_Same()
+    {
+        var list = (IList<int>)new List<int> { 1, 2, 3 };
+        var asIReadOnlyList = list.AsIReadOnlyList();
+        Assert.Same(list, asIReadOnlyList);
+    }
+
+    [Fact]
+    public void TestAsIReadOnlyList_ListWrapper()
+    {
+        var list = new GenericList<int>([1, 2, 3]);
+        var asIReadOnlyList = list.AsIReadOnlyList();
+        Assert.NotSame(list, asIReadOnlyList);
+        Assert.Equal(3, asIReadOnlyList.Count);
+        Assert.Equal([1, 2, 3], asIReadOnlyList);
+
+        Assert.Equal(2, asIReadOnlyList[1]);
+    }
+
+    [Fact]
+    public void TestAsIReadOnlyList_GenericListWrapperUnwrapped()
+    {
+        var list = new GenericList<int>([1, 2, 3]);
+        var asIReadOnlyList = list.AsIReadOnlyList();
+        var asIList = asIReadOnlyList.AsIList();
+        Assert.Same(list, asIList);
+    }
+
+    [Fact]
+    public void TestAsIList_Same()
+    {
+        var list = (IReadOnlyList<int>)new List<int> { 1, 2, 3 };
+        var asIList = list.AsIList();
+        Assert.Same(list, asIList);
+    }
+
+    [Fact]
+    public void TestAsIList_ListWrapper()
+    {
+        var list = new GenericReadOnlyList<int>([1, 2, 3]);
+        var asIList = list.AsIList();
+        Assert.NotSame(list, asIList);
+        Assert.Equal(3, asIList.Count);
+        Assert.True(asIList.IsReadOnly);
+        Assert.Equal([1, 2, 3], asIList);
+
+        Assert.Equal(2, asIList[1]);
+
+        Assert.True(asIList.Contains(3));
+        Assert.Equal(2, asIList.IndexOf(3));
+
+        Assert.False(asIList.Contains(4));
+        Assert.Equal(-1, asIList.IndexOf(4));
+
+        Assert.Throws<NotSupportedException>(() => asIList[0] = 0);
+        Assert.Throws<NotSupportedException>(() => asIList.Add(4));
+        Assert.Throws<NotSupportedException>(() => asIList.Insert(1, 1));
+        Assert.Throws<NotSupportedException>(() => asIList.Remove(3));
+        Assert.Throws<NotSupportedException>(() => asIList.RemoveAt(2));
+        Assert.Throws<NotSupportedException>(() => asIList.Clear());
+
+        var array = new int[3];
+        asIList.CopyTo(array, 0);
+        Assert.Equal((int[])[1, 2, 3], array);
+    }
+
+    [Fact]
+    public void TestAsIReadOnlyList_GenericReadOnlyListWrapperUnwrapped()
+    {
+        var list = new GenericReadOnlyList<int>([1, 2, 3]);
+        var asIList = list.AsIList();
+        var asIReadOnlyList = asIList.AsIReadOnlyList();
+        Assert.Same(list, asIReadOnlyList);
+    }
+
+    // A wrapper class is needed to ensure that is only implements IList and not other interfaces.
     private sealed class NonGenericList<T>(IList list) : IList
     {
         public int Count =>
@@ -269,7 +345,7 @@ public sealed class ListConversionExtensionsTests
             list.GetEnumerator();
     }
 
-    // A wrapper class is needed to ensure that is only implements IList<T> and not IList.
+    // A wrapper class is needed to ensure that is only implements IList<T> and not other interfaces.
     private sealed class GenericList<T>(IList<T> list) : IList<T>
     {
         public int Count =>
@@ -312,6 +388,22 @@ public sealed class ListConversionExtensionsTests
             list.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() =>
+            ((IEnumerable)list).GetEnumerator();
+    }
+
+    // A wrapper class is needed to ensure that is only implements IReadOnlyList<T> and not other interfaces.
+    private sealed class GenericReadOnlyList<T>(IReadOnlyList<T> list) : IReadOnlyList<T>
+    {
+        public int Count =>
+            list.Count;
+
+        public T this[int index] =>
+            list[index];
+
+        public IEnumerator<T> GetEnumerator() =>
             list.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() =>
+            ((IEnumerable)list).GetEnumerator();
     }
 }

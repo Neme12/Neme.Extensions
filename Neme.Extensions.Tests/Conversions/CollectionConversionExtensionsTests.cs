@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using Xunit.Sdk;
 
 namespace Neme.Extensions.Conversions.Tests;
@@ -86,7 +87,7 @@ public sealed class CollectionConversionExtensionsTests
         Assert.Same(collection, asGeneric);
     }
 
-    // A wrapper class is needed to ensure that is only implements ICollection and not ICollection<T>.
+    // A wrapper class is needed to ensure that is only implements ICollection and not other interfaces.
     private sealed class NonGenericCollection<T>(ICollection collection) : ICollection
     {
         public int Count =>
@@ -105,7 +106,7 @@ public sealed class CollectionConversionExtensionsTests
             collection.GetEnumerator();
     }
 
-    // A wrapper class is needed to ensure that is only implements ICollection<T> and not ICollection.
+    // A wrapper class is needed to ensure that is only implements ICollection<T> and not other interfaces.
     private sealed class GenericCollection<T>(ICollection<T> collection) : ICollection<T>
     {
         public int Count =>
@@ -133,6 +134,6 @@ public sealed class CollectionConversionExtensionsTests
             collection.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() =>
-            collection.GetEnumerator();
+            ((IEnumerable)collection).GetEnumerator();
     }
 }
