@@ -40,7 +40,7 @@ public static class CollectionConversionExtensions
             throw ReadOnly();
 
         public bool Contains(T item) =>
-            (collection as IEnumerable).AsGeneric<T>().Contains(item);
+            ((IEnumerable)collection).AsGeneric<T>().Contains(item);
 
         public void CopyTo(T[] array, int arrayIndex) =>
             collection.CopyTo(array, arrayIndex);
@@ -63,7 +63,7 @@ public static class CollectionConversionExtensions
             collection.Count;
 
         public object SyncRoot =>
-            this;
+            collection;
 
         public bool IsSynchronized =>
             false;

@@ -20,8 +20,8 @@ public sealed class CollectionConversionExtensionsTests
         var asNonGeneric = collection.AsNonGeneric();
         Assert.NotSame(collection, asNonGeneric);
         Assert.Equal(3, asNonGeneric.Count);
+        Assert.Same(collection, asNonGeneric.SyncRoot);
         Assert.False(asNonGeneric.IsSynchronized);
-        Assert.Same(asNonGeneric, asNonGeneric.SyncRoot);
         Assert.Equal([1, 2, 3], asNonGeneric.Cast<int>());
 
         var array = new int[3];
@@ -32,7 +32,7 @@ public sealed class CollectionConversionExtensionsTests
     [Fact]
     public void TestAsNonGeneric_GenericWrapperUnwrapped()
     {
-        var collection = new NonGenericCollection<int>([1, 2, 3]);
+        var collection = new NonGenericCollection<int>((List<int>)[1, 2, 3]);
         var asGeneric = collection.AsGeneric<int>();
         var asNonGeneric = asGeneric.AsNonGeneric();
         Assert.Same(collection, asNonGeneric);
@@ -60,7 +60,7 @@ public sealed class CollectionConversionExtensionsTests
     [Fact]
     public void TestAsGeneric_Wrapper()
     {
-        var collection = new NonGenericCollection<int>([1, 2, 3]);
+        var collection = new NonGenericCollection<int>((List<int>)[1, 2, 3]);
         var asGeneric = collection.AsGeneric<int>();
         Assert.NotSame(collection, asGeneric);
         Assert.Equal(3, asGeneric.Count);
@@ -86,51 +86,53 @@ public sealed class CollectionConversionExtensionsTests
         Assert.Same(collection, asGeneric);
     }
 
-    private sealed class NonGenericCollection<T>(List<T> list) : ICollection
+    // A wrapper class is needed to ensure that is only implements ICollection and not ICollection<T>.
+    private sealed class NonGenericCollection<T>(ICollection collection) : ICollection
     {
         public int Count =>
-            ((ICollection)list).Count;
+            collection.Count;
 
         public bool IsSynchronized =>
-            ((ICollection)list).IsSynchronized;
+            collection.IsSynchronized;
 
         public object SyncRoot =>
-            ((ICollection)list).SyncRoot;
+            collection.SyncRoot;
 
         public void CopyTo(Array array, int index) =>
-            ((ICollection)list).CopyTo(array, index);
+            collection.CopyTo(array, index);
 
         public IEnumerator GetEnumerator() =>
-            ((IEnumerable)list).GetEnumerator();
+            collection.GetEnumerator();
     }
 
-    private sealed class GenericCollection<T>(List<T> list) : ICollection<T>
+    // A wrapper class is needed to ensure that is only implements ICollection<T> and not ICollection.
+    private sealed class GenericCollection<T>(ICollection<T> collection) : ICollection<T>
     {
         public int Count =>
-            ((ICollection<T>)list).Count;
+            collection.Count;
 
         public bool IsReadOnly =>
-            ((ICollection<T>)list).IsReadOnly;
+            collection.IsReadOnly;
 
         public void Add(T item) =>
-            ((ICollection<T>)list).Add(item);
+            collection.Add(item);
 
         public bool Remove(T item) =>
-            ((ICollection<T>)list).Remove(item);
+            collection.Remove(item);
 
         public void Clear() =>
-            ((ICollection<T>)list).Clear();
+            collection.Clear();
 
         public bool Contains(T item) =>
-            ((ICollection<T>)list).Contains(item);
+            collection.Contains(item);
 
         public void CopyTo(T[] array, int arrayIndex) =>
-            ((ICollection<T>)list).CopyTo(array, arrayIndex);
+            collection.CopyTo(array, arrayIndex);
 
         public IEnumerator<T> GetEnumerator() =>
-            ((IEnumerable<T>)list).GetEnumerator();
+            collection.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() =>
-            ((IEnumerable)list).GetEnumerator();
+            collection.GetEnumerator();
     }
 }
