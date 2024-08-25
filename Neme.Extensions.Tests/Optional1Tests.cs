@@ -76,9 +76,9 @@ public sealed class Optional1Tests
         Assert.False(new Optional<int>(42).Equals((object)new Optional<int>()));
         Assert.False(new Optional<int>(42).Equals((object)new Optional<int>(43)));
 
+        Assert.False(new Optional<int>().Equals(null));
         Assert.False(new Optional<int>().Equals(new Optional<string>()));
         Assert.False(new Optional<int>(5).Equals(5));
-        Assert.False(new Optional<int>().Equals(null));
     }
 
     [Fact]
@@ -101,6 +101,23 @@ public sealed class Optional1Tests
         Assert.Equal(1, new Optional<string>("a").CompareTo(new Optional<string>(), StringComparer.OrdinalIgnoreCase));
         Assert.Equal(-1, new Optional<string>("a").CompareTo(new Optional<string>("B"), StringComparer.OrdinalIgnoreCase));
         Assert.Equal(1, new Optional<string>("b").CompareTo(new Optional<string>("A"), StringComparer.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void Comparisons_NonGeneric()
+    {
+        Assert.Equal(0, ((IComparable)new Optional<int>()).CompareTo(default(Optional<int>)));
+        Assert.Equal(0, ((IComparable)new Optional<int>(42)).CompareTo(new Optional<int>(42)));
+        Assert.Equal(-1, ((IComparable)new Optional<int>()).CompareTo(new Optional<int>(42)));
+        Assert.Equal(1, ((IComparable)new Optional<int>(42)).CompareTo(new Optional<int>()));
+        Assert.Equal(-1, ((IComparable)new Optional<int>(42)).CompareTo(new Optional<int>(43)));
+        Assert.Equal(1, ((IComparable)new Optional<int>(43)).CompareTo(new Optional<int>(42)));
+
+        Assert.Equal(1, ((IComparable)new Optional<int>()).CompareTo(null));
+        var e1 = Assert.Throws<ArgumentException>("obj", () => ((IComparable)new Optional<int>()).CompareTo(new Optional<string>()));
+        Assert.Equal("Object must be of type Neme.Extensions.Optional`1[System.Int32]. (Parameter 'obj')", e1.Message);
+        var e2 = Assert.Throws<ArgumentException>("obj", () => ((IComparable)new Optional<int>(5)).CompareTo(5));
+        Assert.Equal("Object must be of type Neme.Extensions.Optional`1[System.Int32]. (Parameter 'obj')", e2.Message);
     }
 
     [Theory]

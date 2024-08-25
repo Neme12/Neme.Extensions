@@ -42,6 +42,16 @@ public readonly partial struct Optional<T>
         };
     }
 
+    int IComparable.CompareTo(object? obj)
+    {
+        return obj switch
+        {
+            null => 1,
+            Optional<T> optional => CompareTo(optional),
+            _ => throw new ArgumentException($"Object must be of type {typeof(Optional<T>)}.", nameof(obj)),
+        };
+    }
+
     public override int GetHashCode() =>
         GetHashCode(EqualityComparer<T>.Default);
 

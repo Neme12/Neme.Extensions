@@ -7,7 +7,8 @@ namespace Neme.Extensions;
 [StructLayout(LayoutKind.Auto)]
 public readonly partial struct Optional<T> :
     IEquatable<Optional<T>>,
-    IComparable<Optional<T>>
+    IComparable<Optional<T>>,
+    IComparable
 #if NET7_0_OR_GREATER
     , IEqualityOperators<Optional<T>, Optional<T>, bool>
 #endif
