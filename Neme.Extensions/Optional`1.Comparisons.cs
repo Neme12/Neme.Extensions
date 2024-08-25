@@ -25,6 +25,23 @@ public readonly partial struct Optional<T>
     public override bool Equals([NotNullWhen(true)] object? obj) =>
         obj is Optional<T> other && Equals(other);
 
+    public int CompareTo(Optional<T> other) =>
+        CompareTo(other, Comparer<T>.Default);
+
+    public int CompareTo(Optional<T> other, IComparer<T> elementComparer)
+    {
+        if (elementComparer is null)
+            throw new ArgumentNullException(nameof(elementComparer));
+
+        return (_hasValue, other._hasValue) switch
+        {
+            (true, true) => elementComparer.Compare(_value!, other._value!),
+            (true, false) => 1,
+            (false, true) => -1,
+            (false, false) => 0,
+        };
+    }
+
     public override int GetHashCode() =>
         GetHashCode(EqualityComparer<T>.Default);
 

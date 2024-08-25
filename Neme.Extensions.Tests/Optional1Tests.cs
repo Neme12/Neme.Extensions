@@ -61,10 +61,10 @@ public sealed class Optional1Tests
     public void Equality_Custom()
     {
         Assert.True(new Optional<string>().Equals(default, StringComparer.OrdinalIgnoreCase));
-        Assert.True(new Optional<string>("hello").Equals(new Optional<string>("HELLO"), StringComparer.OrdinalIgnoreCase));
-        Assert.False(new Optional<string>().Equals(new Optional<string>("hello"), StringComparer.OrdinalIgnoreCase));
-        Assert.False(new Optional<string>("hello").Equals(new Optional<string>(), StringComparer.OrdinalIgnoreCase));
-        Assert.False(new Optional<string>("hello").Equals(new Optional<string>("hello2"), StringComparer.OrdinalIgnoreCase));
+        Assert.True(new Optional<string>("a").Equals(new Optional<string>("A"), StringComparer.OrdinalIgnoreCase));
+        Assert.False(new Optional<string>().Equals(new Optional<string>("a"), StringComparer.OrdinalIgnoreCase));
+        Assert.False(new Optional<string>("a").Equals(new Optional<string>(), StringComparer.OrdinalIgnoreCase));
+        Assert.False(new Optional<string>("a").Equals(new Optional<string>("b"), StringComparer.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -79,6 +79,28 @@ public sealed class Optional1Tests
         Assert.False(new Optional<int>().Equals(new Optional<string>()));
         Assert.False(new Optional<int>(5).Equals(5));
         Assert.False(new Optional<int>().Equals(null));
+    }
+
+    [Fact]
+    public void Comparisons_StronglyTyped()
+    {
+        Assert.Equal(0, new Optional<int>().CompareTo(default));
+        Assert.Equal(0, new Optional<int>(42).CompareTo(new Optional<int>(42)));
+        Assert.Equal(-1, new Optional<int>().CompareTo(new Optional<int>(42)));
+        Assert.Equal(1, new Optional<int>(42).CompareTo(new Optional<int>()));
+        Assert.Equal(-1, new Optional<int>(42).CompareTo(new Optional<int>(43)));
+        Assert.Equal(1, new Optional<int>(43).CompareTo(new Optional<int>(42)));
+    }
+
+    [Fact]
+    public void Comparisons_Custom()
+    {
+        Assert.Equal(0, new Optional<string>().CompareTo(default, StringComparer.OrdinalIgnoreCase));
+        Assert.Equal(0, new Optional<string>("a").CompareTo(new Optional<string>("A"), StringComparer.OrdinalIgnoreCase));
+        Assert.Equal(-1, new Optional<string>().CompareTo(new Optional<string>("a"), StringComparer.OrdinalIgnoreCase));
+        Assert.Equal(1, new Optional<string>("a").CompareTo(new Optional<string>(), StringComparer.OrdinalIgnoreCase));
+        Assert.Equal(-1, new Optional<string>("a").CompareTo(new Optional<string>("B"), StringComparer.OrdinalIgnoreCase));
+        Assert.Equal(1, new Optional<string>("b").CompareTo(new Optional<string>("A"), StringComparer.OrdinalIgnoreCase));
     }
 
     [Theory]
