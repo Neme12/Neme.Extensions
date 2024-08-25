@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Numerics;
 using System.Runtime.InteropServices;
 
 namespace Neme.Extensions;
@@ -6,6 +7,9 @@ namespace Neme.Extensions;
 [StructLayout(LayoutKind.Auto)]
 public readonly partial struct Optional<T> :
     IEquatable<Optional<T>>
+#if NET7_0_OR_GREATER
+    , IEqualityOperators<Optional<T>, Optional<T>, bool>
+#endif
 {
     private readonly bool _hasValue;
     private readonly T? _value;
