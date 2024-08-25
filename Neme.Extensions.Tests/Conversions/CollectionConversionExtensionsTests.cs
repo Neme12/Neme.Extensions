@@ -34,7 +34,7 @@ public sealed class CollectionConversionExtensionsTests
     [Fact]
     public void TestAsNonGeneric_GenericWrapperUnwrapped()
     {
-        var collection = new NonGenericCollection<int>((List<int>)[1, 2, 3]);
+        var collection = new NonGenericCollection((List<int>)[1, 2, 3]);
         var asGeneric = collection.AsGeneric<int>();
         var asNonGeneric = asGeneric.AsNonGeneric();
         Assert.Same(collection, asNonGeneric);
@@ -62,7 +62,7 @@ public sealed class CollectionConversionExtensionsTests
     [Fact]
     public void TestAsGeneric_Wrapper()
     {
-        var collection = new NonGenericCollection<int>((List<int>)[1, 2, 3]);
+        var collection = new NonGenericCollection((List<int>)[1, 2, 3]);
         var asGeneric = collection.AsGeneric<int>();
         Assert.NotSame(collection, asGeneric);
         Assert.Equal(3, asGeneric.Count);
@@ -89,7 +89,7 @@ public sealed class CollectionConversionExtensionsTests
     }
 
     // A wrapper class is needed to ensure that is only implements ICollection and not other interfaces.
-    private sealed class NonGenericCollection<T>(ICollection collection) : ICollection
+    private sealed class NonGenericCollection(ICollection collection) : ICollection
     {
         public int Count =>
             collection.Count;

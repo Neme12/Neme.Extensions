@@ -104,7 +104,7 @@ public sealed class ListConversionExtensionsTests
     [Fact]
     public void TestAsNonGeneric_GenericWrapperUnwrapped()
     {
-        var list = new NonGenericList<int>((List<int>)[1, 2, 3]);
+        var list = new NonGenericList((List<int>)[1, 2, 3]);
         var asGeneric = list.AsGeneric<int>();
         var asNonGeneric = asGeneric.AsNonGeneric();
         Assert.Same(list, asNonGeneric);
@@ -132,7 +132,7 @@ public sealed class ListConversionExtensionsTests
     [Fact]
     public void TestAsGeneric_ReadOnlyCollectionWrapper()
     {
-        var list = new NonGenericList<int>(new ReadOnlyCollection<int>([1, 2, 3]));
+        var list = new NonGenericList(new ReadOnlyCollection<int>([1, 2, 3]));
         var asGeneric = list.AsGeneric<int>();
         Assert.NotSame(list, asGeneric);
         Assert.Equal(3, asGeneric.Count);
@@ -162,7 +162,7 @@ public sealed class ListConversionExtensionsTests
     [Fact]
     public void TestAsGeneric_ListWrapper()
     {
-        var list = new NonGenericList<int>((List<int>)[1, 2, 3]);
+        var list = new NonGenericList((List<int>)[1, 2, 3]);
         var asGeneric = list.AsGeneric<int>();
         Assert.NotSame(list, asGeneric);
         Assert.Equal(3, asGeneric.Count);
@@ -295,7 +295,7 @@ public sealed class ListConversionExtensionsTests
     }
 
     // A wrapper class is needed to ensure that is only implements IList and not other interfaces.
-    private sealed class NonGenericList<T>(IList list) : IList
+    private sealed class NonGenericList(IList list) : IList
     {
         public int Count =>
             list.Count;
