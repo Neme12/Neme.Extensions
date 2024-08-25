@@ -38,13 +38,22 @@ public sealed class Optional1Tests
         Assert.Equal(42, value);
     }
 
-    [Fact]
-    public void Equality_StronglyTyped()
+
+    [Theory]
+    [InlineData(42, 43, null)]
+#pragma warning disable xUnit1010
+    [InlineData(42f, 43f, float.NaN)]
+#pragma warning restore xUnit1010
+    public void Equality_StronglyTyped<T>(T value1, T value2, T? nan)
+        where T : struct
     {
-        Assert.True(new Optional<int>().Equals(default));
-        Assert.True(new Optional<int>(42).Equals(new Optional<int>(42)));
-        Assert.False(new Optional<int>().Equals(new Optional<int>(42)));
-        Assert.False(new Optional<int>(42).Equals(new Optional<int>(43)));
+        Assert.True(new Optional<T>().Equals(default));
+        Assert.True(new Optional<T>(value1).Equals(new Optional<T>(value1)));
+        Assert.False(new Optional<T>().Equals(new Optional<T>(value1)));
+        Assert.False(new Optional<T>(value1).Equals(new Optional<T>(value2)));
+
+        if (nan is { } nanValue)
+            Assert.True(new Optional<T>(nanValue).Equals(new Optional<T>(nanValue)));
     }
 
     [Fact]
@@ -64,9 +73,26 @@ public sealed class Optional1Tests
         Assert.False(new Optional<int>().Equals((object)new Optional<int>(42)));
         Assert.False(new Optional<int>(42).Equals((object)new Optional<int>(43)));
 
-        Assert.False(new Optional<int>().Equals((object)new Optional<string>()));
-        Assert.False(new Optional<int>(5).Equals((object)5));
+        Assert.False(new Optional<int>().Equals(new Optional<string>()));
+        Assert.False(new Optional<int>(5).Equals(5));
         Assert.False(new Optional<int>().Equals(null));
+    }
+
+    [Theory]
+    [InlineData(42, 43, null)]
+#pragma warning disable xUnit1010
+    [InlineData(42f, 43f, float.NaN)]
+#pragma warning restore xUnit1010
+    public void EqualityOperators<T>(T value1, T value2, T? nan)
+        where T : struct
+    {
+        Assert.True(new Optional<T>() == default);
+        Assert.True(new Optional<T>(value1) == new Optional<T>(value1));
+        Assert.False(new Optional<T>() == new Optional<T>(value1));
+        Assert.False(new Optional<T>(value1) == new Optional<T>(value2));
+
+        if (nan is { } nanValue)
+            Assert.False(new Optional<T>(nanValue) == new Optional<T>(nanValue));
     }
 
     [Fact]
