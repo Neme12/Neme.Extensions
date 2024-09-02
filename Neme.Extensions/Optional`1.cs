@@ -56,4 +56,10 @@ public readonly partial struct Optional<T> :
         hasValue = _hasValue;
         value = _value;
     }
+
+    public static implicit operator Optional<T>(T value) =>
+        new(value);
+
+    public static explicit operator T(Optional<T> optional) =>
+        optional.Value;
 }

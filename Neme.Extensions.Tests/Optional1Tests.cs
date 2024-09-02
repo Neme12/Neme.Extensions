@@ -40,6 +40,20 @@ public sealed class Optional1Tests
         Assert.Equal(42, value);
     }
 
+    [Fact]
+    public void ImplicitConversion()
+    {
+        Optional<int> optional = 42;
+        Assert.True(optional.HasValue);
+        Assert.Equal(42, optional.Value);
+    }
+
+    [Fact]
+    public void ExplicitConversion()
+    {
+        var optional = new Optional<int>(42);
+        Assert.Equal(42, (int)optional);
+    }
 
     [Theory]
     [InlineData(42, 43, null)]
@@ -94,7 +108,7 @@ public sealed class Optional1Tests
 
         Assert.False(new Optional<int>().Equals(null));
         Assert.False(new Optional<int>().Equals(new Optional<string>()));
-        Assert.False(new Optional<int>(5).Equals(5));
+        Assert.False(new Optional<int>(5).Equals((object)5));
     }
 
     [Fact]
