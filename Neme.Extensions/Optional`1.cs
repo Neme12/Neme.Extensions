@@ -3,16 +3,19 @@ using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
 
 namespace Neme.Extensions;
 
+[Serializable]
 [StructLayout(LayoutKind.Auto)]
 public readonly partial struct Optional<T> :
     IEquatable<Optional<T>>,
     IComparable<Optional<T>>,
     IComparable,
     IStructuralEquatable,
-    IStructuralComparable
+    IStructuralComparable,
+    ISerializable
 #if NETCOREAPP2_0_OR_GREATER || NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER
     , ITuple
 #endif
@@ -27,6 +30,24 @@ public readonly partial struct Optional<T> :
     {
         _hasValue = true;
         _value = value;
+    }
+
+    private Optional(SerializationInfo info, StreamingContext context)
+    {
+        if (info is null)
+            throw new ArgumentNullException(nameof(info));
+
+        if (info.MemberCount != 0)
+        {
+            _hasValue = true;
+            _value = (T)info.GetValue("Value", typeof(T))!;
+        }
+    }
+
+    void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+        if (_hasValue)
+            info.AddValue("Value", _value);
     }
 
     public bool HasValue =>
