@@ -47,6 +47,16 @@ public readonly partial struct Optional<T>
         };
     }
 
+    int IStructuralComparable.CompareTo(object? other, IComparer comparer)
+    {
+        return other switch
+        {
+            null => 1,
+            Optional<T> optional => CompareTo(optional, comparer.AsGeneric<T>()),
+            _ => throw new ArgumentException($"Object must be of type {typeof(Optional<T>)}.", nameof(other)),
+        };
+    }
+
     int IComparable.CompareTo(object? obj)
     {
         return obj switch

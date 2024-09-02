@@ -10,7 +10,8 @@ public readonly partial struct Optional<T> :
     IEquatable<Optional<T>>,
     IComparable<Optional<T>>,
     IComparable,
-    IStructuralEquatable
+    IStructuralEquatable,
+    IStructuralComparable
 #if NET7_0_OR_GREATER
     , IEqualityOperators<Optional<T>, Optional<T>, bool>
 #endif

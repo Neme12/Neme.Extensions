@@ -120,6 +120,23 @@ public sealed class Optional1Tests
     }
 
     [Fact]
+    public void Comparisons_IStructuralComparable()
+    {
+        Assert.Equal(0, ((IStructuralComparable)new Optional<string>()).CompareTo(default(Optional<string>), StringComparer.OrdinalIgnoreCase));
+        Assert.Equal(0, ((IStructuralComparable)new Optional<string>("a")).CompareTo(new Optional<string>("A"), StringComparer.OrdinalIgnoreCase));
+        Assert.Equal(-1, ((IStructuralComparable)new Optional<string>()).CompareTo(new Optional<string>("a"), StringComparer.OrdinalIgnoreCase));
+        Assert.Equal(1, ((IStructuralComparable)new Optional<string>("a")).CompareTo(new Optional<string>(), StringComparer.OrdinalIgnoreCase));
+        Assert.Equal(-1, ((IStructuralComparable)new Optional<string>("a")).CompareTo(new Optional<string>("B"), StringComparer.OrdinalIgnoreCase));
+        Assert.Equal(1, ((IStructuralComparable)new Optional<string>("b")).CompareTo(new Optional<string>("A"), StringComparer.OrdinalIgnoreCase));
+
+        Assert.Equal(1, ((IStructuralComparable)new Optional<string>()).CompareTo(null, StringComparer.OrdinalIgnoreCase));
+        var e1 = Assert.Throws<ArgumentException>("other", () => ((IStructuralComparable)new Optional<string>()).CompareTo(new Optional<int>(), StringComparer.OrdinalIgnoreCase));
+        Assert.StartsWith("Object must be of type Neme.Extensions.Optional`1[System.String].", e1.Message, StringComparison.Ordinal);
+        var e2 = Assert.Throws<ArgumentException>("other", () => ((IStructuralComparable)new Optional<string>("a")).CompareTo("a", StringComparer.OrdinalIgnoreCase));
+        Assert.StartsWith("Object must be of type Neme.Extensions.Optional`1[System.String].", e2.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Comparisons_NonGeneric()
     {
         Assert.Equal(0, ((IComparable)new Optional<int>()).CompareTo(default(Optional<int>)));
@@ -131,9 +148,9 @@ public sealed class Optional1Tests
 
         Assert.Equal(1, ((IComparable)new Optional<int>()).CompareTo(null));
         var e1 = Assert.Throws<ArgumentException>("obj", () => ((IComparable)new Optional<int>()).CompareTo(new Optional<string>()));
-        Assert.Equal("Object must be of type Neme.Extensions.Optional`1[System.Int32]. (Parameter 'obj')", e1.Message);
+        Assert.StartsWith("Object must be of type Neme.Extensions.Optional`1[System.Int32].", e1.Message, StringComparison.Ordinal);
         var e2 = Assert.Throws<ArgumentException>("obj", () => ((IComparable)new Optional<int>(5)).CompareTo(5));
-        Assert.Equal("Object must be of type Neme.Extensions.Optional`1[System.Int32]. (Parameter 'obj')", e2.Message);
+        Assert.StartsWith("Object must be of type Neme.Extensions.Optional`1[System.Int32].", e2.Message, StringComparison.Ordinal);
     }
 
     [Theory]
