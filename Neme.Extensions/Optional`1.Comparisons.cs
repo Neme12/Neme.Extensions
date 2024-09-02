@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using Neme.Extensions.Conversions;
+using System.Collections;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
@@ -22,8 +24,11 @@ public readonly partial struct Optional<T>
         };
     }
 
+    bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer) =>
+        other is Optional<T> optional && Equals(optional, comparer.AsGeneric<T>());
+
     public override bool Equals([NotNullWhen(true)] object? obj) =>
-        obj is Optional<T> other && Equals(other);
+        obj is Optional<T> optional && Equals(optional);
 
     public int CompareTo(Optional<T> other) =>
         CompareTo(other, Comparer<T>.Default);
@@ -65,6 +70,9 @@ public readonly partial struct Optional<T>
 
         return -1;
     }
+
+    int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) =>
+        GetHashCode(comparer.AsGeneric<T>());
 
     private static Func<T, T, bool>? s_opEqualityMethod;
     private static bool s_opEqualityMethodInitialized;

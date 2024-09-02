@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
@@ -8,7 +9,8 @@ namespace Neme.Extensions;
 public readonly partial struct Optional<T> :
     IEquatable<Optional<T>>,
     IComparable<Optional<T>>,
-    IComparable
+    IComparable,
+    IStructuralEquatable
 #if NET7_0_OR_GREATER
     , IEqualityOperators<Optional<T>, Optional<T>, bool>
 #endif

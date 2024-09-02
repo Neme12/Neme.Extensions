@@ -1,3 +1,5 @@
+using System.Collections;
+
 namespace Neme.Extensions.Tests;
 
 public sealed class Optional1Tests
@@ -65,6 +67,20 @@ public sealed class Optional1Tests
         Assert.False(new Optional<string>().Equals(new Optional<string>("a"), StringComparer.OrdinalIgnoreCase));
         Assert.False(new Optional<string>("a").Equals(new Optional<string>(), StringComparer.OrdinalIgnoreCase));
         Assert.False(new Optional<string>("a").Equals(new Optional<string>("b"), StringComparer.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void Equality_IStructuralEquatable()
+    {
+        Assert.True(((IStructuralEquatable)new Optional<string>()).Equals(default(Optional<string>), StringComparer.OrdinalIgnoreCase));
+        Assert.True(((IStructuralEquatable)new Optional<string>("a")).Equals(new Optional<string>("A"), StringComparer.OrdinalIgnoreCase));
+        Assert.False(((IStructuralEquatable)new Optional<string>()).Equals(new Optional<string>("a"), StringComparer.OrdinalIgnoreCase));
+        Assert.False(((IStructuralEquatable)new Optional<string>("a")).Equals(new Optional<string>(), StringComparer.OrdinalIgnoreCase));
+        Assert.False(((IStructuralEquatable)new Optional<string>("a")).Equals(new Optional<string>("b"), StringComparer.OrdinalIgnoreCase));
+
+        Assert.False(((IStructuralEquatable)new Optional<string>()).Equals(null, StringComparer.OrdinalIgnoreCase));
+        Assert.False(((IStructuralEquatable)new Optional<string>()).Equals(new Optional<int>(), StringComparer.OrdinalIgnoreCase));
+        Assert.False(((IStructuralEquatable)new Optional<string>("a")).Equals("a", StringComparer.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -191,6 +207,13 @@ public sealed class Optional1Tests
     {
         Assert.Equal(-1, new Optional<string>().GetHashCode(StringComparer.OrdinalIgnoreCase));
         Assert.Equal(StringComparer.OrdinalIgnoreCase.GetHashCode("hello"), new Optional<string>("hello").GetHashCode(StringComparer.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void HashCode_IStructuralEquatable()
+    {
+        Assert.Equal(-1, ((IStructuralEquatable)new Optional<string>()).GetHashCode(StringComparer.OrdinalIgnoreCase));
+        Assert.Equal(StringComparer.OrdinalIgnoreCase.GetHashCode("hello"), ((IStructuralEquatable)new Optional<string>("hello")).GetHashCode(StringComparer.OrdinalIgnoreCase));
     }
 
 #pragma warning disable CS0660 // Type defines operator == or operator != but does not override Object.Equals(object o)
