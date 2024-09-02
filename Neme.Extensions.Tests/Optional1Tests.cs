@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
@@ -128,6 +129,75 @@ public sealed class Optional1Tests
         Assert.Throws<ArgumentOutOfRangeException>("index", () => optional[-1]);
     }
 #endif
+
+    [Fact]
+    public void ToString_None()
+    {
+        var optional = default(Optional<int>);
+
+        Assert.Equal("None", optional.ToString());
+    }
+
+    [Fact]
+    public void ToString_Some()
+    {
+        var optional = new Optional<double>(42.2);
+
+        Assert.Equal($"Some {{ {optional.Value} }}", optional.ToString());
+    }
+
+    [Fact]
+    public void ToString_Some_Null()
+    {
+        var optional = new Optional<object?>(null);
+
+        Assert.Equal("Some { }", optional.ToString());
+    }
+
+    [Fact]
+    public void ToString_Format_None()
+    {
+        var optional = default(Optional<int>);
+
+        Assert.Equal("None", optional.ToString(null, null));
+        Assert.Equal("None", optional.ToString(null, CultureInfo.InvariantCulture));
+        Assert.Equal("None", optional.ToString(null, CultureInfo.GetCultureInfo("de")));
+
+        var e1 = Assert.Throws<ArgumentException>("format", () => optional.ToString("", null));
+        Assert.StartsWith("Format string is not supported. The parameter must be null.", e1.Message, StringComparison.Ordinal);
+        var e2 = Assert.Throws<ArgumentException>("format", () => optional.ToString("x", null));
+        Assert.StartsWith("Format string is not supported. The parameter must be null.", e2.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ToString_Format_Some()
+    {
+        var optional = new Optional<double>(42.2);
+
+        Assert.Equal($"Some {{ {optional.Value} }}", optional.ToString(null, null));
+        Assert.Equal("Some { 42.2 }", optional.ToString(null, CultureInfo.InvariantCulture));
+        Assert.Equal("Some { 42,2 }", optional.ToString(null, CultureInfo.GetCultureInfo("de")));
+
+        var e1 = Assert.Throws<ArgumentException>("format", () => optional.ToString("", null));
+        Assert.StartsWith("Format string is not supported. The parameter must be null.", e1.Message, StringComparison.Ordinal);
+        var e2 = Assert.Throws<ArgumentException>("format", () => optional.ToString("x", null));
+        Assert.StartsWith("Format string is not supported. The parameter must be null.", e2.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ToString_Format_Some_Null()
+    {
+        var optional = new Optional<object?>(null);
+
+        Assert.Equal("Some { }", optional.ToString(null, null));
+        Assert.Equal("Some { }", optional.ToString(null, CultureInfo.InvariantCulture));
+        Assert.Equal("Some { }", optional.ToString(null, CultureInfo.GetCultureInfo("de")));
+
+        var e1 = Assert.Throws<ArgumentException>("format", () => optional.ToString("", null));
+        Assert.StartsWith("Format string is not supported. The parameter must be null.", e1.Message, StringComparison.Ordinal);
+        var e2 = Assert.Throws<ArgumentException>("format", () => optional.ToString("x", null));
+        Assert.StartsWith("Format string is not supported. The parameter must be null.", e2.Message, StringComparison.Ordinal);
+    }
 
     [Fact]
     public void ImplicitConversion()

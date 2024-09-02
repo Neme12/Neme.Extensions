@@ -15,6 +15,7 @@ public readonly partial struct Optional<T> :
     IComparable,
     IStructuralEquatable,
     IStructuralComparable,
+    IFormattable,
     ISerializable
 #if NETCOREAPP2_0_OR_GREATER || NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER
     , ITuple
@@ -89,6 +90,27 @@ public readonly partial struct Optional<T> :
     object? ITuple.this[int index] =>
         _hasValue && index == 0 ? _value : throw new ArgumentOutOfRangeException(nameof(index));
 #endif
+
+    public override string ToString() =>
+        ToString(format: null, formatProvider: null);
+
+    public string ToString(string? format, IFormatProvider? formatProvider)
+    {
+        if (format is not null)
+            throw new ArgumentException("Format string is not supported. The parameter must be null.", nameof(format));
+
+        return (_hasValue, _value) switch
+        {
+            (true, null) => "Some { }",
+            (true, var value) =>
+#if NET6_0_OR_GREATER
+                string.Create(formatProvider, $"Some {{ {value} }}"),
+#else
+                ((FormattableString)$"Some {{ {value} }}").ToString(formatProvider),
+#endif
+            _ => "None",
+        };
+    }
 
     public static implicit operator Optional<T>(T value) =>
         new(value);
