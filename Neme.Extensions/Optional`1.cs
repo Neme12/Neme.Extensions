@@ -62,4 +62,6 @@ public readonly partial struct Optional<T> :
 
     public static explicit operator T(Optional<T> optional) =>
         optional.Value;
+
+    public static Optional<T> None => default;
 }

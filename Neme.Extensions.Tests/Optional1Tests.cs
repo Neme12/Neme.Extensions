@@ -55,6 +55,12 @@ public sealed class Optional1Tests
         Assert.Equal(42, (int)optional);
     }
 
+    [Fact]
+    public void None()
+    {
+        Assert.Equal(default, Optional<int>.None);
+    }
+
     [Theory]
     [InlineData(42, 43, null)]
 #pragma warning disable xUnit1010
