@@ -66,7 +66,7 @@ public sealed class Optional1Tests
 #pragma warning disable xUnit1010
     [InlineData(42f, 43f, float.NaN)]
 #pragma warning restore xUnit1010
-    public void Equality_StronglyTyped<T>(T value1, T value2, T? nan)
+    public void Equals_StronglyTyped<T>(T value1, T value2, T? nan)
         where T : struct
     {
         Assert.True(new Optional<T>().Equals(default));
@@ -80,7 +80,7 @@ public sealed class Optional1Tests
     }
 
     [Fact]
-    public void Equality_Custom()
+    public void Equals_CustomComparer()
     {
         Assert.True(new Optional<string>().Equals(default, StringComparer.OrdinalIgnoreCase));
         Assert.True(new Optional<string>("a").Equals(new Optional<string>("A"), StringComparer.OrdinalIgnoreCase));
@@ -90,7 +90,7 @@ public sealed class Optional1Tests
     }
 
     [Fact]
-    public void Equality_IStructuralEquatable()
+    public void Equals_IStructuralEquatable()
     {
         Assert.True(((IStructuralEquatable)new Optional<string>()).Equals(default(Optional<string>), StringComparer.OrdinalIgnoreCase));
         Assert.True(((IStructuralEquatable)new Optional<string>("a")).Equals(new Optional<string>("A"), StringComparer.OrdinalIgnoreCase));
@@ -104,7 +104,7 @@ public sealed class Optional1Tests
     }
 
     [Fact]
-    public void Equality_Override()
+    public void Equals_Override()
     {
         Assert.True(new Optional<int>().Equals((object)default(Optional<int>)));
         Assert.True(new Optional<int>(42).Equals((object)new Optional<int>(42)));
@@ -118,7 +118,7 @@ public sealed class Optional1Tests
     }
 
     [Fact]
-    public void Comparisons_StronglyTyped()
+    public void CompareTo_StronglyTyped()
     {
         Assert.Equal(0, new Optional<int>().CompareTo(default));
         Assert.Equal(0, new Optional<int>(42).CompareTo(new Optional<int>(42)));
@@ -129,7 +129,7 @@ public sealed class Optional1Tests
     }
 
     [Fact]
-    public void Comparisons_Custom()
+    public void CompareTo_CustomComparer()
     {
         Assert.Equal(0, new Optional<string>().CompareTo(default, StringComparer.OrdinalIgnoreCase));
         Assert.Equal(0, new Optional<string>("a").CompareTo(new Optional<string>("A"), StringComparer.OrdinalIgnoreCase));
@@ -140,7 +140,7 @@ public sealed class Optional1Tests
     }
 
     [Fact]
-    public void Comparisons_IStructuralComparable()
+    public void CompareTo_IStructuralComparable()
     {
         Assert.Equal(0, ((IStructuralComparable)new Optional<string>()).CompareTo(default(Optional<string>), StringComparer.OrdinalIgnoreCase));
         Assert.Equal(0, ((IStructuralComparable)new Optional<string>("a")).CompareTo(new Optional<string>("A"), StringComparer.OrdinalIgnoreCase));
@@ -157,7 +157,7 @@ public sealed class Optional1Tests
     }
 
     [Fact]
-    public void Comparisons_NonGeneric()
+    public void CompareTo_IComparable()
     {
         Assert.Equal(0, ((IComparable)new Optional<int>()).CompareTo(default(Optional<int>)));
         Assert.Equal(0, ((IComparable)new Optional<int>(42)).CompareTo(new Optional<int>(42)));
@@ -178,7 +178,7 @@ public sealed class Optional1Tests
 #pragma warning disable xUnit1010
     [InlineData(42f, 43f, float.NaN)]
 #pragma warning restore xUnit1010
-    public void EqualityOperators<T>(T value1, T value2, T? nan)
+    public void EqualityOperator<T>(T value1, T value2, T? nan)
         where T : struct
     {
         Assert.True(new Optional<T>() == default);
@@ -196,7 +196,7 @@ public sealed class Optional1Tests
 #pragma warning disable xUnit1010
     [InlineData(42f, 43f, float.NaN)]
 #pragma warning restore xUnit1010
-    public void InequalityOperators<T>(T value1, T value2, T? nan)
+    public void InequalityOperator<T>(T value1, T value2, T? nan)
         where T : struct
     {
         Assert.False(new Optional<T>() != default);
@@ -210,7 +210,7 @@ public sealed class Optional1Tests
     }
 
     [Fact]
-    public void EqualityOperators_Custom()
+    public void EqualityOperator_CustomComparable()
     {
         Assert.True(new Optional<CustomComparable>() == default);
         Assert.True(new Optional<CustomComparable>(new(1)) == new Optional<CustomComparable>(new(2)));
@@ -220,7 +220,7 @@ public sealed class Optional1Tests
     }
 
     [Fact]
-    public void InequalityOperators_Custom()
+    public void InequalityOperator_CustomComparable()
     {
         Assert.False(new Optional<CustomComparable>() != default);
         Assert.False(new Optional<CustomComparable>(new(1)) != new Optional<CustomComparable>(new(2)));
@@ -230,7 +230,7 @@ public sealed class Optional1Tests
     }
 
     [Fact]
-    public void HashCode()
+    public void GetHashCode_Override()
     {
         Assert.Equal(-1, new Optional<int>().GetHashCode());
         Assert.Equal(0, new Optional<string?>(null).GetHashCode());
@@ -240,14 +240,14 @@ public sealed class Optional1Tests
     }
 
     [Fact]
-    public void HashCode_Custom()
+    public void GetHashCode_CustomComparer()
     {
         Assert.Equal(-1, new Optional<string>().GetHashCode(StringComparer.OrdinalIgnoreCase));
         Assert.Equal(StringComparer.OrdinalIgnoreCase.GetHashCode("hello"), new Optional<string>("hello").GetHashCode(StringComparer.OrdinalIgnoreCase));
     }
 
     [Fact]
-    public void HashCode_IStructuralEquatable()
+    public void GetHashCode_IStructuralEquatable()
     {
         Assert.Equal(-1, ((IStructuralEquatable)new Optional<string>()).GetHashCode(StringComparer.OrdinalIgnoreCase));
         Assert.Equal(StringComparer.OrdinalIgnoreCase.GetHashCode("hello"), ((IStructuralEquatable)new Optional<string>("hello")).GetHashCode(StringComparer.OrdinalIgnoreCase));
