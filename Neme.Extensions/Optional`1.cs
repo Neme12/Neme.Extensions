@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Neme.Extensions;
@@ -12,6 +13,9 @@ public readonly partial struct Optional<T> :
     IComparable,
     IStructuralEquatable,
     IStructuralComparable
+#if NETCOREAPP2_0_OR_GREATER || NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+    , ITuple
+#endif
 #if NET7_0_OR_GREATER
     , IEqualityOperators<Optional<T>, Optional<T>, bool>
 #endif
@@ -56,6 +60,14 @@ public readonly partial struct Optional<T> :
         hasValue = _hasValue;
         value = _value;
     }
+
+#if NETCOREAPP2_0_OR_GREATER || NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+    int ITuple.Length =>
+        _hasValue ? 1 : 0;
+
+    object? ITuple.this[int index] =>
+        _hasValue && index == 0 ? _value : throw new ArgumentOutOfRangeException(nameof(index));
+#endif
 
     public static implicit operator Optional<T>(T value) =>
         new(value);

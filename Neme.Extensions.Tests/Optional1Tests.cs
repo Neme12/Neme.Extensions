@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Runtime.CompilerServices;
 
 namespace Neme.Extensions.Tests;
 
@@ -39,6 +40,28 @@ public sealed class Optional1Tests
         Assert.True(hasValue);
         Assert.Equal(42, value);
     }
+
+#if NETCOREAPP2_0_OR_GREATER || NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+    [Fact]
+    public void ITupleImplementation_None()
+    {
+        ITuple optional = default(Optional<int>);
+        Assert.Equal(0, optional.Length);
+        Assert.Throws<ArgumentOutOfRangeException>("index", () => optional[0]);
+        Assert.Throws<ArgumentOutOfRangeException>("index", () => optional[1]);
+        Assert.Throws<ArgumentOutOfRangeException>("index", () => optional[-1]);
+    }
+
+    [Fact]
+    public void ITupleImplementation_Some()
+    {
+        ITuple optional = new Optional<int>(42);
+        Assert.Equal(1, optional.Length);
+        Assert.Equal(42, optional[0]);
+        Assert.Throws<ArgumentOutOfRangeException>("index", () => optional[1]);
+        Assert.Throws<ArgumentOutOfRangeException>("index", () => optional[-1]);
+    }
+#endif
 
     [Fact]
     public void ImplicitConversion()
