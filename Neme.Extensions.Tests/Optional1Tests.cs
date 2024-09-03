@@ -156,41 +156,100 @@ public sealed class Optional1Tests
     }
 
     [Fact]
-    public void ToString_Format_None()
+    public void ToString_IFormattable_None()
     {
         var optional = default(Optional<int>);
 
-        AssertToStringFormat(optional, "None", null);
-        AssertToStringFormat(optional, "None", CultureInfo.InvariantCulture);
-        AssertToStringFormat(optional, "None", CultureInfo.GetCultureInfo("de"));
+        AssertToStringIFormattable(optional, "None", null);
+        AssertToStringIFormattable(optional, "None", CultureInfo.InvariantCulture);
+        AssertToStringIFormattable(optional, "None", CultureInfo.GetCultureInfo("de"));
     }
 
     [Fact]
-    public void ToString_Format_Some()
+    public void ToString_IFormattable_Some()
     {
         var optional = new Optional<double>(42.2);
 
-        AssertToStringFormat(optional, $"Some {{ {optional.Value} }}", null);
-        AssertToStringFormat(optional, "Some { 42.2 }", CultureInfo.InvariantCulture);
-        AssertToStringFormat(optional, "Some { 42,2 }", CultureInfo.GetCultureInfo("de"));
+        AssertToStringIFormattable(optional, $"Some {{ {optional.Value} }}", null);
+        AssertToStringIFormattable(optional, "Some { 42.2 }", CultureInfo.InvariantCulture);
+        AssertToStringIFormattable(optional, "Some { 42,2 }", CultureInfo.GetCultureInfo("de"));
     }
 
     [Fact]
-    public void ToString_Format_Some_Null()
+    public void ToString_IFormattable_Some_Null()
     {
         var optional = new Optional<object?>(null);
 
-        AssertToStringFormat(optional, "Some { }", null);
-        AssertToStringFormat(optional, "Some { }", CultureInfo.InvariantCulture);
-        AssertToStringFormat(optional, "Some { }", CultureInfo.GetCultureInfo("de"));
+        AssertToStringIFormattable(optional, "Some { }", null);
+        AssertToStringIFormattable(optional, "Some { }", CultureInfo.InvariantCulture);
+        AssertToStringIFormattable(optional, "Some { }", CultureInfo.GetCultureInfo("de"));
     }
 
-    private static void AssertToStringFormat<T>(Optional<T> optional, string expected, CultureInfo? culture)
+    private static void AssertToStringIFormattable<T>(Optional<T> optional, string expected, CultureInfo? culture)
     {
         Assert.Equal(expected, optional.ToString(null, culture));
-        AssertThrows.Argument_FormatStringNotSupported(() => optional.ToString("", culture));
+        Assert.Equal(expected, optional.ToString("", culture));
         AssertThrows.Argument_FormatStringNotSupported(() => optional.ToString("x", culture));
     }
+
+#if NET6_0_OR_GREATER
+    [Fact]
+    public void ToString_ISpanFormattable_None()
+    {
+        var optional = default(Optional<int>);
+
+        AssertToStringISpanFormattable(optional, "None", null);
+        AssertToStringISpanFormattable(optional, "None", CultureInfo.InvariantCulture);
+        AssertToStringISpanFormattable(optional, "None", CultureInfo.GetCultureInfo("de"));
+    }
+
+    [Fact]
+    public void ToString_ISpanFormattable_Some()
+    {
+        var optional = new Optional<double>(42.2);
+
+        AssertToStringISpanFormattable(optional, $"Some {{ {optional.Value} }}", null);
+        AssertToStringISpanFormattable(optional, "Some { 42.2 }", CultureInfo.InvariantCulture);
+        AssertToStringISpanFormattable(optional, "Some { 42,2 }", CultureInfo.GetCultureInfo("de"));
+    }
+
+    [Fact]
+    public void ToString_ISpanFormattable_Some_Null()
+    {
+        var optional = new Optional<object?>(null);
+
+        AssertToStringISpanFormattable(optional, "Some { }", null);
+        AssertToStringISpanFormattable(optional, "Some { }", CultureInfo.InvariantCulture);
+        AssertToStringISpanFormattable(optional, "Some { }", CultureInfo.GetCultureInfo("de"));
+    }
+
+    private static void AssertToStringISpanFormattable<T>(Optional<T> optional, string expected, CultureInfo? culture)
+    {
+        {
+            Span<char> destination = stackalloc char[expected.Length];
+            Assert.True(optional.TryFormat(destination, out var charsWritten, default, culture));
+            Assert.Equal(expected, destination);
+            Assert.Equal(expected.Length, charsWritten);
+        }
+
+        {
+            Span<char> destination = stackalloc char[expected.Length + 5];
+            Assert.True(optional.TryFormat(destination, out var charsWritten, default, culture));
+            Assert.Equal(expected, destination[..expected.Length]);
+            Assert.Equal(stackalloc char[5], destination[expected.Length..]);
+            Assert.Equal(expected.Length, charsWritten);
+        }
+
+        if (expected.Length > 0)
+        {
+            Span<char> destination = stackalloc char[expected.Length - 1];
+            Assert.False(optional.TryFormat(destination, out var charsWritten, default, culture));
+            Assert.Equal(0, charsWritten);
+        }
+
+        AssertThrows.Argument_FormatStringNotSupported(() => optional.TryFormat(default, out _, "x", culture));
+    }
+#endif
 
     [Fact]
     public void ImplicitConversion()

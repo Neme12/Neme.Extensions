@@ -20,6 +20,9 @@ public readonly partial struct Optional<T> :
 #if NETCOREAPP2_0_OR_GREATER || NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER
     , ITuple
 #endif
+#if NET6_0_OR_GREATER
+    , ISpanFormattable
+#endif
 #if NET7_0_OR_GREATER
     , IEqualityOperators<Optional<T>, Optional<T>, bool>
 #endif
@@ -96,7 +99,7 @@ public readonly partial struct Optional<T> :
 
     public string ToString(string? format, IFormatProvider? formatProvider)
     {
-        if (format is not null)
+        if (format is not (null or ""))
             ThrowHelper.ThrowArgument_FormatStringNotSupported(nameof(format));
 
         return (_hasValue, _value) switch
@@ -111,6 +114,21 @@ public readonly partial struct Optional<T> :
             _ => "None",
         };
     }
+
+#if NET6_0_OR_GREATER
+    public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+    {
+        if (format.Length > 0)
+            ThrowHelper.ThrowArgument_FormatStringNotSupported(nameof(format));
+
+        return (_hasValue, _value) switch
+        {
+            (true, null) => destination.TryWrite("Some { }", out charsWritten),
+            (true, var value) => destination.TryWrite(provider, $"Some {{ {value} }}", out charsWritten),
+            _ => destination.TryWrite("None", out charsWritten),
+        };
+    }
+#endif
 
     public static implicit operator Optional<T>(T value) =>
         new(value);
