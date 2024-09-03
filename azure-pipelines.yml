@@ -12,6 +12,8 @@ strategy:
       imageName: "windows-latest"
     linux:
       imageName: "ubuntu-latest"
+    macOS:
+      imageName: "macOS-latest"
 
 pool:
   vmImage: $(imageName)
