@@ -22,7 +22,8 @@ public sealed class Optional1Tests
     {
         var optional = default(Optional<int>);
         Assert.False(optional.HasValue);
-        Assert.Throws<InvalidOperationException>(() => optional.Value);
+        var e = Assert.Throws<InvalidOperationException>(() => optional.Value);
+        Assert.Equal("Optional has no value.", e.Message);
 
         Assert.Equal(0, optional.GetValueOrDefault());
         Assert.Equal(1, optional.GetValueOrDefault(1));

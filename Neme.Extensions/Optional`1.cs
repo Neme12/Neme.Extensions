@@ -62,9 +62,13 @@ public readonly partial struct Optional<T> :
         get
         {
             if (!_hasValue)
-                throw new InvalidOperationException("Optional has no value.");
+                Throw();
 
             return _value!;
+
+            [DoesNotReturn]
+            static void Throw() =>
+                throw new InvalidOperationException("Optional has no value.");
         }
     }
 
