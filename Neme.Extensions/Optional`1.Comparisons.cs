@@ -53,7 +53,7 @@ public readonly partial struct Optional<T>
         {
             null => 1,
             Optional<T> optional => CompareTo(optional, comparer.AsGeneric<T>()),
-            _ => throw new ArgumentException($"Object must be of type {typeof(Optional<T>)}.", nameof(other)),
+            _ => ThrowHelper.ThrowArgument_ObjectMustBeOfType(nameof(other), typeof(Optional<T>)),
         };
     }
 
@@ -63,7 +63,7 @@ public readonly partial struct Optional<T>
         {
             null => 1,
             Optional<T> optional => CompareTo(optional),
-            _ => throw new ArgumentException($"Object must be of type {typeof(Optional<T>)}.", nameof(obj)),
+            _ => ThrowHelper.ThrowArgument_ObjectMustBeOfType(nameof(obj), typeof(Optional<T>)),
         };
     }
 

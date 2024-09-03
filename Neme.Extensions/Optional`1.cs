@@ -97,7 +97,7 @@ public readonly partial struct Optional<T> :
     public string ToString(string? format, IFormatProvider? formatProvider)
     {
         if (format is not null)
-            throw new ArgumentException("Format string is not supported. The parameter must be null.", nameof(format));
+            ThrowHelper.ThrowArgument_FormatStringNotSupported(nameof(format));
 
         return (_hasValue, _value) switch
         {
