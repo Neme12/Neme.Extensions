@@ -159,14 +159,9 @@ public sealed class Optional1Tests
     {
         var optional = default(Optional<int>);
 
-        Assert.Equal("None", optional.ToString(null, null));
-        Assert.Equal("None", optional.ToString(null, CultureInfo.InvariantCulture));
-        Assert.Equal("None", optional.ToString(null, CultureInfo.GetCultureInfo("de")));
-
-        var e1 = Assert.Throws<ArgumentException>("format", () => optional.ToString("", null));
-        Assert.StartsWith("Format string is not supported. The parameter must be null.", e1.Message, StringComparison.Ordinal);
-        var e2 = Assert.Throws<ArgumentException>("format", () => optional.ToString("x", null));
-        Assert.StartsWith("Format string is not supported. The parameter must be null.", e2.Message, StringComparison.Ordinal);
+        AssertToStringFormat(optional, "None", null);
+        AssertToStringFormat(optional, "None", CultureInfo.InvariantCulture);
+        AssertToStringFormat(optional, "None", CultureInfo.GetCultureInfo("de"));
     }
 
     [Fact]
@@ -174,14 +169,9 @@ public sealed class Optional1Tests
     {
         var optional = new Optional<double>(42.2);
 
-        Assert.Equal($"Some {{ {optional.Value} }}", optional.ToString(null, null));
-        Assert.Equal("Some { 42.2 }", optional.ToString(null, CultureInfo.InvariantCulture));
-        Assert.Equal("Some { 42,2 }", optional.ToString(null, CultureInfo.GetCultureInfo("de")));
-
-        var e1 = Assert.Throws<ArgumentException>("format", () => optional.ToString("", null));
-        Assert.StartsWith("Format string is not supported. The parameter must be null.", e1.Message, StringComparison.Ordinal);
-        var e2 = Assert.Throws<ArgumentException>("format", () => optional.ToString("x", null));
-        Assert.StartsWith("Format string is not supported. The parameter must be null.", e2.Message, StringComparison.Ordinal);
+        AssertToStringFormat(optional, $"Some {{ {optional.Value} }}", null);
+        AssertToStringFormat(optional, "Some { 42.2 }", CultureInfo.InvariantCulture);
+        AssertToStringFormat(optional, "Some { 42,2 }", CultureInfo.GetCultureInfo("de"));
     }
 
     [Fact]
@@ -189,14 +179,20 @@ public sealed class Optional1Tests
     {
         var optional = new Optional<object?>(null);
 
-        Assert.Equal("Some { }", optional.ToString(null, null));
-        Assert.Equal("Some { }", optional.ToString(null, CultureInfo.InvariantCulture));
-        Assert.Equal("Some { }", optional.ToString(null, CultureInfo.GetCultureInfo("de")));
+        AssertToStringFormat(optional, "Some { }", null);
+        AssertToStringFormat(optional, "Some { }", CultureInfo.InvariantCulture);
+        AssertToStringFormat(optional, "Some { }", CultureInfo.GetCultureInfo("de"));
+    }
 
-        var e1 = Assert.Throws<ArgumentException>("format", () => optional.ToString("", null));
-        Assert.StartsWith("Format string is not supported. The parameter must be null.", e1.Message, StringComparison.Ordinal);
-        var e2 = Assert.Throws<ArgumentException>("format", () => optional.ToString("x", null));
-        Assert.StartsWith("Format string is not supported. The parameter must be null.", e2.Message, StringComparison.Ordinal);
+    private static void AssertToStringFormat<T>(Optional<T> optional, string expected, CultureInfo? culture)
+    {
+        Assert.Equal(expected, optional.ToString(null, culture));
+
+        const string message = "Format string is not supported. The parameter must be null.";
+        var e1 = Assert.Throws<ArgumentException>("format", () => optional.ToString("", culture));
+        Assert.StartsWith(message, e1.Message, StringComparison.Ordinal);
+        var e2 = Assert.Throws<ArgumentException>("format", () => optional.ToString("x", culture));
+        Assert.StartsWith(message, e2.Message, StringComparison.Ordinal);
     }
 
     [Fact]
