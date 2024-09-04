@@ -10,6 +10,12 @@ public static class Optional
 
     public static Optional<T> FromNullable<T>(T? value) where T : class =>
         value ?? Optional<T>.None;
+
+    public static ref readonly bool GetHasValueRef<T>(in Optional<T> optional) =>
+        ref optional._hasValue;
+
+    public static ref readonly T? GetValueRefOrDefaultRef<T>(in Optional<T> optional) =>
+        ref optional._value;
 }
 
 public static class OptionalValueTypeExtensions

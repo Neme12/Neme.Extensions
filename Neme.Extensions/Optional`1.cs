@@ -27,8 +27,8 @@ public readonly partial struct Optional<T> :
     , IEqualityOperators<Optional<T>, Optional<T>, bool>
 #endif
 {
-    private readonly bool _hasValue;
-    private readonly T? _value;
+    internal readonly bool _hasValue;
+    internal readonly T? _value;
 
     public Optional(T value)
     {

@@ -71,4 +71,26 @@ public sealed class OptionalTests
         var nullable = optional.AsNullable();
         Assert.Null(nullable);
     }
+
+    [Fact]
+    public void GetHasValueRef()
+    {
+        var optional = default(Optional<int>);
+        ref readonly var hasValue = ref Optional.GetHasValueRef(in optional);
+        Assert.False(hasValue);
+
+        optional = new(42);
+        Assert.True(hasValue);
+    }
+
+    [Fact]
+    public void GetValueRefOrDefaultRef()
+    {
+        var optional = default(Optional<int>);
+        ref readonly var value = ref Optional.GetValueRefOrDefaultRef(in optional);
+        Assert.Equal(0, value);
+
+        optional = new(42);
+        Assert.Equal(42, value);
+    }
 }
