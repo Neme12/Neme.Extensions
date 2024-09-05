@@ -24,18 +24,21 @@ jobs:
     vmImage: $(imageName)
   steps:
   - task: DotNetCoreCLI@2
-    displayName: 'dotnet build'
+    displayName: "dotnet build"
     inputs:
       command: 'build'
   - task: DotNetCoreCLI@2
-    displayName: 'dotnet test'
+    displayName: "dotnet test"
     inputs:
       command: 'test'
 - job: Package
   displayName: Package
   dependsOn: BuildAndTest
+  pool:
+    vmImage: "ubuntu-latest"
   steps:
   - task: DotNetCoreCLI@2
+    displayName: "dotnet pack"
     inputs:
       command: 'pack'
       packagesToPack: '**/*.csproj'
@@ -44,6 +47,7 @@ jobs:
       minorVersion: '0'
       patchVersion: '0'
   - task: DotNetCoreCLI@2
+    displayName: "dotnet nuget push"
     inputs:
       command: 'push'
       packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
