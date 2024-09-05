@@ -93,4 +93,25 @@ public sealed class OptionalTests
         optional = new(42);
         Assert.Equal(42, value);
     }
+
+    [Fact]
+    public void Equals1()
+    {
+        Assert.True(Optional.Equals(new Optional<int>(), default));
+        Assert.True(Optional.Equals(new Optional<int>(42), new Optional<int>(42)));
+        Assert.False(Optional.Equals(new Optional<int>(), new Optional<int>(42)));
+        Assert.False(Optional.Equals(new Optional<int>(42), new Optional<int>()));
+        Assert.False(Optional.Equals(new Optional<int>(42), new Optional<int>(43)));
+    }
+
+    [Fact]
+    public void Compare()
+    {
+        Assert.Equal(0, Optional.Compare(new Optional<int>(), default));
+        Assert.Equal(0, Optional.Compare(new Optional<int>(42), new Optional<int>(42)));
+        Assert.Equal(-1, Optional.Compare(new Optional<int>(), new Optional<int>(42)));
+        Assert.Equal(1, Optional.Compare(new Optional<int>(42), new Optional<int>()));
+        Assert.Equal(-1, Optional.Compare(new Optional<int>(42), new Optional<int>(43)));
+        Assert.Equal(1, Optional.Compare(new Optional<int>(43), new Optional<int>(42)));
+    }
 }

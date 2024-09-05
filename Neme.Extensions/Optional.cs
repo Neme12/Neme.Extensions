@@ -16,6 +16,12 @@ public static class Optional
 
     public static ref readonly T? GetValueRefOrDefaultRef<T>(in Optional<T> optional) =>
         ref optional._value;
+
+    public static bool Equals<T>(Optional<T> x, Optional<T> y) =>
+        EqualityComparer<Optional<T>>.Default.Equals(x, y);
+
+    public static int Compare<T>(Optional<T> x, Optional<T> y) =>
+        Comparer<Optional<T>>.Default.Compare(x, y);
 }
 
 public static class OptionalValueTypeExtensions
