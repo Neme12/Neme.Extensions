@@ -105,6 +105,16 @@ public sealed class OptionalTests
     }
 
     [Fact]
+    public void Equals_CustomComparer()
+    {
+        Assert.True(Optional.Equals(new Optional<string>(), default, StringComparer.OrdinalIgnoreCase));
+        Assert.True(Optional.Equals(new Optional<string>("a"), new Optional<string>("A"), StringComparer.OrdinalIgnoreCase));
+        Assert.False(Optional.Equals(new Optional<string>(), new Optional<string>("a"), StringComparer.OrdinalIgnoreCase));
+        Assert.False(Optional.Equals(new Optional<string>("a"), new Optional<string>(), StringComparer.OrdinalIgnoreCase));
+        Assert.False(Optional.Equals(new Optional<string>("a"), new Optional<string>("b"), StringComparer.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public void Compare()
     {
         Assert.Equal(0, Optional.Compare(new Optional<int>(), default));
@@ -113,6 +123,17 @@ public sealed class OptionalTests
         Assert.Equal(1, Optional.Compare(new Optional<int>(42), new Optional<int>()));
         Assert.Equal(-1, Optional.Compare(new Optional<int>(42), new Optional<int>(43)));
         Assert.Equal(1, Optional.Compare(new Optional<int>(43), new Optional<int>(42)));
+    }
+
+    [Fact]
+    public void Compare_CustomComparer()
+    {
+        Assert.Equal(0, Optional.Compare(new Optional<string>(), default, StringComparer.OrdinalIgnoreCase));
+        Assert.Equal(0, Optional.Compare(new Optional<string>("a"), new Optional<string>("A"), StringComparer.OrdinalIgnoreCase));
+        Assert.Equal(-1, Optional.Compare(new Optional<string>(), new Optional<string>("a"), StringComparer.OrdinalIgnoreCase));
+        Assert.Equal(1, Optional.Compare(new Optional<string>("a"), new Optional<string>(), StringComparer.OrdinalIgnoreCase));
+        Assert.Equal(-1, Optional.Compare(new Optional<string>("a"), new Optional<string>("B"), StringComparer.OrdinalIgnoreCase));
+        Assert.Equal(1, Optional.Compare(new Optional<string>("b"), new Optional<string>("A"), StringComparer.OrdinalIgnoreCase));
     }
 
     [Fact]
