@@ -18,10 +18,10 @@ public static class Optional
         ref optional._value;
 
     public static bool Equals<T>(Optional<T> x, Optional<T> y) =>
-        EqualityComparer<Optional<T>>.Default.Equals(x, y);
+        x.Equals(y);
 
     public static int Compare<T>(Optional<T> x, Optional<T> y) =>
-        Comparer<Optional<T>>.Default.Compare(x, y);
+        x.CompareTo(y);
 
     public static Type? GetUnderlyingType(Type optionalType)
     {
