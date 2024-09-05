@@ -6,27 +6,28 @@
 trigger:
 - master
 
-strategy:
-  matrix:
-    windows:
-      imageName: "windows-latest"
-    linux:
-      imageName: "ubuntu-latest"
-    macOS:
-      imageName: "macOS-latest"
-
-pool:
-  vmImage: $(imageName)
-
 variables:
   buildConfiguration: 'Release'
 
-steps:
-- task: DotNetCoreCLI@2
-  displayName: 'dotnet build'
-  inputs:
-    command: 'build'
-- task: DotNetCoreCLI@2
-  displayName: 'dotnet test'
-  inputs:
-    command: 'test'
+jobs:
+- job:
+  displayName: "Build and test"
+  strategy:
+    matrix:
+      windows:
+        imageName: "windows-latest"
+      linux:
+        imageName: "ubuntu-latest"
+      macOS:
+        imageName: "macOS-latest"
+  pool:
+    vmImage: $(imageName)
+  steps:
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet build'
+    inputs:
+      command: 'build'
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet test'
+    inputs:
+      command: 'test'
