@@ -114,4 +114,15 @@ public sealed class OptionalTests
         Assert.Equal(-1, Optional.Compare(new Optional<int>(42), new Optional<int>(43)));
         Assert.Equal(1, Optional.Compare(new Optional<int>(43), new Optional<int>(42)));
     }
+
+    [Fact]
+    public void GetUnderlyingType()
+    {
+        Assert.Throws<ArgumentNullException>("optionalType", () => Optional.GetUnderlyingType(null!));
+        Assert.Null(Optional.GetUnderlyingType(typeof(int)));
+        Assert.Null(Optional.GetUnderlyingType(typeof(List<string>)));
+        Assert.Null(Optional.GetUnderlyingType(typeof(Optional<>)));
+        Assert.Equal(typeof(int), Optional.GetUnderlyingType(typeof(Optional<int>)));
+        Assert.Equal(typeof(List<string>), Optional.GetUnderlyingType(typeof(Optional<List<string>>)));
+    }
 }

@@ -22,6 +22,17 @@ public static class Optional
 
     public static int Compare<T>(Optional<T> x, Optional<T> y) =>
         Comparer<Optional<T>>.Default.Compare(x, y);
+
+    public static Type? GetUnderlyingType(Type optionalType)
+    {
+        if (optionalType is null)
+            throw new ArgumentNullException(nameof(optionalType));
+
+        if (optionalType.IsConstructedGenericType && optionalType.GetGenericTypeDefinition() == typeof(Optional<>))
+            return optionalType.GetGenericArguments()[0];
+
+        return null;
+    }
 }
 
 public static class OptionalValueTypeExtensions
