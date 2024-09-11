@@ -1,6 +1,8 @@
 ﻿using System.Collections;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
@@ -25,6 +27,7 @@ public readonly partial struct Optional<T> :
 #endif
 #if NET7_0_OR_GREATER
     , IEqualityOperators<Optional<T>, Optional<T>, bool>
+    , IParsable<Optional<T>>
 #endif
 {
     internal readonly bool _hasValue;
@@ -133,6 +136,156 @@ public readonly partial struct Optional<T> :
         };
     }
 #endif
+
+    private static ParseDelegate? s_parseMethod;
+    private static bool s_parseMethodInitialized;
+    private static object? s_parseMethodLock;
+
+    private static TryParseDelegate? s_tryParseMethod;
+    private static bool s_tryParseMethodInitialized;
+    private static object? s_tryParseMethodLock;
+
+    private delegate T ParseDelegate(string s, IFormatProvider? provider);
+    private delegate bool TryParseDelegate([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result);
+
+    public static Optional<T> Parse(string s) =>
+        Parse(s, provider: null);
+
+    public static Optional<T> Parse(string s, IFormatProvider? provider)
+    {
+        if (s is null)
+            throw new ArgumentNullException(nameof(s));
+
+        if (s == "None")
+            return None;
+
+        const string prefix = "Some { ";
+        const string suffix = " }";
+
+        if (s.StartsWith(prefix, StringComparison.Ordinal) && s.EndsWith(suffix, StringComparison.Ordinal))
+        {
+            if (s.Length == prefix.Length + suffix.Length - 1)
+                return default(T)!;
+
+            var inside = s[prefix.Length..^suffix.Length];
+
+            if (typeof(T) == typeof(string))
+                return (T)(object)inside;
+
+            var method = LazyInitializer.EnsureInitialized(
+                ref s_parseMethod,
+                ref s_parseMethodInitialized,
+                ref s_parseMethodLock,
+                static () => GetParseMethod<ParseDelegate>("Parse"));
+
+            Debug.Assert(s_parseMethodInitialized);
+
+            if (method is null)
+                throw new InvalidOperationException($"Type {typeof(T)} has no appropriate Parse method.");
+
+            try
+            {
+                return new(method.Invoke(inside, provider));
+            }
+            catch (FormatException e)
+            {
+                throw new FormatException(null, e);
+            }
+        }
+
+        throw new FormatException();
+    }
+
+    public static bool TryParse([NotNullWhen(true)] string? s, out Optional<T> result) =>
+        TryParse(s, provider: null, out result);
+
+    public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, out Optional<T> result)
+    {
+        if (s is null)
+        {
+            result = default;
+            return false;
+        }
+
+        if (s == "None")
+        {
+            result = None;
+            return true;
+        }
+
+        const string prefix = "Some { ";
+        const string suffix = " }";
+
+        if (s.StartsWith(prefix, StringComparison.Ordinal) && s.EndsWith(suffix, StringComparison.Ordinal))
+        {
+            if (s.Length == prefix.Length + suffix.Length - 1)
+            {
+                result = default(T)!;
+                return true;
+            }
+
+            var inside = s[prefix.Length..^suffix.Length];
+
+            if (typeof(T) == typeof(string))
+            {
+                result = (T)(object)inside;
+                return true;
+            }
+
+            var method = LazyInitializer.EnsureInitialized(
+                ref s_tryParseMethod,
+                ref s_tryParseMethodInitialized,
+                ref s_tryParseMethodLock,
+                static () => GetParseMethod<TryParseDelegate>("TryParse"));
+
+            Debug.Assert(s_tryParseMethodInitialized);
+
+            if (method is null)
+                throw new InvalidOperationException($"Type {typeof(T)} has no appropriate TryParse method.");
+
+            if (method.Invoke(inside, provider, out var value))
+            {
+                result = new(value);
+                return true;
+            }
+        }
+
+        result = default;
+        return false;
+    }
+
+    private static TDelegate? GetParseMethod<TDelegate>(string methodName)
+        where TDelegate : Delegate
+    {
+        Debug.Assert(methodName is "Parse" or "TryParse");
+
+        var method = typeof(T).GetMethod(
+            methodName,
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            genericParameterCount: 0,
+#endif
+            BindingFlags.Public | BindingFlags.Static | BindingFlags.ExactBinding | BindingFlags.DeclaredOnly,
+            binder: null,
+            typeof(TDelegate).GetMethod("Invoke")!.GetParameters().Select(p => p.ParameterType).ToArray(),
+            modifiers: null);
+
+        if (method is null)
+            return null;
+
+#if !(NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
+        if (method.ContainsGenericParameters)
+            return null;
+#endif
+
+        if (method.ReturnType != typeof(TDelegate).GetMethod("Invoke")!.ReturnType)
+            return null;
+
+#if NET5_0_OR_GREATER
+        return method.CreateDelegate<TDelegate>();
+#else
+        return (TDelegate)method.CreateDelegate(typeof(TDelegate));
+#endif
+    }
 
     public static implicit operator Optional<T>(T value) =>
         new(value);

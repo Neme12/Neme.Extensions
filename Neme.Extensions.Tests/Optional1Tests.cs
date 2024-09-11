@@ -265,6 +265,105 @@ public sealed class Optional1Tests
 #endif
 
     [Fact]
+    public void Parse_Null()
+    {
+        AssertDoesNotParse<int>(null!, null);
+        AssertDoesNotParse<int>(null!, CultureInfo.InvariantCulture);
+        AssertDoesNotParse<int>(null!, CultureInfo.GetCultureInfo("de"));
+    }
+
+    [Fact]
+    public void Parse_None()
+    {
+        AssertParses<int>(default, "None", null);
+        AssertParses<int>(default, "None", CultureInfo.InvariantCulture);
+        AssertParses<int>(default, "None", CultureInfo.GetCultureInfo("de"));
+    }
+
+    [Fact]
+    public void Parse_Some()
+    {
+        AssertParses<double>(new(42.2), $"Some {{ {42.2} }}", null);
+        AssertParses<double>(new(42.2), "Some { 42.2 }", CultureInfo.InvariantCulture);
+        AssertParses<double>(new(42.2), "Some { 42,2 }", CultureInfo.GetCultureInfo("de"));
+    }
+
+    [Fact]
+    public void Parse_Some_EmptyString()
+    {
+        AssertParses<string?>(new(""), "Some {  }", null);
+        AssertParses<string?>(new(""), "Some {  }", CultureInfo.InvariantCulture);
+        AssertParses<string?>(new(""), "Some {  }", CultureInfo.GetCultureInfo("de"));
+    }
+
+    [Fact]
+    public void Parse_Some_Null()
+    {
+        AssertParses<string?>(new(null), "Some { }", null);
+        AssertParses<string?>(new(null), "Some { }", CultureInfo.InvariantCulture);
+        AssertParses<string?>(new(null), "Some { }", CultureInfo.GetCultureInfo("de"));
+    }
+
+    [Fact]
+    public void Parse_InvalidStrings()
+    {
+        AssertDoesNotParse<int>("", null);
+        AssertDoesNotParse<int>("42", null);
+        AssertDoesNotParse<int>("{ }", null);
+        AssertDoesNotParse<int>("{ 42 }", null);
+        AssertDoesNotParse<int>("Some", null);
+        AssertDoesNotParse<int>("Some {}", null);
+        AssertDoesNotParse<int>("Some { x }", null);
+        AssertDoesNotParse<int>("SOME { 42 }", null);
+    }
+
+    private static void AssertDoesNotParse<T>(string s, IFormatProvider? provider)
+    {
+        if (provider is null)
+        {
+#pragma warning disable CA1305 // Specify IFormatProvider
+            if (s is null)
+#pragma warning disable CA1507 // Use nameof to express symbol names
+                Assert.Throws<ArgumentNullException>("s", () => Optional<T>.Parse(s));
+#pragma warning restore CA1507 // Use nameof to express symbol names
+            else
+                Assert.Throws<FormatException>(() => Optional<T>.Parse(s));
+
+            Assert.False(Optional<T>.TryParse(s, out var resultWithoutProvider));
+            Assert.Equal(default, resultWithoutProvider);
+#pragma warning restore CA1305 // Specify IFormatProvider
+        }
+
+        if (s is null)
+#pragma warning disable CA1507 // Use nameof to express symbol names
+            Assert.Throws<ArgumentNullException>("s", () => Optional<T>.Parse(s, provider));
+#pragma warning restore CA1507 // Use nameof to express symbol names
+        else
+            Assert.Throws<FormatException>(() => Optional<T>.Parse(s, provider));
+
+        Assert.False(Optional<T>.TryParse(s, provider, out var resultWithProvider));
+        Assert.Equal(default, resultWithProvider);
+    }
+
+    private static void AssertParses<T>(Optional<T> expected, string s, IFormatProvider? provider)
+    {
+        if (provider is null)
+        {
+#pragma warning disable CA1305 // Specify IFormatProvider
+            Assert.Equal(expected, Optional<T>.Parse(s));
+#pragma warning restore CA1305 // Specify IFormatProvider
+
+            Assert.True(Optional<T>.TryParse(s, out var resultWithoutProvider));
+            Assert.Equal(expected, resultWithoutProvider);
+        }
+
+        Assert.Equal(expected, Optional<T>.Parse(s, provider));
+
+        Assert.True(Optional<T>.TryParse(s, provider, out var resultWithProvider));
+        Assert.Equal(expected, resultWithProvider);
+    }
+
+    [Fact]
     public void ImplicitConversion()
     {
         Optional<int> optional = 42;
