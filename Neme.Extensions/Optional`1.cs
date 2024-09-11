@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Neme.Extensions.Utilities;
+using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -139,21 +140,10 @@ public readonly partial struct Optional<T> :
     }
 #endif
 
-    private static ParseProviderDelegate? s_parseMethod;
-    private static bool s_parseMethodInitialized;
-    private static object? s_parseMethodLock;
-
-    private static ParseSpanProviderDelegate? s_parseSpanMethod;
-    private static bool s_parseSpanMethodInitialized;
-    private static object? s_parseSpanMethodLock;
-
-    private static TryParseProviderDelegate? s_tryParseMethod;
-    private static bool s_tryParseMethodInitialized;
-    private static object? s_tryParseMethodLock;
-
-    private static TryParseSpanProviderDelegate? s_tryParseSpanMethod;
-    private static bool s_tryParseSpanMethodInitialized;
-    private static object? s_tryParseSpanMethodLock;
+    private static ValueLazy<ParseProviderDelegate?> s_parseMethodLazy;
+    private static ValueLazy<ParseSpanProviderDelegate?> s_parseSpanMethodLazy;
+    private static ValueLazy<TryParseProviderDelegate?> s_tryParseMethodLazy;
+    private static ValueLazy<TryParseSpanProviderDelegate?> s_tryParseSpanMethodLazy;
 
     private delegate T ParseDelegate(string s);
     private delegate T ParseProviderDelegate(string s, IFormatProvider? provider);
@@ -192,10 +182,7 @@ public readonly partial struct Optional<T> :
             if (typeof(T) == typeof(string))
                 return (T)(object)inside;
 
-            var method = LazyInitializer.EnsureInitialized(
-                ref s_parseMethod,
-                ref s_parseMethodInitialized,
-                ref s_parseMethodLock,
+            var method = s_parseMethodLazy.EnsureInitialized(
                 static () =>
                 {
                     if (GetParseMethod<ParseProviderDelegate>("Parse") is { } method)
@@ -209,8 +196,6 @@ public readonly partial struct Optional<T> :
 
                     return null;
                 });
-
-            Debug.Assert(s_parseMethodInitialized);
 
             if (method is null)
                 throw new InvalidOperationException($"Type {typeof(T)} has no appropriate Parse method.");
@@ -249,10 +234,7 @@ public readonly partial struct Optional<T> :
             if (typeof(T) == typeof(string))
                 return (T)(object)inside.ToString();
 
-            var method = LazyInitializer.EnsureInitialized(
-                ref s_parseSpanMethod,
-                ref s_parseSpanMethodInitialized,
-                ref s_parseSpanMethodLock,
+            var method = s_parseSpanMethodLazy.EnsureInitialized(
                 static () =>
                 {
                     if (GetParseMethod<ParseSpanProviderDelegate>("Parse") is { } method)
@@ -266,8 +248,6 @@ public readonly partial struct Optional<T> :
 
                     return null;
                 });
-
-            Debug.Assert(s_parseSpanMethodInitialized);
 
             if (method is null)
                 throw new InvalidOperationException($"Type {typeof(T)} has no appropriate Parse method.");
@@ -321,10 +301,7 @@ public readonly partial struct Optional<T> :
                 return true;
             }
 
-            var method = LazyInitializer.EnsureInitialized(
-                ref s_tryParseMethod,
-                ref s_tryParseMethodInitialized,
-                ref s_tryParseMethodLock,
+            var method = s_tryParseMethodLazy.EnsureInitialized(
                 static () =>
                 {
                     if (GetParseMethod<TryParseProviderDelegate>("TryParse") is { } method)
@@ -338,8 +315,6 @@ public readonly partial struct Optional<T> :
 
                     return null;
                 });
-
-            Debug.Assert(s_tryParseMethodInitialized);
 
             if (method is null)
                 throw new InvalidOperationException($"Type {typeof(T)} has no appropriate TryParse method.");
@@ -385,10 +360,7 @@ public readonly partial struct Optional<T> :
                 return true;
             }
 
-            var method = LazyInitializer.EnsureInitialized(
-                ref s_tryParseSpanMethod,
-                ref s_tryParseSpanMethodInitialized,
-                ref s_tryParseSpanMethodLock,
+            var method = s_tryParseSpanMethodLazy.EnsureInitialized(
                 static () =>
                 {
                     if (GetParseMethod<TryParseSpanProviderDelegate>("TryParse") is { } method)
@@ -402,8 +374,6 @@ public readonly partial struct Optional<T> :
 
                     return null;
                 });
-
-            Debug.Assert(s_tryParseSpanMethodInitialized);
 
             if (method is null)
                 throw new InvalidOperationException($"Type {typeof(T)} has no appropriate TryParse method.");

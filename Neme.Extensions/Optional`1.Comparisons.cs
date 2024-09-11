@@ -1,4 +1,5 @@
 ﻿using Neme.Extensions.Conversions;
+using Neme.Extensions.Utilities;
 using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -94,13 +95,8 @@ public readonly partial struct Optional<T>
         return GetHashCode(comparer.AsGeneric<T>());
     }
 
-    private static Func<T, T, bool>? s_opEqualityMethod;
-    private static bool s_opEqualityMethodInitialized;
-    private static object? s_opEqualityMethodLock;
-
-    private static Func<T, T, bool>? s_opInequalityMethod;
-    private static bool s_opInequalityMethodInitialized;
-    private static object? s_opInequalityMethodLock;
+    private static ValueLazy<Func<T, T, bool>?> s_opEqualityMethodLazy;
+    private static ValueLazy<Func<T, T, bool>?> s_opInequalityMethodLazy;
 
     public static bool operator ==(Optional<T> left, Optional<T> right)
     {
@@ -124,14 +120,7 @@ public readonly partial struct Optional<T>
 
     private static bool OperatorEquals(T left, T right)
     {
-        var method = LazyInitializer.EnsureInitialized(
-            ref s_opEqualityMethod,
-            ref s_opEqualityMethodInitialized,
-            ref s_opEqualityMethodLock,
-            static () => GetEqualityOperatorMethod("op_Equality"));
-
-        Debug.Assert(s_opEqualityMethodInitialized);
-
+        var method = s_opEqualityMethodLazy.EnsureInitialized(static () => GetEqualityOperatorMethod("op_Equality"));
         if (method is not null)
             return method.Invoke(left, right);
 
@@ -140,14 +129,7 @@ public readonly partial struct Optional<T>
 
     private static bool OperatorNotEquals(T left, T right)
     {
-        var method = LazyInitializer.EnsureInitialized(
-            ref s_opInequalityMethod,
-            ref s_opInequalityMethodInitialized,
-            ref s_opInequalityMethodLock,
-            static () => GetEqualityOperatorMethod("op_Inequality"));
-
-        Debug.Assert(s_opInequalityMethodInitialized);
-
+        var method = s_opInequalityMethodLazy.EnsureInitialized(static () => GetEqualityOperatorMethod("op_Inequality"));
         if (method is not null)
             return method.Invoke(left, right);
 
