@@ -259,6 +259,8 @@ public readonly partial struct Optional<T> :
     {
         Debug.Assert(methodName is "Parse" or "TryParse");
 
+        var invokeMethod = typeof(TDelegate).GetMethod("Invoke")!;
+
         var method = typeof(T).GetMethod(
             methodName,
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
@@ -266,7 +268,7 @@ public readonly partial struct Optional<T> :
 #endif
             BindingFlags.Public | BindingFlags.Static | BindingFlags.ExactBinding | BindingFlags.DeclaredOnly,
             binder: null,
-            typeof(TDelegate).GetMethod("Invoke")!.GetParameters().Select(p => p.ParameterType).ToArray(),
+            invokeMethod.GetParameters().Select(p => p.ParameterType).ToArray(),
             modifiers: null);
 
         if (method is null)
@@ -277,7 +279,7 @@ public readonly partial struct Optional<T> :
             return null;
 #endif
 
-        if (method.ReturnType != typeof(TDelegate).GetMethod("Invoke")!.ReturnType)
+        if (method.ReturnType != invokeMethod.ReturnType)
             return null;
 
 #if NET5_0_OR_GREATER
