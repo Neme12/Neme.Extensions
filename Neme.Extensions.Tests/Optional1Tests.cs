@@ -289,6 +289,14 @@ public sealed class Optional1Tests
     }
 
     [Fact]
+    public void Parse_Version()
+    {
+        AssertParses<Version>(new(new(1, 2, 3, 4)), "Some { 1.2.3.4 }", null);
+        AssertParses<Version>(new(new(1, 2, 3, 4)), "Some { 1.2.3.4 }", CultureInfo.InvariantCulture);
+        AssertParses<Version>(new(new(1, 2, 3, 4)), "Some { 1.2.3.4 }", CultureInfo.GetCultureInfo("de"));
+    }
+
+    [Fact]
     public void Parse_Some_EmptyString()
     {
         AssertParses<string?>(new(""), "Some {  }", null);
@@ -417,7 +425,7 @@ public sealed class Optional1Tests
 #if NETCOREAPP2_1_OR_GREATER
         return true;
 #else
-        return !typeof(T).IsPrimitive;
+        return false;
 #endif
     }
 
