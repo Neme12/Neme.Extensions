@@ -20,14 +20,14 @@ public static class Optional
     public static bool Equals<T>(Optional<T> x, Optional<T> y) =>
         x.Equals(y);
 
-    public static bool Equals<T>(Optional<T> x, Optional<T> y, IEqualityComparer<T>? elementComparer) =>
-        x.Equals(y, elementComparer);
+    public static bool Equals<T>(Optional<T> x, Optional<T> y, IEqualityComparer<T>? valueComparer) =>
+        x.Equals(y, valueComparer);
 
     public static int Compare<T>(Optional<T> x, Optional<T> y) =>
         x.CompareTo(y);
 
-    public static int Compare<T>(Optional<T> x, Optional<T> y, IComparer<T>? elementComparer) =>
-        x.CompareTo(y, elementComparer);
+    public static int Compare<T>(Optional<T> x, Optional<T> y, IComparer<T>? valueComparer) =>
+        x.CompareTo(y, valueComparer);
 
     public static Type? GetUnderlyingType(Type optionalType)
     {

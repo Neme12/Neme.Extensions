@@ -11,13 +11,13 @@ public readonly partial struct Optional<T>
 	public bool Equals(Optional<T> other) =>
         Equals(other, EqualityComparer<T>.Default);
 
-    public bool Equals(Optional<T> other, IEqualityComparer<T>? elementComparer)
+    public bool Equals(Optional<T> other, IEqualityComparer<T>? valueComparer)
 	{
-        elementComparer ??= EqualityComparer<T>.Default;
+        valueComparer ??= EqualityComparer<T>.Default;
 
         return (_hasValue, other._hasValue) switch
         {
-            (true, true) => elementComparer.Equals(_value!, other._value!),
+            (true, true) => valueComparer.Equals(_value!, other._value!),
             (false, false) => true,
             _ => false,
         };
@@ -37,13 +37,13 @@ public readonly partial struct Optional<T>
     public int CompareTo(Optional<T> other) =>
         CompareTo(other, Comparer<T>.Default);
 
-    public int CompareTo(Optional<T> other, IComparer<T>? elementComparer)
+    public int CompareTo(Optional<T> other, IComparer<T>? valueComparer)
     {
-        elementComparer ??= Comparer<T>.Default;
+        valueComparer ??= Comparer<T>.Default;
 
         return (_hasValue, other._hasValue) switch
         {
-            (true, true) => elementComparer.Compare(_value!, other._value!),
+            (true, true) => valueComparer.Compare(_value!, other._value!),
             (true, false) => 1,
             (false, true) => -1,
             (false, false) => 0,
@@ -76,12 +76,12 @@ public readonly partial struct Optional<T>
     public override int GetHashCode() =>
         GetHashCode(EqualityComparer<T>.Default);
 
-    public int GetHashCode(IEqualityComparer<T>? elementComparer)
+    public int GetHashCode(IEqualityComparer<T>? valueComparer)
     {
-        elementComparer ??= EqualityComparer<T>.Default;
+        valueComparer ??= EqualityComparer<T>.Default;
 
         if (_hasValue)
-            return elementComparer.GetHashCode(_value!);
+            return valueComparer.GetHashCode(_value!);
 
         return -1;
     }
