@@ -28,6 +28,7 @@ public readonly partial struct Optional<T> :
 #if NET7_0_OR_GREATER
     , IEqualityOperators<Optional<T>, Optional<T>, bool>
     , IParsable<Optional<T>>
+    , ISpanParsable<Optional<T>>
 #endif
 {
     internal readonly bool _hasValue;
@@ -141,12 +142,22 @@ public readonly partial struct Optional<T> :
     private static bool s_parseMethodInitialized;
     private static object? s_parseMethodLock;
 
+    private static ParseSpanDelegate? s_parseSpanMethod;
+    private static bool s_parseSpanMethodInitialized;
+    private static object? s_parseSpanMethodLock;
+
     private static TryParseDelegate? s_tryParseMethod;
     private static bool s_tryParseMethodInitialized;
     private static object? s_tryParseMethodLock;
 
+    private static TryParseSpanDelegate? s_tryParseSpanMethod;
+    private static bool s_tryParseSpanMethodInitialized;
+    private static object? s_tryParseSpanMethodLock;
+
     private delegate T ParseDelegate(string s, IFormatProvider? provider);
+    private delegate T ParseSpanDelegate(ReadOnlySpan<char> s, IFormatProvider? provider);
     private delegate bool TryParseDelegate([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result);
+    private delegate bool TryParseSpanDelegate(ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result);
 
     public static Optional<T> Parse(string s) =>
         Parse(s, provider: null);
@@ -179,6 +190,51 @@ public readonly partial struct Optional<T> :
                 static () => GetParseMethod<ParseDelegate>("Parse"));
 
             Debug.Assert(s_parseMethodInitialized);
+
+            if (method is null)
+                throw new InvalidOperationException($"Type {typeof(T)} has no appropriate Parse method.");
+
+            try
+            {
+                return new(method.Invoke(inside, provider));
+            }
+            catch (FormatException e)
+            {
+                throw new FormatException(null, e);
+            }
+        }
+
+        throw new FormatException();
+    }
+
+    public static Optional<T> Parse(ReadOnlySpan<char> s) =>
+        Parse(s, provider: null);
+
+    public static Optional<T> Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
+    {
+        if (s.Equals("None".AsSpan(), StringComparison.Ordinal))
+            return None;
+
+        const string prefix = "Some { ";
+        const string suffix = " }";
+
+        if (s.StartsWith(prefix.AsSpan(), StringComparison.Ordinal) && s.EndsWith(suffix.AsSpan(), StringComparison.Ordinal))
+        {
+            if (s.Length == prefix.Length + suffix.Length - 1)
+                return default(T)!;
+
+            var inside = s[prefix.Length..^suffix.Length];
+
+            if (typeof(T) == typeof(string))
+                return (T)(object)inside.ToString();
+
+            var method = LazyInitializer.EnsureInitialized(
+                ref s_parseSpanMethod,
+                ref s_parseSpanMethodInitialized,
+                ref s_parseSpanMethodLock,
+                static () => GetParseMethod<ParseSpanDelegate>("Parse"));
+
+            Debug.Assert(s_parseSpanMethodInitialized);
 
             if (method is null)
                 throw new InvalidOperationException($"Type {typeof(T)} has no appropriate Parse method.");
@@ -239,6 +295,58 @@ public readonly partial struct Optional<T> :
                 static () => GetParseMethod<TryParseDelegate>("TryParse"));
 
             Debug.Assert(s_tryParseMethodInitialized);
+
+            if (method is null)
+                throw new InvalidOperationException($"Type {typeof(T)} has no appropriate TryParse method.");
+
+            if (method.Invoke(inside, provider, out var value))
+            {
+                result = new(value);
+                return true;
+            }
+        }
+
+        result = default;
+        return false;
+    }
+
+    public static bool TryParse(ReadOnlySpan<char> s, out Optional<T> result) =>
+        TryParse(s, provider: null, out result);
+
+    public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out Optional<T> result)
+    {
+        if (s.Equals("None".AsSpan(), StringComparison.Ordinal))
+        {
+            result = None;
+            return true;
+        }
+
+        const string prefix = "Some { ";
+        const string suffix = " }";
+
+        if (s.StartsWith(prefix.AsSpan(), StringComparison.Ordinal) && s.EndsWith(suffix.AsSpan(), StringComparison.Ordinal))
+        {
+            if (s.Length == prefix.Length + suffix.Length - 1)
+            {
+                result = default(T)!;
+                return true;
+            }
+
+            var inside = s[prefix.Length..^suffix.Length];
+
+            if (typeof(T) == typeof(string))
+            {
+                result = (T)(object)inside.ToString();
+                return true;
+            }
+
+            var method = LazyInitializer.EnsureInitialized(
+                ref s_tryParseSpanMethod,
+                ref s_tryParseSpanMethodInitialized,
+                ref s_tryParseSpanMethodLock,
+                static () => GetParseMethod<TryParseSpanDelegate>("TryParse"));
+
+            Debug.Assert(s_tryParseSpanMethodInitialized);
 
             if (method is null)
                 throw new InvalidOperationException($"Type {typeof(T)} has no appropriate TryParse method.");

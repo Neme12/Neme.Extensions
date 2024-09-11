@@ -323,26 +323,42 @@ public sealed class Optional1Tests
         {
 #pragma warning disable CA1305 // Specify IFormatProvider
             if (s is null)
+            {
 #pragma warning disable CA1507 // Use nameof to express symbol names
-                Assert.Throws<ArgumentNullException>("s", () => Optional<T>.Parse(s));
+                Assert.Throws<ArgumentNullException>("s", () => Optional<T>.Parse(s!));
 #pragma warning restore CA1507 // Use nameof to express symbol names
+            }
             else
+            {
                 Assert.Throws<FormatException>(() => Optional<T>.Parse(s));
+                Assert.Throws<FormatException>(() => Optional<T>.Parse(s.AsSpan()));
+            }
 
-            Assert.False(Optional<T>.TryParse(s, out var resultWithoutProvider));
-            Assert.Equal(default, resultWithoutProvider);
+            Assert.False(Optional<T>.TryParse(s, out var resultWithoutProvider1));
+            Assert.Equal(default, resultWithoutProvider1);
+
+            Assert.False(Optional<T>.TryParse(s.AsSpan(), out var resultWithoutProvider2));
+            Assert.Equal(default, resultWithoutProvider2);
 #pragma warning restore CA1305 // Specify IFormatProvider
         }
 
         if (s is null)
+        {
 #pragma warning disable CA1507 // Use nameof to express symbol names
-            Assert.Throws<ArgumentNullException>("s", () => Optional<T>.Parse(s, provider));
+            Assert.Throws<ArgumentNullException>("s", () => Optional<T>.Parse(s!, provider));
 #pragma warning restore CA1507 // Use nameof to express symbol names
+        }
         else
+        {
             Assert.Throws<FormatException>(() => Optional<T>.Parse(s, provider));
+            Assert.Throws<FormatException>(() => Optional<T>.Parse(s.AsSpan(), provider));
+        }
 
-        Assert.False(Optional<T>.TryParse(s, provider, out var resultWithProvider));
-        Assert.Equal(default, resultWithProvider);
+        Assert.False(Optional<T>.TryParse(s, provider, out var resultWithProvider1));
+        Assert.Equal(default, resultWithProvider1);
+
+        Assert.False(Optional<T>.TryParse(s.AsSpan(), provider, out var resultWithProvider2));
+        Assert.Equal(default, resultWithProvider2);
     }
 
     private static void AssertParses<T>(Optional<T> expected, string s, IFormatProvider? provider)
@@ -351,16 +367,24 @@ public sealed class Optional1Tests
         {
 #pragma warning disable CA1305 // Specify IFormatProvider
             Assert.Equal(expected, Optional<T>.Parse(s));
+            Assert.Equal(expected, Optional<T>.Parse(s.AsSpan()));
 #pragma warning restore CA1305 // Specify IFormatProvider
 
-            Assert.True(Optional<T>.TryParse(s, out var resultWithoutProvider));
-            Assert.Equal(expected, resultWithoutProvider);
+            Assert.True(Optional<T>.TryParse(s, out var resultWithoutProvider1));
+            Assert.Equal(expected, resultWithoutProvider1);
+
+            Assert.True(Optional<T>.TryParse(s.AsSpan(), out var resultWithoutProvider2));
+            Assert.Equal(expected, resultWithoutProvider2);
         }
 
         Assert.Equal(expected, Optional<T>.Parse(s, provider));
+        Assert.Equal(expected, Optional<T>.Parse(s.AsSpan(), provider));
 
-        Assert.True(Optional<T>.TryParse(s, provider, out var resultWithProvider));
-        Assert.Equal(expected, resultWithProvider);
+        Assert.True(Optional<T>.TryParse(s, provider, out var resultWithProvider1));
+        Assert.Equal(expected, resultWithProvider1);
+
+        Assert.True(Optional<T>.TryParse(s.AsSpan(), provider, out var resultWithProvider2));
+        Assert.Equal(expected, resultWithProvider2);
     }
 
     [Fact]
