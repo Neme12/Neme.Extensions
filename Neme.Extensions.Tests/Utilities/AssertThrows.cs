@@ -20,10 +20,21 @@ internal static class AssertThrows
         Assert.Equal($"Object must be of type {typeName}.", GetCoreMessage(e));
     }
 
-    public static void Format(string input, Action testCode)
+    public static void Format(string input, string? nestedInput, Action testCode)
     {
         var e = Assert.Throws<FormatException>(testCode);
         Assert.Equal($"The input string '{input}' was not in a correct format.", e.Message);
+
+        if (nestedInput is null)
+        {
+            Assert.Null(e.InnerException);
+        }
+        else
+        {
+            var inner = Assert.IsType<FormatException>(e.InnerException);
+            if (inner.Message != "Input string was not in a correct format.")
+                Assert.Equal($"The input string '{nestedInput}' was not in a correct format.", inner.Message);
+        }
     }
 
     private static string GetCoreMessage(ArgumentException exception)
