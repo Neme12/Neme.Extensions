@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Numerics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -155,9 +156,13 @@ public readonly partial struct Optional<T> :
     private static object? s_tryParseSpanMethodLock;
 
     private delegate T ParseDelegate(string s, IFormatProvider? provider);
+    private delegate T ParseNumberStylesDelegate(string s, NumberStyles style, IFormatProvider? provider);
     private delegate T ParseSpanDelegate(ReadOnlySpan<char> s, IFormatProvider? provider);
+    private delegate T ParseSpanNumberStylesDelegate(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider);
     private delegate bool TryParseDelegate([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result);
+    private delegate bool TryParseNumberStylesDelegate([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out T result);
     private delegate bool TryParseSpanDelegate(ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result);
+    private delegate bool TryParseSpanNumberStylesDelegate(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out T result);
 
     public static Optional<T> Parse(string s) =>
         Parse(s, provider: null);
@@ -187,7 +192,16 @@ public readonly partial struct Optional<T> :
                 ref s_parseMethod,
                 ref s_parseMethodInitialized,
                 ref s_parseMethodLock,
-                static () => GetParseMethod<ParseDelegate>("Parse"));
+                static () =>
+                {
+                    if (GetParseMethod<ParseDelegate>("Parse") is { } method)
+                        return method;
+
+                    if (GetParseMethod<ParseNumberStylesDelegate>("Parse") is { } numberStylesMethod)
+                        return (s, provider) => numberStylesMethod(s, NumberStyles.Float | NumberStyles.AllowThousands, provider);
+
+                    return null;
+                });
 
             Debug.Assert(s_parseMethodInitialized);
 
@@ -232,7 +246,16 @@ public readonly partial struct Optional<T> :
                 ref s_parseSpanMethod,
                 ref s_parseSpanMethodInitialized,
                 ref s_parseSpanMethodLock,
-                static () => GetParseMethod<ParseSpanDelegate>("Parse"));
+                static () =>
+                {
+                    if (GetParseMethod<ParseSpanDelegate>("Parse") is { } method)
+                        return method;
+
+                    if (GetParseMethod<ParseSpanNumberStylesDelegate>("Parse") is { } numberStylesMethod)
+                        return (s, provider) => numberStylesMethod(s, NumberStyles.Float | NumberStyles.AllowThousands, provider);
+
+                    return null;
+                });
 
             Debug.Assert(s_parseSpanMethodInitialized);
 
@@ -292,7 +315,16 @@ public readonly partial struct Optional<T> :
                 ref s_tryParseMethod,
                 ref s_tryParseMethodInitialized,
                 ref s_tryParseMethodLock,
-                static () => GetParseMethod<TryParseDelegate>("TryParse"));
+                static () =>
+                {
+                    if (GetParseMethod<TryParseDelegate>("TryParse") is { } method)
+                        return method;
+
+                    if (GetParseMethod<TryParseNumberStylesDelegate>("TryParse") is { } numberStylesMethod)
+                        return ([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) => numberStylesMethod(s, NumberStyles.Float | NumberStyles.AllowThousands, provider, out result);
+
+                    return null;
+                });
 
             Debug.Assert(s_tryParseMethodInitialized);
 
@@ -344,7 +376,16 @@ public readonly partial struct Optional<T> :
                 ref s_tryParseSpanMethod,
                 ref s_tryParseSpanMethodInitialized,
                 ref s_tryParseSpanMethodLock,
-                static () => GetParseMethod<TryParseSpanDelegate>("TryParse"));
+                static () =>
+                {
+                    if (GetParseMethod<TryParseSpanDelegate>("TryParse") is { } method)
+                        return method;
+
+                    if (GetParseMethod<TryParseSpanNumberStylesDelegate>("TryParse") is { } numberStylesMethod)
+                        return (ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) => numberStylesMethod(s, NumberStyles.Float | NumberStyles.AllowThousands, provider, out result);
+
+                    return null;
+                });
 
             Debug.Assert(s_tryParseSpanMethodInitialized);
 
