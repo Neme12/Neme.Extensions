@@ -20,6 +20,12 @@ internal static class AssertThrows
         Assert.Equal($"Object must be of type {typeName}.", GetCoreMessage(e));
     }
 
+    public static void Format(string input, Action testCode)
+    {
+        var e = Assert.Throws<FormatException>(testCode);
+        Assert.Equal($"The input string '{input}' was not in a correct format.", e.Message);
+    }
+
     private static string GetCoreMessage(ArgumentException exception)
     {
         const string testMessage = "<test message>";

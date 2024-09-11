@@ -206,11 +206,11 @@ public readonly partial struct Optional<T> :
             }
             catch (FormatException e)
             {
-                throw new FormatException(null, e);
+                ThrowHelper.ThrowFormat<Optional<T>>(s, e);
             }
         }
 
-        throw new FormatException();
+        return ThrowHelper.ThrowFormat<Optional<T>>(s);
     }
 
     public static Optional<T> Parse(ReadOnlySpan<char> s) =>
@@ -258,11 +258,11 @@ public readonly partial struct Optional<T> :
             }
             catch (FormatException e)
             {
-                throw new FormatException(null, e);
+                ThrowHelper.ThrowFormat<Optional<T>>(s, e);
             }
         }
 
-        throw new FormatException();
+        return ThrowHelper.ThrowFormat<Optional<T>>(s);
     }
 
     public static bool TryParse([NotNullWhen(true)] string? s, out Optional<T> result) =>

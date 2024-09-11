@@ -340,10 +340,10 @@ public sealed class Optional1Tests
             }
             else
             {
-                Assert.Throws<FormatException>(() => Optional<T>.Parse(s));
+                AssertThrows.Format(s, () => Optional<T>.Parse(s));
 
                 if (parseSpan)
-                    Assert.Throws<FormatException>(() => Optional<T>.Parse(s.AsSpan()));
+                    AssertThrows.Format(s, () => Optional<T>.Parse(s.AsSpan()));
             }
 
             Assert.False(Optional<T>.TryParse(s, out var resultWithoutProvider1));
@@ -365,10 +365,10 @@ public sealed class Optional1Tests
         }
         else
         {
-            Assert.Throws<FormatException>(() => Optional<T>.Parse(s, provider));
+            AssertThrows.Format(s, () => Optional<T>.Parse(s, provider));
 
             if (parseSpan)
-                Assert.Throws<FormatException>(() => Optional<T>.Parse(s.AsSpan(), provider));
+                AssertThrows.Format(s, () => Optional<T>.Parse(s.AsSpan(), provider));
         }
 
         Assert.False(Optional<T>.TryParse(s, provider, out var resultWithProvider1));
