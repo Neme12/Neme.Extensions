@@ -306,7 +306,11 @@ public sealed class Optional1Tests
     [Fact]
     public void Equals_CustomComparer()
     {
-        Assert.Throws<ArgumentNullException>("elementComparer", () => new Optional<string>().Equals(default, null!));
+        Assert.True(new Optional<string>().Equals(default, null));
+        Assert.False(new Optional<string>("a").Equals(new Optional<string>("A"), null));
+        Assert.False(new Optional<string>().Equals(new Optional<string>("a"), null));
+        Assert.False(new Optional<string>("a").Equals(new Optional<string>(), null));
+        Assert.False(new Optional<string>("a").Equals(new Optional<string>("b"), null));
 
         Assert.True(new Optional<string>().Equals(default, StringComparer.OrdinalIgnoreCase));
         Assert.True(new Optional<string>("a").Equals(new Optional<string>("A"), StringComparer.OrdinalIgnoreCase));
@@ -359,7 +363,12 @@ public sealed class Optional1Tests
     [Fact]
     public void CompareTo_CustomComparer()
     {
-        Assert.Throws<ArgumentNullException>("elementComparer", () => new Optional<string>().CompareTo(default, null!));
+        Assert.Equal(0, new Optional<string>().CompareTo(default, null));
+        Assert.Equal(-1, new Optional<string>("a").CompareTo(new Optional<string>("A"), null));
+        Assert.Equal(-1, new Optional<string>().CompareTo(new Optional<string>("a"), null));
+        Assert.Equal(1, new Optional<string>("a").CompareTo(new Optional<string>(), null));
+        Assert.Equal(-1, new Optional<string>("a").CompareTo(new Optional<string>("B"), null));
+        Assert.Equal(1, new Optional<string>("b").CompareTo(new Optional<string>("A"), null));
 
         Assert.Equal(0, new Optional<string>().CompareTo(default, StringComparer.OrdinalIgnoreCase));
         Assert.Equal(0, new Optional<string>("a").CompareTo(new Optional<string>("A"), StringComparer.OrdinalIgnoreCase));
@@ -470,7 +479,8 @@ public sealed class Optional1Tests
     [Fact]
     public void GetHashCode_CustomComparer()
     {
-        Assert.Throws<ArgumentNullException>("elementComparer", () => new Optional<string>().GetHashCode(null!));
+        Assert.Equal(-1, new Optional<string>().GetHashCode(null));
+        Assert.Equal(EqualityComparer<string>.Default.GetHashCode("hello"), new Optional<string>("hello").GetHashCode(null));
 
         Assert.Equal(-1, new Optional<string>().GetHashCode(StringComparer.OrdinalIgnoreCase));
         Assert.Equal(StringComparer.OrdinalIgnoreCase.GetHashCode("hello"), new Optional<string>("hello").GetHashCode(StringComparer.OrdinalIgnoreCase));
