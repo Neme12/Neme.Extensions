@@ -65,6 +65,18 @@ public sealed class Optional1Tests
     [Fact]
     public void Serialization_Members_None()
     {
+        Assert.Throws<ArgumentNullException>("info", static () =>
+        {
+            try
+            {
+                _serializationConstructor.Invoke([null, default(StreamingContext)]);
+            }
+            catch (TargetInvocationException e)
+            {
+                throw e.InnerException!;
+            }
+        });
+
         var optional = default(Optional<int>);
 
 #pragma warning disable SYSLIB0050 // Type or member is obsolete
@@ -294,6 +306,8 @@ public sealed class Optional1Tests
     [Fact]
     public void Equals_CustomComparer()
     {
+        Assert.Throws<ArgumentNullException>("elementComparer", () => new Optional<string>().Equals(default, null!));
+
         Assert.True(new Optional<string>().Equals(default, StringComparer.OrdinalIgnoreCase));
         Assert.True(new Optional<string>("a").Equals(new Optional<string>("A"), StringComparer.OrdinalIgnoreCase));
         Assert.False(new Optional<string>().Equals(new Optional<string>("a"), StringComparer.OrdinalIgnoreCase));
@@ -304,6 +318,8 @@ public sealed class Optional1Tests
     [Fact]
     public void Equals_IStructuralEquatable()
     {
+        Assert.Throws<ArgumentNullException>("comparer", () => ((IStructuralEquatable)new Optional<string>()).Equals(default(Optional<string>), null!));
+
         Assert.True(((IStructuralEquatable)new Optional<string>()).Equals(default(Optional<string>), StringComparer.OrdinalIgnoreCase));
         Assert.True(((IStructuralEquatable)new Optional<string>("a")).Equals(new Optional<string>("A"), StringComparer.OrdinalIgnoreCase));
         Assert.False(((IStructuralEquatable)new Optional<string>()).Equals(new Optional<string>("a"), StringComparer.OrdinalIgnoreCase));
@@ -343,6 +359,8 @@ public sealed class Optional1Tests
     [Fact]
     public void CompareTo_CustomComparer()
     {
+        Assert.Throws<ArgumentNullException>("elementComparer", () => new Optional<string>().CompareTo(default, null!));
+
         Assert.Equal(0, new Optional<string>().CompareTo(default, StringComparer.OrdinalIgnoreCase));
         Assert.Equal(0, new Optional<string>("a").CompareTo(new Optional<string>("A"), StringComparer.OrdinalIgnoreCase));
         Assert.Equal(-1, new Optional<string>().CompareTo(new Optional<string>("a"), StringComparer.OrdinalIgnoreCase));
@@ -354,6 +372,8 @@ public sealed class Optional1Tests
     [Fact]
     public void CompareTo_IStructuralComparable()
     {
+        Assert.Throws<ArgumentNullException>("comparer", () => ((IStructuralComparable)new Optional<string>()).CompareTo(default(Optional<string>), null!));
+
         Assert.Equal(0, ((IStructuralComparable)new Optional<string>()).CompareTo(default(Optional<string>), StringComparer.OrdinalIgnoreCase));
         Assert.Equal(0, ((IStructuralComparable)new Optional<string>("a")).CompareTo(new Optional<string>("A"), StringComparer.OrdinalIgnoreCase));
         Assert.Equal(-1, ((IStructuralComparable)new Optional<string>()).CompareTo(new Optional<string>("a"), StringComparer.OrdinalIgnoreCase));
@@ -450,6 +470,8 @@ public sealed class Optional1Tests
     [Fact]
     public void GetHashCode_CustomComparer()
     {
+        Assert.Throws<ArgumentNullException>("elementComparer", () => new Optional<string>().GetHashCode(null!));
+
         Assert.Equal(-1, new Optional<string>().GetHashCode(StringComparer.OrdinalIgnoreCase));
         Assert.Equal(StringComparer.OrdinalIgnoreCase.GetHashCode("hello"), new Optional<string>("hello").GetHashCode(StringComparer.OrdinalIgnoreCase));
     }
@@ -457,6 +479,8 @@ public sealed class Optional1Tests
     [Fact]
     public void GetHashCode_IStructuralEquatable()
     {
+        Assert.Throws<ArgumentNullException>("comparer", () => ((IStructuralEquatable)new Optional<string>()).GetHashCode(null!));
+
         Assert.Equal(-1, ((IStructuralEquatable)new Optional<string>()).GetHashCode(StringComparer.OrdinalIgnoreCase));
         Assert.Equal(StringComparer.OrdinalIgnoreCase.GetHashCode("hello"), ((IStructuralEquatable)new Optional<string>("hello")).GetHashCode(StringComparer.OrdinalIgnoreCase));
     }

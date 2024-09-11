@@ -24,8 +24,13 @@ public readonly partial struct Optional<T>
         };
     }
 
-    bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer) =>
-        other is Optional<T> optional && Equals(optional, comparer.AsGeneric<T>());
+    bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer)
+    {
+        if (comparer is null)
+            throw new ArgumentNullException(nameof(comparer));
+
+        return other is Optional<T> optional && Equals(optional, comparer.AsGeneric<T>());
+    }
 
     public override bool Equals([NotNullWhen(true)] object? obj) =>
         obj is Optional<T> optional && Equals(optional);
@@ -49,6 +54,9 @@ public readonly partial struct Optional<T>
 
     int IStructuralComparable.CompareTo(object? other, IComparer comparer)
     {
+        if (comparer is null)
+            throw new ArgumentNullException(nameof(comparer));
+
         return other switch
         {
             null => 1,
@@ -81,8 +89,13 @@ public readonly partial struct Optional<T>
         return -1;
     }
 
-    int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) =>
-        GetHashCode(comparer.AsGeneric<T>());
+    int IStructuralEquatable.GetHashCode(IEqualityComparer comparer)
+    {
+        if (comparer is null)
+            throw new ArgumentNullException(nameof(comparer));
+
+        return GetHashCode(comparer.AsGeneric<T>());
+    }
 
     private static Func<T, T, bool>? s_opEqualityMethod;
     private static bool s_opEqualityMethodInitialized;

@@ -107,6 +107,8 @@ public sealed class OptionalTests
     [Fact]
     public void Equals_CustomComparer()
     {
+        Assert.Throws<ArgumentNullException>("elementComparer", () => Optional.Equals(new Optional<string>(), default, null!));
+
         Assert.True(Optional.Equals(new Optional<string>(), default, StringComparer.OrdinalIgnoreCase));
         Assert.True(Optional.Equals(new Optional<string>("a"), new Optional<string>("A"), StringComparer.OrdinalIgnoreCase));
         Assert.False(Optional.Equals(new Optional<string>(), new Optional<string>("a"), StringComparer.OrdinalIgnoreCase));
@@ -128,6 +130,8 @@ public sealed class OptionalTests
     [Fact]
     public void Compare_CustomComparer()
     {
+        Assert.Throws<ArgumentNullException>("elementComparer", () => Optional.Compare(new Optional<string>(), default, null!));
+
         Assert.Equal(0, Optional.Compare(new Optional<string>(), default, StringComparer.OrdinalIgnoreCase));
         Assert.Equal(0, Optional.Compare(new Optional<string>("a"), new Optional<string>("A"), StringComparer.OrdinalIgnoreCase));
         Assert.Equal(-1, Optional.Compare(new Optional<string>(), new Optional<string>("a"), StringComparer.OrdinalIgnoreCase));
