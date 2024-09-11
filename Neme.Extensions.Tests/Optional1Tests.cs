@@ -319,6 +319,8 @@ public sealed class Optional1Tests
 
     private static void AssertDoesNotParse<T>(string s, IFormatProvider? provider)
     {
+        var parseSpan = ShouldParseSpan<T>();
+
         if (provider is null)
         {
 #pragma warning disable CA1305 // Specify IFormatProvider
@@ -331,14 +333,19 @@ public sealed class Optional1Tests
             else
             {
                 Assert.Throws<FormatException>(() => Optional<T>.Parse(s));
-                Assert.Throws<FormatException>(() => Optional<T>.Parse(s.AsSpan()));
+
+                if (parseSpan)
+                    Assert.Throws<FormatException>(() => Optional<T>.Parse(s.AsSpan()));
             }
 
             Assert.False(Optional<T>.TryParse(s, out var resultWithoutProvider1));
             Assert.Equal(default, resultWithoutProvider1);
 
-            Assert.False(Optional<T>.TryParse(s.AsSpan(), out var resultWithoutProvider2));
-            Assert.Equal(default, resultWithoutProvider2);
+            if (parseSpan)
+            {
+                Assert.False(Optional<T>.TryParse(s.AsSpan(), out var resultWithoutProvider2));
+                Assert.Equal(default, resultWithoutProvider2);
+            }
 #pragma warning restore CA1305 // Specify IFormatProvider
         }
 
@@ -351,40 +358,67 @@ public sealed class Optional1Tests
         else
         {
             Assert.Throws<FormatException>(() => Optional<T>.Parse(s, provider));
-            Assert.Throws<FormatException>(() => Optional<T>.Parse(s.AsSpan(), provider));
+
+            if (parseSpan)
+                Assert.Throws<FormatException>(() => Optional<T>.Parse(s.AsSpan(), provider));
         }
 
         Assert.False(Optional<T>.TryParse(s, provider, out var resultWithProvider1));
         Assert.Equal(default, resultWithProvider1);
 
-        Assert.False(Optional<T>.TryParse(s.AsSpan(), provider, out var resultWithProvider2));
-        Assert.Equal(default, resultWithProvider2);
+        if (parseSpan)
+        {
+            Assert.False(Optional<T>.TryParse(s.AsSpan(), provider, out var resultWithProvider2));
+            Assert.Equal(default, resultWithProvider2);
+        }
     }
 
     private static void AssertParses<T>(Optional<T> expected, string s, IFormatProvider? provider)
     {
+        var parseSpan = ShouldParseSpan<T>();
+
         if (provider is null)
         {
 #pragma warning disable CA1305 // Specify IFormatProvider
             Assert.Equal(expected, Optional<T>.Parse(s));
-            Assert.Equal(expected, Optional<T>.Parse(s.AsSpan()));
+
+            if (parseSpan)
+                Assert.Equal(expected, Optional<T>.Parse(s.AsSpan()));
 #pragma warning restore CA1305 // Specify IFormatProvider
 
             Assert.True(Optional<T>.TryParse(s, out var resultWithoutProvider1));
             Assert.Equal(expected, resultWithoutProvider1);
 
-            Assert.True(Optional<T>.TryParse(s.AsSpan(), out var resultWithoutProvider2));
-            Assert.Equal(expected, resultWithoutProvider2);
+            if (parseSpan)
+            {
+                Assert.True(Optional<T>.TryParse(s.AsSpan(), out var resultWithoutProvider2));
+                Assert.Equal(expected, resultWithoutProvider2);
+            }
         }
 
         Assert.Equal(expected, Optional<T>.Parse(s, provider));
-        Assert.Equal(expected, Optional<T>.Parse(s.AsSpan(), provider));
+
+        if (parseSpan)
+            Assert.Equal(expected, Optional<T>.Parse(s.AsSpan(), provider));
 
         Assert.True(Optional<T>.TryParse(s, provider, out var resultWithProvider1));
         Assert.Equal(expected, resultWithProvider1);
 
-        Assert.True(Optional<T>.TryParse(s.AsSpan(), provider, out var resultWithProvider2));
-        Assert.Equal(expected, resultWithProvider2);
+        if (parseSpan)
+        {
+            Assert.True(Optional<T>.TryParse(s.AsSpan(), provider, out var resultWithProvider2));
+            Assert.Equal(expected, resultWithProvider2);
+        }
+
+    }
+
+    private static bool ShouldParseSpan<T>()
+    {
+#if NETCOREAPP2_1_OR_GREATER
+        return true;
+#else
+        return !typeof(T).IsPrimitive;
+#endif
     }
 
     [Fact]
