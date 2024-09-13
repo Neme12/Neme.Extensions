@@ -425,7 +425,7 @@ public readonly partial struct Optional<T> :
 
     [DoesNotReturn]
     private static void ThrowNoParseMethod(string methodName) =>
-        throw new InvalidOperationException($"Type {typeof(T)} has no appropriate {methodName} method.");
+        throw new NotSupportedException($"Type {typeof(T)} has no appropriate {methodName} method.");
 
     private enum ParseResult
     {
