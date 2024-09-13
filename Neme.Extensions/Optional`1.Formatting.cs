@@ -65,26 +65,35 @@ public readonly partial struct Optional<T>
 
 				if (GetParseSpanMethod() is { } spanMethod)
 				{
+					T result;
+
 					try
 					{
-						return new(spanMethod.Invoke(inside, provider));
+						result = spanMethod.Invoke(inside, provider);
 					}
 					catch (FormatException e)
 					{
-						ThrowHelper.ThrowFormat<Optional<T>>(s, e);
+						return ThrowHelper.ThrowFormat<Optional<T>>(s, e);
 					}
+
+					return new(result);
 				}
 
 				if (GetParseMethod() is { } stringMethod)
 				{
-					try
+					var insideString = inside.ToString();
+					T result;
+
+                    try
 					{
-						return new(stringMethod.Invoke(inside.ToString(), provider));
+						result = stringMethod.Invoke(insideString, provider);
 					}
 					catch (FormatException e)
 					{
-						ThrowHelper.ThrowFormat<Optional<T>>(s, e);
+						return ThrowHelper.ThrowFormat<Optional<T>>(s, e);
 					}
+
+					return result;
 				}
 
 				ThrowNoParseMethod(nameof(Parse));
@@ -112,14 +121,18 @@ public readonly partial struct Optional<T>
 
 				if (GetParseSpanMethod() is { } spanMethod)
 				{
+					T result;
+
 					try
 					{
-						return new(spanMethod.Invoke(inside, provider));
+						result = spanMethod.Invoke(inside, provider);
 					}
 					catch (FormatException e)
 					{
-						ThrowHelper.ThrowFormat<Optional<T>>(s, e);
+						return ThrowHelper.ThrowFormat<Optional<T>>(s, e);
 					}
+
+					return new(result);
 				}
 
 				ThrowNoParseMethod(nameof(Parse));
