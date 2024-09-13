@@ -177,19 +177,31 @@ public readonly partial struct Optional<T> :
                 if (typeof(T) == typeof(string))
                     return new((T)(object)inside.ToString());
 
-                var method = GetParseMethod();
-                if (method is null)
-                    ThrowNoParseMethod(nameof(Parse));
-
-                try
+                if (GetParseSpanMethod() is { } spanMethod)
                 {
-                    return new(method.Invoke(inside.ToString(), provider));
-                }
-                catch (FormatException e)
-                {
-                    ThrowHelper.ThrowFormat<Optional<T>>(s, e);
+                    try
+                    {
+                        return new(spanMethod.Invoke(inside, provider));
+                    }
+                    catch (FormatException e)
+                    {
+                        ThrowHelper.ThrowFormat<Optional<T>>(s, e);
+                    }
                 }
 
+                if (GetParseMethod() is { } stringMethod)
+                {
+                    try
+                    {
+                        return new(stringMethod.Invoke(inside.ToString(), provider));
+                    }
+                    catch (FormatException e)
+                    {
+                        ThrowHelper.ThrowFormat<Optional<T>>(s, e);
+                    }
+                }
+
+                ThrowNoParseMethod(nameof(Parse));
                 break;
         }
 
@@ -212,19 +224,19 @@ public readonly partial struct Optional<T> :
                 if (typeof(T) == typeof(string))
                     return new((T)(object)inside.ToString());
 
-                var method = GetParseSpanMethod();
-                if (method is null)
-                    ThrowNoParseMethod(nameof(Parse));
-
-                try
+                if (GetParseSpanMethod() is { } spanMethod)
                 {
-                    return new(method.Invoke(inside, provider));
-                }
-                catch (FormatException e)
-                {
-                    ThrowHelper.ThrowFormat<Optional<T>>(s, e);
+                    try
+                    {
+                        return new(spanMethod.Invoke(inside, provider));
+                    }
+                    catch (FormatException e)
+                    {
+                        ThrowHelper.ThrowFormat<Optional<T>>(s, e);
+                    }
                 }
 
+                ThrowNoParseMethod(nameof(Parse));
                 break;
         }
 
@@ -260,16 +272,33 @@ public readonly partial struct Optional<T> :
                     return true;
                 }
 
-                var method = GetTryParseMethod();
-                if (method is null)
-                    ThrowNoParseMethod(nameof(TryParse));
-
-                if (method.Invoke(inside.ToString(), provider, out var value))
+                if (GetTryParseSpanMethod() is { } spanMethod)
                 {
-                    result = new(value);
-                    return true;
+                    if (spanMethod.Invoke(inside, provider, out var value))
+                    {
+                        result = new(value);
+                        return true;
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
 
+                if (GetTryParseMethod() is { } stringMethod)
+                {
+                    if (stringMethod.Invoke(inside.ToString(), provider, out var value))
+                    {
+                        result = new(value);
+                        return true;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                ThrowNoParseMethod(nameof(TryParse));
                 break;
         }
 
@@ -300,16 +329,20 @@ public readonly partial struct Optional<T> :
                     return true;
                 }
 
-                var method = GetTryParseSpanMethod();
-                if (method is null)
-                    ThrowNoParseMethod(nameof(TryParse));
-
-                if (method.Invoke(inside, provider, out var value))
+                if (GetTryParseSpanMethod() is { } spanMethod)
                 {
-                    result = new(value);
-                    return true;
+                    if (spanMethod.Invoke(inside, provider, out var value))
+                    {
+                        result = new(value);
+                        return true;
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
 
+                ThrowNoParseMethod(nameof(TryParse));
                 break;
         }
 
