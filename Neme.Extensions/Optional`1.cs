@@ -166,48 +166,47 @@ public readonly partial struct Optional<T> :
         if (s is null)
             throw new ArgumentNullException(nameof(s));
 
-        if (s == "None")
-            return None;
+        const string methodName = nameof(Parse);
 
-        const string prefix = "Some { ";
-        const string suffix = " }";
-
-        if (s.StartsWith(prefix, StringComparison.Ordinal) && s.EndsWith(suffix, StringComparison.Ordinal))
+        switch (ParseCore(s.AsSpan(), provider, out var hasInside, out var inside))
         {
-            if (s.Length == prefix.Length + suffix.Length - 1)
-                return default(T)!;
+            case ParseResult.None:
+                return None;
+            case ParseResult.Some:
+                if (!hasInside)
+                    return new(default!);
 
-            var inside = s[prefix.Length..^suffix.Length];
+                if (typeof(T) == typeof(string))
+                    return new((T)(object)inside.ToString());
 
-            if (typeof(T) == typeof(string))
-                return (T)(object)inside;
+                var method = s_parseMethodLazy.EnsureInitialized(
+                    static () =>
+                    {
+                        if (GetParseMethod<ParseProviderDelegate>(methodName) is { } method)
+                            return method;
 
-            var method = s_parseMethodLazy.EnsureInitialized(
-                static () =>
+                        if (GetParseMethod<ParseNumberStylesProviderDelegate>(methodName) is { } numberStylesMethod)
+                            return (s, provider) => numberStylesMethod(s, NumberStyles.Float | NumberStyles.AllowThousands, provider);
+
+                        if (GetParseMethod<ParseDelegate>(methodName) is { } noProviderMethod)
+                            return (s, provider) => noProviderMethod(s);
+
+                        return null;
+                    });
+
+                if (method is null)
+                    ThrowNoParseMethod(methodName);
+
+                try
                 {
-                    if (GetParseMethod<ParseProviderDelegate>("Parse") is { } method)
-                        return method;
+                    return new(method.Invoke(inside.ToString(), provider));
+                }
+                catch (FormatException e)
+                {
+                    ThrowHelper.ThrowFormat<Optional<T>>(s, e);
+                }
 
-                    if (GetParseMethod<ParseNumberStylesProviderDelegate>("Parse") is { } numberStylesMethod)
-                        return (s, provider) => numberStylesMethod(s, NumberStyles.Float | NumberStyles.AllowThousands, provider);
-
-                    if (GetParseMethod<ParseDelegate>("Parse") is { } noProviderMethod)
-                        return (s, provider) => noProviderMethod(s);
-
-                    return null;
-                });
-
-            if (method is null)
-                throw new InvalidOperationException($"Type {typeof(T)} has no appropriate Parse method.");
-
-            try
-            {
-                return new(method.Invoke(inside, provider));
-            }
-            catch (FormatException e)
-            {
-                ThrowHelper.ThrowFormat<Optional<T>>(s, e);
-            }
+                break;
         }
 
         return ThrowHelper.ThrowFormat<Optional<T>>(s);
@@ -218,48 +217,47 @@ public readonly partial struct Optional<T> :
 
     public static Optional<T> Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
     {
-        if (s.Equals("None".AsSpan(), StringComparison.Ordinal))
-            return None;
+        const string methodName = nameof(Parse);
 
-        const string prefix = "Some { ";
-        const string suffix = " }";
-
-        if (s.StartsWith(prefix.AsSpan(), StringComparison.Ordinal) && s.EndsWith(suffix.AsSpan(), StringComparison.Ordinal))
+        switch (ParseCore(s, provider, out var hasInside, out var inside))
         {
-            if (s.Length == prefix.Length + suffix.Length - 1)
-                return default(T)!;
+            case ParseResult.None:
+                return None;
+            case ParseResult.Some:
+                if (!hasInside)
+                    return new(default!);
 
-            var inside = s[prefix.Length..^suffix.Length];
+                if (typeof(T) == typeof(string))
+                    return new((T)(object)inside.ToString());
 
-            if (typeof(T) == typeof(string))
-                return (T)(object)inside.ToString();
+                var method = s_parseSpanMethodLazy.EnsureInitialized(
+                    static () =>
+                    {
+                        if (GetParseMethod<ParseSpanProviderDelegate>(methodName) is { } method)
+                            return method;
 
-            var method = s_parseSpanMethodLazy.EnsureInitialized(
-                static () =>
+                        if (GetParseMethod<ParseSpanNumberStylesProviderDelegate>(methodName) is { } numberStylesMethod)
+                            return (s, provider) => numberStylesMethod(s, NumberStyles.Float | NumberStyles.AllowThousands, provider);
+
+                        if (GetParseMethod<ParseSpanDelegate>(methodName) is { } noProviderMethod)
+                            return (s, provider) => noProviderMethod(s);
+
+                        return null;
+                    });
+
+                if (method is null)
+                    ThrowNoParseMethod(methodName);
+
+                try
                 {
-                    if (GetParseMethod<ParseSpanProviderDelegate>("Parse") is { } method)
-                        return method;
+                    return new(method.Invoke(inside, provider));
+                }
+                catch (FormatException e)
+                {
+                    ThrowHelper.ThrowFormat<Optional<T>>(s, e);
+                }
 
-                    if (GetParseMethod<ParseSpanNumberStylesProviderDelegate>("Parse") is { } numberStylesMethod)
-                        return (s, provider) => numberStylesMethod(s, NumberStyles.Float | NumberStyles.AllowThousands, provider);
-
-                    if (GetParseMethod<ParseSpanDelegate>("Parse") is { } noProviderMethod)
-                        return (s, provider) => noProviderMethod(s);
-
-                    return null;
-                });
-
-            if (method is null)
-                throw new InvalidOperationException($"Type {typeof(T)} has no appropriate Parse method.");
-
-            try
-            {
-                return new(method.Invoke(inside, provider));
-            }
-            catch (FormatException e)
-            {
-                ThrowHelper.ThrowFormat<Optional<T>>(s, e);
-            }
+                break;
         }
 
         return ThrowHelper.ThrowFormat<Optional<T>>(s);
@@ -276,54 +274,51 @@ public readonly partial struct Optional<T> :
             return false;
         }
 
-        if (s == "None")
+        const string methodName = nameof(TryParse);
+
+        switch (ParseCore(s.AsSpan(), provider, out var hasInside, out var inside))
         {
-            result = None;
-            return true;
-        }
-
-        const string prefix = "Some { ";
-        const string suffix = " }";
-
-        if (s.StartsWith(prefix, StringComparison.Ordinal) && s.EndsWith(suffix, StringComparison.Ordinal))
-        {
-            if (s.Length == prefix.Length + suffix.Length - 1)
-            {
-                result = default(T)!;
+            case ParseResult.None:
+                result = None;
                 return true;
-            }
-
-            var inside = s[prefix.Length..^suffix.Length];
-
-            if (typeof(T) == typeof(string))
-            {
-                result = (T)(object)inside;
-                return true;
-            }
-
-            var method = s_tryParseMethodLazy.EnsureInitialized(
-                static () =>
+            case ParseResult.Some:
+                if (!hasInside)
                 {
-                    if (GetParseMethod<TryParseProviderDelegate>("TryParse") is { } method)
-                        return method;
+                    result = new(default!);
+                    return true;
+                }
 
-                    if (GetParseMethod<TryParseNumberStylesProviderDelegate>("TryParse") is { } numberStylesMethod)
-                        return ([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) => numberStylesMethod(s, NumberStyles.Float | NumberStyles.AllowThousands, provider, out result);
+                if (typeof(T) == typeof(string))
+                {
+                    result = new((T)(object)inside.ToString());
+                    return true;
+                }
 
-                    if (GetParseMethod<TryParseDelegate>("TryParse") is { } noProviderMethod)
-                        return ([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) => noProviderMethod(s, out result);
+                var method = s_tryParseMethodLazy.EnsureInitialized(
+                    static () =>
+                    {
+                        if (GetParseMethod<TryParseProviderDelegate>(methodName) is { } method)
+                            return method;
 
-                    return null;
-                });
+                        if (GetParseMethod<TryParseNumberStylesProviderDelegate>(methodName) is { } numberStylesMethod)
+                            return ([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) => numberStylesMethod(s, NumberStyles.Float | NumberStyles.AllowThousands, provider, out result);
 
-            if (method is null)
-                throw new InvalidOperationException($"Type {typeof(T)} has no appropriate TryParse method.");
+                        if (GetParseMethod<TryParseDelegate>(methodName) is { } noProviderMethod)
+                            return ([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) => noProviderMethod(s, out result);
 
-            if (method.Invoke(inside, provider, out var value))
-            {
-                result = new(value);
-                return true;
-            }
+                        return null;
+                    });
+
+                if (method is null)
+                    ThrowNoParseMethod(methodName);
+
+                if (method.Invoke(inside.ToString(), provider, out var value))
+                {
+                    result = new(value);
+                    return true;
+                }
+
+                break;
         }
 
         result = default;
@@ -335,10 +330,75 @@ public readonly partial struct Optional<T> :
 
     public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out Optional<T> result)
     {
+        const string methodName = nameof(TryParse);
+
+        switch (ParseCore(s, provider, out var hasInside, out var inside))
+        {
+            case ParseResult.None:
+                result = None;
+                return true;
+            case ParseResult.Some:
+                if (!hasInside)
+                {
+                    result = new(default!);
+                    return true;
+                }
+
+                if (typeof(T) == typeof(string))
+                {
+                    result = new((T)(object)inside.ToString());
+                    return true;
+                }
+
+                var method = s_tryParseSpanMethodLazy.EnsureInitialized(
+                    static () =>
+                    {
+                        if (GetParseMethod<TryParseSpanProviderDelegate>(methodName) is { } method)
+                            return method;
+
+                        if (GetParseMethod<TryParseSpanNumberStylesProviderDelegate>(methodName) is { } numberStylesMethod)
+                            return (ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) => numberStylesMethod(s, NumberStyles.Float | NumberStyles.AllowThousands, provider, out result);
+
+                        if (GetParseMethod<TryParseSpanDelegate>(methodName) is { } noProviderMethod)
+                            return (ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) => noProviderMethod(s, out result);
+
+                        return null;
+                    });
+
+                if (method is null)
+                    ThrowNoParseMethod(methodName);
+
+                if (method.Invoke(inside, provider, out var value))
+                {
+                    result = new(value);
+                    return true;
+                }
+
+                break;
+        }
+
+        result = default;
+        return false;
+    }
+
+    [DoesNotReturn]
+    private static void ThrowNoParseMethod(string methodName) =>
+        throw new InvalidOperationException($"Type {typeof(T)} has no appropriate {methodName} method.");
+
+    private enum ParseResult
+    {
+        Error,
+        None,
+        Some,
+    }
+
+    private static ParseResult ParseCore(ReadOnlySpan<char> s, IFormatProvider? provider, out bool hasInside, out ReadOnlySpan<char> inside)
+    {
         if (s.Equals("None".AsSpan(), StringComparison.Ordinal))
         {
-            result = None;
-            return true;
+            hasInside = false;
+            inside = default;
+            return ParseResult.None;
         }
 
         const string prefix = "Some { ";
@@ -348,45 +408,19 @@ public readonly partial struct Optional<T> :
         {
             if (s.Length == prefix.Length + suffix.Length - 1)
             {
-                result = default(T)!;
-                return true;
+                hasInside = false;
+                inside = default;
+                return ParseResult.Some;
             }
 
-            var inside = s[prefix.Length..^suffix.Length];
-
-            if (typeof(T) == typeof(string))
-            {
-                result = (T)(object)inside.ToString();
-                return true;
-            }
-
-            var method = s_tryParseSpanMethodLazy.EnsureInitialized(
-                static () =>
-                {
-                    if (GetParseMethod<TryParseSpanProviderDelegate>("TryParse") is { } method)
-                        return method;
-
-                    if (GetParseMethod<TryParseSpanNumberStylesProviderDelegate>("TryParse") is { } numberStylesMethod)
-                        return (ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) => numberStylesMethod(s, NumberStyles.Float | NumberStyles.AllowThousands, provider, out result);
-
-                    if (GetParseMethod<TryParseSpanDelegate>("TryParse") is { } noProviderMethod)
-                        return (ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) => noProviderMethod(s, out result);
-
-                    return null;
-                });
-
-            if (method is null)
-                throw new InvalidOperationException($"Type {typeof(T)} has no appropriate TryParse method.");
-
-            if (method.Invoke(inside, provider, out var value))
-            {
-                result = new(value);
-                return true;
-            }
+            hasInside = true;
+            inside = s[prefix.Length..^suffix.Length];
+            return ParseResult.Some;
         }
 
-        result = default;
-        return false;
+        hasInside = false;
+        inside = default;
+        return ParseResult.Error;
     }
 
     private static TDelegate? GetParseMethod<TDelegate>(string methodName)
