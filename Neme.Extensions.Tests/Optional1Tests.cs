@@ -1,6 +1,7 @@
 using Neme.Extensions.Tests.Utilities;
 using System.Collections;
 using System.Globalization;
+using System.Numerics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
@@ -323,6 +324,105 @@ public sealed class Optional1Tests
         AssertDoesNotParse<int>("Some {}", null, null);
         AssertDoesNotParse<int>("Some { x }", "x", null);
         AssertDoesNotParse<int>("SOME { 42 }", null, null);
+    }
+
+    [Fact]
+    public void Parse_TestNumberStyles()
+    {
+        TestIsInteger<ushort>(null);
+        TestIsInteger<short>(-1);
+        TestIsInteger<uint>(null);
+        TestIsInteger<int>(-1);
+        TestIsInteger<ulong>(null);
+        TestIsInteger<long>(-1);
+#if NET5_0_OR_GREATER
+        TestIsInteger<nuint>(null);
+        TestIsInteger<nint>(-1);
+#endif
+        TestIsInteger<BigInteger>(BigInteger.MinusOne);
+
+        TestIsFloatAndAllowThousands<float>(-1f, 42.2f, 10_000f);
+        TestIsFloatAndAllowThousands<double>(-1d, 42.2d, 10_000d);
+
+        TestIsNumber<decimal>(-1m, 42.2m, 10_000m);
+
+        static void TestIsInteger<T>(T? negativeOne)
+            where T : struct
+        {
+            // NumberStyles.AllowLeadingWhite and NumberStyles.AllowTrailingWhite are included.
+            AssertParses<T>(new(default), "Some {  0  }", null);
+
+            if (negativeOne is not null)
+            {
+                // NumberStyles.AllowLeadingSign is included
+                AssertParses<T>(new(negativeOne.Value), "Some { -1 }", null);
+            }
+
+            // NumberStyles.AllowDecimalPoint is *not* included.
+            AssertDoesNotParse<T>("Some { 42.2 }", "42.2", null);
+
+            // NumberStyles.AllowThousands is *not* included.
+            AssertDoesNotParse<T>("Some { 10,000 }", "10,000", null);
+
+            // NumberStyles.AllowExponent is *not* included.
+            AssertDoesNotParse<T>("Some { 4.22e+1 }", "4.22e+1", null);
+
+            // NumberStyles.AllowParentheses is *not* included.
+            AssertDoesNotParse<T>("Some { (42) }", "(42)", null);
+
+            // NumberStyles.AllowHexSpecifier is *not* included.
+            AssertDoesNotParse<T>("Some { f }", "f", null);
+        }
+
+        static void TestIsFloatAndAllowThousands<T>(T negativeOne, T value1, T value2)
+            where T : struct
+        {
+            // NumberStyles.AllowLeadingWhite and NumberStyles.AllowTrailingWhite are included.
+            AssertParses<T>(new(default), "Some {  0  }", null);
+
+            // NumberStyles.AllowLeadingSign is included
+            AssertParses<T>(new(negativeOne), "Some { -1 }", null);
+
+            // NumberStyles.AllowDecimalPoint is included.
+            AssertParses<T>(new(value1), "Some { 42.2 }", null);
+
+            // NumberStyles.AllowThousands is included.
+            AssertParses<T>(new(value2), "Some { 10,000 }", null);
+
+            // NumberStyles.AllowExponent is included.
+            AssertParses<T>(new(value1), "Some { 4.22e+1 }", null);
+
+            // NumberStyles.AllowParentheses is *not* included.
+            AssertDoesNotParse<T>("Some { (42) }", "(42)", null);
+
+            // NumberStyles.AllowHexSpecifier is *not* included.
+            AssertDoesNotParse<T>("Some { f }", "f", null);
+        }
+
+        static void TestIsNumber<T>(T negativeOne, T value1, T value2)
+            where T : struct
+        {
+            // NumberStyles.AllowLeadingWhite and NumberStyles.AllowTrailingWhite are included.
+            AssertParses<T>(new(default), "Some {  0  }", null);
+
+            // NumberStyles.AllowLeadingSign is included
+            AssertParses<T>(new(negativeOne), "Some { -1 }", null);
+
+            // NumberStyles.AllowDecimalPoint is included.
+            AssertParses<T>(new(value1), "Some { 42.2 }", null);
+
+            // NumberStyles.AllowThousands is included.
+            AssertParses<T>(new(value2), "Some { 10,000 }", null);
+
+            // NumberStyles.AllowExponent is *not* included.
+            AssertDoesNotParse<T>("Some { 4.22e+1 }", "4.22e+1", null);
+
+            // NumberStyles.AllowParentheses is *not* included.
+            AssertDoesNotParse<T>("Some { (42) }", "(42)", null);
+
+            // NumberStyles.AllowHexSpecifier is *not* included.
+            AssertDoesNotParse<T>("Some { f }", "f", null);
+        }
     }
 
     private static void AssertDoesNotParse<T>(string input, string? nestedInput, IFormatProvider? provider)

@@ -32,8 +32,11 @@ internal static class AssertThrows
         else
         {
             var inner = Assert.IsType<FormatException>(e.InnerException);
-            if (inner.Message != "Input string was not in a correct format.")
+            if (inner.Message != "Input string was not in a correct format." &&
+                inner.Message != "The value could not be parsed.")
+            {
                 Assert.Equal($"The input string '{nestedInput}' was not in a correct format.", inner.Message);
+            }
         }
     }
 

@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Numerics;
 using System.Reflection;
 
 namespace Neme.Extensions;
@@ -272,13 +273,16 @@ public readonly partial struct Optional<T>
 		return s_parseMethodLazy.EnsureInitialized(
 			static () =>
 			{
-				if (GetParseMethod<ParseProviderDelegate>(nameof(Parse)) is { } method)
+				if (GetParseMethod<ParseProviderDelegate>(nameof(Parse), out _) is { } method)
 					return method;
 
-				if (GetParseMethod<ParseNumberStylesProviderDelegate>(nameof(Parse)) is { } numberStylesMethod)
-					return (s, provider) => numberStylesMethod(s, NumberStyles.Float | NumberStyles.AllowThousands, provider);
+				if (GetParseMethod<ParseNumberStylesProviderDelegate>(nameof(Parse), out var defaultStyle) is { } numberStylesMethod)
+				{
+                    var style = defaultStyle ?? GetDefaultNumberStyles();
+                    return (s, provider) => numberStylesMethod(s, style, provider);
+				}
 
-				if (GetParseMethod<ParseDelegate>(nameof(Parse)) is { } noProviderMethod)
+				if (GetParseMethod<ParseDelegate>(nameof(Parse), out _) is { } noProviderMethod)
 					return (s, provider) => noProviderMethod(s);
 
 				return null;
@@ -290,13 +294,16 @@ public readonly partial struct Optional<T>
 		return s_parseSpanMethodLazy.EnsureInitialized(
 			static () =>
 			{
-				if (GetParseMethod<ParseSpanProviderDelegate>(nameof(Parse)) is { } method)
+				if (GetParseMethod<ParseSpanProviderDelegate>(nameof(Parse), out _) is { } method)
 					return method;
 
-				if (GetParseMethod<ParseSpanNumberStylesProviderDelegate>(nameof(Parse)) is { } numberStylesMethod)
-					return (s, provider) => numberStylesMethod(s, NumberStyles.Float | NumberStyles.AllowThousands, provider);
+				if (GetParseMethod<ParseSpanNumberStylesProviderDelegate>(nameof(Parse), out var defaultStyle) is { } numberStylesMethod)
+				{
+                    var style = defaultStyle ?? GetDefaultNumberStyles();
+                    return (s, provider) => numberStylesMethod(s, style, provider);
+				}
 
-				if (GetParseMethod<ParseSpanDelegate>(nameof(Parse)) is { } noProviderMethod)
+				if (GetParseMethod<ParseSpanDelegate>(nameof(Parse), out _) is { } noProviderMethod)
 					return (s, provider) => noProviderMethod(s);
 
 				return null;
@@ -309,13 +316,16 @@ public readonly partial struct Optional<T>
 		return s_tryParseMethodLazy.EnsureInitialized(
 			static () =>
 			{
-				if (GetParseMethod<TryParseProviderDelegate>(nameof(TryParse)) is { } method)
+				if (GetParseMethod<TryParseProviderDelegate>(nameof(TryParse), out _) is { } method)
 					return method;
 
-				if (GetParseMethod<TryParseNumberStylesProviderDelegate>(nameof(TryParse)) is { } numberStylesMethod)
-					return ([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) => numberStylesMethod(s, NumberStyles.Float | NumberStyles.AllowThousands, provider, out result);
+				if (GetParseMethod<TryParseNumberStylesProviderDelegate>(nameof(TryParse), out var defaultStyle) is { } numberStylesMethod)
+				{
+                    var style = defaultStyle ?? GetDefaultNumberStyles();
+                    return ([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) => numberStylesMethod(s, style, provider, out result);
+				}
 
-				if (GetParseMethod<TryParseDelegate>(nameof(TryParse)) is { } noProviderMethod)
+				if (GetParseMethod<TryParseDelegate>(nameof(TryParse), out _) is { } noProviderMethod)
 					return ([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) => noProviderMethod(s, out result);
 
 				return null;
@@ -327,20 +337,56 @@ public readonly partial struct Optional<T>
 		return s_tryParseSpanMethodLazy.EnsureInitialized(
 			static () =>
 			{
-				if (GetParseMethod<TryParseSpanProviderDelegate>(nameof(TryParse)) is { } method)
+				if (GetParseMethod<TryParseSpanProviderDelegate>(nameof(TryParse), out _) is { } method)
 					return method;
 
-				if (GetParseMethod<TryParseSpanNumberStylesProviderDelegate>(nameof(TryParse)) is { } numberStylesMethod)
-					return (ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) => numberStylesMethod(s, NumberStyles.Float | NumberStyles.AllowThousands, provider, out result);
+				if (GetParseMethod<TryParseSpanNumberStylesProviderDelegate>(nameof(TryParse), out var defaultStyle) is { } numberStylesMethod)
+				{
+					var style = defaultStyle ?? GetDefaultNumberStyles();
+                    return (ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) => numberStylesMethod(s, style, provider, out result);
+				}
 
-				if (GetParseMethod<TryParseSpanDelegate>(nameof(TryParse)) is { } noProviderMethod)
+				if (GetParseMethod<TryParseSpanDelegate>(nameof(TryParse), out _) is { } noProviderMethod)
 					return (ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) => noProviderMethod(s, out result);
 
 				return null;
 			});
 	}
 
-	[DoesNotReturn]
+    private static NumberStyles GetDefaultNumberStyles()
+    {
+#if NET7_0_OR_GREATER
+        var interfaces = typeof(T).GetInterfaces();
+        if (interfaces.Any(type => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IFloatingPointIeee754<>)))
+        {
+            return NumberStyles.Float | NumberStyles.AllowThousands;
+        }
+
+        if (interfaces.Any(type => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IBinaryInteger<>)))
+        {
+            return NumberStyles.Integer;
+        }
+#endif
+
+        if (typeof(T).GetMember(
+            "NaN",
+            MemberTypes.Field | MemberTypes.Property,
+            BindingFlags.Public | BindingFlags.Static | BindingFlags.ExactBinding).Length > 0)
+        {
+            return NumberStyles.Float | NumberStyles.AllowThousands;
+        }
+
+        if (typeof(T).Name.StartsWith("Int", StringComparison.Ordinal, out var rest1) && !(rest1.Length > 0 && char.IsLower(rest1[0])) ||
+            typeof(T).Name.StartsWith("UInt", StringComparison.Ordinal, out var rest2) && !(rest2.Length > 0 && char.IsLower(rest2[0])) ||
+            typeof(T) == typeof(BigInteger))
+        {
+            return NumberStyles.Integer;
+        }
+
+        return NumberStyles.Number;
+    }
+
+    [DoesNotReturn]
 	private static void ThrowNoParseMethod(string methodName) =>
 		throw new NotSupportedException($"Type {typeof(T)} has no appropriate {methodName} method.");
 
@@ -382,14 +428,15 @@ public readonly partial struct Optional<T>
 		return ParseResult.Error;
 	}
 
-	private static TDelegate? GetParseMethod<TDelegate>(string methodName)
+	private static TDelegate? GetParseMethod<TDelegate>(string methodName, out NumberStyles? defaultNumberStyles)
 		where TDelegate : Delegate
 	{
 		Debug.Assert(methodName is "Parse" or "TryParse");
+        defaultNumberStyles = null;
 
-		var invokeMethod = typeof(TDelegate).GetMethod("Invoke")!;
+        var invokeMethod = typeof(TDelegate).GetMethod("Invoke")!;
 
-		var method = typeof(T).GetMethod(
+        var method = typeof(T).GetMethod(
 			methodName,
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
             genericParameterCount: 0,
@@ -409,6 +456,10 @@ public readonly partial struct Optional<T>
 
 		if (method.ReturnType != invokeMethod.ReturnType)
 			return null;
+
+        defaultNumberStyles = method.GetParameters().FirstOrDefault(x => x.ParameterType == typeof(NumberStyles)) is { HasDefaultValue: true } numberStylesParameter
+            ? (NumberStyles)numberStylesParameter.DefaultValue!
+            : null;
 
 #if NET5_0_OR_GREATER
         return method.CreateDelegate<TDelegate>();
