@@ -4,7 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Numerics;
 using System.Reflection;
-using System.Text;
 
 namespace Neme.Extensions;
 
@@ -62,10 +61,10 @@ public readonly partial struct Optional<T>
 				if (!hasInside)
 					return new(default!);
 
-				if (typeof(T) == typeof(string))
-					return new((T)(object)inside.ToString());
+                if (TryParseString(inside, out var stringValue))
+                    return new(stringValue);
 
-				if (GetParseSpanMethod() is { } spanMethod)
+                if (GetParseSpanMethod() is { } spanMethod)
 				{
 					T result;
 
@@ -118,10 +117,10 @@ public readonly partial struct Optional<T>
 				if (!hasInside)
 					return new(default!);
 
-				if (typeof(T) == typeof(string))
-					return new((T)(object)inside.ToString());
+                if (TryParseString(inside, out var stringValue))
+                    return new(stringValue);
 
-				if (GetParseSpanMethod() is { } spanMethod)
+                if (GetParseSpanMethod() is { } spanMethod)
 				{
 					T result;
 
@@ -167,13 +166,13 @@ public readonly partial struct Optional<T>
 					return true;
 				}
 
-				if (typeof(T) == typeof(string))
+				if (TryParseString(inside, out var stringValue))
 				{
-					result = new((T)(object)inside.ToString());
+					result = new(stringValue);
 					return true;
 				}
 
-				if (GetTryParseSpanMethod() is { } spanMethod)
+                if (GetTryParseSpanMethod() is { } spanMethod)
 				{
 					if (spanMethod.Invoke(inside, provider, out var value))
 					{
@@ -207,7 +206,7 @@ public readonly partial struct Optional<T>
 		return false;
 	}
 
-	public static bool TryParse(ReadOnlySpan<char> s, out Optional<T> result) =>
+    public static bool TryParse(ReadOnlySpan<char> s, out Optional<T> result) =>
 		TryParse(s, provider: null, out result);
 
 	public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out Optional<T> result)
@@ -224,13 +223,13 @@ public readonly partial struct Optional<T>
 					return true;
 				}
 
-				if (typeof(T) == typeof(string))
-				{
-					result = new((T)(object)inside.ToString());
-					return true;
-				}
+                if (TryParseString(inside, out var stringValue))
+                {
+                    result = new(stringValue);
+                    return true;
+                }
 
-				if (GetTryParseSpanMethod() is { } spanMethod)
+                if (GetTryParseSpanMethod() is { } spanMethod)
 				{
 					if (spanMethod.Invoke(inside, provider, out var value))
 					{
@@ -268,6 +267,30 @@ public readonly partial struct Optional<T>
     private delegate bool TryParseSpanDelegate(ReadOnlySpan<char> s, [MaybeNullWhen(false)] out T result);
     private delegate bool TryParseSpanProviderDelegate(ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result);
     private delegate bool TryParseSpanNumberStylesProviderDelegate(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out T result);
+
+    private static bool TryParseString(ReadOnlySpan<char> s, [MaybeNullWhen(false)] out T result)
+    {
+        if (typeof(T) == typeof(string))
+        {
+            result = (T)(object)s.ToString();
+            return true;
+        }
+
+        if (typeof(T) == typeof(ReadOnlyMemory<char>))
+        {
+            result = (T)(object)s.ToString().AsMemory();
+            return true;
+        }
+
+        if (typeof(T) == typeof(Memory<char>))
+        {
+            result = (T)(object)s.ToArray().AsMemory();
+            return true;
+        }
+
+        result = default;
+        return false;
+    }
 
     private static ParseProviderDelegate? GetParseMethod()
 	{

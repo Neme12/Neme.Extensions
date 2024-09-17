@@ -1,4 +1,5 @@
 ﻿using Neme.Extensions.Tests.Utilities;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Numerics;
 
@@ -164,6 +165,30 @@ public sealed partial class Optional1Tests
         AssertParses<string?>(new(""), "Some {  }", null);
         AssertParses<string?>(new(""), "Some {  }", CultureInfo.InvariantCulture);
         AssertParses<string?>(new(""), "Some {  }", CultureInfo.GetCultureInfo("de"));
+    }
+
+    [Fact]
+    public void Parse_Some_String()
+    {
+        AssertParses<string>(new("hello"), "Some { hello }", null);
+        AssertParses<string>(new("hello"), "Some { hello }", CultureInfo.InvariantCulture);
+        AssertParses<string>(new("hello"), "Some { hello }", CultureInfo.GetCultureInfo("de"));
+    }
+
+    [Fact]
+    public void Parse_Some_ReadOnlyMemory()
+    {
+        AssertParses<ReadOnlyMemory<char>>(new("hello".AsMemory()), "Some { hello }", null);
+        AssertParses<ReadOnlyMemory<char>>(new("hello".AsMemory()), "Some { hello }", CultureInfo.InvariantCulture);
+        AssertParses<ReadOnlyMemory<char>>(new("hello".AsMemory()), "Some { hello }", CultureInfo.GetCultureInfo("de"));
+    }
+
+    [Fact]
+    public void Parse_Some_Memory()
+    {
+        AssertParses<Memory<char>>(new("hello".ToArray()), "Some { hello }", null);
+        AssertParses<Memory<char>>(new("hello".ToArray()), "Some { hello }", CultureInfo.InvariantCulture);
+        AssertParses<Memory<char>>(new("hello".ToArray()), "Some { hello }", CultureInfo.GetCultureInfo("de"));
     }
 
     [Fact]
@@ -881,38 +906,39 @@ public sealed partial class Optional1Tests
     private static void AssertParses<T>(Optional<T> expected, string input, IFormatProvider? provider)
     {
         var parseSpan = ShouldParseSpan<T>();
+        var comparer = new CustomComparer<T>();
 
         if (provider is null)
         {
 #pragma warning disable CA1305 // Specify IFormatProvider
-            Assert.Equal(expected, Optional<T>.Parse(input));
+            Assert.Equal(expected, Optional<T>.Parse(input), comparer);
 
             if (parseSpan)
-                Assert.Equal(expected, Optional<T>.Parse(input.AsSpan()));
+                Assert.Equal(expected, Optional<T>.Parse(input.AsSpan()), comparer);
 #pragma warning restore CA1305 // Specify IFormatProvider
 
             Assert.True(Optional<T>.TryParse(input, out var resultWithoutProvider1));
-            Assert.Equal(expected, resultWithoutProvider1);
+            Assert.Equal(expected, resultWithoutProvider1, comparer);
 
             if (parseSpan)
             {
                 Assert.True(Optional<T>.TryParse(input.AsSpan(), out var resultWithoutProvider2));
-                Assert.Equal(expected, resultWithoutProvider2);
+                Assert.Equal(expected, resultWithoutProvider2, comparer);
             }
         }
 
-        Assert.Equal(expected, Optional<T>.Parse(input, provider));
+        Assert.Equal(expected, Optional<T>.Parse(input, provider), comparer);
 
         if (parseSpan)
-            Assert.Equal(expected, Optional<T>.Parse(input.AsSpan(), provider));
+            Assert.Equal(expected, Optional<T>.Parse(input.AsSpan(), provider), comparer);
 
         Assert.True(Optional<T>.TryParse(input, provider, out var resultWithProvider1));
-        Assert.Equal(expected, resultWithProvider1);
+        Assert.Equal(expected, resultWithProvider1, comparer);
 
         if (parseSpan)
         {
             Assert.True(Optional<T>.TryParse(input.AsSpan(), provider, out var resultWithProvider2));
-            Assert.Equal(expected, resultWithProvider2);
+            Assert.Equal(expected, resultWithProvider2, comparer);
         }
 
     }
@@ -924,5 +950,47 @@ public sealed partial class Optional1Tests
 #else
         return false;
 #endif
+    }
+
+    private sealed class CustomComparer<T> : IEqualityComparer<Optional<T>>
+    {
+        private static readonly IEqualityComparer<T> _valueComparer =
+            typeof(T) == typeof(ReadOnlyMemory<char>)
+                ? (IEqualityComparer<T>)(object)new ReadOnlyMemoryComparer() :
+            typeof(T) == typeof(Memory<char>)
+                ? (IEqualityComparer<T>)(object)new MemoryComparer() :
+            EqualityComparer<T>.Default;
+
+        public bool Equals(Optional<T> x, Optional<T> y) =>
+            Optional.Equals(x, y, _valueComparer);
+
+        public int GetHashCode([DisallowNull] Optional<T> obj) =>
+            obj.GetHashCode(_valueComparer);
+
+        private sealed class ReadOnlyMemoryComparer : IEqualityComparer<ReadOnlyMemory<char>>
+        {
+            public bool Equals(ReadOnlyMemory<char> x, ReadOnlyMemory<char> y) =>
+                x.Span.Equals(y.Span, StringComparison.Ordinal);
+
+            public int GetHashCode([DisallowNull] ReadOnlyMemory<char> obj)
+            {
+#pragma warning disable CA1307 // Specify StringComparison for clarity
+                return obj.Span.ToString().GetHashCode();
+#pragma warning restore CA1307 // Specify StringComparison for clarity
+            }
+        }
+
+        private sealed class MemoryComparer : IEqualityComparer<Memory<char>>
+        {
+            public bool Equals(Memory<char> x, Memory<char> y) =>
+                ((ReadOnlySpan<char>)x.Span).Equals((ReadOnlySpan<char>)y.Span, StringComparison.Ordinal);
+
+            public int GetHashCode([DisallowNull] Memory<char> obj)
+            {
+#pragma warning disable CA1307 // Specify StringComparison for clarity
+                return obj.Span.ToString().GetHashCode();
+#pragma warning restore CA1307 // Specify StringComparison for clarity
+            }
+        }
     }
 }
