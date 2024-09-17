@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Numerics;
 using System.Reflection;
+using System.Text;
 
 namespace Neme.Extensions;
 
@@ -371,7 +372,8 @@ public readonly partial struct Optional<T>
         if (typeof(T).GetMember(
             "NaN",
             MemberTypes.Field | MemberTypes.Property,
-            BindingFlags.Public | BindingFlags.Static | BindingFlags.ExactBinding).Length > 0)
+            BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly | BindingFlags.ExactBinding)
+			is [var member] && member.GetReturnType() == typeof(T) && member.IsReadOnly() && !(member is PropertyInfo property && property.GetIndexParameters().Length > 0))
         {
             return NumberStyles.Float | NumberStyles.AllowThousands;
         }

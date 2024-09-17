@@ -298,9 +298,19 @@ public sealed partial class Optional1Tests
     {
         Assert.Equal(NumberStyles.Number, Optional<CustomParsable>.Parse("Some { foo }", null).Value.Style);
 
+        Assert.Equal(NumberStyles.Integer, Optional<Int>.Parse("Some { foo }", null).Value.Style);
         Assert.Equal(NumberStyles.Integer, Optional<IntCustomParsable>.Parse("Some { foo }", null).Value.Style);
+        Assert.Equal(NumberStyles.Integer, Optional<Int2CustomParsable>.Parse("Some { foo }", null).Value.Style);
+        Assert.Equal(NumberStyles.Number, Optional<intCustomParsable>.Parse("Some { foo }", null).Value.Style);
+        Assert.Equal(NumberStyles.Number, Optional<IntegerCustomParsable>.Parse("Some { foo }", null).Value.Style);
         Assert.Equal(NumberStyles.Float | NumberStyles.AllowThousands, Optional<CustomParsableContainingNaN1>.Parse("Some { foo }", null).Value.Style);
         Assert.Equal(NumberStyles.Float | NumberStyles.AllowThousands, Optional<CustomParsableContainingNaN2>.Parse("Some { foo }", null).Value.Style);
+        Assert.Equal(NumberStyles.Number, Optional<CustomParsableContainingNaNWrong1>.Parse("Some { foo }", null).Value.Style);
+        Assert.Equal(NumberStyles.Number, Optional<CustomParsableContainingNaNWrong2>.Parse("Some { foo }", null).Value.Style);
+        Assert.Equal(NumberStyles.Number, Optional<CustomParsableContainingNaNWrong3>.Parse("Some { foo }", null).Value.Style);
+        Assert.Equal(NumberStyles.Number, Optional<CustomParsableContainingNaNWrong4>.Parse("Some { foo }", null).Value.Style);
+        Assert.Equal(NumberStyles.Number, Optional<CustomParsableContainingNaNWrong5>.Parse("Some { foo }", null).Value.Style);
+        Assert.Equal(NumberStyles.Number, Optional<CustomParsableContainingNaNWrong6>.Parse("Some { foo }", null).Value.Style);
 
 #if NET7_0_OR_GREATER
         Assert.Equal(NumberStyles.Integer, Optional<CustomParsableIBinaryInteger>.Parse("Some { foo }", null).Value.Style);
@@ -314,9 +324,33 @@ public sealed partial class Optional1Tests
             new(s, style);
     }
 
+    readonly record struct Int(string Input, NumberStyles Style)
+    {
+        public static Int Parse(string s, NumberStyles style, IFormatProvider? provider) =>
+            new(s, style);
+    }
+
     readonly record struct IntCustomParsable(string Input, NumberStyles Style)
     {
         public static IntCustomParsable Parse(string s, NumberStyles style, IFormatProvider? provider) =>
+            new(s, style);
+    }
+
+    readonly record struct Int2CustomParsable(string Input, NumberStyles Style)
+    {
+        public static Int2CustomParsable Parse(string s, NumberStyles style, IFormatProvider? provider) =>
+            new(s, style);
+    }
+
+    readonly record struct intCustomParsable(string Input, NumberStyles Style)
+    {
+        public static intCustomParsable Parse(string s, NumberStyles style, IFormatProvider? provider) =>
+            new(s, style);
+    }
+
+    readonly record struct IntegerCustomParsable(string Input, NumberStyles Style)
+    {
+        public static IntegerCustomParsable Parse(string s, NumberStyles style, IFormatProvider? provider) =>
             new(s, style);
     }
 
@@ -325,7 +359,7 @@ public sealed partial class Optional1Tests
         public static CustomParsableContainingNaN1 Parse(string s, NumberStyles style, IFormatProvider? provider) =>
             new(s, style);
 
-        public const int NaN = 0;
+        public static readonly CustomParsableContainingNaN1 NaN;
     }
 
     readonly record struct CustomParsableContainingNaN2(string Input, NumberStyles Style)
@@ -333,7 +367,55 @@ public sealed partial class Optional1Tests
         public static CustomParsableContainingNaN2 Parse(string s, NumberStyles style, IFormatProvider? provider) =>
             new(s, style);
 
-        public static int NaN => 0;
+        public static CustomParsableContainingNaN2 NaN => default;
+    }
+
+    readonly record struct CustomParsableContainingNaNWrong1(string Input, NumberStyles Style)
+    {
+        public static CustomParsableContainingNaNWrong1 Parse(string s, NumberStyles style, IFormatProvider? provider) =>
+            new(s, style);
+
+        public static int NaN => default;
+    }
+
+    readonly record struct CustomParsableContainingNaNWrong2(string Input, NumberStyles Style)
+    {
+        public static CustomParsableContainingNaNWrong2 Parse(string s, NumberStyles style, IFormatProvider? provider) =>
+            new(s, style);
+
+        public static CustomParsableContainingNaNWrong2 NaN { get; set; }
+    }
+
+    readonly record struct CustomParsableContainingNaNWrong3(string Input, NumberStyles Style)
+    {
+        public static CustomParsableContainingNaNWrong3 Parse(string s, NumberStyles style, IFormatProvider? provider) =>
+            new(s, style);
+
+        public static CustomParsableContainingNaNWrong3 NaN;
+    }
+
+    readonly record struct CustomParsableContainingNaNWrong4(string Input, NumberStyles Style)
+    {
+        public static CustomParsableContainingNaNWrong4 Parse(string s, NumberStyles style, IFormatProvider? provider) =>
+            new(s, style);
+
+        public CustomParsableContainingNaNWrong4 NaN => default;
+    }
+
+    readonly record struct CustomParsableContainingNaNWrong5(string Input, NumberStyles Style)
+    {
+        public static CustomParsableContainingNaNWrong5 Parse(string s, NumberStyles style, IFormatProvider? provider) =>
+            new(s, style);
+
+        internal static CustomParsableContainingNaNWrong5 NaN => default;
+    }
+
+    readonly record struct CustomParsableContainingNaNWrong6(string Input, NumberStyles Style)
+    {
+        public static CustomParsableContainingNaNWrong6 Parse(string s, NumberStyles style, IFormatProvider? provider) =>
+            new(s, style);
+
+        public static CustomParsableContainingNaNWrong6 NaN() => default;
     }
 
 #if NET7_0_OR_GREATER
