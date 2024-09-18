@@ -344,25 +344,25 @@ public sealed partial class Optional1Tests
     [Fact]
     public void Parse_CustomParsableNumberStyles()
     {
-        AssertParses<CustomParsable>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: false);
+        AssertParses<CustomParsable>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
 
-        AssertParses<Int>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: false);
-        AssertParses<IntCustomParsable>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: false);
-        AssertParses<Int2CustomParsable>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: false);
-        AssertParses<intCustomParsable>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: false);
-        AssertParses<IntegerCustomParsable>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: false);
-        AssertParses<CustomParsableContainingNaN1> (new(new("foo", NumberStyles.Float | NumberStyles.AllowThousands)), "Some { foo }", null, parseFromSpan: false);
-        AssertParses<CustomParsableContainingNaN2> (new(new("foo", NumberStyles.Float | NumberStyles.AllowThousands)), "Some { foo }", null, parseFromSpan: false);
-        AssertParses<CustomParsableContainingNaNWrong1>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: false);
-        AssertParses<CustomParsableContainingNaNWrong2>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: false);
-        AssertParses<CustomParsableContainingNaNWrong3>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: false);
-        AssertParses<CustomParsableContainingNaNWrong4>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: false);
-        AssertParses<CustomParsableContainingNaNWrong5>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: false);
-        AssertParses<CustomParsableContainingNaNWrong6>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: false);
+        AssertParses<Int>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<IntCustomParsable>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<Int2CustomParsable>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<intCustomParsable>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<IntegerCustomParsable>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsableContainingNaN1>(new(new("foo", NumberStyles.Float | NumberStyles.AllowThousands)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsableContainingNaN2>(new(new("foo", NumberStyles.Float | NumberStyles.AllowThousands)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsableContainingNaNWrong1>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsableContainingNaNWrong2>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsableContainingNaNWrong3>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsableContainingNaNWrong4>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsableContainingNaNWrong5>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsableContainingNaNWrong6>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
 
 #if NET7_0_OR_GREATER
-        AssertParses<CustomParsableIBinaryInteger>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: false);
-        AssertParses<CustomParsableIFloatingPointIeee754>(new(new("foo", NumberStyles.Float | NumberStyles.AllowThousands)), "Some { foo }", null, parseFromSpan: false);
+        AssertParses<CustomParsableIBinaryInteger>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsableIFloatingPointIeee754>(new(new("foo", NumberStyles.Float | NumberStyles.AllowThousands)), "Some { foo }", null, parseFromSpan: true);
 #endif
     }
 
@@ -380,6 +380,9 @@ public sealed partial class Optional1Tests
         public static TSelf Parse(string s, NumberStyles style, IFormatProvider? provider) =>
             new() { Input = s, Style = style };
 
+        public static TSelf Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider) =>
+            new() { Input = s.ToString(), Style = style };
+
         public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out TSelf result)
         {
             if (s is null)
@@ -389,6 +392,12 @@ public sealed partial class Optional1Tests
             }
 
             result = new() { Input = s, Style = style };
+            return true;
+        }
+
+        public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out TSelf result)
+        {
+            result = new() { Input = s.ToString(), Style = style };
             return true;
         }
     }
