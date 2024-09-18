@@ -369,9 +369,9 @@ public sealed partial class Optional1Tests
     [Fact]
     public void Parse_DefaultedNumberStyles()
     {
-        Assert.Equal(NumberStyles.Number, Optional<IntDefaultedCustomParsableNumber>.Parse("Some { foo }", null).Value.Style);
-        Assert.Equal(NumberStyles.Integer, Optional<DefaultedCustomParsableInteger>.Parse("Some { foo }", null).Value.Style);
-        Assert.Equal(NumberStyles.Float, Optional<DefaultedCustomParsableFloat>.Parse("Some { foo }", null).Value.Style);
+        AssertParses<IntDefaultedCustomParsableNumber>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true, tryParse: false);
+        AssertParses<DefaultedCustomParsableInteger>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: true, tryParse: false);
+        AssertParses<DefaultedCustomParsableFloat>(new(new("foo", NumberStyles.Float)), "Some { foo }", null, parseFromSpan: true, tryParse: false);
     }
 
     private abstract record CustomParsableBase<TSelf>(string? Input, NumberStyles Style)
@@ -924,29 +924,38 @@ public sealed partial class Optional1Tests
     }
 #endif
 
-    readonly record struct IntDefaultedCustomParsableNumber(string Input, NumberStyles Style)
+    private sealed record IntDefaultedCustomParsableNumber(string? Input, NumberStyles Style)
     {
-        public static IntDefaultedCustomParsableNumber NaN => default;
+        public static IntDefaultedCustomParsableNumber NaN => default!;
 
         public static IntDefaultedCustomParsableNumber Parse(string s, NumberStyles style = NumberStyles.Number, IFormatProvider? provider = null) =>
             new(s, style);
+
+        public static IntDefaultedCustomParsableNumber Parse(ReadOnlySpan<char> s, NumberStyles style = NumberStyles.Number, IFormatProvider? provider = null) =>
+            new(s.ToString(), style);
     }
 
-    readonly record struct DefaultedCustomParsableInteger(string Input, NumberStyles Style)
+    private sealed record DefaultedCustomParsableInteger(string? Input, NumberStyles Style)
     {
-        public static DefaultedCustomParsableInteger NaN => default;
+        public static DefaultedCustomParsableInteger NaN => default!;
 
         public static DefaultedCustomParsableInteger Parse(string s, NumberStyles style = NumberStyles.Integer, IFormatProvider? provider = null) =>
             new(s, style);
+
+        public static DefaultedCustomParsableInteger Parse(ReadOnlySpan<char> s, NumberStyles style = NumberStyles.Integer, IFormatProvider? provider = null) =>
+            new(s.ToString(), style);
     }
 
-    readonly record struct DefaultedCustomParsableFloat(string Input, NumberStyles Style)
+    private sealed record DefaultedCustomParsableFloat(string? Input, NumberStyles Style)
 #if NET7_0_OR_GREATER
         : IBinaryInteger<DefaultedCustomParsableFloat>
 #endif
     {
         public static DefaultedCustomParsableFloat Parse(string s, NumberStyles style = NumberStyles.Float, IFormatProvider? provider = null) =>
             new(s, style);
+
+        public static DefaultedCustomParsableFloat Parse(ReadOnlySpan<char> s, NumberStyles style = NumberStyles.Float, IFormatProvider? provider = null) =>
+            new(s.ToString(), style);
 
 #if NET7_0_OR_GREATER
         static DefaultedCustomParsableFloat INumberBase<DefaultedCustomParsableFloat>.One => throw new NotImplementedException();
@@ -1045,15 +1054,14 @@ public sealed partial class Optional1Tests
 
         int IComparable.CompareTo(object? obj) => throw new NotImplementedException();
 
-        int IComparable<DefaultedCustomParsableFloat>.CompareTo(DefaultedCustomParsableFloat other) => throw new NotImplementedException();
-
-        bool IEquatable<DefaultedCustomParsableFloat>.Equals(DefaultedCustomParsableFloat other) => throw new NotImplementedException();
+        int IComparable<DefaultedCustomParsableFloat>.CompareTo(DefaultedCustomParsableFloat? other) => throw new NotImplementedException();
 
         int IBinaryInteger<DefaultedCustomParsableFloat>.GetByteCount() => throw new NotImplementedException();
 
         int IBinaryInteger<DefaultedCustomParsableFloat>.GetShortestBitLength() => throw new NotImplementedException();
 
-        string IFormattable.ToString(string? format, IFormatProvider? formatProvider) => throw new NotImplementedException();
+        string IFormattable.ToString(string? format, IFormatProvider? formatProvider) =>
+            ToString();
 
         bool ISpanFormattable.TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider) => throw new NotImplementedException();
 
@@ -1091,9 +1099,9 @@ public sealed partial class Optional1Tests
 
         static DefaultedCustomParsableFloat IShiftOperators<DefaultedCustomParsableFloat, int, DefaultedCustomParsableFloat>.operator >>(DefaultedCustomParsableFloat value, int shiftAmount) => throw new NotImplementedException();
 
-        static bool IEqualityOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, bool>.operator ==(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
+        static bool IEqualityOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, bool>.operator ==(DefaultedCustomParsableFloat? left, DefaultedCustomParsableFloat? right) => throw new NotImplementedException();
 
-        static bool IEqualityOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, bool>.operator !=(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
+        static bool IEqualityOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, bool>.operator !=(DefaultedCustomParsableFloat? left, DefaultedCustomParsableFloat? right) => throw new NotImplementedException();
 
         static bool IComparisonOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, bool>.operator <(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
 
@@ -1159,7 +1167,7 @@ public sealed partial class Optional1Tests
         }
     }
 
-    private static void AssertParses<T>(Optional<T> expected, string input, IFormatProvider? provider, bool? parseFromSpan = null)
+    private static void AssertParses<T>(Optional<T> expected, string input, IFormatProvider? provider, bool? parseFromSpan = null, bool tryParse = true)
     {
         var parseSpan = parseFromSpan ?? ShouldParseSpan<T>();
         var comparer = new CustomComparer<T>();
@@ -1173,13 +1181,16 @@ public sealed partial class Optional1Tests
                 Assert.Equal(expected, Optional<T>.Parse(input.AsSpan()), comparer);
 #pragma warning restore CA1305 // Specify IFormatProvider
 
-            Assert.True(Optional<T>.TryParse(input, out var resultWithoutProvider1));
-            Assert.Equal(expected, resultWithoutProvider1, comparer);
-
-            if (parseSpan)
+            if (tryParse)
             {
-                Assert.True(Optional<T>.TryParse(input.AsSpan(), out var resultWithoutProvider2));
-                Assert.Equal(expected, resultWithoutProvider2, comparer);
+                Assert.True(Optional<T>.TryParse(input, out var resultWithoutProvider1));
+                Assert.Equal(expected, resultWithoutProvider1, comparer);
+
+                if (parseSpan)
+                {
+                    Assert.True(Optional<T>.TryParse(input.AsSpan(), out var resultWithoutProvider2));
+                    Assert.Equal(expected, resultWithoutProvider2, comparer);
+                }
             }
         }
 
@@ -1188,15 +1199,17 @@ public sealed partial class Optional1Tests
         if (parseSpan)
             Assert.Equal(expected, Optional<T>.Parse(input.AsSpan(), provider), comparer);
 
-        Assert.True(Optional<T>.TryParse(input, provider, out var resultWithProvider1));
-        Assert.Equal(expected, resultWithProvider1, comparer);
-
-        if (parseSpan)
+        if (tryParse)
         {
-            Assert.True(Optional<T>.TryParse(input.AsSpan(), provider, out var resultWithProvider2));
-            Assert.Equal(expected, resultWithProvider2, comparer);
-        }
+            Assert.True(Optional<T>.TryParse(input, provider, out var resultWithProvider1));
+            Assert.Equal(expected, resultWithProvider1, comparer);
 
+            if (parseSpan)
+            {
+                Assert.True(Optional<T>.TryParse(input.AsSpan(), provider, out var resultWithProvider2));
+                Assert.Equal(expected, resultWithProvider2, comparer);
+            }
+        }
     }
 
     private static bool ShouldParseSpan<T>()
