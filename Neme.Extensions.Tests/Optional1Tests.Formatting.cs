@@ -131,9 +131,9 @@ public sealed partial class Optional1Tests
     [Fact]
     public void Parse_Null()
     {
-        AssertDoesNotParse<int>(null!, null, null, parseFromSpan: false);
-        AssertDoesNotParse<int>(null!, null, CultureInfo.InvariantCulture, parseFromSpan: false);
-        AssertDoesNotParse<int>(null!, null, CultureInfo.GetCultureInfo("de"), parseFromSpan: false);
+        AssertDoesNotParse<int>(null, null, null, parseFromSpan: false);
+        AssertDoesNotParse<int>(null, null, CultureInfo.InvariantCulture, parseFromSpan: false);
+        AssertDoesNotParse<int>(null, null, CultureInfo.GetCultureInfo("de"), parseFromSpan: false);
     }
 
     [Fact]
@@ -1115,7 +1115,7 @@ public sealed partial class Optional1Tests
 #endif
     }
 
-    private static void AssertDoesNotParse<T>(string input, string? nestedInput, IFormatProvider? provider, bool? parseFromSpan = null)
+    private static void AssertDoesNotParse<T>(string? input, string? nestedInput, IFormatProvider? provider, bool? parseFromSpan = null, bool tryParse = true)
     {
         var parseSpan = parseFromSpan ?? ShouldParseSpan<T>();
 
@@ -1134,13 +1134,16 @@ public sealed partial class Optional1Tests
                     AssertThrows.Format(input, nestedInput, () => Optional<T>.Parse(input.AsSpan()));
             }
 
-            Assert.False(Optional<T>.TryParse(input, out var resultWithoutProvider1));
-            Assert.Equal(default, resultWithoutProvider1);
-
-            if (parseSpan)
+            if (tryParse)
             {
-                Assert.False(Optional<T>.TryParse(input.AsSpan(), out var resultWithoutProvider2));
-                Assert.Equal(default, resultWithoutProvider2);
+                Assert.False(Optional<T>.TryParse(input, out var resultWithoutProvider1));
+                Assert.Equal(default, resultWithoutProvider1);
+
+                if (parseSpan)
+                {
+                    Assert.False(Optional<T>.TryParse(input.AsSpan(), out var resultWithoutProvider2));
+                    Assert.Equal(default, resultWithoutProvider2);
+                }
             }
 #pragma warning restore CA1305 // Specify IFormatProvider
         }
@@ -1157,13 +1160,16 @@ public sealed partial class Optional1Tests
                 AssertThrows.Format(input, nestedInput, () => Optional<T>.Parse(input.AsSpan(), provider));
         }
 
-        Assert.False(Optional<T>.TryParse(input, provider, out var resultWithProvider1));
-        Assert.Equal(default, resultWithProvider1);
-
-        if (parseSpan)
+        if (tryParse)
         {
-            Assert.False(Optional<T>.TryParse(input.AsSpan(), provider, out var resultWithProvider2));
-            Assert.Equal(default, resultWithProvider2);
+            Assert.False(Optional<T>.TryParse(input, provider, out var resultWithProvider1));
+            Assert.Equal(default, resultWithProvider1);
+
+            if (parseSpan)
+            {
+                Assert.False(Optional<T>.TryParse(input.AsSpan(), provider, out var resultWithProvider2));
+                Assert.Equal(default, resultWithProvider2);
+            }
         }
     }
 
