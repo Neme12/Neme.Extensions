@@ -497,7 +497,9 @@ public sealed partial class Optional1Tests
             {
             }
 
+#pragma warning disable CA1822 // Mark members as static
             public NaNWrong4 NaN => default!;
+#pragma warning restore CA1822 // Mark members as static
         }
 
         public sealed record NaNWrong5(string? Input, NumberStyles Style) : Base<NaNWrong5>(Input, Style)
