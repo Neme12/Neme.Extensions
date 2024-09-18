@@ -371,7 +371,7 @@ public sealed partial class Optional1Tests
     {
         Assert.Equal(NumberStyles.Number, Optional<IntDefaultedCustomParsableNumber>.Parse("Some { foo }", null).Value.Style);
         Assert.Equal(NumberStyles.Integer, Optional<DefaultedCustomParsableInteger>.Parse("Some { foo }", null).Value.Style);
-        Assert.Equal(NumberStyles.Float, Optional<DefaultedCustomParsableFloat>.Parse("Some { foo }", null).Value.Style);
+        Assert.Equal(NumberStyles.Float, Optional<IntDefaultedCustomParsableFloat>.Parse("Some { foo }", null).Value.Style);
     }
 
     readonly record struct CustomParsable(string Input, NumberStyles Style)
@@ -898,170 +898,170 @@ public sealed partial class Optional1Tests
             new(s, style);
     }
 
-    readonly record struct DefaultedCustomParsableFloat(string Input, NumberStyles Style)
+    readonly record struct IntDefaultedCustomParsableFloat(string Input, NumberStyles Style)
 #if NET7_0_OR_GREATER
-        : IBinaryInteger<DefaultedCustomParsableFloat>
+        : IBinaryInteger<IntDefaultedCustomParsableFloat>
 #endif
     {
-        public static DefaultedCustomParsableFloat Parse(string s, NumberStyles style = NumberStyles.Float, IFormatProvider? provider = null) =>
+        public static IntDefaultedCustomParsableFloat Parse(string s, NumberStyles style = NumberStyles.Float, IFormatProvider? provider = null) =>
             new(s, style);
 
 #if NET7_0_OR_GREATER
-        static DefaultedCustomParsableFloat INumberBase<DefaultedCustomParsableFloat>.One => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat INumberBase<IntDefaultedCustomParsableFloat>.One => throw new NotImplementedException();
 
-        static int INumberBase<DefaultedCustomParsableFloat>.Radix => throw new NotImplementedException();
+        static int INumberBase<IntDefaultedCustomParsableFloat>.Radix => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat INumberBase<DefaultedCustomParsableFloat>.Zero => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat INumberBase<IntDefaultedCustomParsableFloat>.Zero => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat IAdditiveIdentity<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat>.AdditiveIdentity => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat IAdditiveIdentity<IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat>.AdditiveIdentity => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat IMultiplicativeIdentity<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat>.MultiplicativeIdentity => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat IMultiplicativeIdentity<IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat>.MultiplicativeIdentity => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat INumberBase<DefaultedCustomParsableFloat>.Abs(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat INumberBase<IntDefaultedCustomParsableFloat>.Abs(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsCanonical(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static bool INumberBase<IntDefaultedCustomParsableFloat>.IsCanonical(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsComplexNumber(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static bool INumberBase<IntDefaultedCustomParsableFloat>.IsComplexNumber(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsEvenInteger(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static bool INumberBase<IntDefaultedCustomParsableFloat>.IsEvenInteger(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsFinite(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static bool INumberBase<IntDefaultedCustomParsableFloat>.IsFinite(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsImaginaryNumber(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static bool INumberBase<IntDefaultedCustomParsableFloat>.IsImaginaryNumber(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsInfinity(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static bool INumberBase<IntDefaultedCustomParsableFloat>.IsInfinity(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsInteger(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static bool INumberBase<IntDefaultedCustomParsableFloat>.IsInteger(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsNaN(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static bool INumberBase<IntDefaultedCustomParsableFloat>.IsNaN(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsNegative(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static bool INumberBase<IntDefaultedCustomParsableFloat>.IsNegative(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsNegativeInfinity(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static bool INumberBase<IntDefaultedCustomParsableFloat>.IsNegativeInfinity(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsNormal(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static bool INumberBase<IntDefaultedCustomParsableFloat>.IsNormal(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsOddInteger(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static bool INumberBase<IntDefaultedCustomParsableFloat>.IsOddInteger(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsPositive(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static bool INumberBase<IntDefaultedCustomParsableFloat>.IsPositive(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsPositiveInfinity(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static bool INumberBase<IntDefaultedCustomParsableFloat>.IsPositiveInfinity(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static bool IBinaryNumber<DefaultedCustomParsableFloat>.IsPow2(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static bool IBinaryNumber<IntDefaultedCustomParsableFloat>.IsPow2(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsRealNumber(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static bool INumberBase<IntDefaultedCustomParsableFloat>.IsRealNumber(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsSubnormal(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static bool INumberBase<IntDefaultedCustomParsableFloat>.IsSubnormal(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsZero(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static bool INumberBase<IntDefaultedCustomParsableFloat>.IsZero(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat IBinaryNumber<DefaultedCustomParsableFloat>.Log2(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat IBinaryNumber<IntDefaultedCustomParsableFloat>.Log2(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat INumberBase<DefaultedCustomParsableFloat>.MaxMagnitude(DefaultedCustomParsableFloat x, DefaultedCustomParsableFloat y) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat INumberBase<IntDefaultedCustomParsableFloat>.MaxMagnitude(IntDefaultedCustomParsableFloat x, IntDefaultedCustomParsableFloat y) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat INumberBase<DefaultedCustomParsableFloat>.MaxMagnitudeNumber(DefaultedCustomParsableFloat x, DefaultedCustomParsableFloat y) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat INumberBase<IntDefaultedCustomParsableFloat>.MaxMagnitudeNumber(IntDefaultedCustomParsableFloat x, IntDefaultedCustomParsableFloat y) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat INumberBase<DefaultedCustomParsableFloat>.MinMagnitude(DefaultedCustomParsableFloat x, DefaultedCustomParsableFloat y) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat INumberBase<IntDefaultedCustomParsableFloat>.MinMagnitude(IntDefaultedCustomParsableFloat x, IntDefaultedCustomParsableFloat y) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat INumberBase<DefaultedCustomParsableFloat>.MinMagnitudeNumber(DefaultedCustomParsableFloat x, DefaultedCustomParsableFloat y) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat INumberBase<IntDefaultedCustomParsableFloat>.MinMagnitudeNumber(IntDefaultedCustomParsableFloat x, IntDefaultedCustomParsableFloat y) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat INumberBase<DefaultedCustomParsableFloat>.Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat INumberBase<IntDefaultedCustomParsableFloat>.Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat INumberBase<DefaultedCustomParsableFloat>.Parse(string s, NumberStyles style, IFormatProvider? provider) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat INumberBase<IntDefaultedCustomParsableFloat>.Parse(string s, NumberStyles style, IFormatProvider? provider) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat ISpanParsable<DefaultedCustomParsableFloat>.Parse(ReadOnlySpan<char> s, IFormatProvider? provider) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat ISpanParsable<IntDefaultedCustomParsableFloat>.Parse(ReadOnlySpan<char> s, IFormatProvider? provider) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat IParsable<DefaultedCustomParsableFloat>.Parse(string s, IFormatProvider? provider) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat IParsable<IntDefaultedCustomParsableFloat>.Parse(string s, IFormatProvider? provider) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat IBinaryInteger<DefaultedCustomParsableFloat>.PopCount(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat IBinaryInteger<IntDefaultedCustomParsableFloat>.PopCount(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat IBinaryInteger<DefaultedCustomParsableFloat>.TrailingZeroCount(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat IBinaryInteger<IntDefaultedCustomParsableFloat>.TrailingZeroCount(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static bool INumberBase<DefaultedCustomParsableFloat>.TryConvertFromChecked<TOther>(TOther value, out DefaultedCustomParsableFloat result) => throw new NotImplementedException();
+        static bool INumberBase<IntDefaultedCustomParsableFloat>.TryConvertFromChecked<TOther>(TOther value, out IntDefaultedCustomParsableFloat result) => throw new NotImplementedException();
 
-        static bool INumberBase<DefaultedCustomParsableFloat>.TryConvertFromSaturating<TOther>(TOther value, out DefaultedCustomParsableFloat result) => throw new NotImplementedException();
+        static bool INumberBase<IntDefaultedCustomParsableFloat>.TryConvertFromSaturating<TOther>(TOther value, out IntDefaultedCustomParsableFloat result) => throw new NotImplementedException();
 
-        static bool INumberBase<DefaultedCustomParsableFloat>.TryConvertFromTruncating<TOther>(TOther value, out DefaultedCustomParsableFloat result) => throw new NotImplementedException();
+        static bool INumberBase<IntDefaultedCustomParsableFloat>.TryConvertFromTruncating<TOther>(TOther value, out IntDefaultedCustomParsableFloat result) => throw new NotImplementedException();
 
-        static bool INumberBase<DefaultedCustomParsableFloat>.TryConvertToChecked<TOther>(DefaultedCustomParsableFloat value, out TOther result) => throw new NotImplementedException();
+        static bool INumberBase<IntDefaultedCustomParsableFloat>.TryConvertToChecked<TOther>(IntDefaultedCustomParsableFloat value, out TOther result) => throw new NotImplementedException();
 
-        static bool INumberBase<DefaultedCustomParsableFloat>.TryConvertToSaturating<TOther>(DefaultedCustomParsableFloat value, out TOther result) => throw new NotImplementedException();
+        static bool INumberBase<IntDefaultedCustomParsableFloat>.TryConvertToSaturating<TOther>(IntDefaultedCustomParsableFloat value, out TOther result) => throw new NotImplementedException();
 
-        static bool INumberBase<DefaultedCustomParsableFloat>.TryConvertToTruncating<TOther>(DefaultedCustomParsableFloat value, out TOther result) => throw new NotImplementedException();
+        static bool INumberBase<IntDefaultedCustomParsableFloat>.TryConvertToTruncating<TOther>(IntDefaultedCustomParsableFloat value, out TOther result) => throw new NotImplementedException();
 
-        static bool INumberBase<DefaultedCustomParsableFloat>.TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out DefaultedCustomParsableFloat result) => throw new NotImplementedException();
+        static bool INumberBase<IntDefaultedCustomParsableFloat>.TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out IntDefaultedCustomParsableFloat result) => throw new NotImplementedException();
 
-        static bool INumberBase<DefaultedCustomParsableFloat>.TryParse(string? s, NumberStyles style, IFormatProvider? provider, out DefaultedCustomParsableFloat result) => throw new NotImplementedException();
+        static bool INumberBase<IntDefaultedCustomParsableFloat>.TryParse(string? s, NumberStyles style, IFormatProvider? provider, out IntDefaultedCustomParsableFloat result) => throw new NotImplementedException();
 
-        static bool ISpanParsable<DefaultedCustomParsableFloat>.TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out DefaultedCustomParsableFloat result) => throw new NotImplementedException();
+        static bool ISpanParsable<IntDefaultedCustomParsableFloat>.TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out IntDefaultedCustomParsableFloat result) => throw new NotImplementedException();
 
-        static bool IParsable<DefaultedCustomParsableFloat>.TryParse(string? s, IFormatProvider? provider, out DefaultedCustomParsableFloat result) => throw new NotImplementedException();
+        static bool IParsable<IntDefaultedCustomParsableFloat>.TryParse(string? s, IFormatProvider? provider, out IntDefaultedCustomParsableFloat result) => throw new NotImplementedException();
 
-        static bool IBinaryInteger<DefaultedCustomParsableFloat>.TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static bool IBinaryInteger<IntDefaultedCustomParsableFloat>.TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static bool IBinaryInteger<DefaultedCustomParsableFloat>.TryReadLittleEndian(ReadOnlySpan<byte> source, bool isUnsigned, out DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static bool IBinaryInteger<IntDefaultedCustomParsableFloat>.TryReadLittleEndian(ReadOnlySpan<byte> source, bool isUnsigned, out IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
         int IComparable.CompareTo(object? obj) => throw new NotImplementedException();
 
-        int IComparable<DefaultedCustomParsableFloat>.CompareTo(DefaultedCustomParsableFloat other) => throw new NotImplementedException();
+        int IComparable<IntDefaultedCustomParsableFloat>.CompareTo(IntDefaultedCustomParsableFloat other) => throw new NotImplementedException();
 
-        bool IEquatable<DefaultedCustomParsableFloat>.Equals(DefaultedCustomParsableFloat other) => throw new NotImplementedException();
+        bool IEquatable<IntDefaultedCustomParsableFloat>.Equals(IntDefaultedCustomParsableFloat other) => throw new NotImplementedException();
 
-        int IBinaryInteger<DefaultedCustomParsableFloat>.GetByteCount() => throw new NotImplementedException();
+        int IBinaryInteger<IntDefaultedCustomParsableFloat>.GetByteCount() => throw new NotImplementedException();
 
-        int IBinaryInteger<DefaultedCustomParsableFloat>.GetShortestBitLength() => throw new NotImplementedException();
+        int IBinaryInteger<IntDefaultedCustomParsableFloat>.GetShortestBitLength() => throw new NotImplementedException();
 
         string IFormattable.ToString(string? format, IFormatProvider? formatProvider) => throw new NotImplementedException();
 
         bool ISpanFormattable.TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider) => throw new NotImplementedException();
 
-        bool IBinaryInteger<DefaultedCustomParsableFloat>.TryWriteBigEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
+        bool IBinaryInteger<IntDefaultedCustomParsableFloat>.TryWriteBigEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
 
-        bool IBinaryInteger<DefaultedCustomParsableFloat>.TryWriteLittleEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
+        bool IBinaryInteger<IntDefaultedCustomParsableFloat>.TryWriteLittleEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat IUnaryPlusOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat>.operator +(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat IUnaryPlusOperators<IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat>.operator +(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat IAdditionOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, DefaultedCustomParsableFloat>.operator +(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat IAdditionOperators<IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat>.operator +(IntDefaultedCustomParsableFloat left, IntDefaultedCustomParsableFloat right) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat IUnaryNegationOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat>.operator -(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat IUnaryNegationOperators<IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat>.operator -(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat ISubtractionOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, DefaultedCustomParsableFloat>.operator -(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat ISubtractionOperators<IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat>.operator -(IntDefaultedCustomParsableFloat left, IntDefaultedCustomParsableFloat right) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat IBitwiseOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, DefaultedCustomParsableFloat>.operator ~(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat IBitwiseOperators<IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat>.operator ~(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat IIncrementOperators<DefaultedCustomParsableFloat>.operator ++(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat IIncrementOperators<IntDefaultedCustomParsableFloat>.operator ++(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat IDecrementOperators<DefaultedCustomParsableFloat>.operator --(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat IDecrementOperators<IntDefaultedCustomParsableFloat>.operator --(IntDefaultedCustomParsableFloat value) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat IMultiplyOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, DefaultedCustomParsableFloat>.operator *(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat IMultiplyOperators<IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat>.operator *(IntDefaultedCustomParsableFloat left, IntDefaultedCustomParsableFloat right) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat IDivisionOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, DefaultedCustomParsableFloat>.operator /(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat IDivisionOperators<IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat>.operator /(IntDefaultedCustomParsableFloat left, IntDefaultedCustomParsableFloat right) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat IModulusOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, DefaultedCustomParsableFloat>.operator %(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat IModulusOperators<IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat>.operator %(IntDefaultedCustomParsableFloat left, IntDefaultedCustomParsableFloat right) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat IBitwiseOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, DefaultedCustomParsableFloat>.operator &(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat IBitwiseOperators<IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat>.operator &(IntDefaultedCustomParsableFloat left, IntDefaultedCustomParsableFloat right) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat IBitwiseOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, DefaultedCustomParsableFloat>.operator |(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat IBitwiseOperators<IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat>.operator |(IntDefaultedCustomParsableFloat left, IntDefaultedCustomParsableFloat right) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat IBitwiseOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, DefaultedCustomParsableFloat>.operator ^(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat IBitwiseOperators<IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat>.operator ^(IntDefaultedCustomParsableFloat left, IntDefaultedCustomParsableFloat right) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat IShiftOperators<DefaultedCustomParsableFloat, int, DefaultedCustomParsableFloat>.operator <<(DefaultedCustomParsableFloat value, int shiftAmount) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat IShiftOperators<IntDefaultedCustomParsableFloat, int, IntDefaultedCustomParsableFloat>.operator <<(IntDefaultedCustomParsableFloat value, int shiftAmount) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat IShiftOperators<DefaultedCustomParsableFloat, int, DefaultedCustomParsableFloat>.operator >>(DefaultedCustomParsableFloat value, int shiftAmount) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat IShiftOperators<IntDefaultedCustomParsableFloat, int, IntDefaultedCustomParsableFloat>.operator >>(IntDefaultedCustomParsableFloat value, int shiftAmount) => throw new NotImplementedException();
 
-        static bool IEqualityOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, bool>.operator ==(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
+        static bool IEqualityOperators<IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat, bool>.operator ==(IntDefaultedCustomParsableFloat left, IntDefaultedCustomParsableFloat right) => throw new NotImplementedException();
 
-        static bool IEqualityOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, bool>.operator !=(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
+        static bool IEqualityOperators<IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat, bool>.operator !=(IntDefaultedCustomParsableFloat left, IntDefaultedCustomParsableFloat right) => throw new NotImplementedException();
 
-        static bool IComparisonOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, bool>.operator <(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
+        static bool IComparisonOperators<IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat, bool>.operator <(IntDefaultedCustomParsableFloat left, IntDefaultedCustomParsableFloat right) => throw new NotImplementedException();
 
-        static bool IComparisonOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, bool>.operator >(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
+        static bool IComparisonOperators<IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat, bool>.operator >(IntDefaultedCustomParsableFloat left, IntDefaultedCustomParsableFloat right) => throw new NotImplementedException();
 
-        static bool IComparisonOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, bool>.operator <=(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
+        static bool IComparisonOperators<IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat, bool>.operator <=(IntDefaultedCustomParsableFloat left, IntDefaultedCustomParsableFloat right) => throw new NotImplementedException();
 
-        static bool IComparisonOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, bool>.operator >=(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
+        static bool IComparisonOperators<IntDefaultedCustomParsableFloat, IntDefaultedCustomParsableFloat, bool>.operator >=(IntDefaultedCustomParsableFloat left, IntDefaultedCustomParsableFloat right) => throw new NotImplementedException();
 
-        static DefaultedCustomParsableFloat IShiftOperators<DefaultedCustomParsableFloat, int, DefaultedCustomParsableFloat>.operator >>>(DefaultedCustomParsableFloat value, int shiftAmount) => throw new NotImplementedException();
+        static IntDefaultedCustomParsableFloat IShiftOperators<IntDefaultedCustomParsableFloat, int, IntDefaultedCustomParsableFloat>.operator >>>(IntDefaultedCustomParsableFloat value, int shiftAmount) => throw new NotImplementedException();
 #endif
     }
 
