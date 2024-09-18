@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Numerics;
+using System.Text;
 
 namespace Neme.Extensions.Tests;
 
@@ -190,6 +191,28 @@ public sealed partial class Optional1Tests
         AssertParses<Memory<char>>(new("hello".ToArray()), "Some { hello }", CultureInfo.InvariantCulture);
         AssertParses<Memory<char>>(new("hello".ToArray()), "Some { hello }", CultureInfo.GetCultureInfo("de"));
     }
+
+    [Fact]
+    public void Parse_Some_Char()
+    {
+        AssertParses<char>(new('a'), "Some { a }", null, parseFromSpan: false);
+        AssertParses<char>(new('a'), "Some { a }", CultureInfo.InvariantCulture, parseFromSpan: false);
+        AssertParses<char>(new('a'), "Some { a }", CultureInfo.GetCultureInfo("de"), parseFromSpan: false);
+        AssertDoesNotParse<char>("Some {  }", "", null, parseFromSpan: false);
+        AssertDoesNotParse<char>("Some { ab }", "ab", null, parseFromSpan: false);
+    }
+
+#if NETCOREAPP3_0_OR_GREATER
+    [Fact]
+    public void Parse_Some_Rune()
+    {
+        AssertParses<Rune>(new(new(0x1f642)), "Some { 🙂 }", null);
+        AssertParses<Rune>(new(new(0x1f642)), "Some { 🙂 }", CultureInfo.InvariantCulture);
+        AssertParses<Rune>(new(new(0x1f642)), "Some { 🙂 }", CultureInfo.GetCultureInfo("de"));
+        AssertDoesNotParse<Rune>("Some {  }", "", null);
+        AssertDoesNotParse<Rune>("Some { ab }", "ab", null);
+    }
+#endif
 
     [Fact]
     public void Parse_Some_Null()
@@ -851,9 +874,9 @@ public sealed partial class Optional1Tests
     }
 #endif
 
-    private static void AssertDoesNotParse<T>(string input, string? nestedInput, IFormatProvider? provider)
+    private static void AssertDoesNotParse<T>(string input, string? nestedInput, IFormatProvider? provider, bool parseFromSpan = true)
     {
-        var parseSpan = ShouldParseSpan<T>();
+        var parseSpan = ShouldParseSpan<T>() && parseFromSpan;
 
         if (provider is null)
         {
@@ -903,9 +926,9 @@ public sealed partial class Optional1Tests
         }
     }
 
-    private static void AssertParses<T>(Optional<T> expected, string input, IFormatProvider? provider)
+    private static void AssertParses<T>(Optional<T> expected, string input, IFormatProvider? provider, bool parseFromSpan = true)
     {
-        var parseSpan = ShouldParseSpan<T>();
+        var parseSpan = ShouldParseSpan<T>() && parseFromSpan;
         var comparer = new CustomComparer<T>();
 
         if (provider is null)

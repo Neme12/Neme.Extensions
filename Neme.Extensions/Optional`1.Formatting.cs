@@ -1,9 +1,12 @@
-﻿using Neme.Extensions.Utilities;
+﻿using Neme.Extensions.Text;
+using Neme.Extensions.Utilities;
+using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Numerics;
 using System.Reflection;
+using System.Text;
 
 namespace Neme.Extensions;
 
@@ -297,6 +300,11 @@ public readonly partial struct Optional<T>
 		return s_parseMethodLazy.EnsureInitialized(
 			static () =>
 			{
+#if NETCOREAPP3_0_OR_GREATER
+				if (typeof(T) == typeof(Rune))
+					return (s, provider) => (T)(object)RuneExtensions.Parse(s);
+#endif
+
 				if (GetParseMethod<ParseProviderDelegate>(nameof(Parse), out _) is { } method)
 					return method;
 
@@ -318,7 +326,12 @@ public readonly partial struct Optional<T>
 		return s_parseSpanMethodLazy.EnsureInitialized(
 			static () =>
 			{
-				if (GetParseMethod<ParseSpanProviderDelegate>(nameof(Parse), out _) is { } method)
+#if NETCOREAPP3_0_OR_GREATER
+                if (typeof(T) == typeof(Rune))
+                    return (s, provider) => (T)(object)RuneExtensions.Parse(s);
+#endif
+
+                if (GetParseMethod<ParseSpanProviderDelegate>(nameof(Parse), out _) is { } method)
 					return method;
 
 				if (GetParseMethod<ParseSpanNumberStylesProviderDelegate>(nameof(Parse), out var defaultStyle) is { } numberStylesMethod)
@@ -340,7 +353,19 @@ public readonly partial struct Optional<T>
 		return s_tryParseMethodLazy.EnsureInitialized(
 			static () =>
 			{
-				if (GetParseMethod<TryParseProviderDelegate>(nameof(TryParse), out _) is { } method)
+#if NETCOREAPP3_0_OR_GREATER
+				if (typeof(T) == typeof(Rune))
+				{
+					return ([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) =>
+					{
+						var success = RuneExtensions.TryParse(s, out var rune);
+						result = (T)(object)rune;
+						return success;
+					};
+				}
+#endif
+
+                if (GetParseMethod<TryParseProviderDelegate>(nameof(TryParse), out _) is { } method)
 					return method;
 
 				if (GetParseMethod<TryParseNumberStylesProviderDelegate>(nameof(TryParse), out var defaultStyle) is { } numberStylesMethod)
@@ -361,7 +386,19 @@ public readonly partial struct Optional<T>
 		return s_tryParseSpanMethodLazy.EnsureInitialized(
 			static () =>
 			{
-				if (GetParseMethod<TryParseSpanProviderDelegate>(nameof(TryParse), out _) is { } method)
+#if NETCOREAPP3_0_OR_GREATER
+                if (typeof(T) == typeof(Rune))
+                {
+                    return (ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) =>
+                    {
+                        var success = RuneExtensions.TryParse(s, out var rune);
+                        result = (T)(object)rune;
+                        return success;
+                    };
+                }
+#endif
+
+                if (GetParseMethod<TryParseSpanProviderDelegate>(nameof(TryParse), out _) is { } method)
 					return method;
 
 				if (GetParseMethod<TryParseSpanNumberStylesProviderDelegate>(nameof(TryParse), out var defaultStyle) is { } numberStylesMethod)
