@@ -140,25 +140,8 @@ public readonly partial struct Optional<T>
     {
         Debug.Assert(methodName is "op_Equality" or "op_Inequality");
 
-        var method = typeof(T).GetMethod(
-            methodName,
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-            genericParameterCount: 0,
-#endif
-            BindingFlags.Public | BindingFlags.Static | BindingFlags.ExactBinding | BindingFlags.DeclaredOnly,
-            binder: null,
-            [typeof(T), typeof(T)],
-            modifiers: null);
-
+        var method = typeof(T).GetMethod<Func<T, T, bool>>(methodName, BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly);
         if (method is null)
-            return null;
-
-#if !(NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
-        if (method.ContainsGenericParameters)
-            return null;
-#endif
-
-        if (method.ReturnType != typeof(bool))
             return null;
 
 #if NET5_0_OR_GREATER

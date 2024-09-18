@@ -1,6 +1,5 @@
 ﻿using Neme.Extensions.Text;
 using Neme.Extensions.Utilities;
-using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
