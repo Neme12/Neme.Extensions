@@ -520,30 +520,13 @@ public readonly partial struct Optional<T>
 		where TDelegate : Delegate
 	{
 		Debug.Assert(methodName is "Parse" or "TryParse");
-        defaultNumberStyles = null;
 
-        var invokeMethod = typeof(TDelegate).GetMethod("Invoke")!;
-
-        var method = typeof(T).GetMethod(
-			methodName,
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-            genericParameterCount: 0,
-#endif
-			BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy | BindingFlags.ExactBinding,
-			binder: null,
-			invokeMethod.GetParameters().Select(p => p.ParameterType).ToArray(),
-			modifiers: null);
-
+        var method = typeof(T).GetMethod<TDelegate>(methodName, BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
 		if (method is null)
+		{
+			defaultNumberStyles = null;
 			return null;
-
-#if !(NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
-		if (method.ContainsGenericParameters)
-			return null;
-#endif
-
-		if (method.ReturnType != invokeMethod.ReturnType)
-			return null;
+		}
 
         defaultNumberStyles = method.GetParameters().FirstOrDefault(x => x.ParameterType == typeof(NumberStyles)) is { HasDefaultValue: true } numberStylesParameter
             ? (NumberStyles)numberStylesParameter.DefaultValue!
