@@ -140,14 +140,6 @@ public readonly partial struct Optional<T>
     {
         Debug.Assert(methodName is "op_Equality" or "op_Inequality");
 
-        var method = typeof(T).GetMethod<Func<T, T, bool>>(methodName, BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly);
-        if (method is null)
-            return null;
-
-#if NET5_0_OR_GREATER
-        return method.CreateDelegate<Func<T, T, bool>>();
-#else
-        return (Func<T, T, bool>)method.CreateDelegate(typeof(Func<T, T, bool>));
-#endif
+        return typeof(T).GetMethodDelegate<Func<T, T, bool>>(methodName, BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly);
     }
 }

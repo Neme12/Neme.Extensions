@@ -44,4 +44,18 @@ internal static class TypeExtensions
         static int GetGenericParameterCount(MethodInfo method) =>
             method.ContainsGenericParameters ? method.GetGenericArguments().Length : 0;
     }
+
+    public static TDelegate? GetMethodDelegate<TDelegate>(this Type @type, string name, BindingFlags bindingAttr)
+        where TDelegate : Delegate
+    {
+        var method = type.GetMethod<TDelegate>(name, bindingAttr);
+        if (method is null)
+            return null;
+
+#if NET5_0_OR_GREATER
+        return method.CreateDelegate<TDelegate>();
+#else
+        return (TDelegate)method.CreateDelegate(typeof(TDelegate));
+#endif
+    }
 }
