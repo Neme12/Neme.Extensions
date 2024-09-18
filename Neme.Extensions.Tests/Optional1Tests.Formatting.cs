@@ -344,25 +344,25 @@ public sealed partial class Optional1Tests
     [Fact]
     public void Parse_CustomParsableNumberStyles()
     {
-        Assert.Equal(NumberStyles.Number, Optional<CustomParsable>.Parse("Some { foo }", null).Value.Style);
+        AssertParses<CustomParsable>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: false);
 
-        Assert.Equal(NumberStyles.Integer, Optional<Int>.Parse("Some { foo }", null).Value.Style);
-        Assert.Equal(NumberStyles.Integer, Optional<IntCustomParsable>.Parse("Some { foo }", null).Value.Style);
-        Assert.Equal(NumberStyles.Integer, Optional<Int2CustomParsable>.Parse("Some { foo }", null).Value.Style);
-        Assert.Equal(NumberStyles.Number, Optional<intCustomParsable>.Parse("Some { foo }", null).Value.Style);
-        Assert.Equal(NumberStyles.Number, Optional<IntegerCustomParsable>.Parse("Some { foo }", null).Value.Style);
-        Assert.Equal(NumberStyles.Float | NumberStyles.AllowThousands, Optional<CustomParsableContainingNaN1>.Parse("Some { foo }", null).Value.Style);
-        Assert.Equal(NumberStyles.Float | NumberStyles.AllowThousands, Optional<CustomParsableContainingNaN2>.Parse("Some { foo }", null).Value.Style);
-        Assert.Equal(NumberStyles.Number, Optional<CustomParsableContainingNaNWrong1>.Parse("Some { foo }", null).Value.Style);
-        Assert.Equal(NumberStyles.Number, Optional<CustomParsableContainingNaNWrong2>.Parse("Some { foo }", null).Value.Style);
-        Assert.Equal(NumberStyles.Number, Optional<CustomParsableContainingNaNWrong3>.Parse("Some { foo }", null).Value.Style);
-        Assert.Equal(NumberStyles.Number, Optional<CustomParsableContainingNaNWrong4>.Parse("Some { foo }", null).Value.Style);
-        Assert.Equal(NumberStyles.Number, Optional<CustomParsableContainingNaNWrong5>.Parse("Some { foo }", null).Value.Style);
-        Assert.Equal(NumberStyles.Number, Optional<CustomParsableContainingNaNWrong6>.Parse("Some { foo }", null).Value.Style);
+        AssertParses<Int>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: false);
+        AssertParses<IntCustomParsable>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: false);
+        AssertParses<Int2CustomParsable>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: false);
+        AssertParses<intCustomParsable>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: false);
+        AssertParses<IntegerCustomParsable>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: false);
+        AssertParses<CustomParsableContainingNaN1> (new(new("foo", NumberStyles.Float | NumberStyles.AllowThousands)), "Some { foo }", null, parseFromSpan: false);
+        AssertParses<CustomParsableContainingNaN2> (new(new("foo", NumberStyles.Float | NumberStyles.AllowThousands)), "Some { foo }", null, parseFromSpan: false);
+        AssertParses<CustomParsableContainingNaNWrong1>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: false);
+        AssertParses<CustomParsableContainingNaNWrong2>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: false);
+        AssertParses<CustomParsableContainingNaNWrong3>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: false);
+        AssertParses<CustomParsableContainingNaNWrong4>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: false);
+        AssertParses<CustomParsableContainingNaNWrong5>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: false);
+        AssertParses<CustomParsableContainingNaNWrong6>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: false);
 
 #if NET7_0_OR_GREATER
-        Assert.Equal(NumberStyles.Integer, Optional<CustomParsableIBinaryInteger>.Parse("Some { foo }", null).Value.Style);
-        Assert.Equal(NumberStyles.Float | NumberStyles.AllowThousands, Optional<CustomParsableIFloatingPointIeee754>.Parse("Some { foo }", null).Value.Style);
+        AssertParses<CustomParsableIBinaryInteger>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: false);
+        AssertParses<CustomParsableIFloatingPointIeee754>(new(new("foo", NumberStyles.Float | NumberStyles.AllowThousands)), "Some { foo }", null, parseFromSpan: false);
 #endif
     }
 
@@ -378,42 +378,84 @@ public sealed partial class Optional1Tests
     {
         public static CustomParsable Parse(string s, NumberStyles style, IFormatProvider? provider) =>
             new(s, style);
+
+        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out CustomParsable result)
+        {
+            result = new(s, style);
+            return true;
+        }
     }
 
     readonly record struct Int(string Input, NumberStyles Style)
     {
         public static Int Parse(string s, NumberStyles style, IFormatProvider? provider) =>
             new(s, style);
+
+        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out Int result)
+        {
+            result = new(s, style);
+            return true;
+        }
     }
 
     readonly record struct IntCustomParsable(string Input, NumberStyles Style)
     {
         public static IntCustomParsable Parse(string s, NumberStyles style, IFormatProvider? provider) =>
             new(s, style);
+
+        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out IntCustomParsable result)
+        {
+            result = new(s, style);
+            return true;
+        }
     }
 
     readonly record struct Int2CustomParsable(string Input, NumberStyles Style)
     {
         public static Int2CustomParsable Parse(string s, NumberStyles style, IFormatProvider? provider) =>
             new(s, style);
+
+        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out Int2CustomParsable result)
+        {
+            result = new(s, style);
+            return true;
+        }
     }
 
     readonly record struct intCustomParsable(string Input, NumberStyles Style)
     {
         public static intCustomParsable Parse(string s, NumberStyles style, IFormatProvider? provider) =>
             new(s, style);
+
+        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out intCustomParsable result)
+        {
+            result = new(s, style);
+            return true;
+        }
     }
 
     readonly record struct IntegerCustomParsable(string Input, NumberStyles Style)
     {
         public static IntegerCustomParsable Parse(string s, NumberStyles style, IFormatProvider? provider) =>
             new(s, style);
+
+        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out IntegerCustomParsable result)
+        {
+            result = new(s, style);
+            return true;
+        }
     }
 
     readonly record struct CustomParsableContainingNaN1(string Input, NumberStyles Style)
     {
         public static CustomParsableContainingNaN1 Parse(string s, NumberStyles style, IFormatProvider? provider) =>
             new(s, style);
+
+        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out CustomParsableContainingNaN1 result)
+        {
+            result = new(s, style);
+            return true;
+        }
 
         public static readonly CustomParsableContainingNaN1 NaN;
     }
@@ -423,6 +465,12 @@ public sealed partial class Optional1Tests
         public static CustomParsableContainingNaN2 Parse(string s, NumberStyles style, IFormatProvider? provider) =>
             new(s, style);
 
+        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out CustomParsableContainingNaN2 result)
+        {
+            result = new(s, style);
+            return true;
+        }
+
         public static CustomParsableContainingNaN2 NaN => default;
     }
 
@@ -430,6 +478,12 @@ public sealed partial class Optional1Tests
     {
         public static CustomParsableContainingNaNWrong1 Parse(string s, NumberStyles style, IFormatProvider? provider) =>
             new(s, style);
+
+        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out CustomParsableContainingNaNWrong1 result)
+        {
+            result = new(s, style);
+            return true;
+        }
 
         public static int NaN => default;
     }
@@ -439,6 +493,12 @@ public sealed partial class Optional1Tests
         public static CustomParsableContainingNaNWrong2 Parse(string s, NumberStyles style, IFormatProvider? provider) =>
             new(s, style);
 
+        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out CustomParsableContainingNaNWrong2 result)
+        {
+            result = new(s, style);
+            return true;
+        }
+
         public static CustomParsableContainingNaNWrong2 NaN { get; set; }
     }
 
@@ -446,6 +506,12 @@ public sealed partial class Optional1Tests
     {
         public static CustomParsableContainingNaNWrong3 Parse(string s, NumberStyles style, IFormatProvider? provider) =>
             new(s, style);
+
+        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out CustomParsableContainingNaNWrong3 result)
+        {
+            result = new(s, style);
+            return true;
+        }
 
         public static CustomParsableContainingNaNWrong3 NaN;
     }
@@ -455,6 +521,12 @@ public sealed partial class Optional1Tests
         public static CustomParsableContainingNaNWrong4 Parse(string s, NumberStyles style, IFormatProvider? provider) =>
             new(s, style);
 
+        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out CustomParsableContainingNaNWrong4 result)
+        {
+            result = new(s, style);
+            return true;
+        }
+
         public CustomParsableContainingNaNWrong4 NaN => default;
     }
 
@@ -462,6 +534,12 @@ public sealed partial class Optional1Tests
     {
         public static CustomParsableContainingNaNWrong5 Parse(string s, NumberStyles style, IFormatProvider? provider) =>
             new(s, style);
+
+        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out CustomParsableContainingNaNWrong5 result)
+        {
+            result = new(s, style);
+            return true;
+        }
 
         internal static CustomParsableContainingNaNWrong5 NaN => default;
     }
@@ -471,6 +549,12 @@ public sealed partial class Optional1Tests
         public static CustomParsableContainingNaNWrong6 Parse(string s, NumberStyles style, IFormatProvider? provider) =>
             new(s, style);
 
+        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out CustomParsableContainingNaNWrong6 result)
+        {
+            result = new(s, style);
+            return true;
+        }
+
         public static CustomParsableContainingNaNWrong6 NaN() => default;
     }
 
@@ -479,6 +563,12 @@ public sealed partial class Optional1Tests
     {
         public static CustomParsableIBinaryInteger Parse(string s, NumberStyles style, IFormatProvider? provider) =>
             new(s, style);
+
+        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out CustomParsableIBinaryInteger result)
+        {
+            result = new(s, style);
+            return true;
+        }
 
         static CustomParsableIBinaryInteger INumberBase<CustomParsableIBinaryInteger>.One => throw new NotImplementedException();
 
@@ -578,13 +668,12 @@ public sealed partial class Optional1Tests
 
         int IComparable<CustomParsableIBinaryInteger>.CompareTo(CustomParsableIBinaryInteger other) => throw new NotImplementedException();
 
-        bool IEquatable<CustomParsableIBinaryInteger>.Equals(CustomParsableIBinaryInteger other) => throw new NotImplementedException();
-
         int IBinaryInteger<CustomParsableIBinaryInteger>.GetByteCount() => throw new NotImplementedException();
 
         int IBinaryInteger<CustomParsableIBinaryInteger>.GetShortestBitLength() => throw new NotImplementedException();
 
-        string IFormattable.ToString(string? format, IFormatProvider? formatProvider) => throw new NotImplementedException();
+        string IFormattable.ToString(string? format, IFormatProvider? formatProvider) =>
+            ToString();
 
         bool ISpanFormattable.TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider) => throw new NotImplementedException();
 
@@ -641,6 +730,12 @@ public sealed partial class Optional1Tests
     {
         public static CustomParsableIFloatingPointIeee754 Parse(string s, NumberStyles style, IFormatProvider? provider) =>
             new(s, style);
+
+        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out CustomParsableIFloatingPointIeee754 result)
+        {
+            result = new(s, style);
+            return true;
+        }
 
         static CustomParsableIFloatingPointIeee754 IFloatingPointIeee754<CustomParsableIFloatingPointIeee754>.Epsilon => throw new NotImplementedException();
 
@@ -828,8 +923,6 @@ public sealed partial class Optional1Tests
 
         int IComparable<CustomParsableIFloatingPointIeee754>.CompareTo(CustomParsableIFloatingPointIeee754 other) => throw new NotImplementedException();
 
-        bool IEquatable<CustomParsableIFloatingPointIeee754>.Equals(CustomParsableIFloatingPointIeee754 other) => throw new NotImplementedException();
-
         int IFloatingPoint<CustomParsableIFloatingPointIeee754>.GetExponentByteCount() => throw new NotImplementedException();
 
         int IFloatingPoint<CustomParsableIFloatingPointIeee754>.GetExponentShortestBitLength() => throw new NotImplementedException();
@@ -838,7 +931,8 @@ public sealed partial class Optional1Tests
 
         int IFloatingPoint<CustomParsableIFloatingPointIeee754>.GetSignificandByteCount() => throw new NotImplementedException();
 
-        string IFormattable.ToString(string? format, IFormatProvider? formatProvider) => throw new NotImplementedException();
+        string IFormattable.ToString(string? format, IFormatProvider? formatProvider) =>
+            ToString();
 
         bool ISpanFormattable.TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider) => throw new NotImplementedException();
 
@@ -1065,9 +1159,9 @@ public sealed partial class Optional1Tests
 #endif
     }
 
-    private static void AssertDoesNotParse<T>(string input, string? nestedInput, IFormatProvider? provider)
+    private static void AssertDoesNotParse<T>(string input, string? nestedInput, IFormatProvider? provider, bool? parseFromSpan = null)
     {
-        var parseSpan = ShouldParseSpan<T>();
+        var parseSpan = parseFromSpan ?? ShouldParseSpan<T>();
 
         if (provider is null)
         {
@@ -1117,9 +1211,9 @@ public sealed partial class Optional1Tests
         }
     }
 
-    private static void AssertParses<T>(Optional<T> expected, string input, IFormatProvider? provider)
+    private static void AssertParses<T>(Optional<T> expected, string input, IFormatProvider? provider, bool? parseFromSpan = null)
     {
-        var parseSpan = ShouldParseSpan<T>();
+        var parseSpan = parseFromSpan ?? ShouldParseSpan<T>();
         var comparer = new CustomComparer<T>();
 
         if (provider is null)
