@@ -131,17 +131,17 @@ public sealed partial class Optional1Tests
     [Fact]
     public void Parse_Null()
     {
-        AssertDoesNotParse<int>(null!, null, null);
-        AssertDoesNotParse<int>(null!, null, CultureInfo.InvariantCulture);
-        AssertDoesNotParse<int>(null!, null, CultureInfo.GetCultureInfo("de"));
+        AssertDoesNotParse<int>(null!, null, null, parseFromSpan: false);
+        AssertDoesNotParse<int>(null!, null, CultureInfo.InvariantCulture, parseFromSpan: false);
+        AssertDoesNotParse<int>(null!, null, CultureInfo.GetCultureInfo("de"), parseFromSpan: false);
     }
 
     [Fact]
     public void Parse_None()
     {
-        AssertParses<int>(default, "None", null);
-        AssertParses<int>(default, "None", CultureInfo.InvariantCulture);
-        AssertParses<int>(default, "None", CultureInfo.GetCultureInfo("de"));
+        AssertParses<int>(default, "None", null, parseFromSpan: true);
+        AssertParses<int>(default, "None", CultureInfo.InvariantCulture, parseFromSpan: true);
+        AssertParses<int>(default, "None", CultureInfo.GetCultureInfo("de"), parseFromSpan: true);
     }
 
     [Fact]
@@ -163,76 +163,76 @@ public sealed partial class Optional1Tests
     [Fact]
     public void Parse_Some_EmptyString()
     {
-        AssertParses<string?>(new(""), "Some {  }", null);
-        AssertParses<string?>(new(""), "Some {  }", CultureInfo.InvariantCulture);
-        AssertParses<string?>(new(""), "Some {  }", CultureInfo.GetCultureInfo("de"));
+        AssertParses<string?>(new(""), "Some {  }", null, parseFromSpan: true);
+        AssertParses<string?>(new(""), "Some {  }", CultureInfo.InvariantCulture, parseFromSpan: true);
+        AssertParses<string?>(new(""), "Some {  }", CultureInfo.GetCultureInfo("de"), parseFromSpan: true);
     }
 
     [Fact]
     public void Parse_Some_String()
     {
-        AssertParses<string>(new("hello"), "Some { hello }", null);
-        AssertParses<string>(new("hello"), "Some { hello }", CultureInfo.InvariantCulture);
-        AssertParses<string>(new("hello"), "Some { hello }", CultureInfo.GetCultureInfo("de"));
+        AssertParses<string>(new("hello"), "Some { hello }", null, parseFromSpan: true);
+        AssertParses<string>(new("hello"), "Some { hello }", CultureInfo.InvariantCulture, parseFromSpan: true);
+        AssertParses<string>(new("hello"), "Some { hello }", CultureInfo.GetCultureInfo("de"), parseFromSpan: true);
     }
 
     [Fact]
     public void Parse_Some_ReadOnlyMemory()
     {
-        AssertParses<ReadOnlyMemory<char>>(new("hello".AsMemory()), "Some { hello }", null);
-        AssertParses<ReadOnlyMemory<char>>(new("hello".AsMemory()), "Some { hello }", CultureInfo.InvariantCulture);
-        AssertParses<ReadOnlyMemory<char>>(new("hello".AsMemory()), "Some { hello }", CultureInfo.GetCultureInfo("de"));
+        AssertParses<ReadOnlyMemory<char>>(new("hello".AsMemory()), "Some { hello }", null, parseFromSpan: true);
+        AssertParses<ReadOnlyMemory<char>>(new("hello".AsMemory()), "Some { hello }", CultureInfo.InvariantCulture, parseFromSpan: true);
+        AssertParses<ReadOnlyMemory<char>>(new("hello".AsMemory()), "Some { hello }", CultureInfo.GetCultureInfo("de"), parseFromSpan: true);
     }
 
     [Fact]
     public void Parse_Some_Memory()
     {
-        AssertParses<Memory<char>>(new("hello".ToArray()), "Some { hello }", null);
-        AssertParses<Memory<char>>(new("hello".ToArray()), "Some { hello }", CultureInfo.InvariantCulture);
-        AssertParses<Memory<char>>(new("hello".ToArray()), "Some { hello }", CultureInfo.GetCultureInfo("de"));
+        AssertParses<Memory<char>>(new("hello".ToArray()), "Some { hello }", null, parseFromSpan: true);
+        AssertParses<Memory<char>>(new("hello".ToArray()), "Some { hello }", CultureInfo.InvariantCulture, parseFromSpan: true);
+        AssertParses<Memory<char>>(new("hello".ToArray()), "Some { hello }", CultureInfo.GetCultureInfo("de"), parseFromSpan: true);
     }
 
     [Fact]
     public void Parse_Some_Char()
     {
-        AssertParses<char>(new('a'), "Some { a }", null);
-        AssertParses<char>(new('a'), "Some { a }", CultureInfo.InvariantCulture);
-        AssertParses<char>(new('a'), "Some { a }", CultureInfo.GetCultureInfo("de"));
-        AssertDoesNotParse<char>("Some {  }", "", null);
-        AssertDoesNotParse<char>("Some { ab }", "ab", null);
+        AssertParses<char>(new('a'), "Some { a }", null, parseFromSpan: true);
+        AssertParses<char>(new('a'), "Some { a }", CultureInfo.InvariantCulture, parseFromSpan: true);
+        AssertParses<char>(new('a'), "Some { a }", CultureInfo.GetCultureInfo("de"), parseFromSpan: true);
+        AssertDoesNotParse<char>("Some {  }", "", null, parseFromSpan: true);
+        AssertDoesNotParse<char>("Some { ab }", "ab", null, parseFromSpan: true);
     }
 
 #if NETCOREAPP3_0_OR_GREATER
     [Fact]
     public void Parse_Some_Rune()
     {
-        AssertParses<Rune>(new(new(0x1f642)), "Some { 🙂 }", null);
-        AssertParses<Rune>(new(new(0x1f642)), "Some { 🙂 }", CultureInfo.InvariantCulture);
-        AssertParses<Rune>(new(new(0x1f642)), "Some { 🙂 }", CultureInfo.GetCultureInfo("de"));
-        AssertDoesNotParse<Rune>("Some {  }", "", null);
-        AssertDoesNotParse<Rune>("Some { ab }", "ab", null);
+        AssertParses<Rune>(new(new(0x1f642)), "Some { 🙂 }", null, parseFromSpan: true);
+        AssertParses<Rune>(new(new(0x1f642)), "Some { 🙂 }", CultureInfo.InvariantCulture, parseFromSpan: true);
+        AssertParses<Rune>(new(new(0x1f642)), "Some { 🙂 }", CultureInfo.GetCultureInfo("de"), parseFromSpan: true);
+        AssertDoesNotParse<Rune>("Some {  }", "", null, parseFromSpan: true);
+        AssertDoesNotParse<Rune>("Some { ab }", "ab", null, parseFromSpan: true);
     }
 #endif
 
     [Fact]
     public void Parse_Some_Null()
     {
-        AssertParses<string?>(new(null), "Some { }", null);
-        AssertParses<string?>(new(null), "Some { }", CultureInfo.InvariantCulture);
-        AssertParses<string?>(new(null), "Some { }", CultureInfo.GetCultureInfo("de"));
+        AssertParses<string?>(new(null), "Some { }", null, parseFromSpan: true);
+        AssertParses<string?>(new(null), "Some { }", CultureInfo.InvariantCulture, parseFromSpan: true);
+        AssertParses<string?>(new(null), "Some { }", CultureInfo.GetCultureInfo("de"), parseFromSpan: true);
     }
 
     [Fact]
     public void Parse_InvalidStrings()
     {
-        AssertDoesNotParse<int>("", null, null);
-        AssertDoesNotParse<int>("42", null, null);
-        AssertDoesNotParse<int>("{ }", null, null);
-        AssertDoesNotParse<int>("{ 42 }", null, null);
-        AssertDoesNotParse<int>("Some", null, null);
-        AssertDoesNotParse<int>("Some {}", null, null);
+        AssertDoesNotParse<int>("", null, null, parseFromSpan: true);
+        AssertDoesNotParse<int>("42", null, null, parseFromSpan: true);
+        AssertDoesNotParse<int>("{ }", null, null, parseFromSpan: true);
+        AssertDoesNotParse<int>("{ 42 }", null, null, parseFromSpan: true);
+        AssertDoesNotParse<int>("Some", null, null, parseFromSpan: true);
+        AssertDoesNotParse<int>("Some {}", null, null, parseFromSpan: true);
         AssertDoesNotParse<int>("Some { x }", "x", null);
-        AssertDoesNotParse<int>("SOME { 42 }", null, null);
+        AssertDoesNotParse<int>("SOME { 42 }", null, null, parseFromSpan: true);
     }
 
     [Fact]

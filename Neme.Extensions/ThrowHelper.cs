@@ -28,7 +28,7 @@ internal static class ThrowHelper
 #if NET6_0_OR_GREATER
         throw new FormatException($"The input string '{input}' was not in a correct format.", innerException);
 #else
-        throw new FormatException($"The input string '{input.ToString()}' was not in a correct format.");
+        throw new FormatException($"The input string '{input.ToString()}' was not in a correct format.", innerException);
 #endif
     }
 }
