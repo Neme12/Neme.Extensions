@@ -529,7 +529,7 @@ public readonly partial struct Optional<T>
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
             genericParameterCount: 0,
 #endif
-			BindingFlags.Public | BindingFlags.Static | BindingFlags.ExactBinding | BindingFlags.DeclaredOnly,
+			BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy | BindingFlags.ExactBinding,
 			binder: null,
 			invokeMethod.GetParameters().Select(p => p.ParameterType).ToArray(),
 			modifiers: null);

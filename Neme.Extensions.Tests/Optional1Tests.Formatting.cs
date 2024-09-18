@@ -374,200 +374,144 @@ public sealed partial class Optional1Tests
         Assert.Equal(NumberStyles.Float, Optional<DefaultedCustomParsableFloat>.Parse("Some { foo }", null).Value.Style);
     }
 
-    readonly record struct CustomParsable(string Input, NumberStyles Style)
+    private abstract record CustomParsableBase<TSelf>(string? Input, NumberStyles Style)
+        where TSelf : CustomParsableBase<TSelf>, new()
     {
-        public static CustomParsable Parse(string s, NumberStyles style, IFormatProvider? provider) =>
-            new(s, style);
+        public static TSelf Parse(string s, NumberStyles style, IFormatProvider? provider) =>
+            new() { Input = s, Style = style };
 
-        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out CustomParsable result)
+        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out TSelf result)
         {
-            result = new(s, style);
+            if (s is null)
+            {
+                result = default;
+                return false;
+            }
+
+            result = new() { Input = s, Style = style };
             return true;
         }
     }
 
-    readonly record struct Int(string Input, NumberStyles Style)
+    private sealed record CustomParsable(string? Input, NumberStyles Style) : CustomParsableBase<CustomParsable>(Input, Style)
     {
-        public static Int Parse(string s, NumberStyles style, IFormatProvider? provider) =>
-            new(s, style);
-
-        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out Int result)
+        public CustomParsable() : this(default, default)
         {
-            result = new(s, style);
-            return true;
         }
     }
 
-    readonly record struct IntCustomParsable(string Input, NumberStyles Style)
+    private sealed record Int(string? Input, NumberStyles Style) : CustomParsableBase<Int>(Input, Style)
     {
-        public static IntCustomParsable Parse(string s, NumberStyles style, IFormatProvider? provider) =>
-            new(s, style);
-
-        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out IntCustomParsable result)
+        public Int() : this(default, default)
         {
-            result = new(s, style);
-            return true;
         }
     }
 
-    readonly record struct Int2CustomParsable(string Input, NumberStyles Style)
+    private sealed record IntCustomParsable(string? Input, NumberStyles Style) : CustomParsableBase<IntCustomParsable>(Input, Style)
     {
-        public static Int2CustomParsable Parse(string s, NumberStyles style, IFormatProvider? provider) =>
-            new(s, style);
-
-        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out Int2CustomParsable result)
+        public IntCustomParsable() : this(default, default)
         {
-            result = new(s, style);
-            return true;
         }
     }
 
-    readonly record struct intCustomParsable(string Input, NumberStyles Style)
+    private sealed record Int2CustomParsable(string? Input, NumberStyles Style) : CustomParsableBase<Int2CustomParsable>(Input, Style)
     {
-        public static intCustomParsable Parse(string s, NumberStyles style, IFormatProvider? provider) =>
-            new(s, style);
-
-        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out intCustomParsable result)
+        public Int2CustomParsable() : this(default, default)
         {
-            result = new(s, style);
-            return true;
         }
     }
 
-    readonly record struct IntegerCustomParsable(string Input, NumberStyles Style)
+    private sealed record intCustomParsable(string? Input, NumberStyles Style) : CustomParsableBase<intCustomParsable>(Input, Style)
     {
-        public static IntegerCustomParsable Parse(string s, NumberStyles style, IFormatProvider? provider) =>
-            new(s, style);
-
-        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out IntegerCustomParsable result)
+        public intCustomParsable() : this(default, default)
         {
-            result = new(s, style);
-            return true;
         }
     }
 
-    readonly record struct CustomParsableContainingNaN1(string Input, NumberStyles Style)
+    private sealed record IntegerCustomParsable(string? Input, NumberStyles Style) : CustomParsableBase<IntegerCustomParsable>(Input, Style)
     {
-        public static CustomParsableContainingNaN1 Parse(string s, NumberStyles style, IFormatProvider? provider) =>
-            new(s, style);
-
-        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out CustomParsableContainingNaN1 result)
+        public IntegerCustomParsable() : this(default, default)
         {
-            result = new(s, style);
-            return true;
         }
-
-        public static readonly CustomParsableContainingNaN1 NaN;
     }
 
-    readonly record struct CustomParsableContainingNaN2(string Input, NumberStyles Style)
+    private sealed record CustomParsableContainingNaN1(string? Input, NumberStyles Style) : CustomParsableBase<CustomParsableContainingNaN1>(Input, Style)
     {
-        public static CustomParsableContainingNaN2 Parse(string s, NumberStyles style, IFormatProvider? provider) =>
-            new(s, style);
-
-        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out CustomParsableContainingNaN2 result)
+        public CustomParsableContainingNaN1() : this(default, default)
         {
-            result = new(s, style);
-            return true;
         }
 
-        public static CustomParsableContainingNaN2 NaN => default;
+        public static readonly CustomParsableContainingNaN1 NaN = default!;
     }
 
-    readonly record struct CustomParsableContainingNaNWrong1(string Input, NumberStyles Style)
+    private sealed record CustomParsableContainingNaN2(string? Input, NumberStyles Style) : CustomParsableBase<CustomParsableContainingNaN2>(Input, Style)
     {
-        public static CustomParsableContainingNaNWrong1 Parse(string s, NumberStyles style, IFormatProvider? provider) =>
-            new(s, style);
-
-        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out CustomParsableContainingNaNWrong1 result)
+        public CustomParsableContainingNaN2() : this(default, default)
         {
-            result = new(s, style);
-            return true;
+        }
+
+        public static CustomParsableContainingNaN2 NaN => default!;
+    }
+
+    private sealed record CustomParsableContainingNaNWrong1(string? Input, NumberStyles Style) : CustomParsableBase<CustomParsableContainingNaNWrong1>(Input, Style)
+    {
+        public CustomParsableContainingNaNWrong1() : this(default, default)
+        {
         }
 
         public static int NaN => default;
     }
 
-    readonly record struct CustomParsableContainingNaNWrong2(string Input, NumberStyles Style)
+    private sealed record CustomParsableContainingNaNWrong2(string? Input, NumberStyles Style) : CustomParsableBase<CustomParsableContainingNaNWrong2>(Input, Style)
     {
-        public static CustomParsableContainingNaNWrong2 Parse(string s, NumberStyles style, IFormatProvider? provider) =>
-            new(s, style);
-
-        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out CustomParsableContainingNaNWrong2 result)
+        public CustomParsableContainingNaNWrong2() : this(default, default)
         {
-            result = new(s, style);
-            return true;
         }
 
-        public static CustomParsableContainingNaNWrong2 NaN { get; set; }
+        public static CustomParsableContainingNaNWrong2 NaN { get; set; } = default!;
     }
 
-    readonly record struct CustomParsableContainingNaNWrong3(string Input, NumberStyles Style)
+    private sealed record CustomParsableContainingNaNWrong3(string? Input, NumberStyles Style) : CustomParsableBase<CustomParsableContainingNaNWrong3>(Input, Style)
     {
-        public static CustomParsableContainingNaNWrong3 Parse(string s, NumberStyles style, IFormatProvider? provider) =>
-            new(s, style);
-
-        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out CustomParsableContainingNaNWrong3 result)
+        public CustomParsableContainingNaNWrong3() : this(default, default)
         {
-            result = new(s, style);
-            return true;
         }
 
-        public static CustomParsableContainingNaNWrong3 NaN;
+        public static CustomParsableContainingNaNWrong3 NaN = default!;
     }
 
-    readonly record struct CustomParsableContainingNaNWrong4(string Input, NumberStyles Style)
+    private sealed record CustomParsableContainingNaNWrong4(string? Input, NumberStyles Style) : CustomParsableBase<CustomParsableContainingNaNWrong4>(Input, Style)
     {
-        public static CustomParsableContainingNaNWrong4 Parse(string s, NumberStyles style, IFormatProvider? provider) =>
-            new(s, style);
-
-        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out CustomParsableContainingNaNWrong4 result)
+        public CustomParsableContainingNaNWrong4() : this(default, default)
         {
-            result = new(s, style);
-            return true;
         }
 
-        public CustomParsableContainingNaNWrong4 NaN => default;
+        public CustomParsableContainingNaNWrong4 NaN => default!;
     }
 
-    readonly record struct CustomParsableContainingNaNWrong5(string Input, NumberStyles Style)
+    private sealed record CustomParsableContainingNaNWrong5(string? Input, NumberStyles Style) : CustomParsableBase<CustomParsableContainingNaNWrong5>(Input, Style)
     {
-        public static CustomParsableContainingNaNWrong5 Parse(string s, NumberStyles style, IFormatProvider? provider) =>
-            new(s, style);
-
-        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out CustomParsableContainingNaNWrong5 result)
+        public CustomParsableContainingNaNWrong5() : this(default, default)
         {
-            result = new(s, style);
-            return true;
         }
 
-        internal static CustomParsableContainingNaNWrong5 NaN => default;
+        internal static CustomParsableContainingNaNWrong5 NaN => default!;
     }
 
-    readonly record struct CustomParsableContainingNaNWrong6(string Input, NumberStyles Style)
+    private sealed record CustomParsableContainingNaNWrong6(string? Input, NumberStyles Style) : CustomParsableBase<CustomParsableContainingNaNWrong6>(Input, Style)
     {
-        public static CustomParsableContainingNaNWrong6 Parse(string s, NumberStyles style, IFormatProvider? provider) =>
-            new(s, style);
-
-        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out CustomParsableContainingNaNWrong6 result)
+        public CustomParsableContainingNaNWrong6() : this(default, default)
         {
-            result = new(s, style);
-            return true;
         }
 
-        public static CustomParsableContainingNaNWrong6 NaN() => default;
+        public static CustomParsableContainingNaNWrong6 NaN() => default!;
     }
 
 #if NET7_0_OR_GREATER
-    readonly record struct CustomParsableIBinaryInteger(string Input, NumberStyles Style) : IBinaryInteger<CustomParsableIBinaryInteger>
+    private sealed record CustomParsableIBinaryInteger(string? Input, NumberStyles Style) : CustomParsableBase<CustomParsableIBinaryInteger>(Input, Style), IBinaryInteger<CustomParsableIBinaryInteger>
     {
-        public static CustomParsableIBinaryInteger Parse(string s, NumberStyles style, IFormatProvider? provider) =>
-            new(s, style);
-
-        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out CustomParsableIBinaryInteger result)
+        public CustomParsableIBinaryInteger() : this(default, default)
         {
-            result = new(s, style);
-            return true;
         }
 
         static CustomParsableIBinaryInteger INumberBase<CustomParsableIBinaryInteger>.One => throw new NotImplementedException();
@@ -666,7 +610,7 @@ public sealed partial class Optional1Tests
 
         int IComparable.CompareTo(object? obj) => throw new NotImplementedException();
 
-        int IComparable<CustomParsableIBinaryInteger>.CompareTo(CustomParsableIBinaryInteger other) => throw new NotImplementedException();
+        int IComparable<CustomParsableIBinaryInteger>.CompareTo(CustomParsableIBinaryInteger? other) => throw new NotImplementedException();
 
         int IBinaryInteger<CustomParsableIBinaryInteger>.GetByteCount() => throw new NotImplementedException();
 
@@ -711,9 +655,9 @@ public sealed partial class Optional1Tests
 
         static CustomParsableIBinaryInteger IShiftOperators<CustomParsableIBinaryInteger, int, CustomParsableIBinaryInteger>.operator >>(CustomParsableIBinaryInteger value, int shiftAmount) => throw new NotImplementedException();
 
-        static bool IEqualityOperators<CustomParsableIBinaryInteger, CustomParsableIBinaryInteger, bool>.operator ==(CustomParsableIBinaryInteger left, CustomParsableIBinaryInteger right) => throw new NotImplementedException();
+        static bool IEqualityOperators<CustomParsableIBinaryInteger, CustomParsableIBinaryInteger, bool>.operator ==(CustomParsableIBinaryInteger? left, CustomParsableIBinaryInteger? right) => throw new NotImplementedException();
 
-        static bool IEqualityOperators<CustomParsableIBinaryInteger, CustomParsableIBinaryInteger, bool>.operator !=(CustomParsableIBinaryInteger left, CustomParsableIBinaryInteger right) => throw new NotImplementedException();
+        static bool IEqualityOperators<CustomParsableIBinaryInteger, CustomParsableIBinaryInteger, bool>.operator !=(CustomParsableIBinaryInteger? left, CustomParsableIBinaryInteger? right) => throw new NotImplementedException();
 
         static bool IComparisonOperators<CustomParsableIBinaryInteger, CustomParsableIBinaryInteger, bool>.operator <(CustomParsableIBinaryInteger left, CustomParsableIBinaryInteger right) => throw new NotImplementedException();
 
@@ -726,15 +670,10 @@ public sealed partial class Optional1Tests
         static CustomParsableIBinaryInteger IShiftOperators<CustomParsableIBinaryInteger, int, CustomParsableIBinaryInteger>.operator >>>(CustomParsableIBinaryInteger value, int shiftAmount) => throw new NotImplementedException();
     }
 
-    readonly record struct CustomParsableIFloatingPointIeee754(string Input, NumberStyles Style) : IFloatingPointIeee754<CustomParsableIFloatingPointIeee754>
+    private sealed record CustomParsableIFloatingPointIeee754(string? Input, NumberStyles Style) : CustomParsableBase<CustomParsableIFloatingPointIeee754>(Input, Style), IFloatingPointIeee754<CustomParsableIFloatingPointIeee754>
     {
-        public static CustomParsableIFloatingPointIeee754 Parse(string s, NumberStyles style, IFormatProvider? provider) =>
-            new(s, style);
-
-        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out CustomParsableIFloatingPointIeee754 result)
+        public CustomParsableIFloatingPointIeee754() : this(default, default)
         {
-            result = new(s, style);
-            return true;
         }
 
         static CustomParsableIFloatingPointIeee754 IFloatingPointIeee754<CustomParsableIFloatingPointIeee754>.Epsilon => throw new NotImplementedException();
@@ -921,7 +860,7 @@ public sealed partial class Optional1Tests
 
         int IComparable.CompareTo(object? obj) => throw new NotImplementedException();
 
-        int IComparable<CustomParsableIFloatingPointIeee754>.CompareTo(CustomParsableIFloatingPointIeee754 other) => throw new NotImplementedException();
+        int IComparable<CustomParsableIFloatingPointIeee754>.CompareTo(CustomParsableIFloatingPointIeee754? other) => throw new NotImplementedException();
 
         int IFloatingPoint<CustomParsableIFloatingPointIeee754>.GetExponentByteCount() => throw new NotImplementedException();
 
@@ -962,9 +901,9 @@ public sealed partial class Optional1Tests
 
         static CustomParsableIFloatingPointIeee754 IModulusOperators<CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754>.operator %(CustomParsableIFloatingPointIeee754 left, CustomParsableIFloatingPointIeee754 right) => throw new NotImplementedException();
 
-        static bool IEqualityOperators<CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754, bool>.operator ==(CustomParsableIFloatingPointIeee754 left, CustomParsableIFloatingPointIeee754 right) => throw new NotImplementedException();
+        static bool IEqualityOperators<CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754, bool>.operator ==(CustomParsableIFloatingPointIeee754? left, CustomParsableIFloatingPointIeee754? right) => throw new NotImplementedException();
 
-        static bool IEqualityOperators<CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754, bool>.operator !=(CustomParsableIFloatingPointIeee754 left, CustomParsableIFloatingPointIeee754 right) => throw new NotImplementedException();
+        static bool IEqualityOperators<CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754, bool>.operator !=(CustomParsableIFloatingPointIeee754? left, CustomParsableIFloatingPointIeee754? right) => throw new NotImplementedException();
 
         static bool IComparisonOperators<CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754, bool>.operator <(CustomParsableIFloatingPointIeee754 left, CustomParsableIFloatingPointIeee754 right) => throw new NotImplementedException();
 
