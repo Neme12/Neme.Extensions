@@ -344,775 +344,781 @@ public sealed partial class Optional1Tests
     [Fact]
     public void Parse_CustomParsableNumberStyles()
     {
-        AssertParses<CustomParsable>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsable.Default>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
 
-        AssertParses<Int>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<IntCustomParsable>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<Int2CustomParsable>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<intCustomParsable>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<IntegerCustomParsable>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<CustomParsableContainingNaN1>(new(new("foo", NumberStyles.Float | NumberStyles.AllowThousands)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<CustomParsableContainingNaN2>(new(new("foo", NumberStyles.Float | NumberStyles.AllowThousands)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<CustomParsableContainingNaNWrong1>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<CustomParsableContainingNaNWrong2>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<CustomParsableContainingNaNWrong3>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<CustomParsableContainingNaNWrong4>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<CustomParsableContainingNaNWrong5>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<CustomParsableContainingNaNWrong6>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsable.Int>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsable.IntFoo>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsable.Int2>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsable.int2>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsable.Integer>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsable.NaN1>(new(new("foo", NumberStyles.Float | NumberStyles.AllowThousands)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsable.NaN2>(new(new("foo", NumberStyles.Float | NumberStyles.AllowThousands)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsable.NaNWrong1>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsable.NaNWrong2>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsable.NaNWrong3>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsable.NaNWrong4>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsable.NaNWrong5>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsable.NaNWrong6>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
 
 #if NET7_0_OR_GREATER
-        AssertParses<CustomParsableIBinaryInteger>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<CustomParsableIFloatingPointIeee754>(new(new("foo", NumberStyles.Float | NumberStyles.AllowThousands)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsable.ImplementingIBinaryInteger>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsable.ImplementingIFloatingPointIeee754>(new(new("foo", NumberStyles.Float | NumberStyles.AllowThousands)), "Some { foo }", null, parseFromSpan: true);
 #endif
     }
 
     [Fact]
     public void Parse_DefaultedNumberStyles()
     {
-        AssertParses<IntDefaultedCustomParsableNumber>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true, tryParse: false);
-        AssertParses<DefaultedCustomParsableInteger>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: true, tryParse: false);
-        AssertParses<DefaultedCustomParsableFloat>(new(new("foo", NumberStyles.Float)), "Some { foo }", null, parseFromSpan: true, tryParse: false);
+        AssertParses<DefaultedCustomParsable.IntNumber>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true, tryParse: false);
+        AssertParses<DefaultedCustomParsable.Integer>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: true, tryParse: false);
+        AssertParses<DefaultedCustomParsable.Float>(new(new("foo", NumberStyles.Float)), "Some { foo }", null, parseFromSpan: true, tryParse: false);
     }
 
-    private abstract record CustomParsableBase<TSelf>(string? Input, NumberStyles Style)
-        where TSelf : CustomParsableBase<TSelf>, new()
+    private static class CustomParsable
     {
-        public static TSelf Parse(string s, NumberStyles style, IFormatProvider? provider) =>
-            new() { Input = s, Style = style };
-
-        public static TSelf Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider) =>
-            new() { Input = s.ToString(), Style = style };
-
-        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out TSelf result)
+        public abstract record Base<TSelf>(string? Input, NumberStyles Style)
+            where TSelf : Base<TSelf>, new()
         {
-            if (s is null)
+            public static TSelf Parse(string s, NumberStyles style, IFormatProvider? provider) =>
+                new() { Input = s, Style = style };
+
+            public static TSelf Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider) =>
+                new() { Input = s.ToString(), Style = style };
+
+            public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out TSelf result)
             {
-                result = default;
-                return false;
+                if (s is null)
+                {
+                    result = default;
+                    return false;
+                }
+
+                result = new() { Input = s, Style = style };
+                return true;
             }
 
-            result = new() { Input = s, Style = style };
-            return true;
+            public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out TSelf result)
+            {
+                result = new() { Input = s.ToString(), Style = style };
+                return true;
+            }
         }
 
-        public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out TSelf result)
+        public sealed record Default(string? Input, NumberStyles Style) : Base<Default>(Input, Style)
         {
-            result = new() { Input = s.ToString(), Style = style };
-            return true;
+            public Default() : this(default, default)
+            {
+            }
         }
-    }
 
-    private sealed record CustomParsable(string? Input, NumberStyles Style) : CustomParsableBase<CustomParsable>(Input, Style)
-    {
-        public CustomParsable() : this(default, default)
+        public sealed record Int(string? Input, NumberStyles Style) : Base<Int>(Input, Style)
         {
+            public Int() : this(default, default)
+            {
+            }
         }
-    }
 
-    private sealed record Int(string? Input, NumberStyles Style) : CustomParsableBase<Int>(Input, Style)
-    {
-        public Int() : this(default, default)
+        public sealed record IntFoo(string? Input, NumberStyles Style) : Base<IntFoo>(Input, Style)
         {
+            public IntFoo() : this(default, default)
+            {
+            }
         }
-    }
 
-    private sealed record IntCustomParsable(string? Input, NumberStyles Style) : CustomParsableBase<IntCustomParsable>(Input, Style)
-    {
-        public IntCustomParsable() : this(default, default)
+        public sealed record Int2(string? Input, NumberStyles Style) : Base<Int2>(Input, Style)
         {
+            public Int2() : this(default, default)
+            {
+            }
         }
-    }
 
-    private sealed record Int2CustomParsable(string? Input, NumberStyles Style) : CustomParsableBase<Int2CustomParsable>(Input, Style)
-    {
-        public Int2CustomParsable() : this(default, default)
+        public sealed record int2(string? Input, NumberStyles Style) : Base<int2>(Input, Style)
         {
+            public int2() : this(default, default)
+            {
+            }
         }
-    }
 
-    private sealed record intCustomParsable(string? Input, NumberStyles Style) : CustomParsableBase<intCustomParsable>(Input, Style)
-    {
-        public intCustomParsable() : this(default, default)
+        public sealed record Integer(string? Input, NumberStyles Style) : Base<Integer>(Input, Style)
         {
+            public Integer() : this(default, default)
+            {
+            }
         }
-    }
 
-    private sealed record IntegerCustomParsable(string? Input, NumberStyles Style) : CustomParsableBase<IntegerCustomParsable>(Input, Style)
-    {
-        public IntegerCustomParsable() : this(default, default)
+        public sealed record NaN1(string? Input, NumberStyles Style) : Base<NaN1>(Input, Style)
         {
-        }
-    }
+            public NaN1() : this(default, default)
+            {
+            }
 
-    private sealed record CustomParsableContainingNaN1(string? Input, NumberStyles Style) : CustomParsableBase<CustomParsableContainingNaN1>(Input, Style)
-    {
-        public CustomParsableContainingNaN1() : this(default, default)
+            public static readonly NaN1 NaN = default!;
+        }
+
+        public sealed record NaN2(string? Input, NumberStyles Style) : Base<NaN2>(Input, Style)
         {
+            public NaN2() : this(default, default)
+            {
+            }
+
+            public static NaN2 NaN => default!;
         }
 
-        public static readonly CustomParsableContainingNaN1 NaN = default!;
-    }
-
-    private sealed record CustomParsableContainingNaN2(string? Input, NumberStyles Style) : CustomParsableBase<CustomParsableContainingNaN2>(Input, Style)
-    {
-        public CustomParsableContainingNaN2() : this(default, default)
+        public sealed record NaNWrong1(string? Input, NumberStyles Style) : Base<NaNWrong1>(Input, Style)
         {
+            public NaNWrong1() : this(default, default)
+            {
+            }
+
+            public static int NaN => default;
         }
 
-        public static CustomParsableContainingNaN2 NaN => default!;
-    }
-
-    private sealed record CustomParsableContainingNaNWrong1(string? Input, NumberStyles Style) : CustomParsableBase<CustomParsableContainingNaNWrong1>(Input, Style)
-    {
-        public CustomParsableContainingNaNWrong1() : this(default, default)
+        public sealed record NaNWrong2(string? Input, NumberStyles Style) : Base<NaNWrong2>(Input, Style)
         {
+            public NaNWrong2() : this(default, default)
+            {
+            }
+
+            public static NaNWrong2 NaN { get; set; } = default!;
         }
 
-        public static int NaN => default;
-    }
-
-    private sealed record CustomParsableContainingNaNWrong2(string? Input, NumberStyles Style) : CustomParsableBase<CustomParsableContainingNaNWrong2>(Input, Style)
-    {
-        public CustomParsableContainingNaNWrong2() : this(default, default)
+        public sealed record NaNWrong3(string? Input, NumberStyles Style) : Base<NaNWrong3>(Input, Style)
         {
+            public NaNWrong3() : this(default, default)
+            {
+            }
+
+            public static NaNWrong3 NaN = default!;
         }
 
-        public static CustomParsableContainingNaNWrong2 NaN { get; set; } = default!;
-    }
-
-    private sealed record CustomParsableContainingNaNWrong3(string? Input, NumberStyles Style) : CustomParsableBase<CustomParsableContainingNaNWrong3>(Input, Style)
-    {
-        public CustomParsableContainingNaNWrong3() : this(default, default)
+        public sealed record NaNWrong4(string? Input, NumberStyles Style) : Base<NaNWrong4>(Input, Style)
         {
+            public NaNWrong4() : this(default, default)
+            {
+            }
+
+            public NaNWrong4 NaN => default!;
         }
 
-        public static CustomParsableContainingNaNWrong3 NaN = default!;
-    }
-
-    private sealed record CustomParsableContainingNaNWrong4(string? Input, NumberStyles Style) : CustomParsableBase<CustomParsableContainingNaNWrong4>(Input, Style)
-    {
-        public CustomParsableContainingNaNWrong4() : this(default, default)
+        public sealed record NaNWrong5(string? Input, NumberStyles Style) : Base<NaNWrong5>(Input, Style)
         {
+            public NaNWrong5() : this(default, default)
+            {
+            }
+
+            internal static NaNWrong5 NaN => default!;
         }
 
-        public CustomParsableContainingNaNWrong4 NaN => default!;
-    }
-
-    private sealed record CustomParsableContainingNaNWrong5(string? Input, NumberStyles Style) : CustomParsableBase<CustomParsableContainingNaNWrong5>(Input, Style)
-    {
-        public CustomParsableContainingNaNWrong5() : this(default, default)
+        public sealed record NaNWrong6(string? Input, NumberStyles Style) : Base<NaNWrong6>(Input, Style)
         {
+            public NaNWrong6() : this(default, default)
+            {
+            }
+
+            public static NaNWrong6 NaN() => default!;
         }
-
-        internal static CustomParsableContainingNaNWrong5 NaN => default!;
-    }
-
-    private sealed record CustomParsableContainingNaNWrong6(string? Input, NumberStyles Style) : CustomParsableBase<CustomParsableContainingNaNWrong6>(Input, Style)
-    {
-        public CustomParsableContainingNaNWrong6() : this(default, default)
-        {
-        }
-
-        public static CustomParsableContainingNaNWrong6 NaN() => default!;
-    }
 
 #if NET7_0_OR_GREATER
-    private sealed record CustomParsableIBinaryInteger(string? Input, NumberStyles Style) : CustomParsableBase<CustomParsableIBinaryInteger>(Input, Style), IBinaryInteger<CustomParsableIBinaryInteger>
-    {
-        public CustomParsableIBinaryInteger() : this(default, default)
+        public sealed record ImplementingIBinaryInteger(string? Input, NumberStyles Style) : Base<ImplementingIBinaryInteger>(Input, Style), IBinaryInteger<ImplementingIBinaryInteger>
         {
+            public ImplementingIBinaryInteger() : this(default, default)
+            {
+            }
+
+            static ImplementingIBinaryInteger INumberBase<ImplementingIBinaryInteger>.One => throw new NotImplementedException();
+
+            static int INumberBase<ImplementingIBinaryInteger>.Radix => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger INumberBase<ImplementingIBinaryInteger>.Zero => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger IAdditiveIdentity<ImplementingIBinaryInteger, ImplementingIBinaryInteger>.AdditiveIdentity => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger IMultiplicativeIdentity<ImplementingIBinaryInteger, ImplementingIBinaryInteger>.MultiplicativeIdentity => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger INumberBase<ImplementingIBinaryInteger>.Abs(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIBinaryInteger>.IsCanonical(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIBinaryInteger>.IsComplexNumber(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIBinaryInteger>.IsEvenInteger(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIBinaryInteger>.IsFinite(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIBinaryInteger>.IsImaginaryNumber(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIBinaryInteger>.IsInfinity(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIBinaryInteger>.IsInteger(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIBinaryInteger>.IsNaN(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIBinaryInteger>.IsNegative(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIBinaryInteger>.IsNegativeInfinity(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIBinaryInteger>.IsNormal(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIBinaryInteger>.IsOddInteger(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIBinaryInteger>.IsPositive(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIBinaryInteger>.IsPositiveInfinity(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static bool IBinaryNumber<ImplementingIBinaryInteger>.IsPow2(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIBinaryInteger>.IsRealNumber(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIBinaryInteger>.IsSubnormal(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIBinaryInteger>.IsZero(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger IBinaryNumber<ImplementingIBinaryInteger>.Log2(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger INumberBase<ImplementingIBinaryInteger>.MaxMagnitude(ImplementingIBinaryInteger x, ImplementingIBinaryInteger y) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger INumberBase<ImplementingIBinaryInteger>.MaxMagnitudeNumber(ImplementingIBinaryInteger x, ImplementingIBinaryInteger y) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger INumberBase<ImplementingIBinaryInteger>.MinMagnitude(ImplementingIBinaryInteger x, ImplementingIBinaryInteger y) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger INumberBase<ImplementingIBinaryInteger>.MinMagnitudeNumber(ImplementingIBinaryInteger x, ImplementingIBinaryInteger y) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger INumberBase<ImplementingIBinaryInteger>.Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger INumberBase<ImplementingIBinaryInteger>.Parse(string s, NumberStyles style, IFormatProvider? provider) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger ISpanParsable<ImplementingIBinaryInteger>.Parse(ReadOnlySpan<char> s, IFormatProvider? provider) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger IParsable<ImplementingIBinaryInteger>.Parse(string s, IFormatProvider? provider) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger IBinaryInteger<ImplementingIBinaryInteger>.PopCount(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger IBinaryInteger<ImplementingIBinaryInteger>.TrailingZeroCount(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIBinaryInteger>.TryConvertFromChecked<TOther>(TOther value, out ImplementingIBinaryInteger result) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIBinaryInteger>.TryConvertFromSaturating<TOther>(TOther value, out ImplementingIBinaryInteger result) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIBinaryInteger>.TryConvertFromTruncating<TOther>(TOther value, out ImplementingIBinaryInteger result) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIBinaryInteger>.TryConvertToChecked<TOther>(ImplementingIBinaryInteger value, out TOther result) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIBinaryInteger>.TryConvertToSaturating<TOther>(ImplementingIBinaryInteger value, out TOther result) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIBinaryInteger>.TryConvertToTruncating<TOther>(ImplementingIBinaryInteger value, out TOther result) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIBinaryInteger>.TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out ImplementingIBinaryInteger result) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIBinaryInteger>.TryParse(string? s, NumberStyles style, IFormatProvider? provider, out ImplementingIBinaryInteger result) => throw new NotImplementedException();
+
+            static bool ISpanParsable<ImplementingIBinaryInteger>.TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out ImplementingIBinaryInteger result) => throw new NotImplementedException();
+
+            static bool IParsable<ImplementingIBinaryInteger>.TryParse(string? s, IFormatProvider? provider, out ImplementingIBinaryInteger result) => throw new NotImplementedException();
+
+            static bool IBinaryInteger<ImplementingIBinaryInteger>.TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static bool IBinaryInteger<ImplementingIBinaryInteger>.TryReadLittleEndian(ReadOnlySpan<byte> source, bool isUnsigned, out ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            int IComparable.CompareTo(object? obj) => throw new NotImplementedException();
+
+            int IComparable<ImplementingIBinaryInteger>.CompareTo(ImplementingIBinaryInteger? other) => throw new NotImplementedException();
+
+            int IBinaryInteger<ImplementingIBinaryInteger>.GetByteCount() => throw new NotImplementedException();
+
+            int IBinaryInteger<ImplementingIBinaryInteger>.GetShortestBitLength() => throw new NotImplementedException();
+
+            string IFormattable.ToString(string? format, IFormatProvider? formatProvider) =>
+                ToString();
+
+            bool ISpanFormattable.TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider) => throw new NotImplementedException();
+
+            bool IBinaryInteger<ImplementingIBinaryInteger>.TryWriteBigEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
+
+            bool IBinaryInteger<ImplementingIBinaryInteger>.TryWriteLittleEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger IUnaryPlusOperators<ImplementingIBinaryInteger, ImplementingIBinaryInteger>.operator +(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger IAdditionOperators<ImplementingIBinaryInteger, ImplementingIBinaryInteger, ImplementingIBinaryInteger>.operator +(ImplementingIBinaryInteger left, ImplementingIBinaryInteger right) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger IUnaryNegationOperators<ImplementingIBinaryInteger, ImplementingIBinaryInteger>.operator -(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger ISubtractionOperators<ImplementingIBinaryInteger, ImplementingIBinaryInteger, ImplementingIBinaryInteger>.operator -(ImplementingIBinaryInteger left, ImplementingIBinaryInteger right) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger IBitwiseOperators<ImplementingIBinaryInteger, ImplementingIBinaryInteger, ImplementingIBinaryInteger>.operator ~(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger IIncrementOperators<ImplementingIBinaryInteger>.operator ++(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger IDecrementOperators<ImplementingIBinaryInteger>.operator --(ImplementingIBinaryInteger value) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger IMultiplyOperators<ImplementingIBinaryInteger, ImplementingIBinaryInteger, ImplementingIBinaryInteger>.operator *(ImplementingIBinaryInteger left, ImplementingIBinaryInteger right) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger IDivisionOperators<ImplementingIBinaryInteger, ImplementingIBinaryInteger, ImplementingIBinaryInteger>.operator /(ImplementingIBinaryInteger left, ImplementingIBinaryInteger right) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger IModulusOperators<ImplementingIBinaryInteger, ImplementingIBinaryInteger, ImplementingIBinaryInteger>.operator %(ImplementingIBinaryInteger left, ImplementingIBinaryInteger right) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger IBitwiseOperators<ImplementingIBinaryInteger, ImplementingIBinaryInteger, ImplementingIBinaryInteger>.operator &(ImplementingIBinaryInteger left, ImplementingIBinaryInteger right) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger IBitwiseOperators<ImplementingIBinaryInteger, ImplementingIBinaryInteger, ImplementingIBinaryInteger>.operator |(ImplementingIBinaryInteger left, ImplementingIBinaryInteger right) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger IBitwiseOperators<ImplementingIBinaryInteger, ImplementingIBinaryInteger, ImplementingIBinaryInteger>.operator ^(ImplementingIBinaryInteger left, ImplementingIBinaryInteger right) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger IShiftOperators<ImplementingIBinaryInteger, int, ImplementingIBinaryInteger>.operator <<(ImplementingIBinaryInteger value, int shiftAmount) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger IShiftOperators<ImplementingIBinaryInteger, int, ImplementingIBinaryInteger>.operator >>(ImplementingIBinaryInteger value, int shiftAmount) => throw new NotImplementedException();
+
+            static bool IEqualityOperators<ImplementingIBinaryInteger, ImplementingIBinaryInteger, bool>.operator ==(ImplementingIBinaryInteger? left, ImplementingIBinaryInteger? right) => throw new NotImplementedException();
+
+            static bool IEqualityOperators<ImplementingIBinaryInteger, ImplementingIBinaryInteger, bool>.operator !=(ImplementingIBinaryInteger? left, ImplementingIBinaryInteger? right) => throw new NotImplementedException();
+
+            static bool IComparisonOperators<ImplementingIBinaryInteger, ImplementingIBinaryInteger, bool>.operator <(ImplementingIBinaryInteger left, ImplementingIBinaryInteger right) => throw new NotImplementedException();
+
+            static bool IComparisonOperators<ImplementingIBinaryInteger, ImplementingIBinaryInteger, bool>.operator >(ImplementingIBinaryInteger left, ImplementingIBinaryInteger right) => throw new NotImplementedException();
+
+            static bool IComparisonOperators<ImplementingIBinaryInteger, ImplementingIBinaryInteger, bool>.operator <=(ImplementingIBinaryInteger left, ImplementingIBinaryInteger right) => throw new NotImplementedException();
+
+            static bool IComparisonOperators<ImplementingIBinaryInteger, ImplementingIBinaryInteger, bool>.operator >=(ImplementingIBinaryInteger left, ImplementingIBinaryInteger right) => throw new NotImplementedException();
+
+            static ImplementingIBinaryInteger IShiftOperators<ImplementingIBinaryInteger, int, ImplementingIBinaryInteger>.operator >>>(ImplementingIBinaryInteger value, int shiftAmount) => throw new NotImplementedException();
         }
 
-        static CustomParsableIBinaryInteger INumberBase<CustomParsableIBinaryInteger>.One => throw new NotImplementedException();
+        public sealed record ImplementingIFloatingPointIeee754(string? Input, NumberStyles Style) : Base<ImplementingIFloatingPointIeee754>(Input, Style), IFloatingPointIeee754<ImplementingIFloatingPointIeee754>
+        {
+            public ImplementingIFloatingPointIeee754() : this(default, default)
+            {
+            }
 
-        static int INumberBase<CustomParsableIBinaryInteger>.Radix => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 IFloatingPointIeee754<ImplementingIFloatingPointIeee754>.Epsilon => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger INumberBase<CustomParsableIBinaryInteger>.Zero => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 IFloatingPointIeee754<ImplementingIFloatingPointIeee754>.NaN => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger IAdditiveIdentity<CustomParsableIBinaryInteger, CustomParsableIBinaryInteger>.AdditiveIdentity => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 IFloatingPointIeee754<ImplementingIFloatingPointIeee754>.NegativeInfinity => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger IMultiplicativeIdentity<CustomParsableIBinaryInteger, CustomParsableIBinaryInteger>.MultiplicativeIdentity => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 IFloatingPointIeee754<ImplementingIFloatingPointIeee754>.NegativeZero => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger INumberBase<CustomParsableIBinaryInteger>.Abs(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 IFloatingPointIeee754<ImplementingIFloatingPointIeee754>.PositiveInfinity => throw new NotImplementedException();
 
-        static bool INumberBase<CustomParsableIBinaryInteger>.IsCanonical(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 ISignedNumber<ImplementingIFloatingPointIeee754>.NegativeOne => throw new NotImplementedException();
 
-        static bool INumberBase<CustomParsableIBinaryInteger>.IsComplexNumber(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 IFloatingPointConstants<ImplementingIFloatingPointIeee754>.E => throw new NotImplementedException();
 
-        static bool INumberBase<CustomParsableIBinaryInteger>.IsEvenInteger(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 IFloatingPointConstants<ImplementingIFloatingPointIeee754>.Pi => throw new NotImplementedException();
 
-        static bool INumberBase<CustomParsableIBinaryInteger>.IsFinite(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 IFloatingPointConstants<ImplementingIFloatingPointIeee754>.Tau => throw new NotImplementedException();
 
-        static bool INumberBase<CustomParsableIBinaryInteger>.IsImaginaryNumber(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 INumberBase<ImplementingIFloatingPointIeee754>.One => throw new NotImplementedException();
 
-        static bool INumberBase<CustomParsableIBinaryInteger>.IsInfinity(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+            static int INumberBase<ImplementingIFloatingPointIeee754>.Radix => throw new NotImplementedException();
 
-        static bool INumberBase<CustomParsableIBinaryInteger>.IsInteger(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 INumberBase<ImplementingIFloatingPointIeee754>.Zero => throw new NotImplementedException();
 
-        static bool INumberBase<CustomParsableIBinaryInteger>.IsNaN(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 IAdditiveIdentity<ImplementingIFloatingPointIeee754, ImplementingIFloatingPointIeee754>.AdditiveIdentity => throw new NotImplementedException();
 
-        static bool INumberBase<CustomParsableIBinaryInteger>.IsNegative(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 IMultiplicativeIdentity<ImplementingIFloatingPointIeee754, ImplementingIFloatingPointIeee754>.MultiplicativeIdentity => throw new NotImplementedException();
 
-        static bool INumberBase<CustomParsableIBinaryInteger>.IsNegativeInfinity(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 INumberBase<ImplementingIFloatingPointIeee754>.Abs(ImplementingIFloatingPointIeee754 value) => throw new NotImplementedException();
 
-        static bool INumberBase<CustomParsableIBinaryInteger>.IsNormal(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 ITrigonometricFunctions<ImplementingIFloatingPointIeee754>.Acos(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
 
-        static bool INumberBase<CustomParsableIBinaryInteger>.IsOddInteger(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 IHyperbolicFunctions<ImplementingIFloatingPointIeee754>.Acosh(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
 
-        static bool INumberBase<CustomParsableIBinaryInteger>.IsPositive(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 ITrigonometricFunctions<ImplementingIFloatingPointIeee754>.AcosPi(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
 
-        static bool INumberBase<CustomParsableIBinaryInteger>.IsPositiveInfinity(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 ITrigonometricFunctions<ImplementingIFloatingPointIeee754>.Asin(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
 
-        static bool IBinaryNumber<CustomParsableIBinaryInteger>.IsPow2(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 IHyperbolicFunctions<ImplementingIFloatingPointIeee754>.Asinh(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
 
-        static bool INumberBase<CustomParsableIBinaryInteger>.IsRealNumber(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 ITrigonometricFunctions<ImplementingIFloatingPointIeee754>.AsinPi(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
 
-        static bool INumberBase<CustomParsableIBinaryInteger>.IsSubnormal(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 ITrigonometricFunctions<ImplementingIFloatingPointIeee754>.Atan(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
 
-        static bool INumberBase<CustomParsableIBinaryInteger>.IsZero(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 IFloatingPointIeee754<ImplementingIFloatingPointIeee754>.Atan2(ImplementingIFloatingPointIeee754 y, ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger IBinaryNumber<CustomParsableIBinaryInteger>.Log2(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 IFloatingPointIeee754<ImplementingIFloatingPointIeee754>.Atan2Pi(ImplementingIFloatingPointIeee754 y, ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger INumberBase<CustomParsableIBinaryInteger>.MaxMagnitude(CustomParsableIBinaryInteger x, CustomParsableIBinaryInteger y) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 IHyperbolicFunctions<ImplementingIFloatingPointIeee754>.Atanh(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger INumberBase<CustomParsableIBinaryInteger>.MaxMagnitudeNumber(CustomParsableIBinaryInteger x, CustomParsableIBinaryInteger y) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 ITrigonometricFunctions<ImplementingIFloatingPointIeee754>.AtanPi(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger INumberBase<CustomParsableIBinaryInteger>.MinMagnitude(CustomParsableIBinaryInteger x, CustomParsableIBinaryInteger y) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 IFloatingPointIeee754<ImplementingIFloatingPointIeee754>.BitDecrement(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger INumberBase<CustomParsableIBinaryInteger>.MinMagnitudeNumber(CustomParsableIBinaryInteger x, CustomParsableIBinaryInteger y) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 IFloatingPointIeee754<ImplementingIFloatingPointIeee754>.BitIncrement(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger INumberBase<CustomParsableIBinaryInteger>.Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 IRootFunctions<ImplementingIFloatingPointIeee754>.Cbrt(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger INumberBase<CustomParsableIBinaryInteger>.Parse(string s, NumberStyles style, IFormatProvider? provider) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 ITrigonometricFunctions<ImplementingIFloatingPointIeee754>.Cos(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger ISpanParsable<CustomParsableIBinaryInteger>.Parse(ReadOnlySpan<char> s, IFormatProvider? provider) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 IHyperbolicFunctions<ImplementingIFloatingPointIeee754>.Cosh(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger IParsable<CustomParsableIBinaryInteger>.Parse(string s, IFormatProvider? provider) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 ITrigonometricFunctions<ImplementingIFloatingPointIeee754>.CosPi(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger IBinaryInteger<CustomParsableIBinaryInteger>.PopCount(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 IExponentialFunctions<ImplementingIFloatingPointIeee754>.Exp(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger IBinaryInteger<CustomParsableIBinaryInteger>.TrailingZeroCount(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 IExponentialFunctions<ImplementingIFloatingPointIeee754>.Exp10(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
 
-        static bool INumberBase<CustomParsableIBinaryInteger>.TryConvertFromChecked<TOther>(TOther value, out CustomParsableIBinaryInteger result) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 IExponentialFunctions<ImplementingIFloatingPointIeee754>.Exp2(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
 
-        static bool INumberBase<CustomParsableIBinaryInteger>.TryConvertFromSaturating<TOther>(TOther value, out CustomParsableIBinaryInteger result) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 IFloatingPointIeee754<ImplementingIFloatingPointIeee754>.FusedMultiplyAdd(ImplementingIFloatingPointIeee754 left, ImplementingIFloatingPointIeee754 right, ImplementingIFloatingPointIeee754 addend) => throw new NotImplementedException();
 
-        static bool INumberBase<CustomParsableIBinaryInteger>.TryConvertFromTruncating<TOther>(TOther value, out CustomParsableIBinaryInteger result) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 IRootFunctions<ImplementingIFloatingPointIeee754>.Hypot(ImplementingIFloatingPointIeee754 x, ImplementingIFloatingPointIeee754 y) => throw new NotImplementedException();
 
-        static bool INumberBase<CustomParsableIBinaryInteger>.TryConvertToChecked<TOther>(CustomParsableIBinaryInteger value, out TOther result) => throw new NotImplementedException();
+            static ImplementingIFloatingPointIeee754 IFloatingPointIeee754<ImplementingIFloatingPointIeee754>.Ieee754Remainder(ImplementingIFloatingPointIeee754 left, ImplementingIFloatingPointIeee754 right) => throw new NotImplementedException();
 
-        static bool INumberBase<CustomParsableIBinaryInteger>.TryConvertToSaturating<TOther>(CustomParsableIBinaryInteger value, out TOther result) => throw new NotImplementedException();
+            static int IFloatingPointIeee754<ImplementingIFloatingPointIeee754>.ILogB(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
 
-        static bool INumberBase<CustomParsableIBinaryInteger>.TryConvertToTruncating<TOther>(CustomParsableIBinaryInteger value, out TOther result) => throw new NotImplementedException();
+            static bool INumberBase<ImplementingIFloatingPointIeee754>.IsCanonical(ImplementingIFloatingPointIeee754 value) => throw new NotImplementedException();
 
-        static bool INumberBase<CustomParsableIBinaryInteger>.TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out CustomParsableIBinaryInteger result) => throw new NotImplementedException();
+            static bool INumberBase<ImplementingIFloatingPointIeee754>.IsComplexNumber(ImplementingIFloatingPointIeee754 value) => throw new NotImplementedException();
 
-        static bool INumberBase<CustomParsableIBinaryInteger>.TryParse(string? s, NumberStyles style, IFormatProvider? provider, out CustomParsableIBinaryInteger result) => throw new NotImplementedException();
+            static bool INumberBase<ImplementingIFloatingPointIeee754>.IsEvenInteger(ImplementingIFloatingPointIeee754 value) => throw new NotImplementedException();
 
-        static bool ISpanParsable<CustomParsableIBinaryInteger>.TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out CustomParsableIBinaryInteger result) => throw new NotImplementedException();
+            static bool INumberBase<ImplementingIFloatingPointIeee754>.IsFinite(ImplementingIFloatingPointIeee754 value) => throw new NotImplementedException();
 
-        static bool IParsable<CustomParsableIBinaryInteger>.TryParse(string? s, IFormatProvider? provider, out CustomParsableIBinaryInteger result) => throw new NotImplementedException();
+            static bool INumberBase<ImplementingIFloatingPointIeee754>.IsImaginaryNumber(ImplementingIFloatingPointIeee754 value) => throw new NotImplementedException();
 
-        static bool IBinaryInteger<CustomParsableIBinaryInteger>.TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+            static bool INumberBase<ImplementingIFloatingPointIeee754>.IsInfinity(ImplementingIFloatingPointIeee754 value) => throw new NotImplementedException();
 
-        static bool IBinaryInteger<CustomParsableIBinaryInteger>.TryReadLittleEndian(ReadOnlySpan<byte> source, bool isUnsigned, out CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+            static bool INumberBase<ImplementingIFloatingPointIeee754>.IsInteger(ImplementingIFloatingPointIeee754 value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPointIeee754>.IsNaN(ImplementingIFloatingPointIeee754 value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPointIeee754>.IsNegative(ImplementingIFloatingPointIeee754 value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPointIeee754>.IsNegativeInfinity(ImplementingIFloatingPointIeee754 value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPointIeee754>.IsNormal(ImplementingIFloatingPointIeee754 value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPointIeee754>.IsOddInteger(ImplementingIFloatingPointIeee754 value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPointIeee754>.IsPositive(ImplementingIFloatingPointIeee754 value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPointIeee754>.IsPositiveInfinity(ImplementingIFloatingPointIeee754 value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPointIeee754>.IsRealNumber(ImplementingIFloatingPointIeee754 value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPointIeee754>.IsSubnormal(ImplementingIFloatingPointIeee754 value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPointIeee754>.IsZero(ImplementingIFloatingPointIeee754 value) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 ILogarithmicFunctions<ImplementingIFloatingPointIeee754>.Log(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 ILogarithmicFunctions<ImplementingIFloatingPointIeee754>.Log(ImplementingIFloatingPointIeee754 x, ImplementingIFloatingPointIeee754 newBase) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 ILogarithmicFunctions<ImplementingIFloatingPointIeee754>.Log10(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 ILogarithmicFunctions<ImplementingIFloatingPointIeee754>.Log2(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 INumberBase<ImplementingIFloatingPointIeee754>.MaxMagnitude(ImplementingIFloatingPointIeee754 x, ImplementingIFloatingPointIeee754 y) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 INumberBase<ImplementingIFloatingPointIeee754>.MaxMagnitudeNumber(ImplementingIFloatingPointIeee754 x, ImplementingIFloatingPointIeee754 y) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 INumberBase<ImplementingIFloatingPointIeee754>.MinMagnitude(ImplementingIFloatingPointIeee754 x, ImplementingIFloatingPointIeee754 y) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 INumberBase<ImplementingIFloatingPointIeee754>.MinMagnitudeNumber(ImplementingIFloatingPointIeee754 x, ImplementingIFloatingPointIeee754 y) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 INumberBase<ImplementingIFloatingPointIeee754>.Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 INumberBase<ImplementingIFloatingPointIeee754>.Parse(string s, NumberStyles style, IFormatProvider? provider) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 ISpanParsable<ImplementingIFloatingPointIeee754>.Parse(ReadOnlySpan<char> s, IFormatProvider? provider) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 IParsable<ImplementingIFloatingPointIeee754>.Parse(string s, IFormatProvider? provider) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 IPowerFunctions<ImplementingIFloatingPointIeee754>.Pow(ImplementingIFloatingPointIeee754 x, ImplementingIFloatingPointIeee754 y) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 IRootFunctions<ImplementingIFloatingPointIeee754>.RootN(ImplementingIFloatingPointIeee754 x, int n) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 IFloatingPoint<ImplementingIFloatingPointIeee754>.Round(ImplementingIFloatingPointIeee754 x, int digits, MidpointRounding mode) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 IFloatingPointIeee754<ImplementingIFloatingPointIeee754>.ScaleB(ImplementingIFloatingPointIeee754 x, int n) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 ITrigonometricFunctions<ImplementingIFloatingPointIeee754>.Sin(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
+
+            static (ImplementingIFloatingPointIeee754 Sin, ImplementingIFloatingPointIeee754 Cos) ITrigonometricFunctions<ImplementingIFloatingPointIeee754>.SinCos(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
+
+            static (ImplementingIFloatingPointIeee754 SinPi, ImplementingIFloatingPointIeee754 CosPi) ITrigonometricFunctions<ImplementingIFloatingPointIeee754>.SinCosPi(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 IHyperbolicFunctions<ImplementingIFloatingPointIeee754>.Sinh(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 ITrigonometricFunctions<ImplementingIFloatingPointIeee754>.SinPi(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 IRootFunctions<ImplementingIFloatingPointIeee754>.Sqrt(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 ITrigonometricFunctions<ImplementingIFloatingPointIeee754>.Tan(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 IHyperbolicFunctions<ImplementingIFloatingPointIeee754>.Tanh(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 ITrigonometricFunctions<ImplementingIFloatingPointIeee754>.TanPi(ImplementingIFloatingPointIeee754 x) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPointIeee754>.TryConvertFromChecked<TOther>(TOther value, out ImplementingIFloatingPointIeee754 result) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPointIeee754>.TryConvertFromSaturating<TOther>(TOther value, out ImplementingIFloatingPointIeee754 result) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPointIeee754>.TryConvertFromTruncating<TOther>(TOther value, out ImplementingIFloatingPointIeee754 result) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPointIeee754>.TryConvertToChecked<TOther>(ImplementingIFloatingPointIeee754 value, out TOther result) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPointIeee754>.TryConvertToSaturating<TOther>(ImplementingIFloatingPointIeee754 value, out TOther result) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPointIeee754>.TryConvertToTruncating<TOther>(ImplementingIFloatingPointIeee754 value, out TOther result) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPointIeee754>.TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out ImplementingIFloatingPointIeee754 result) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPointIeee754>.TryParse(string? s, NumberStyles style, IFormatProvider? provider, out ImplementingIFloatingPointIeee754 result) => throw new NotImplementedException();
+
+            static bool ISpanParsable<ImplementingIFloatingPointIeee754>.TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out ImplementingIFloatingPointIeee754 result) => throw new NotImplementedException();
+
+            static bool IParsable<ImplementingIFloatingPointIeee754>.TryParse(string? s, IFormatProvider? provider, out ImplementingIFloatingPointIeee754 result) => throw new NotImplementedException();
+
+            int IComparable.CompareTo(object? obj) => throw new NotImplementedException();
+
+            int IComparable<ImplementingIFloatingPointIeee754>.CompareTo(ImplementingIFloatingPointIeee754? other) => throw new NotImplementedException();
+
+            int IFloatingPoint<ImplementingIFloatingPointIeee754>.GetExponentByteCount() => throw new NotImplementedException();
+
+            int IFloatingPoint<ImplementingIFloatingPointIeee754>.GetExponentShortestBitLength() => throw new NotImplementedException();
+
+            int IFloatingPoint<ImplementingIFloatingPointIeee754>.GetSignificandBitLength() => throw new NotImplementedException();
+
+            int IFloatingPoint<ImplementingIFloatingPointIeee754>.GetSignificandByteCount() => throw new NotImplementedException();
+
+            string IFormattable.ToString(string? format, IFormatProvider? formatProvider) =>
+                ToString();
+
+            bool ISpanFormattable.TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider) => throw new NotImplementedException();
+
+            bool IFloatingPoint<ImplementingIFloatingPointIeee754>.TryWriteExponentBigEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
+
+            bool IFloatingPoint<ImplementingIFloatingPointIeee754>.TryWriteExponentLittleEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
+
+            bool IFloatingPoint<ImplementingIFloatingPointIeee754>.TryWriteSignificandBigEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
+
+            bool IFloatingPoint<ImplementingIFloatingPointIeee754>.TryWriteSignificandLittleEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 IUnaryPlusOperators<ImplementingIFloatingPointIeee754, ImplementingIFloatingPointIeee754>.operator +(ImplementingIFloatingPointIeee754 value) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 IAdditionOperators<ImplementingIFloatingPointIeee754, ImplementingIFloatingPointIeee754, ImplementingIFloatingPointIeee754>.operator +(ImplementingIFloatingPointIeee754 left, ImplementingIFloatingPointIeee754 right) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 IUnaryNegationOperators<ImplementingIFloatingPointIeee754, ImplementingIFloatingPointIeee754>.operator -(ImplementingIFloatingPointIeee754 value) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 ISubtractionOperators<ImplementingIFloatingPointIeee754, ImplementingIFloatingPointIeee754, ImplementingIFloatingPointIeee754>.operator -(ImplementingIFloatingPointIeee754 left, ImplementingIFloatingPointIeee754 right) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 IIncrementOperators<ImplementingIFloatingPointIeee754>.operator ++(ImplementingIFloatingPointIeee754 value) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 IDecrementOperators<ImplementingIFloatingPointIeee754>.operator --(ImplementingIFloatingPointIeee754 value) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 IMultiplyOperators<ImplementingIFloatingPointIeee754, ImplementingIFloatingPointIeee754, ImplementingIFloatingPointIeee754>.operator *(ImplementingIFloatingPointIeee754 left, ImplementingIFloatingPointIeee754 right) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 IDivisionOperators<ImplementingIFloatingPointIeee754, ImplementingIFloatingPointIeee754, ImplementingIFloatingPointIeee754>.operator /(ImplementingIFloatingPointIeee754 left, ImplementingIFloatingPointIeee754 right) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPointIeee754 IModulusOperators<ImplementingIFloatingPointIeee754, ImplementingIFloatingPointIeee754, ImplementingIFloatingPointIeee754>.operator %(ImplementingIFloatingPointIeee754 left, ImplementingIFloatingPointIeee754 right) => throw new NotImplementedException();
+
+            static bool IEqualityOperators<ImplementingIFloatingPointIeee754, ImplementingIFloatingPointIeee754, bool>.operator ==(ImplementingIFloatingPointIeee754? left, ImplementingIFloatingPointIeee754? right) => throw new NotImplementedException();
+
+            static bool IEqualityOperators<ImplementingIFloatingPointIeee754, ImplementingIFloatingPointIeee754, bool>.operator !=(ImplementingIFloatingPointIeee754? left, ImplementingIFloatingPointIeee754? right) => throw new NotImplementedException();
+
+            static bool IComparisonOperators<ImplementingIFloatingPointIeee754, ImplementingIFloatingPointIeee754, bool>.operator <(ImplementingIFloatingPointIeee754 left, ImplementingIFloatingPointIeee754 right) => throw new NotImplementedException();
+
+            static bool IComparisonOperators<ImplementingIFloatingPointIeee754, ImplementingIFloatingPointIeee754, bool>.operator >(ImplementingIFloatingPointIeee754 left, ImplementingIFloatingPointIeee754 right) => throw new NotImplementedException();
+
+            static bool IComparisonOperators<ImplementingIFloatingPointIeee754, ImplementingIFloatingPointIeee754, bool>.operator <=(ImplementingIFloatingPointIeee754 left, ImplementingIFloatingPointIeee754 right) => throw new NotImplementedException();
+
+            static bool IComparisonOperators<ImplementingIFloatingPointIeee754, ImplementingIFloatingPointIeee754, bool>.operator >=(ImplementingIFloatingPointIeee754 left, ImplementingIFloatingPointIeee754 right) => throw new NotImplementedException();
+        }
+#endif
+    }
+
+    private static class DefaultedCustomParsable
+    {
+        public sealed record IntNumber(string? Input, NumberStyles Style)
+        {
+            public static IntNumber NaN => default!;
+
+            public static IntNumber Parse(string s, NumberStyles style = NumberStyles.Number, IFormatProvider? provider = null) =>
+                new(s, style);
+
+            public static IntNumber Parse(ReadOnlySpan<char> s, NumberStyles style = NumberStyles.Number, IFormatProvider? provider = null) =>
+                new(s.ToString(), style);
+        }
+
+        public sealed record Integer(string? Input, NumberStyles Style)
+        {
+            public static Integer NaN => default!;
+
+            public static Integer Parse(string s, NumberStyles style = NumberStyles.Integer, IFormatProvider? provider = null) =>
+                new(s, style);
+
+            public static Integer Parse(ReadOnlySpan<char> s, NumberStyles style = NumberStyles.Integer, IFormatProvider? provider = null) =>
+                new(s.ToString(), style);
+        }
+
+        public sealed record Float(string? Input, NumberStyles Style)
+#if NET7_0_OR_GREATER
+        : IBinaryInteger<Float>
+#endif
+        {
+            public static Float Parse(string s, NumberStyles style = NumberStyles.Float, IFormatProvider? provider = null) =>
+                new(s, style);
+
+            public static Float Parse(ReadOnlySpan<char> s, NumberStyles style = NumberStyles.Float, IFormatProvider? provider = null) =>
+                new(s.ToString(), style);
+
+#if NET7_0_OR_GREATER
+        static Float INumberBase<Float>.One => throw new NotImplementedException();
+
+        static int INumberBase<Float>.Radix => throw new NotImplementedException();
+
+        static Float INumberBase<Float>.Zero => throw new NotImplementedException();
+
+        static Float IAdditiveIdentity<Float, Float>.AdditiveIdentity => throw new NotImplementedException();
+
+        static Float IMultiplicativeIdentity<Float, Float>.MultiplicativeIdentity => throw new NotImplementedException();
+
+        static Float INumberBase<Float>.Abs(Float value) => throw new NotImplementedException();
+
+        static bool INumberBase<Float>.IsCanonical(Float value) => throw new NotImplementedException();
+
+        static bool INumberBase<Float>.IsComplexNumber(Float value) => throw new NotImplementedException();
+
+        static bool INumberBase<Float>.IsEvenInteger(Float value) => throw new NotImplementedException();
+
+        static bool INumberBase<Float>.IsFinite(Float value) => throw new NotImplementedException();
+
+        static bool INumberBase<Float>.IsImaginaryNumber(Float value) => throw new NotImplementedException();
+
+        static bool INumberBase<Float>.IsInfinity(Float value) => throw new NotImplementedException();
+
+        static bool INumberBase<Float>.IsInteger(Float value) => throw new NotImplementedException();
+
+        static bool INumberBase<Float>.IsNaN(Float value) => throw new NotImplementedException();
+
+        static bool INumberBase<Float>.IsNegative(Float value) => throw new NotImplementedException();
+
+        static bool INumberBase<Float>.IsNegativeInfinity(Float value) => throw new NotImplementedException();
+
+        static bool INumberBase<Float>.IsNormal(Float value) => throw new NotImplementedException();
+
+        static bool INumberBase<Float>.IsOddInteger(Float value) => throw new NotImplementedException();
+
+        static bool INumberBase<Float>.IsPositive(Float value) => throw new NotImplementedException();
+
+        static bool INumberBase<Float>.IsPositiveInfinity(Float value) => throw new NotImplementedException();
+
+        static bool IBinaryNumber<Float>.IsPow2(Float value) => throw new NotImplementedException();
+
+        static bool INumberBase<Float>.IsRealNumber(Float value) => throw new NotImplementedException();
+
+        static bool INumberBase<Float>.IsSubnormal(Float value) => throw new NotImplementedException();
+
+        static bool INumberBase<Float>.IsZero(Float value) => throw new NotImplementedException();
+
+        static Float IBinaryNumber<Float>.Log2(Float value) => throw new NotImplementedException();
+
+        static Float INumberBase<Float>.MaxMagnitude(Float x, Float y) => throw new NotImplementedException();
+
+        static Float INumberBase<Float>.MaxMagnitudeNumber(Float x, Float y) => throw new NotImplementedException();
+
+        static Float INumberBase<Float>.MinMagnitude(Float x, Float y) => throw new NotImplementedException();
+
+        static Float INumberBase<Float>.MinMagnitudeNumber(Float x, Float y) => throw new NotImplementedException();
+
+        static Float INumberBase<Float>.Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider) => throw new NotImplementedException();
+
+        static Float INumberBase<Float>.Parse(string s, NumberStyles style, IFormatProvider? provider) => throw new NotImplementedException();
+
+        static Float ISpanParsable<Float>.Parse(ReadOnlySpan<char> s, IFormatProvider? provider) => throw new NotImplementedException();
+
+        static Float IParsable<Float>.Parse(string s, IFormatProvider? provider) => throw new NotImplementedException();
+
+        static Float IBinaryInteger<Float>.PopCount(Float value) => throw new NotImplementedException();
+
+        static Float IBinaryInteger<Float>.TrailingZeroCount(Float value) => throw new NotImplementedException();
+
+        static bool INumberBase<Float>.TryConvertFromChecked<TOther>(TOther value, out Float result) => throw new NotImplementedException();
+
+        static bool INumberBase<Float>.TryConvertFromSaturating<TOther>(TOther value, out Float result) => throw new NotImplementedException();
+
+        static bool INumberBase<Float>.TryConvertFromTruncating<TOther>(TOther value, out Float result) => throw new NotImplementedException();
+
+        static bool INumberBase<Float>.TryConvertToChecked<TOther>(Float value, out TOther result) => throw new NotImplementedException();
+
+        static bool INumberBase<Float>.TryConvertToSaturating<TOther>(Float value, out TOther result) => throw new NotImplementedException();
+
+        static bool INumberBase<Float>.TryConvertToTruncating<TOther>(Float value, out TOther result) => throw new NotImplementedException();
+
+        static bool INumberBase<Float>.TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out Float result) => throw new NotImplementedException();
+
+        static bool INumberBase<Float>.TryParse(string? s, NumberStyles style, IFormatProvider? provider, out Float result) => throw new NotImplementedException();
+
+        static bool ISpanParsable<Float>.TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out Float result) => throw new NotImplementedException();
+
+        static bool IParsable<Float>.TryParse(string? s, IFormatProvider? provider, out Float result) => throw new NotImplementedException();
+
+        static bool IBinaryInteger<Float>.TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out Float value) => throw new NotImplementedException();
+
+        static bool IBinaryInteger<Float>.TryReadLittleEndian(ReadOnlySpan<byte> source, bool isUnsigned, out Float value) => throw new NotImplementedException();
 
         int IComparable.CompareTo(object? obj) => throw new NotImplementedException();
 
-        int IComparable<CustomParsableIBinaryInteger>.CompareTo(CustomParsableIBinaryInteger? other) => throw new NotImplementedException();
+        int IComparable<Float>.CompareTo(Float? other) => throw new NotImplementedException();
 
-        int IBinaryInteger<CustomParsableIBinaryInteger>.GetByteCount() => throw new NotImplementedException();
+        int IBinaryInteger<Float>.GetByteCount() => throw new NotImplementedException();
 
-        int IBinaryInteger<CustomParsableIBinaryInteger>.GetShortestBitLength() => throw new NotImplementedException();
+        int IBinaryInteger<Float>.GetShortestBitLength() => throw new NotImplementedException();
 
         string IFormattable.ToString(string? format, IFormatProvider? formatProvider) =>
             ToString();
 
         bool ISpanFormattable.TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider) => throw new NotImplementedException();
 
-        bool IBinaryInteger<CustomParsableIBinaryInteger>.TryWriteBigEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
+        bool IBinaryInteger<Float>.TryWriteBigEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
 
-        bool IBinaryInteger<CustomParsableIBinaryInteger>.TryWriteLittleEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
+        bool IBinaryInteger<Float>.TryWriteLittleEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger IUnaryPlusOperators<CustomParsableIBinaryInteger, CustomParsableIBinaryInteger>.operator +(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+        static Float IUnaryPlusOperators<Float, Float>.operator +(Float value) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger IAdditionOperators<CustomParsableIBinaryInteger, CustomParsableIBinaryInteger, CustomParsableIBinaryInteger>.operator +(CustomParsableIBinaryInteger left, CustomParsableIBinaryInteger right) => throw new NotImplementedException();
+        static Float IAdditionOperators<Float, Float, Float>.operator +(Float left, Float right) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger IUnaryNegationOperators<CustomParsableIBinaryInteger, CustomParsableIBinaryInteger>.operator -(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+        static Float IUnaryNegationOperators<Float, Float>.operator -(Float value) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger ISubtractionOperators<CustomParsableIBinaryInteger, CustomParsableIBinaryInteger, CustomParsableIBinaryInteger>.operator -(CustomParsableIBinaryInteger left, CustomParsableIBinaryInteger right) => throw new NotImplementedException();
+        static Float ISubtractionOperators<Float, Float, Float>.operator -(Float left, Float right) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger IBitwiseOperators<CustomParsableIBinaryInteger, CustomParsableIBinaryInteger, CustomParsableIBinaryInteger>.operator ~(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+        static Float IBitwiseOperators<Float, Float, Float>.operator ~(Float value) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger IIncrementOperators<CustomParsableIBinaryInteger>.operator ++(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+        static Float IIncrementOperators<Float>.operator ++(Float value) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger IDecrementOperators<CustomParsableIBinaryInteger>.operator --(CustomParsableIBinaryInteger value) => throw new NotImplementedException();
+        static Float IDecrementOperators<Float>.operator --(Float value) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger IMultiplyOperators<CustomParsableIBinaryInteger, CustomParsableIBinaryInteger, CustomParsableIBinaryInteger>.operator *(CustomParsableIBinaryInteger left, CustomParsableIBinaryInteger right) => throw new NotImplementedException();
+        static Float IMultiplyOperators<Float, Float, Float>.operator *(Float left, Float right) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger IDivisionOperators<CustomParsableIBinaryInteger, CustomParsableIBinaryInteger, CustomParsableIBinaryInteger>.operator /(CustomParsableIBinaryInteger left, CustomParsableIBinaryInteger right) => throw new NotImplementedException();
+        static Float IDivisionOperators<Float, Float, Float>.operator /(Float left, Float right) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger IModulusOperators<CustomParsableIBinaryInteger, CustomParsableIBinaryInteger, CustomParsableIBinaryInteger>.operator %(CustomParsableIBinaryInteger left, CustomParsableIBinaryInteger right) => throw new NotImplementedException();
+        static Float IModulusOperators<Float, Float, Float>.operator %(Float left, Float right) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger IBitwiseOperators<CustomParsableIBinaryInteger, CustomParsableIBinaryInteger, CustomParsableIBinaryInteger>.operator &(CustomParsableIBinaryInteger left, CustomParsableIBinaryInteger right) => throw new NotImplementedException();
+        static Float IBitwiseOperators<Float, Float, Float>.operator &(Float left, Float right) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger IBitwiseOperators<CustomParsableIBinaryInteger, CustomParsableIBinaryInteger, CustomParsableIBinaryInteger>.operator |(CustomParsableIBinaryInteger left, CustomParsableIBinaryInteger right) => throw new NotImplementedException();
+        static Float IBitwiseOperators<Float, Float, Float>.operator |(Float left, Float right) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger IBitwiseOperators<CustomParsableIBinaryInteger, CustomParsableIBinaryInteger, CustomParsableIBinaryInteger>.operator ^(CustomParsableIBinaryInteger left, CustomParsableIBinaryInteger right) => throw new NotImplementedException();
+        static Float IBitwiseOperators<Float, Float, Float>.operator ^(Float left, Float right) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger IShiftOperators<CustomParsableIBinaryInteger, int, CustomParsableIBinaryInteger>.operator <<(CustomParsableIBinaryInteger value, int shiftAmount) => throw new NotImplementedException();
+        static Float IShiftOperators<Float, int, Float>.operator <<(Float value, int shiftAmount) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger IShiftOperators<CustomParsableIBinaryInteger, int, CustomParsableIBinaryInteger>.operator >>(CustomParsableIBinaryInteger value, int shiftAmount) => throw new NotImplementedException();
+        static Float IShiftOperators<Float, int, Float>.operator >>(Float value, int shiftAmount) => throw new NotImplementedException();
 
-        static bool IEqualityOperators<CustomParsableIBinaryInteger, CustomParsableIBinaryInteger, bool>.operator ==(CustomParsableIBinaryInteger? left, CustomParsableIBinaryInteger? right) => throw new NotImplementedException();
+        static bool IEqualityOperators<Float, Float, bool>.operator ==(Float? left, Float? right) => throw new NotImplementedException();
 
-        static bool IEqualityOperators<CustomParsableIBinaryInteger, CustomParsableIBinaryInteger, bool>.operator !=(CustomParsableIBinaryInteger? left, CustomParsableIBinaryInteger? right) => throw new NotImplementedException();
+        static bool IEqualityOperators<Float, Float, bool>.operator !=(Float? left, Float? right) => throw new NotImplementedException();
 
-        static bool IComparisonOperators<CustomParsableIBinaryInteger, CustomParsableIBinaryInteger, bool>.operator <(CustomParsableIBinaryInteger left, CustomParsableIBinaryInteger right) => throw new NotImplementedException();
+        static bool IComparisonOperators<Float, Float, bool>.operator <(Float left, Float right) => throw new NotImplementedException();
 
-        static bool IComparisonOperators<CustomParsableIBinaryInteger, CustomParsableIBinaryInteger, bool>.operator >(CustomParsableIBinaryInteger left, CustomParsableIBinaryInteger right) => throw new NotImplementedException();
+        static bool IComparisonOperators<Float, Float, bool>.operator >(Float left, Float right) => throw new NotImplementedException();
 
-        static bool IComparisonOperators<CustomParsableIBinaryInteger, CustomParsableIBinaryInteger, bool>.operator <=(CustomParsableIBinaryInteger left, CustomParsableIBinaryInteger right) => throw new NotImplementedException();
+        static bool IComparisonOperators<Float, Float, bool>.operator <=(Float left, Float right) => throw new NotImplementedException();
 
-        static bool IComparisonOperators<CustomParsableIBinaryInteger, CustomParsableIBinaryInteger, bool>.operator >=(CustomParsableIBinaryInteger left, CustomParsableIBinaryInteger right) => throw new NotImplementedException();
+        static bool IComparisonOperators<Float, Float, bool>.operator >=(Float left, Float right) => throw new NotImplementedException();
 
-        static CustomParsableIBinaryInteger IShiftOperators<CustomParsableIBinaryInteger, int, CustomParsableIBinaryInteger>.operator >>>(CustomParsableIBinaryInteger value, int shiftAmount) => throw new NotImplementedException();
-    }
-
-    private sealed record CustomParsableIFloatingPointIeee754(string? Input, NumberStyles Style) : CustomParsableBase<CustomParsableIFloatingPointIeee754>(Input, Style), IFloatingPointIeee754<CustomParsableIFloatingPointIeee754>
-    {
-        public CustomParsableIFloatingPointIeee754() : this(default, default)
-        {
+        static Float IShiftOperators<Float, int, Float>.operator >>>(Float value, int shiftAmount) => throw new NotImplementedException();
+#endif
         }
-
-        static CustomParsableIFloatingPointIeee754 IFloatingPointIeee754<CustomParsableIFloatingPointIeee754>.Epsilon => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IFloatingPointIeee754<CustomParsableIFloatingPointIeee754>.NaN => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IFloatingPointIeee754<CustomParsableIFloatingPointIeee754>.NegativeInfinity => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IFloatingPointIeee754<CustomParsableIFloatingPointIeee754>.NegativeZero => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IFloatingPointIeee754<CustomParsableIFloatingPointIeee754>.PositiveInfinity => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 ISignedNumber<CustomParsableIFloatingPointIeee754>.NegativeOne => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IFloatingPointConstants<CustomParsableIFloatingPointIeee754>.E => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IFloatingPointConstants<CustomParsableIFloatingPointIeee754>.Pi => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IFloatingPointConstants<CustomParsableIFloatingPointIeee754>.Tau => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 INumberBase<CustomParsableIFloatingPointIeee754>.One => throw new NotImplementedException();
-
-        static int INumberBase<CustomParsableIFloatingPointIeee754>.Radix => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 INumberBase<CustomParsableIFloatingPointIeee754>.Zero => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IAdditiveIdentity<CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754>.AdditiveIdentity => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IMultiplicativeIdentity<CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754>.MultiplicativeIdentity => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 INumberBase<CustomParsableIFloatingPointIeee754>.Abs(CustomParsableIFloatingPointIeee754 value) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 ITrigonometricFunctions<CustomParsableIFloatingPointIeee754>.Acos(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IHyperbolicFunctions<CustomParsableIFloatingPointIeee754>.Acosh(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 ITrigonometricFunctions<CustomParsableIFloatingPointIeee754>.AcosPi(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 ITrigonometricFunctions<CustomParsableIFloatingPointIeee754>.Asin(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IHyperbolicFunctions<CustomParsableIFloatingPointIeee754>.Asinh(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 ITrigonometricFunctions<CustomParsableIFloatingPointIeee754>.AsinPi(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 ITrigonometricFunctions<CustomParsableIFloatingPointIeee754>.Atan(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IFloatingPointIeee754<CustomParsableIFloatingPointIeee754>.Atan2(CustomParsableIFloatingPointIeee754 y, CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IFloatingPointIeee754<CustomParsableIFloatingPointIeee754>.Atan2Pi(CustomParsableIFloatingPointIeee754 y, CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IHyperbolicFunctions<CustomParsableIFloatingPointIeee754>.Atanh(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 ITrigonometricFunctions<CustomParsableIFloatingPointIeee754>.AtanPi(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IFloatingPointIeee754<CustomParsableIFloatingPointIeee754>.BitDecrement(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IFloatingPointIeee754<CustomParsableIFloatingPointIeee754>.BitIncrement(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IRootFunctions<CustomParsableIFloatingPointIeee754>.Cbrt(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 ITrigonometricFunctions<CustomParsableIFloatingPointIeee754>.Cos(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IHyperbolicFunctions<CustomParsableIFloatingPointIeee754>.Cosh(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 ITrigonometricFunctions<CustomParsableIFloatingPointIeee754>.CosPi(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IExponentialFunctions<CustomParsableIFloatingPointIeee754>.Exp(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IExponentialFunctions<CustomParsableIFloatingPointIeee754>.Exp10(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IExponentialFunctions<CustomParsableIFloatingPointIeee754>.Exp2(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IFloatingPointIeee754<CustomParsableIFloatingPointIeee754>.FusedMultiplyAdd(CustomParsableIFloatingPointIeee754 left, CustomParsableIFloatingPointIeee754 right, CustomParsableIFloatingPointIeee754 addend) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IRootFunctions<CustomParsableIFloatingPointIeee754>.Hypot(CustomParsableIFloatingPointIeee754 x, CustomParsableIFloatingPointIeee754 y) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IFloatingPointIeee754<CustomParsableIFloatingPointIeee754>.Ieee754Remainder(CustomParsableIFloatingPointIeee754 left, CustomParsableIFloatingPointIeee754 right) => throw new NotImplementedException();
-
-        static int IFloatingPointIeee754<CustomParsableIFloatingPointIeee754>.ILogB(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static bool INumberBase<CustomParsableIFloatingPointIeee754>.IsCanonical(CustomParsableIFloatingPointIeee754 value) => throw new NotImplementedException();
-
-        static bool INumberBase<CustomParsableIFloatingPointIeee754>.IsComplexNumber(CustomParsableIFloatingPointIeee754 value) => throw new NotImplementedException();
-
-        static bool INumberBase<CustomParsableIFloatingPointIeee754>.IsEvenInteger(CustomParsableIFloatingPointIeee754 value) => throw new NotImplementedException();
-
-        static bool INumberBase<CustomParsableIFloatingPointIeee754>.IsFinite(CustomParsableIFloatingPointIeee754 value) => throw new NotImplementedException();
-
-        static bool INumberBase<CustomParsableIFloatingPointIeee754>.IsImaginaryNumber(CustomParsableIFloatingPointIeee754 value) => throw new NotImplementedException();
-
-        static bool INumberBase<CustomParsableIFloatingPointIeee754>.IsInfinity(CustomParsableIFloatingPointIeee754 value) => throw new NotImplementedException();
-
-        static bool INumberBase<CustomParsableIFloatingPointIeee754>.IsInteger(CustomParsableIFloatingPointIeee754 value) => throw new NotImplementedException();
-
-        static bool INumberBase<CustomParsableIFloatingPointIeee754>.IsNaN(CustomParsableIFloatingPointIeee754 value) => throw new NotImplementedException();
-
-        static bool INumberBase<CustomParsableIFloatingPointIeee754>.IsNegative(CustomParsableIFloatingPointIeee754 value) => throw new NotImplementedException();
-
-        static bool INumberBase<CustomParsableIFloatingPointIeee754>.IsNegativeInfinity(CustomParsableIFloatingPointIeee754 value) => throw new NotImplementedException();
-
-        static bool INumberBase<CustomParsableIFloatingPointIeee754>.IsNormal(CustomParsableIFloatingPointIeee754 value) => throw new NotImplementedException();
-
-        static bool INumberBase<CustomParsableIFloatingPointIeee754>.IsOddInteger(CustomParsableIFloatingPointIeee754 value) => throw new NotImplementedException();
-
-        static bool INumberBase<CustomParsableIFloatingPointIeee754>.IsPositive(CustomParsableIFloatingPointIeee754 value) => throw new NotImplementedException();
-
-        static bool INumberBase<CustomParsableIFloatingPointIeee754>.IsPositiveInfinity(CustomParsableIFloatingPointIeee754 value) => throw new NotImplementedException();
-
-        static bool INumberBase<CustomParsableIFloatingPointIeee754>.IsRealNumber(CustomParsableIFloatingPointIeee754 value) => throw new NotImplementedException();
-
-        static bool INumberBase<CustomParsableIFloatingPointIeee754>.IsSubnormal(CustomParsableIFloatingPointIeee754 value) => throw new NotImplementedException();
-
-        static bool INumberBase<CustomParsableIFloatingPointIeee754>.IsZero(CustomParsableIFloatingPointIeee754 value) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 ILogarithmicFunctions<CustomParsableIFloatingPointIeee754>.Log(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 ILogarithmicFunctions<CustomParsableIFloatingPointIeee754>.Log(CustomParsableIFloatingPointIeee754 x, CustomParsableIFloatingPointIeee754 newBase) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 ILogarithmicFunctions<CustomParsableIFloatingPointIeee754>.Log10(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 ILogarithmicFunctions<CustomParsableIFloatingPointIeee754>.Log2(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 INumberBase<CustomParsableIFloatingPointIeee754>.MaxMagnitude(CustomParsableIFloatingPointIeee754 x, CustomParsableIFloatingPointIeee754 y) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 INumberBase<CustomParsableIFloatingPointIeee754>.MaxMagnitudeNumber(CustomParsableIFloatingPointIeee754 x, CustomParsableIFloatingPointIeee754 y) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 INumberBase<CustomParsableIFloatingPointIeee754>.MinMagnitude(CustomParsableIFloatingPointIeee754 x, CustomParsableIFloatingPointIeee754 y) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 INumberBase<CustomParsableIFloatingPointIeee754>.MinMagnitudeNumber(CustomParsableIFloatingPointIeee754 x, CustomParsableIFloatingPointIeee754 y) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 INumberBase<CustomParsableIFloatingPointIeee754>.Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 INumberBase<CustomParsableIFloatingPointIeee754>.Parse(string s, NumberStyles style, IFormatProvider? provider) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 ISpanParsable<CustomParsableIFloatingPointIeee754>.Parse(ReadOnlySpan<char> s, IFormatProvider? provider) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IParsable<CustomParsableIFloatingPointIeee754>.Parse(string s, IFormatProvider? provider) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IPowerFunctions<CustomParsableIFloatingPointIeee754>.Pow(CustomParsableIFloatingPointIeee754 x, CustomParsableIFloatingPointIeee754 y) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IRootFunctions<CustomParsableIFloatingPointIeee754>.RootN(CustomParsableIFloatingPointIeee754 x, int n) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IFloatingPoint<CustomParsableIFloatingPointIeee754>.Round(CustomParsableIFloatingPointIeee754 x, int digits, MidpointRounding mode) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IFloatingPointIeee754<CustomParsableIFloatingPointIeee754>.ScaleB(CustomParsableIFloatingPointIeee754 x, int n) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 ITrigonometricFunctions<CustomParsableIFloatingPointIeee754>.Sin(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static (CustomParsableIFloatingPointIeee754 Sin, CustomParsableIFloatingPointIeee754 Cos) ITrigonometricFunctions<CustomParsableIFloatingPointIeee754>.SinCos(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static (CustomParsableIFloatingPointIeee754 SinPi, CustomParsableIFloatingPointIeee754 CosPi) ITrigonometricFunctions<CustomParsableIFloatingPointIeee754>.SinCosPi(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IHyperbolicFunctions<CustomParsableIFloatingPointIeee754>.Sinh(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 ITrigonometricFunctions<CustomParsableIFloatingPointIeee754>.SinPi(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IRootFunctions<CustomParsableIFloatingPointIeee754>.Sqrt(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 ITrigonometricFunctions<CustomParsableIFloatingPointIeee754>.Tan(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IHyperbolicFunctions<CustomParsableIFloatingPointIeee754>.Tanh(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 ITrigonometricFunctions<CustomParsableIFloatingPointIeee754>.TanPi(CustomParsableIFloatingPointIeee754 x) => throw new NotImplementedException();
-
-        static bool INumberBase<CustomParsableIFloatingPointIeee754>.TryConvertFromChecked<TOther>(TOther value, out CustomParsableIFloatingPointIeee754 result) => throw new NotImplementedException();
-
-        static bool INumberBase<CustomParsableIFloatingPointIeee754>.TryConvertFromSaturating<TOther>(TOther value, out CustomParsableIFloatingPointIeee754 result) => throw new NotImplementedException();
-
-        static bool INumberBase<CustomParsableIFloatingPointIeee754>.TryConvertFromTruncating<TOther>(TOther value, out CustomParsableIFloatingPointIeee754 result) => throw new NotImplementedException();
-
-        static bool INumberBase<CustomParsableIFloatingPointIeee754>.TryConvertToChecked<TOther>(CustomParsableIFloatingPointIeee754 value, out TOther result) => throw new NotImplementedException();
-
-        static bool INumberBase<CustomParsableIFloatingPointIeee754>.TryConvertToSaturating<TOther>(CustomParsableIFloatingPointIeee754 value, out TOther result) => throw new NotImplementedException();
-
-        static bool INumberBase<CustomParsableIFloatingPointIeee754>.TryConvertToTruncating<TOther>(CustomParsableIFloatingPointIeee754 value, out TOther result) => throw new NotImplementedException();
-
-        static bool INumberBase<CustomParsableIFloatingPointIeee754>.TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out CustomParsableIFloatingPointIeee754 result) => throw new NotImplementedException();
-
-        static bool INumberBase<CustomParsableIFloatingPointIeee754>.TryParse(string? s, NumberStyles style, IFormatProvider? provider, out CustomParsableIFloatingPointIeee754 result) => throw new NotImplementedException();
-
-        static bool ISpanParsable<CustomParsableIFloatingPointIeee754>.TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out CustomParsableIFloatingPointIeee754 result) => throw new NotImplementedException();
-
-        static bool IParsable<CustomParsableIFloatingPointIeee754>.TryParse(string? s, IFormatProvider? provider, out CustomParsableIFloatingPointIeee754 result) => throw new NotImplementedException();
-
-        int IComparable.CompareTo(object? obj) => throw new NotImplementedException();
-
-        int IComparable<CustomParsableIFloatingPointIeee754>.CompareTo(CustomParsableIFloatingPointIeee754? other) => throw new NotImplementedException();
-
-        int IFloatingPoint<CustomParsableIFloatingPointIeee754>.GetExponentByteCount() => throw new NotImplementedException();
-
-        int IFloatingPoint<CustomParsableIFloatingPointIeee754>.GetExponentShortestBitLength() => throw new NotImplementedException();
-
-        int IFloatingPoint<CustomParsableIFloatingPointIeee754>.GetSignificandBitLength() => throw new NotImplementedException();
-
-        int IFloatingPoint<CustomParsableIFloatingPointIeee754>.GetSignificandByteCount() => throw new NotImplementedException();
-
-        string IFormattable.ToString(string? format, IFormatProvider? formatProvider) =>
-            ToString();
-
-        bool ISpanFormattable.TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider) => throw new NotImplementedException();
-
-        bool IFloatingPoint<CustomParsableIFloatingPointIeee754>.TryWriteExponentBigEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
-
-        bool IFloatingPoint<CustomParsableIFloatingPointIeee754>.TryWriteExponentLittleEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
-
-        bool IFloatingPoint<CustomParsableIFloatingPointIeee754>.TryWriteSignificandBigEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
-
-        bool IFloatingPoint<CustomParsableIFloatingPointIeee754>.TryWriteSignificandLittleEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IUnaryPlusOperators<CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754>.operator +(CustomParsableIFloatingPointIeee754 value) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IAdditionOperators<CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754>.operator +(CustomParsableIFloatingPointIeee754 left, CustomParsableIFloatingPointIeee754 right) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IUnaryNegationOperators<CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754>.operator -(CustomParsableIFloatingPointIeee754 value) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 ISubtractionOperators<CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754>.operator -(CustomParsableIFloatingPointIeee754 left, CustomParsableIFloatingPointIeee754 right) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IIncrementOperators<CustomParsableIFloatingPointIeee754>.operator ++(CustomParsableIFloatingPointIeee754 value) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IDecrementOperators<CustomParsableIFloatingPointIeee754>.operator --(CustomParsableIFloatingPointIeee754 value) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IMultiplyOperators<CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754>.operator *(CustomParsableIFloatingPointIeee754 left, CustomParsableIFloatingPointIeee754 right) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IDivisionOperators<CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754>.operator /(CustomParsableIFloatingPointIeee754 left, CustomParsableIFloatingPointIeee754 right) => throw new NotImplementedException();
-
-        static CustomParsableIFloatingPointIeee754 IModulusOperators<CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754>.operator %(CustomParsableIFloatingPointIeee754 left, CustomParsableIFloatingPointIeee754 right) => throw new NotImplementedException();
-
-        static bool IEqualityOperators<CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754, bool>.operator ==(CustomParsableIFloatingPointIeee754? left, CustomParsableIFloatingPointIeee754? right) => throw new NotImplementedException();
-
-        static bool IEqualityOperators<CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754, bool>.operator !=(CustomParsableIFloatingPointIeee754? left, CustomParsableIFloatingPointIeee754? right) => throw new NotImplementedException();
-
-        static bool IComparisonOperators<CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754, bool>.operator <(CustomParsableIFloatingPointIeee754 left, CustomParsableIFloatingPointIeee754 right) => throw new NotImplementedException();
-
-        static bool IComparisonOperators<CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754, bool>.operator >(CustomParsableIFloatingPointIeee754 left, CustomParsableIFloatingPointIeee754 right) => throw new NotImplementedException();
-
-        static bool IComparisonOperators<CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754, bool>.operator <=(CustomParsableIFloatingPointIeee754 left, CustomParsableIFloatingPointIeee754 right) => throw new NotImplementedException();
-
-        static bool IComparisonOperators<CustomParsableIFloatingPointIeee754, CustomParsableIFloatingPointIeee754, bool>.operator >=(CustomParsableIFloatingPointIeee754 left, CustomParsableIFloatingPointIeee754 right) => throw new NotImplementedException();
-    }
-#endif
-
-    private sealed record IntDefaultedCustomParsableNumber(string? Input, NumberStyles Style)
-    {
-        public static IntDefaultedCustomParsableNumber NaN => default!;
-
-        public static IntDefaultedCustomParsableNumber Parse(string s, NumberStyles style = NumberStyles.Number, IFormatProvider? provider = null) =>
-            new(s, style);
-
-        public static IntDefaultedCustomParsableNumber Parse(ReadOnlySpan<char> s, NumberStyles style = NumberStyles.Number, IFormatProvider? provider = null) =>
-            new(s.ToString(), style);
-    }
-
-    private sealed record DefaultedCustomParsableInteger(string? Input, NumberStyles Style)
-    {
-        public static DefaultedCustomParsableInteger NaN => default!;
-
-        public static DefaultedCustomParsableInteger Parse(string s, NumberStyles style = NumberStyles.Integer, IFormatProvider? provider = null) =>
-            new(s, style);
-
-        public static DefaultedCustomParsableInteger Parse(ReadOnlySpan<char> s, NumberStyles style = NumberStyles.Integer, IFormatProvider? provider = null) =>
-            new(s.ToString(), style);
-    }
-
-    private sealed record DefaultedCustomParsableFloat(string? Input, NumberStyles Style)
-#if NET7_0_OR_GREATER
-        : IBinaryInteger<DefaultedCustomParsableFloat>
-#endif
-    {
-        public static DefaultedCustomParsableFloat Parse(string s, NumberStyles style = NumberStyles.Float, IFormatProvider? provider = null) =>
-            new(s, style);
-
-        public static DefaultedCustomParsableFloat Parse(ReadOnlySpan<char> s, NumberStyles style = NumberStyles.Float, IFormatProvider? provider = null) =>
-            new(s.ToString(), style);
-
-#if NET7_0_OR_GREATER
-        static DefaultedCustomParsableFloat INumberBase<DefaultedCustomParsableFloat>.One => throw new NotImplementedException();
-
-        static int INumberBase<DefaultedCustomParsableFloat>.Radix => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat INumberBase<DefaultedCustomParsableFloat>.Zero => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat IAdditiveIdentity<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat>.AdditiveIdentity => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat IMultiplicativeIdentity<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat>.MultiplicativeIdentity => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat INumberBase<DefaultedCustomParsableFloat>.Abs(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsCanonical(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsComplexNumber(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsEvenInteger(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsFinite(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsImaginaryNumber(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsInfinity(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsInteger(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsNaN(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsNegative(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsNegativeInfinity(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsNormal(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsOddInteger(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsPositive(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsPositiveInfinity(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static bool IBinaryNumber<DefaultedCustomParsableFloat>.IsPow2(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsRealNumber(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsSubnormal(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static bool INumberBase<DefaultedCustomParsableFloat>.IsZero(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat IBinaryNumber<DefaultedCustomParsableFloat>.Log2(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat INumberBase<DefaultedCustomParsableFloat>.MaxMagnitude(DefaultedCustomParsableFloat x, DefaultedCustomParsableFloat y) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat INumberBase<DefaultedCustomParsableFloat>.MaxMagnitudeNumber(DefaultedCustomParsableFloat x, DefaultedCustomParsableFloat y) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat INumberBase<DefaultedCustomParsableFloat>.MinMagnitude(DefaultedCustomParsableFloat x, DefaultedCustomParsableFloat y) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat INumberBase<DefaultedCustomParsableFloat>.MinMagnitudeNumber(DefaultedCustomParsableFloat x, DefaultedCustomParsableFloat y) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat INumberBase<DefaultedCustomParsableFloat>.Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat INumberBase<DefaultedCustomParsableFloat>.Parse(string s, NumberStyles style, IFormatProvider? provider) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat ISpanParsable<DefaultedCustomParsableFloat>.Parse(ReadOnlySpan<char> s, IFormatProvider? provider) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat IParsable<DefaultedCustomParsableFloat>.Parse(string s, IFormatProvider? provider) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat IBinaryInteger<DefaultedCustomParsableFloat>.PopCount(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat IBinaryInteger<DefaultedCustomParsableFloat>.TrailingZeroCount(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static bool INumberBase<DefaultedCustomParsableFloat>.TryConvertFromChecked<TOther>(TOther value, out DefaultedCustomParsableFloat result) => throw new NotImplementedException();
-
-        static bool INumberBase<DefaultedCustomParsableFloat>.TryConvertFromSaturating<TOther>(TOther value, out DefaultedCustomParsableFloat result) => throw new NotImplementedException();
-
-        static bool INumberBase<DefaultedCustomParsableFloat>.TryConvertFromTruncating<TOther>(TOther value, out DefaultedCustomParsableFloat result) => throw new NotImplementedException();
-
-        static bool INumberBase<DefaultedCustomParsableFloat>.TryConvertToChecked<TOther>(DefaultedCustomParsableFloat value, out TOther result) => throw new NotImplementedException();
-
-        static bool INumberBase<DefaultedCustomParsableFloat>.TryConvertToSaturating<TOther>(DefaultedCustomParsableFloat value, out TOther result) => throw new NotImplementedException();
-
-        static bool INumberBase<DefaultedCustomParsableFloat>.TryConvertToTruncating<TOther>(DefaultedCustomParsableFloat value, out TOther result) => throw new NotImplementedException();
-
-        static bool INumberBase<DefaultedCustomParsableFloat>.TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out DefaultedCustomParsableFloat result) => throw new NotImplementedException();
-
-        static bool INumberBase<DefaultedCustomParsableFloat>.TryParse(string? s, NumberStyles style, IFormatProvider? provider, out DefaultedCustomParsableFloat result) => throw new NotImplementedException();
-
-        static bool ISpanParsable<DefaultedCustomParsableFloat>.TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out DefaultedCustomParsableFloat result) => throw new NotImplementedException();
-
-        static bool IParsable<DefaultedCustomParsableFloat>.TryParse(string? s, IFormatProvider? provider, out DefaultedCustomParsableFloat result) => throw new NotImplementedException();
-
-        static bool IBinaryInteger<DefaultedCustomParsableFloat>.TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static bool IBinaryInteger<DefaultedCustomParsableFloat>.TryReadLittleEndian(ReadOnlySpan<byte> source, bool isUnsigned, out DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        int IComparable.CompareTo(object? obj) => throw new NotImplementedException();
-
-        int IComparable<DefaultedCustomParsableFloat>.CompareTo(DefaultedCustomParsableFloat? other) => throw new NotImplementedException();
-
-        int IBinaryInteger<DefaultedCustomParsableFloat>.GetByteCount() => throw new NotImplementedException();
-
-        int IBinaryInteger<DefaultedCustomParsableFloat>.GetShortestBitLength() => throw new NotImplementedException();
-
-        string IFormattable.ToString(string? format, IFormatProvider? formatProvider) =>
-            ToString();
-
-        bool ISpanFormattable.TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider) => throw new NotImplementedException();
-
-        bool IBinaryInteger<DefaultedCustomParsableFloat>.TryWriteBigEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
-
-        bool IBinaryInteger<DefaultedCustomParsableFloat>.TryWriteLittleEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat IUnaryPlusOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat>.operator +(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat IAdditionOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, DefaultedCustomParsableFloat>.operator +(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat IUnaryNegationOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat>.operator -(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat ISubtractionOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, DefaultedCustomParsableFloat>.operator -(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat IBitwiseOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, DefaultedCustomParsableFloat>.operator ~(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat IIncrementOperators<DefaultedCustomParsableFloat>.operator ++(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat IDecrementOperators<DefaultedCustomParsableFloat>.operator --(DefaultedCustomParsableFloat value) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat IMultiplyOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, DefaultedCustomParsableFloat>.operator *(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat IDivisionOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, DefaultedCustomParsableFloat>.operator /(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat IModulusOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, DefaultedCustomParsableFloat>.operator %(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat IBitwiseOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, DefaultedCustomParsableFloat>.operator &(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat IBitwiseOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, DefaultedCustomParsableFloat>.operator |(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat IBitwiseOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, DefaultedCustomParsableFloat>.operator ^(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat IShiftOperators<DefaultedCustomParsableFloat, int, DefaultedCustomParsableFloat>.operator <<(DefaultedCustomParsableFloat value, int shiftAmount) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat IShiftOperators<DefaultedCustomParsableFloat, int, DefaultedCustomParsableFloat>.operator >>(DefaultedCustomParsableFloat value, int shiftAmount) => throw new NotImplementedException();
-
-        static bool IEqualityOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, bool>.operator ==(DefaultedCustomParsableFloat? left, DefaultedCustomParsableFloat? right) => throw new NotImplementedException();
-
-        static bool IEqualityOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, bool>.operator !=(DefaultedCustomParsableFloat? left, DefaultedCustomParsableFloat? right) => throw new NotImplementedException();
-
-        static bool IComparisonOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, bool>.operator <(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
-
-        static bool IComparisonOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, bool>.operator >(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
-
-        static bool IComparisonOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, bool>.operator <=(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
-
-        static bool IComparisonOperators<DefaultedCustomParsableFloat, DefaultedCustomParsableFloat, bool>.operator >=(DefaultedCustomParsableFloat left, DefaultedCustomParsableFloat right) => throw new NotImplementedException();
-
-        static DefaultedCustomParsableFloat IShiftOperators<DefaultedCustomParsableFloat, int, DefaultedCustomParsableFloat>.operator >>>(DefaultedCustomParsableFloat value, int shiftAmount) => throw new NotImplementedException();
-#endif
     }
 
     private static void AssertDoesNotParse<T>(string? input, string? nestedInput, IFormatProvider? provider, bool? parseFromSpan = null, bool tryParse = true)
