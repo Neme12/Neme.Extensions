@@ -362,6 +362,7 @@ public sealed partial class Optional1Tests
 
 #if NET7_0_OR_GREATER
         AssertParses<CustomParsable.ImplementingIBinaryInteger>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsable.ImplementingIFloatingPoint>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
         AssertParses<CustomParsable.ImplementingIFloatingPointIeee754>(new(new("foo", NumberStyles.Float | NumberStyles.AllowThousands)), "Some { foo }", null, parseFromSpan: true);
 #endif
     }
@@ -681,6 +682,160 @@ public sealed partial class Optional1Tests
             static bool IComparisonOperators<ImplementingIBinaryInteger, ImplementingIBinaryInteger, bool>.operator >=(ImplementingIBinaryInteger left, ImplementingIBinaryInteger right) => throw new NotImplementedException();
 
             static ImplementingIBinaryInteger IShiftOperators<ImplementingIBinaryInteger, int, ImplementingIBinaryInteger>.operator >>>(ImplementingIBinaryInteger value, int shiftAmount) => throw new NotImplementedException();
+        }
+
+        public sealed record ImplementingIFloatingPoint(string? Input, NumberStyles Style) : Base<ImplementingIFloatingPoint>(Input, Style), IFloatingPoint<ImplementingIFloatingPoint>
+        {
+            public ImplementingIFloatingPoint() : this(default, default)
+            {
+            }
+
+            static ImplementingIFloatingPoint IFloatingPointConstants<ImplementingIFloatingPoint>.E => throw new NotImplementedException();
+
+            static ImplementingIFloatingPoint IFloatingPointConstants<ImplementingIFloatingPoint>.Pi => throw new NotImplementedException();
+
+            static ImplementingIFloatingPoint IFloatingPointConstants<ImplementingIFloatingPoint>.Tau => throw new NotImplementedException();
+
+            static ImplementingIFloatingPoint ISignedNumber<ImplementingIFloatingPoint>.NegativeOne => throw new NotImplementedException();
+
+            static ImplementingIFloatingPoint INumberBase<ImplementingIFloatingPoint>.One => throw new NotImplementedException();
+
+            static int INumberBase<ImplementingIFloatingPoint>.Radix => throw new NotImplementedException();
+
+            static ImplementingIFloatingPoint INumberBase<ImplementingIFloatingPoint>.Zero => throw new NotImplementedException();
+
+            static ImplementingIFloatingPoint IAdditiveIdentity<ImplementingIFloatingPoint, ImplementingIFloatingPoint>.AdditiveIdentity => throw new NotImplementedException();
+
+            static ImplementingIFloatingPoint IMultiplicativeIdentity<ImplementingIFloatingPoint, ImplementingIFloatingPoint>.MultiplicativeIdentity => throw new NotImplementedException();
+
+            static ImplementingIFloatingPoint INumberBase<ImplementingIFloatingPoint>.Abs(ImplementingIFloatingPoint value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPoint>.IsCanonical(ImplementingIFloatingPoint value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPoint>.IsComplexNumber(ImplementingIFloatingPoint value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPoint>.IsEvenInteger(ImplementingIFloatingPoint value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPoint>.IsFinite(ImplementingIFloatingPoint value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPoint>.IsImaginaryNumber(ImplementingIFloatingPoint value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPoint>.IsInfinity(ImplementingIFloatingPoint value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPoint>.IsInteger(ImplementingIFloatingPoint value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPoint>.IsNaN(ImplementingIFloatingPoint value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPoint>.IsNegative(ImplementingIFloatingPoint value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPoint>.IsNegativeInfinity(ImplementingIFloatingPoint value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPoint>.IsNormal(ImplementingIFloatingPoint value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPoint>.IsOddInteger(ImplementingIFloatingPoint value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPoint>.IsPositive(ImplementingIFloatingPoint value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPoint>.IsPositiveInfinity(ImplementingIFloatingPoint value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPoint>.IsRealNumber(ImplementingIFloatingPoint value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPoint>.IsSubnormal(ImplementingIFloatingPoint value) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPoint>.IsZero(ImplementingIFloatingPoint value) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPoint INumberBase<ImplementingIFloatingPoint>.MaxMagnitude(ImplementingIFloatingPoint x, ImplementingIFloatingPoint y) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPoint INumberBase<ImplementingIFloatingPoint>.MaxMagnitudeNumber(ImplementingIFloatingPoint x, ImplementingIFloatingPoint y) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPoint INumberBase<ImplementingIFloatingPoint>.MinMagnitude(ImplementingIFloatingPoint x, ImplementingIFloatingPoint y) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPoint INumberBase<ImplementingIFloatingPoint>.MinMagnitudeNumber(ImplementingIFloatingPoint x, ImplementingIFloatingPoint y) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPoint INumberBase<ImplementingIFloatingPoint>.Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPoint INumberBase<ImplementingIFloatingPoint>.Parse(string s, NumberStyles style, IFormatProvider? provider) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPoint ISpanParsable<ImplementingIFloatingPoint>.Parse(ReadOnlySpan<char> s, IFormatProvider? provider) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPoint IParsable<ImplementingIFloatingPoint>.Parse(string s, IFormatProvider? provider) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPoint IFloatingPoint<ImplementingIFloatingPoint>.Round(ImplementingIFloatingPoint x, int digits, MidpointRounding mode) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPoint>.TryConvertFromChecked<TOther>(TOther value, out ImplementingIFloatingPoint result) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPoint>.TryConvertFromSaturating<TOther>(TOther value, out ImplementingIFloatingPoint result) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPoint>.TryConvertFromTruncating<TOther>(TOther value, out ImplementingIFloatingPoint result) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPoint>.TryConvertToChecked<TOther>(ImplementingIFloatingPoint value, out TOther result) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPoint>.TryConvertToSaturating<TOther>(ImplementingIFloatingPoint value, out TOther result) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPoint>.TryConvertToTruncating<TOther>(ImplementingIFloatingPoint value, out TOther result) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPoint>.TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out ImplementingIFloatingPoint result) => throw new NotImplementedException();
+
+            static bool INumberBase<ImplementingIFloatingPoint>.TryParse(string? s, NumberStyles style, IFormatProvider? provider, out ImplementingIFloatingPoint result) => throw new NotImplementedException();
+
+            static bool ISpanParsable<ImplementingIFloatingPoint>.TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out ImplementingIFloatingPoint result) => throw new NotImplementedException();
+
+            static bool IParsable<ImplementingIFloatingPoint>.TryParse(string? s, IFormatProvider? provider, out ImplementingIFloatingPoint result) => throw new NotImplementedException();
+
+            int IComparable.CompareTo(object? obj) => throw new NotImplementedException();
+
+            int IComparable<ImplementingIFloatingPoint>.CompareTo(ImplementingIFloatingPoint? other) => throw new NotImplementedException();
+
+            int IFloatingPoint<ImplementingIFloatingPoint>.GetExponentByteCount() => throw new NotImplementedException();
+
+            int IFloatingPoint<ImplementingIFloatingPoint>.GetExponentShortestBitLength() => throw new NotImplementedException();
+
+            int IFloatingPoint<ImplementingIFloatingPoint>.GetSignificandBitLength() => throw new NotImplementedException();
+
+            int IFloatingPoint<ImplementingIFloatingPoint>.GetSignificandByteCount() => throw new NotImplementedException();
+
+            string IFormattable.ToString(string? format, IFormatProvider? formatProvider) =>
+                ToString();
+
+            bool ISpanFormattable.TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider) => throw new NotImplementedException();
+
+            bool IFloatingPoint<ImplementingIFloatingPoint>.TryWriteExponentBigEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
+
+            bool IFloatingPoint<ImplementingIFloatingPoint>.TryWriteExponentLittleEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
+
+            bool IFloatingPoint<ImplementingIFloatingPoint>.TryWriteSignificandBigEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
+
+            bool IFloatingPoint<ImplementingIFloatingPoint>.TryWriteSignificandLittleEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPoint IUnaryPlusOperators<ImplementingIFloatingPoint, ImplementingIFloatingPoint>.operator +(ImplementingIFloatingPoint value) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPoint IAdditionOperators<ImplementingIFloatingPoint, ImplementingIFloatingPoint, ImplementingIFloatingPoint>.operator +(ImplementingIFloatingPoint left, ImplementingIFloatingPoint right) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPoint IUnaryNegationOperators<ImplementingIFloatingPoint, ImplementingIFloatingPoint>.operator -(ImplementingIFloatingPoint value) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPoint ISubtractionOperators<ImplementingIFloatingPoint, ImplementingIFloatingPoint, ImplementingIFloatingPoint>.operator -(ImplementingIFloatingPoint left, ImplementingIFloatingPoint right) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPoint IIncrementOperators<ImplementingIFloatingPoint>.operator ++(ImplementingIFloatingPoint value) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPoint IDecrementOperators<ImplementingIFloatingPoint>.operator --(ImplementingIFloatingPoint value) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPoint IMultiplyOperators<ImplementingIFloatingPoint, ImplementingIFloatingPoint, ImplementingIFloatingPoint>.operator *(ImplementingIFloatingPoint left, ImplementingIFloatingPoint right) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPoint IDivisionOperators<ImplementingIFloatingPoint, ImplementingIFloatingPoint, ImplementingIFloatingPoint>.operator /(ImplementingIFloatingPoint left, ImplementingIFloatingPoint right) => throw new NotImplementedException();
+
+            static ImplementingIFloatingPoint IModulusOperators<ImplementingIFloatingPoint, ImplementingIFloatingPoint, ImplementingIFloatingPoint>.operator %(ImplementingIFloatingPoint left, ImplementingIFloatingPoint right) => throw new NotImplementedException();
+
+            static bool IEqualityOperators<ImplementingIFloatingPoint, ImplementingIFloatingPoint, bool>.operator ==(ImplementingIFloatingPoint? left, ImplementingIFloatingPoint? right) => throw new NotImplementedException();
+
+            static bool IEqualityOperators<ImplementingIFloatingPoint, ImplementingIFloatingPoint, bool>.operator !=(ImplementingIFloatingPoint? left, ImplementingIFloatingPoint? right) => throw new NotImplementedException();
+
+            static bool IComparisonOperators<ImplementingIFloatingPoint, ImplementingIFloatingPoint, bool>.operator <(ImplementingIFloatingPoint left, ImplementingIFloatingPoint right) => throw new NotImplementedException();
+
+            static bool IComparisonOperators<ImplementingIFloatingPoint, ImplementingIFloatingPoint, bool>.operator >(ImplementingIFloatingPoint left, ImplementingIFloatingPoint right) => throw new NotImplementedException();
+
+            static bool IComparisonOperators<ImplementingIFloatingPoint, ImplementingIFloatingPoint, bool>.operator <=(ImplementingIFloatingPoint left, ImplementingIFloatingPoint right) => throw new NotImplementedException();
+
+            static bool IComparisonOperators<ImplementingIFloatingPoint, ImplementingIFloatingPoint, bool>.operator >=(ImplementingIFloatingPoint left, ImplementingIFloatingPoint right) => throw new NotImplementedException();
         }
 
         public sealed record ImplementingIFloatingPointIeee754(string? Input, NumberStyles Style) : Base<ImplementingIFloatingPointIeee754>(Input, Style), IFloatingPointIeee754<ImplementingIFloatingPointIeee754>
