@@ -300,6 +300,9 @@ public readonly partial struct Optional<T>
 		return s_parseMethodLazy.EnsureInitialized(
 			static () =>
 			{
+				if (typeof(T) == typeof(char))
+					return (s, provider) => (T)(object)char.Parse(s);
+
 #if NETCOREAPP3_0_OR_GREATER
 				if (typeof(T) == typeof(Rune))
 					return (s, provider) => (T)(object)RuneExtensions.Parse(s);
@@ -326,6 +329,9 @@ public readonly partial struct Optional<T>
 		return s_parseSpanMethodLazy.EnsureInitialized(
 			static () =>
 			{
+                if (typeof(T) == typeof(char))
+                    return (s, provider) => (T)(object)CharExtensions.Parse(s);
+
 #if NETCOREAPP3_0_OR_GREATER
                 if (typeof(T) == typeof(Rune))
                     return (s, provider) => (T)(object)RuneExtensions.Parse(s);
@@ -353,6 +359,16 @@ public readonly partial struct Optional<T>
 		return s_tryParseMethodLazy.EnsureInitialized(
 			static () =>
 			{
+				if (typeof(T) == typeof(char))
+				{
+					return ([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) =>
+					{
+						var success = char.TryParse(s, out var @char);
+						result = (T)(object)@char;
+						return success;
+					};
+				}
+
 #if NETCOREAPP3_0_OR_GREATER
 				if (typeof(T) == typeof(Rune))
 				{
@@ -386,6 +402,16 @@ public readonly partial struct Optional<T>
 		return s_tryParseSpanMethodLazy.EnsureInitialized(
 			static () =>
 			{
+                if (typeof(T) == typeof(char))
+                {
+                    return (ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) =>
+                    {
+                        var success = CharExtensions.TryParse(s, out var @char);
+                        result = (T)(object)@char;
+                        return success;
+                    };
+                }
+
 #if NETCOREAPP3_0_OR_GREATER
                 if (typeof(T) == typeof(Rune))
                 {
