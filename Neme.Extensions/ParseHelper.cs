@@ -19,19 +19,57 @@ internal static class ParseHelper<T>
     private static ValueLazy<TryParseSpanProviderDelegate?> s_tryParseSpanMethodLazy;
 
     private delegate T ParseDelegate(string s);
-    public delegate T ParseProviderDelegate(string s, IFormatProvider? provider);
+    private delegate T ParseProviderDelegate(string s, IFormatProvider? provider);
     private delegate T ParseNumberStylesProviderDelegate(string s, NumberStyles style, IFormatProvider? provider);
     private delegate T ParseSpanDelegate(ReadOnlySpan<char> s);
-    public delegate T ParseSpanProviderDelegate(ReadOnlySpan<char> s, IFormatProvider? provider);
+    private delegate T ParseSpanProviderDelegate(ReadOnlySpan<char> s, IFormatProvider? provider);
     private delegate T ParseSpanNumberStylesProviderDelegate(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider);
     private delegate bool TryParseDelegate([NotNullWhen(true)] string? s, [MaybeNullWhen(false)] out T result);
-    public delegate bool TryParseProviderDelegate([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result);
+    private delegate bool TryParseProviderDelegate([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result);
     private delegate bool TryParseNumberStylesProviderDelegate([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out T result);
     private delegate bool TryParseSpanDelegate(ReadOnlySpan<char> s, [MaybeNullWhen(false)] out T result);
-    public delegate bool TryParseSpanProviderDelegate(ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result);
+    private delegate bool TryParseSpanProviderDelegate(ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result);
     private delegate bool TryParseSpanNumberStylesProviderDelegate(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out T result);
 
-    public static bool TryParseString(ReadOnlySpan<char> s, [MaybeNullWhen(false)] out T result)
+    public static T Parse(ReadOnlySpan<char> s, IFormatProvider? provider, bool allowStringMethod)
+    {
+        if (TryParseString(s, out var stringValue))
+            return stringValue;
+
+        if (GetParseSpanMethod() is { } spanMethod)
+            return spanMethod.Invoke(s, provider);
+
+        if (allowStringMethod && GetParseMethod() is { } stringMethod)
+            return stringMethod.Invoke(s.ToString(), provider);
+
+        ThrowNoParseMethod(nameof(Parse));
+        return default;
+    }
+
+    public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, bool allowStringMethod, [MaybeNullWhen(false)] out T result)
+    {
+        if (TryParseString(s, out var stringValue))
+        {
+            result = stringValue;
+            return true;
+        }
+
+        if (GetTryParseSpanMethod() is { } spanMethod)
+            return spanMethod.Invoke(s, provider, out result);
+
+        if (allowStringMethod && GetTryParseMethod() is { } stringMethod)
+            return stringMethod.Invoke(s.ToString(), provider, out result);
+
+        ThrowNoParseMethod(nameof(TryParse));
+        result = default;
+        return default;
+    }
+
+    [DoesNotReturn]
+    private static void ThrowNoParseMethod(string methodName) =>
+        throw new NotSupportedException($"Type {typeof(T)} has no appropriate {methodName} method.");
+
+    private static bool TryParseString(ReadOnlySpan<char> s, [MaybeNullWhen(false)] out T result)
     {
         if (typeof(T) == typeof(string))
         {
@@ -55,7 +93,7 @@ internal static class ParseHelper<T>
         return false;
     }
 
-    public static ParseProviderDelegate? GetParseMethod()
+    private static ParseProviderDelegate? GetParseMethod()
     {
         return s_parseMethodLazy.EnsureInitialized(
             static () =>
@@ -84,7 +122,7 @@ internal static class ParseHelper<T>
             });
     }
 
-    public static ParseSpanProviderDelegate? GetParseSpanMethod()
+    private static ParseSpanProviderDelegate? GetParseSpanMethod()
     {
         return s_parseSpanMethodLazy.EnsureInitialized(
             static () =>
@@ -114,7 +152,7 @@ internal static class ParseHelper<T>
 
     }
 
-    public static TryParseProviderDelegate? GetTryParseMethod()
+    private static TryParseProviderDelegate? GetTryParseMethod()
     {
         return s_tryParseMethodLazy.EnsureInitialized(
             static () =>
@@ -150,7 +188,7 @@ internal static class ParseHelper<T>
             });
     }
 
-    public static TryParseSpanProviderDelegate? GetTryParseSpanMethod()
+    private static TryParseSpanProviderDelegate? GetTryParseSpanMethod()
     {
         return s_tryParseSpanMethodLazy.EnsureInitialized(
             static () =>
