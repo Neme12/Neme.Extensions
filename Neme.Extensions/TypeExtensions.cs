@@ -7,6 +7,29 @@ internal static class TypeExtensions
     public static MethodInfo? GetMethod<TDelegate>(this Type type, string name, BindingFlags bindingAttr)
         where TDelegate : Delegate
     {
+        if (type is null)
+            throw new ArgumentNullException(nameof(type));
+
+        if (name is null)
+            throw new ArgumentNullException(nameof(name));
+
+        if ((bindingAttr & (
+            BindingFlags.InvokeMethod |
+            BindingFlags.CreateInstance |
+            BindingFlags.GetField |
+            BindingFlags.SetField |
+            BindingFlags.GetProperty |
+            BindingFlags.SetProperty |
+            BindingFlags.PutDispProperty |
+            BindingFlags.PutRefDispProperty
+#if NETCOREAPP2_1_OR_GREATER
+            | BindingFlags.DoNotWrapExceptions
+#endif
+            )) != 0)
+        {
+            throw new ArgumentException("The binding flags cannot contain any invoke related flags.", nameof(bindingAttr));
+        }
+
         var invokeMethod = typeof(TDelegate).GetInvokeMethod();
         var genericParameterCount = GetGenericParameterCount(invokeMethod);
 
