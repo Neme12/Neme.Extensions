@@ -308,7 +308,7 @@ public readonly partial struct Optional<T>
 					return static (s, provider) => UnsafeExtensions.InAs<Rune, T>(RuneExtensions.Parse(s));
 #endif
 
-				if (GetParseMethod<ParseProviderDelegate>(nameof(Parse), out _) is { } method)
+				if (GetParseMethod<ParseProviderDelegate>(nameof(Parse)) is { } method)
 					return method;
 
 				if (GetParseMethod<ParseNumberStylesProviderDelegate>(nameof(Parse), out var defaultStyle) is { } numberStylesMethod)
@@ -317,7 +317,7 @@ public readonly partial struct Optional<T>
                     return (s, provider) => numberStylesMethod(s, style, provider);
 				}
 
-				if (GetParseMethod<ParseDelegate>(nameof(Parse), out _) is { } noProviderMethod)
+				if (GetParseMethod<ParseDelegate>(nameof(Parse)) is { } noProviderMethod)
 					return (s, provider) => noProviderMethod(s);
 
 				return null;
@@ -337,7 +337,7 @@ public readonly partial struct Optional<T>
                     return static (s, provider) => UnsafeExtensions.InAs<Rune, T>(RuneExtensions.Parse(s));
 #endif
 
-                if (GetParseMethod<ParseSpanProviderDelegate>(nameof(Parse), out _) is { } method)
+                if (GetParseMethod<ParseSpanProviderDelegate>(nameof(Parse)) is { } method)
 					return method;
 
 				if (GetParseMethod<ParseSpanNumberStylesProviderDelegate>(nameof(Parse), out var defaultStyle) is { } numberStylesMethod)
@@ -346,7 +346,7 @@ public readonly partial struct Optional<T>
                     return (s, provider) => numberStylesMethod(s, style, provider);
 				}
 
-				if (GetParseMethod<ParseSpanDelegate>(nameof(Parse), out _) is { } noProviderMethod)
+				if (GetParseMethod<ParseSpanDelegate>(nameof(Parse)) is { } noProviderMethod)
 					return (s, provider) => noProviderMethod(s);
 
 				return null;
@@ -373,16 +373,17 @@ public readonly partial struct Optional<T>
 				}
 #endif
 
-                if (GetParseMethod<TryParseProviderDelegate>(nameof(TryParse), out _) is { } method)
+                if (GetParseMethod<TryParseProviderDelegate>(nameof(TryParse)) is { } method)
 					return method;
 
-				if (GetParseMethod<TryParseNumberStylesProviderDelegate>(nameof(TryParse), out var defaultStyle) is { } numberStylesMethod)
+				if (GetParseMethod<TryParseNumberStylesProviderDelegate>(nameof(TryParse)) is { } numberStylesMethod)
 				{
+                    GetParseMethodInfo<ParseNumberStylesProviderDelegate>(nameof(Parse), out var defaultStyle);
                     var style = defaultStyle ?? GetDefaultNumberStyles();
                     return ([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) => numberStylesMethod(s, style, provider, out result);
 				}
 
-				if (GetParseMethod<TryParseDelegate>(nameof(TryParse), out _) is { } noProviderMethod)
+				if (GetParseMethod<TryParseDelegate>(nameof(TryParse)) is { } noProviderMethod)
 					return ([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) => noProviderMethod(s, out result);
 
 				return null;
@@ -408,16 +409,17 @@ public readonly partial struct Optional<T>
                 }
 #endif
 
-                if (GetParseMethod<TryParseSpanProviderDelegate>(nameof(TryParse), out _) is { } method)
+                if (GetParseMethod<TryParseSpanProviderDelegate>(nameof(TryParse)) is { } method)
 					return method;
 
-				if (GetParseMethod<TryParseSpanNumberStylesProviderDelegate>(nameof(TryParse), out var defaultStyle) is { } numberStylesMethod)
+				if (GetParseMethod<TryParseSpanNumberStylesProviderDelegate>(nameof(TryParse)) is { } numberStylesMethod)
 				{
-					var style = defaultStyle ?? GetDefaultNumberStyles();
+					GetParseMethodInfo<ParseSpanNumberStylesProviderDelegate>(nameof(Parse), out var defaultStyle);
+                    var style = defaultStyle ?? GetDefaultNumberStyles();
                     return (ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) => numberStylesMethod(s, style, provider, out result);
 				}
 
-				if (GetParseMethod<TryParseSpanDelegate>(nameof(TryParse), out _) is { } noProviderMethod)
+				if (GetParseMethod<TryParseSpanDelegate>(nameof(TryParse)) is { } noProviderMethod)
 					return (ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) => noProviderMethod(s, out result);
 
 				return null;
@@ -500,21 +502,52 @@ public readonly partial struct Optional<T>
 		return ParseResult.Error;
 	}
 
-	private static TDelegate? GetParseMethod<TDelegate>(string methodName, out NumberStyles? defaultNumberStyles)
+	private static MethodInfo? GetParseMethodInfo<TDelegate>(string methodName)
+		where TDelegate : Delegate
+    {
+        Debug.Assert(methodName is "Parse" or "TryParse");
+
+        return typeof(T).GetMethod<TDelegate>(methodName, BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+    }
+
+	private static MethodInfo? GetParseMethodInfo<TDelegate>(string methodName, out NumberStyles? defaultNumberStyles)
+		where TDelegate : Delegate
+    {
+        Debug.Assert(methodName is "Parse" or "TryParse");
+
+        var method = GetParseMethodInfo<TDelegate>(methodName);
+
+        defaultNumberStyles = method?.GetParameters().FirstOrDefault(x => x.ParameterType == typeof(NumberStyles)) is { HasDefaultValue: true } numberStylesParameter
+            ? (NumberStyles)numberStylesParameter.DefaultValue!
+            : null;
+
+		return method;
+    }
+
+    private static TDelegate? GetParseMethod<TDelegate>(string methodName)
 		where TDelegate : Delegate
 	{
 		Debug.Assert(methodName is "Parse" or "TryParse");
 
-        var method = typeof(T).GetMethod<TDelegate>(methodName, BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+        var method = GetParseMethodInfo<TDelegate>(methodName);
 		if (method is null)
-		{
-			defaultNumberStyles = null;
 			return null;
-		}
 
-        defaultNumberStyles = method.GetParameters().FirstOrDefault(x => x.ParameterType == typeof(NumberStyles)) is { HasDefaultValue: true } numberStylesParameter
-            ? (NumberStyles)numberStylesParameter.DefaultValue!
-            : null;
+#if NET5_0_OR_GREATER
+        return method.CreateDelegate<TDelegate>();
+#else
+		return (TDelegate)method.CreateDelegate(typeof(TDelegate));
+#endif
+	}
+
+    private static TDelegate? GetParseMethod<TDelegate>(string methodName, out NumberStyles? defaultNumberStyles)
+		where TDelegate : Delegate
+	{
+		Debug.Assert(methodName is "Parse" or "TryParse");
+
+        var method = GetParseMethodInfo<TDelegate>(methodName, out defaultNumberStyles);
+		if (method is null)
+			return null;
 
 #if NET5_0_OR_GREATER
         return method.CreateDelegate<TDelegate>();

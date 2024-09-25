@@ -370,9 +370,9 @@ public sealed partial class Optional1Tests
     [Fact]
     public void Parse_DefaultedNumberStyles()
     {
-        AssertParses<DefaultedCustomParsable.IntNumber>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true, tryParse: false);
-        AssertParses<DefaultedCustomParsable.Integer>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: true, tryParse: false);
-        AssertParses<DefaultedCustomParsable.Float>(new(new("foo", NumberStyles.Float)), "Some { foo }", null, parseFromSpan: true, tryParse: false);
+        AssertParses<DefaultedCustomParsable.IntNumber>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<DefaultedCustomParsable.Integer>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<DefaultedCustomParsable.Float>(new(new("foo", NumberStyles.Float)), "Some { foo }", null, parseFromSpan: true);
     }
 
     private static class CustomParsable
@@ -1086,8 +1086,34 @@ public sealed partial class Optional1Tests
 
     private static class DefaultedCustomParsable
     {
-        public sealed record IntNumber(string? Input, NumberStyles Style)
+        public abstract record Base<TSelf>(string? Input, NumberStyles Style)
+            where TSelf : Base<TSelf>, new()
         {
+            public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out TSelf result)
+            {
+                if (s is null)
+                {
+                    result = default;
+                    return false;
+                }
+
+                result = new() { Input = s, Style = style };
+                return true;
+            }
+
+            public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out TSelf result)
+            {
+                result = new() { Input = s.ToString(), Style = style };
+                return true;
+            }
+        }
+
+        public sealed record IntNumber(string? Input, NumberStyles Style) : Base<IntNumber>(Input, Style)
+        {
+            public IntNumber() : this(default, default)
+            {
+            }
+
             public static IntNumber NaN => default!;
 
             public static IntNumber Parse(string s, NumberStyles style = NumberStyles.Number, IFormatProvider? provider = null) =>
@@ -1097,8 +1123,12 @@ public sealed partial class Optional1Tests
                 new(s.ToString(), style);
         }
 
-        public sealed record Integer(string? Input, NumberStyles Style)
+        public sealed record Integer(string? Input, NumberStyles Style) : Base<Integer>(Input, Style)
         {
+            public Integer() : this(default, default)
+            {
+            }
+
             public static Integer NaN => default!;
 
             public static Integer Parse(string s, NumberStyles style = NumberStyles.Integer, IFormatProvider? provider = null) =>
@@ -1108,11 +1138,15 @@ public sealed partial class Optional1Tests
                 new(s.ToString(), style);
         }
 
-        public sealed record Float(string? Input, NumberStyles Style)
+        public sealed record Float(string? Input, NumberStyles Style) : Base<Float>(Input, Style)
 #if NET7_0_OR_GREATER
-        : IBinaryInteger<Float>
+            , IBinaryInteger<Float>
 #endif
         {
+            public Float() : this(default, default)
+            {
+            }
+
             public static Float Parse(string s, NumberStyles style = NumberStyles.Float, IFormatProvider? provider = null) =>
                 new(s, style);
 
