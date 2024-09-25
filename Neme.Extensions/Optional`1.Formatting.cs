@@ -522,7 +522,9 @@ public readonly partial struct Optional<T>
             return null;
 		}
 
-		var numberStylesParameter = method.GetParameters().First(x => x.ParameterType == typeof(NumberStyles));
+		var numberStylesParameter = method.GetParameters()[1];
+		Debug.Assert(numberStylesParameter.ParameterType == typeof(NumberStyles));
+
         defaultNumberStyles = numberStylesParameter.HasDefaultValue
             ? (NumberStyles)numberStylesParameter.DefaultValue!
             : null;
