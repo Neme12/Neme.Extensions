@@ -100,6 +100,15 @@ public readonly partial struct Optional<T> :
         _hasValue && index == 0 ? _value : throw new ArgumentOutOfRangeException(nameof(index));
 #endif
 
+    public Optional<TTo> Cast<TTo>()
+        where TTo : T?
+    {
+        if (_hasValue)
+            return new((TTo)_value!);
+
+        return default;
+    }
+
     public static implicit operator Optional<T>(T value) =>
         new(value);
 

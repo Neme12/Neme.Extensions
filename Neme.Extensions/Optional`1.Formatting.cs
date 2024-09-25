@@ -1,4 +1,5 @@
 ﻿using Neme.Extensions.CompilerServices;
+using Neme.Extensions.Reflection;
 using Neme.Extensions.Text;
 using Neme.Extensions.Utilities;
 using System.Diagnostics;
@@ -514,6 +515,7 @@ public readonly partial struct Optional<T>
 		where TDelegate : Delegate
     {
         Debug.Assert(methodName is "Parse" or "TryParse");
+		Debug.Assert(typeof(TDelegate).GetInvokeMethod().GetParameters()[1].ParameterType == typeof(NumberStyles));
 
         var method = GetParseMethodInfo<TDelegate>(methodName);
 		if (method is null)
@@ -525,9 +527,7 @@ public readonly partial struct Optional<T>
 		var numberStylesParameter = method.GetParameters()[1];
 		Debug.Assert(numberStylesParameter.ParameterType == typeof(NumberStyles));
 
-        defaultNumberStyles = numberStylesParameter.HasDefaultValue
-            ? (NumberStyles)numberStylesParameter.DefaultValue!
-            : null;
+		defaultNumberStyles = numberStylesParameter.GetDefaultValue<NumberStyles>().AsNullable();
 
 		return method;
     }
@@ -535,8 +535,6 @@ public readonly partial struct Optional<T>
     private static TDelegate? GetParseMethod<TDelegate>(string methodName)
 		where TDelegate : Delegate
 	{
-		Debug.Assert(methodName is "Parse" or "TryParse");
-
         var method = GetParseMethodInfo<TDelegate>(methodName);
 		if (method is null)
 			return null;
@@ -551,8 +549,6 @@ public readonly partial struct Optional<T>
     private static TDelegate? GetParseMethod<TDelegate>(string methodName, out NumberStyles? defaultNumberStyles)
 		where TDelegate : Delegate
 	{
-		Debug.Assert(methodName is "Parse" or "TryParse");
-
         var method = GetParseMethodInfo<TDelegate>(methodName, out defaultNumberStyles);
 		if (method is null)
 			return null;
