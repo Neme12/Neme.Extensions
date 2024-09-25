@@ -76,7 +76,10 @@ internal static class TypeExtensions
 
     public static MethodInfo GetInvokeMethod(this Type type)
     {
-        if (!type.IsClass || !type.IsSealed || type.BaseType != typeof(MulticastDelegate))
+        if (type is null)
+            throw new ArgumentNullException(nameof(type));
+
+        if (!type.IsDelegate())
             throw new ArgumentException("The type is not a delegate type.", nameof(type));
 
         var method = type.GetMethod("Invoke", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
@@ -84,5 +87,13 @@ internal static class TypeExtensions
             throw new MissingMethodException("The delegate type is missing an Invoke method.");
 
         return method;
+    }
+
+    public static bool IsDelegate(this Type type)
+    {
+        if (type is null)
+            throw new ArgumentNullException(nameof(type));
+
+        return type.IsClass && type.IsSealed && type.BaseType == typeof(MulticastDelegate);
     }
 }
