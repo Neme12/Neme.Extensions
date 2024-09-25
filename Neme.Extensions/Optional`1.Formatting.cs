@@ -1,4 +1,5 @@
-﻿using Neme.Extensions.Text;
+﻿using Neme.Extensions.CompilerServices;
+using Neme.Extensions.Text;
 using Neme.Extensions.Utilities;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -300,11 +301,11 @@ public readonly partial struct Optional<T>
 			static () =>
 			{
 				if (typeof(T) == typeof(char))
-					return (s, provider) => (T)(object)char.Parse(s);
+					return static (s, provider) => UnsafeExtensions.InAs<char, T>(char.Parse(s));
 
 #if NETCOREAPP3_0_OR_GREATER
 				if (typeof(T) == typeof(Rune))
-					return (s, provider) => (T)(object)RuneExtensions.Parse(s);
+					return static (s, provider) => UnsafeExtensions.InAs<Rune, T>(RuneExtensions.Parse(s));
 #endif
 
 				if (GetParseMethod<ParseProviderDelegate>(nameof(Parse), out _) is { } method)
@@ -329,11 +330,11 @@ public readonly partial struct Optional<T>
 			static () =>
 			{
                 if (typeof(T) == typeof(char))
-                    return (s, provider) => (T)(object)CharExtensions.Parse(s);
+                    return static (s, provider) => UnsafeExtensions.InAs<char, T>(CharExtensions.Parse(s));
 
 #if NETCOREAPP3_0_OR_GREATER
                 if (typeof(T) == typeof(Rune))
-                    return (s, provider) => (T)(object)RuneExtensions.Parse(s);
+                    return static (s, provider) => UnsafeExtensions.InAs<Rune, T>(RuneExtensions.Parse(s));
 #endif
 
                 if (GetParseMethod<ParseSpanProviderDelegate>(nameof(Parse), out _) is { } method)
@@ -353,30 +354,22 @@ public readonly partial struct Optional<T>
 
 	}
 
-	private static TryParseProviderDelegate? GetTryParseMethod()
+    private static TryParseProviderDelegate? GetTryParseMethod()
 	{
 		return s_tryParseMethodLazy.EnsureInitialized(
 			static () =>
 			{
 				if (typeof(T) == typeof(char))
 				{
-					return ([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) =>
-					{
-						var success = char.TryParse(s, out var @char);
-						result = (T)(object)@char;
-						return success;
-					};
+					return static ([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) =>
+						char.TryParse(s, out UnsafeExtensions.OutAs<T, char>(out result));
 				}
 
 #if NETCOREAPP3_0_OR_GREATER
 				if (typeof(T) == typeof(Rune))
 				{
-					return ([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) =>
-					{
-						var success = RuneExtensions.TryParse(s, out var rune);
-						result = (T)(object)rune;
-						return success;
-					};
+					return static ([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) =>
+						RuneExtensions.TryParse(s, out UnsafeExtensions.OutAs<T, Rune>(out result));
 				}
 #endif
 
@@ -403,23 +396,15 @@ public readonly partial struct Optional<T>
 			{
                 if (typeof(T) == typeof(char))
                 {
-                    return (ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) =>
-                    {
-                        var success = CharExtensions.TryParse(s, out var @char);
-                        result = (T)(object)@char;
-                        return success;
-                    };
+                    return static (ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) =>
+						CharExtensions.TryParse(s, out UnsafeExtensions.OutAs<T, char>(out result));
                 }
 
 #if NETCOREAPP3_0_OR_GREATER
                 if (typeof(T) == typeof(Rune))
                 {
-                    return (ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) =>
-                    {
-                        var success = RuneExtensions.TryParse(s, out var rune);
-                        result = (T)(object)rune;
-                        return success;
-                    };
+                    return static (ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) =>
+						RuneExtensions.TryParse(s, out UnsafeExtensions.OutAs<T, Rune>(out result));
                 }
 #endif
 
