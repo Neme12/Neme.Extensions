@@ -57,13 +57,13 @@ public readonly partial struct Optional<T>
 		if (s is null)
 			throw new ArgumentNullException(nameof(s));
 
-		switch (ParseCore(s.AsSpan(), provider, out var hasInside, out var inside))
+		switch (ParseCore(s.AsSpan(), provider, out var optionalInside))
 		{
 			case ParseResult.None:
 				return None;
 			case ParseResult.Some:
-				if (!hasInside)
-					return new(default!);
+                if (!optionalInside.TryGetValue(out var inside))
+                    return new(default!);
 
                 if (TryParseString(inside, out var stringValue))
                     return new(stringValue);
@@ -113,13 +113,13 @@ public readonly partial struct Optional<T>
 
 	public static Optional<T> Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
 	{
-		switch (ParseCore(s, provider, out var hasInside, out var inside))
+		switch (ParseCore(s, provider, out var optionalInside))
 		{
 			case ParseResult.None:
 				return None;
 			case ParseResult.Some:
-				if (!hasInside)
-					return new(default!);
+                if (!optionalInside.TryGetValue(out var inside))
+                    return new(default!);
 
                 if (TryParseString(inside, out var stringValue))
                     return new(stringValue);
@@ -158,15 +158,15 @@ public readonly partial struct Optional<T>
 			return false;
 		}
 
-		switch (ParseCore(s.AsSpan(), provider, out var hasInside, out var inside))
+		switch (ParseCore(s.AsSpan(), provider, out var optionalInside))
 		{
 			case ParseResult.None:
 				result = None;
 				return true;
 			case ParseResult.Some:
-				if (!hasInside)
-				{
-					result = new(default!);
+                if (!optionalInside.TryGetValue(out var inside))
+                {
+                    result = new(default!);
 					return true;
 				}
 
@@ -215,15 +215,15 @@ public readonly partial struct Optional<T>
 
 	public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out Optional<T> result)
 	{
-		switch (ParseCore(s, provider, out var hasInside, out var inside))
+		switch (ParseCore(s, provider, out var optionalInside))
 		{
 			case ParseResult.None:
 				result = None;
 				return true;
 			case ParseResult.Some:
-				if (!hasInside)
-				{
-					result = new(default!);
+                if (!optionalInside.TryGetValue(out var inside))
+                {
+                    result = new(default!);
 					return true;
 				}
 
@@ -472,11 +472,10 @@ public readonly partial struct Optional<T>
 		Some,
 	}
 
-	private static ParseResult ParseCore(ReadOnlySpan<char> s, IFormatProvider? provider, out bool hasInside, out ReadOnlySpan<char> inside)
+	private static ParseResult ParseCore(ReadOnlySpan<char> s, IFormatProvider? provider, out OptionalReadOnlySpan<char> inside)
 	{
 		if (s.Equals("None".AsSpan(), StringComparison.Ordinal))
 		{
-			hasInside = false;
 			inside = default;
 			return ParseResult.None;
 		}
@@ -488,17 +487,14 @@ public readonly partial struct Optional<T>
 		{
 			if (s.Length == prefix.Length + suffix.Length - 1)
 			{
-				hasInside = false;
 				inside = default;
 				return ParseResult.Some;
 			}
 
-			hasInside = true;
-			inside = s[prefix.Length..^suffix.Length];
+			inside = new(s[prefix.Length..^suffix.Length]);
 			return ParseResult.Some;
 		}
 
-		hasInside = false;
 		inside = default;
 		return ParseResult.Error;
 	}
