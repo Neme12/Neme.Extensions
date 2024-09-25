@@ -516,8 +516,14 @@ public readonly partial struct Optional<T>
         Debug.Assert(methodName is "Parse" or "TryParse");
 
         var method = GetParseMethodInfo<TDelegate>(methodName);
+		if (method is null)
+		{
+            defaultNumberStyles = null;
+            return null;
+		}
 
-        defaultNumberStyles = method?.GetParameters().FirstOrDefault(x => x.ParameterType == typeof(NumberStyles)) is { HasDefaultValue: true } numberStylesParameter
+		var numberStylesParameter = method.GetParameters().First(x => x.ParameterType == typeof(NumberStyles));
+        defaultNumberStyles = numberStylesParameter.HasDefaultValue
             ? (NumberStyles)numberStylesParameter.DefaultValue!
             : null;
 
