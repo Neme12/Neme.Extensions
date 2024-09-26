@@ -132,108 +132,108 @@ public sealed partial class Optional1Tests
     [Fact]
     public void Parse_Null()
     {
-        AssertDoesNotParse<int>(null, null, null, parseFromSpan: false);
-        AssertDoesNotParse<int>(null, null, CultureInfo.InvariantCulture, parseFromSpan: false);
-        AssertDoesNotParse<int>(null, null, CultureInfo.GetCultureInfo("de"), parseFromSpan: false);
+        AssertDoesNotParse<int>(null, null, null, ParseMethods.FromString);
+        AssertDoesNotParse<int>(null, null, CultureInfo.InvariantCulture, ParseMethods.FromString);
+        AssertDoesNotParse<int>(null, null, CultureInfo.GetCultureInfo("de"), ParseMethods.FromString);
     }
 
     [Fact]
     public void Parse_None()
     {
-        AssertParses<int>(default, "None", null, parseFromSpan: true);
-        AssertParses<int>(default, "None", CultureInfo.InvariantCulture, parseFromSpan: true);
-        AssertParses<int>(default, "None", CultureInfo.GetCultureInfo("de"), parseFromSpan: true);
+        AssertParses<int>(default, "None", null);
+        AssertParses<int>(default, "None", CultureInfo.InvariantCulture);
+        AssertParses<int>(default, "None", CultureInfo.GetCultureInfo("de"));
     }
 
     [Fact]
     public void Parse_Some()
     {
-        AssertParses<double>(new(42.2), $"Some {{ {42.2} }}", null);
-        AssertParses<double>(new(42.2), "Some { 42.2 }", CultureInfo.InvariantCulture);
-        AssertParses<double>(new(42.2), "Some { 42,2 }", CultureInfo.GetCultureInfo("de"));
+        AssertParses<double>(new(42.2), $"Some {{ {42.2} }}", null, ParseMethodsForBuiltInTypes);
+        AssertParses<double>(new(42.2), "Some { 42.2 }", CultureInfo.InvariantCulture, ParseMethodsForBuiltInTypes);
+        AssertParses<double>(new(42.2), "Some { 42,2 }", CultureInfo.GetCultureInfo("de"), ParseMethodsForBuiltInTypes);
     }
 
     [Fact]
     public void Parse_Version()
     {
-        AssertParses<Version>(new(new(1, 2, 3, 4)), "Some { 1.2.3.4 }", null);
-        AssertParses<Version>(new(new(1, 2, 3, 4)), "Some { 1.2.3.4 }", CultureInfo.InvariantCulture);
-        AssertParses<Version>(new(new(1, 2, 3, 4)), "Some { 1.2.3.4 }", CultureInfo.GetCultureInfo("de"));
+        AssertParses<Version>(new(new(1, 2, 3, 4)), "Some { 1.2.3.4 }", null, ParseMethodsForBuiltInTypes);
+        AssertParses<Version>(new(new(1, 2, 3, 4)), "Some { 1.2.3.4 }", CultureInfo.InvariantCulture, ParseMethodsForBuiltInTypes);
+        AssertParses<Version>(new(new(1, 2, 3, 4)), "Some { 1.2.3.4 }", CultureInfo.GetCultureInfo("de"), ParseMethodsForBuiltInTypes);
     }
 
     [Fact]
     public void Parse_Some_EmptyString()
     {
-        AssertParses<string?>(new(""), "Some {  }", null, parseFromSpan: true);
-        AssertParses<string?>(new(""), "Some {  }", CultureInfo.InvariantCulture, parseFromSpan: true);
-        AssertParses<string?>(new(""), "Some {  }", CultureInfo.GetCultureInfo("de"), parseFromSpan: true);
+        AssertParses<string?>(new(""), "Some {  }", null);
+        AssertParses<string?>(new(""), "Some {  }", CultureInfo.InvariantCulture);
+        AssertParses<string?>(new(""), "Some {  }", CultureInfo.GetCultureInfo("de"));
     }
 
     [Fact]
     public void Parse_Some_String()
     {
-        AssertParses<string>(new("hello"), "Some { hello }", null, parseFromSpan: true);
-        AssertParses<string>(new("hello"), "Some { hello }", CultureInfo.InvariantCulture, parseFromSpan: true);
-        AssertParses<string>(new("hello"), "Some { hello }", CultureInfo.GetCultureInfo("de"), parseFromSpan: true);
+        AssertParses<string>(new("hello"), "Some { hello }", null);
+        AssertParses<string>(new("hello"), "Some { hello }", CultureInfo.InvariantCulture);
+        AssertParses<string>(new("hello"), "Some { hello }", CultureInfo.GetCultureInfo("de"));
     }
 
     [Fact]
     public void Parse_Some_ReadOnlyMemory()
     {
-        AssertParses<ReadOnlyMemory<char>>(new("hello".AsMemory()), "Some { hello }", null, parseFromSpan: true);
-        AssertParses<ReadOnlyMemory<char>>(new("hello".AsMemory()), "Some { hello }", CultureInfo.InvariantCulture, parseFromSpan: true);
-        AssertParses<ReadOnlyMemory<char>>(new("hello".AsMemory()), "Some { hello }", CultureInfo.GetCultureInfo("de"), parseFromSpan: true);
+        AssertParses<ReadOnlyMemory<char>>(new("hello".AsMemory()), "Some { hello }", null);
+        AssertParses<ReadOnlyMemory<char>>(new("hello".AsMemory()), "Some { hello }", CultureInfo.InvariantCulture);
+        AssertParses<ReadOnlyMemory<char>>(new("hello".AsMemory()), "Some { hello }", CultureInfo.GetCultureInfo("de"));
     }
 
     [Fact]
     public void Parse_Some_Memory()
     {
-        AssertParses<Memory<char>>(new("hello".ToArray()), "Some { hello }", null, parseFromSpan: true);
-        AssertParses<Memory<char>>(new("hello".ToArray()), "Some { hello }", CultureInfo.InvariantCulture, parseFromSpan: true);
-        AssertParses<Memory<char>>(new("hello".ToArray()), "Some { hello }", CultureInfo.GetCultureInfo("de"), parseFromSpan: true);
+        AssertParses<Memory<char>>(new("hello".ToArray()), "Some { hello }", null);
+        AssertParses<Memory<char>>(new("hello".ToArray()), "Some { hello }", CultureInfo.InvariantCulture);
+        AssertParses<Memory<char>>(new("hello".ToArray()), "Some { hello }", CultureInfo.GetCultureInfo("de"));
     }
 
     [Fact]
     public void Parse_Some_Char()
     {
-        AssertParses<char>(new('a'), "Some { a }", null, parseFromSpan: true);
-        AssertParses<char>(new('a'), "Some { a }", CultureInfo.InvariantCulture, parseFromSpan: true);
-        AssertParses<char>(new('a'), "Some { a }", CultureInfo.GetCultureInfo("de"), parseFromSpan: true);
-        AssertDoesNotParse<char>("Some {  }", "", null, parseFromSpan: true);
-        AssertDoesNotParse<char>("Some { ab }", "ab", null, parseFromSpan: true);
+        AssertParses<char>(new('a'), "Some { a }", null);
+        AssertParses<char>(new('a'), "Some { a }", CultureInfo.InvariantCulture);
+        AssertParses<char>(new('a'), "Some { a }", CultureInfo.GetCultureInfo("de"));
+        AssertDoesNotParse<char>("Some {  }", "", null);
+        AssertDoesNotParse<char>("Some { ab }", "ab", null);
     }
 
 #if NETCOREAPP3_0_OR_GREATER
     [Fact]
     public void Parse_Some_Rune()
     {
-        AssertParses<Rune>(new(new(0x1f642)), "Some { 🙂 }", null, parseFromSpan: true);
-        AssertParses<Rune>(new(new(0x1f642)), "Some { 🙂 }", CultureInfo.InvariantCulture, parseFromSpan: true);
-        AssertParses<Rune>(new(new(0x1f642)), "Some { 🙂 }", CultureInfo.GetCultureInfo("de"), parseFromSpan: true);
-        AssertDoesNotParse<Rune>("Some {  }", "", null, parseFromSpan: true);
-        AssertDoesNotParse<Rune>("Some { ab }", "ab", null, parseFromSpan: true);
+        AssertParses<Rune>(new(new(0x1f642)), "Some { 🙂 }", null);
+        AssertParses<Rune>(new(new(0x1f642)), "Some { 🙂 }", CultureInfo.InvariantCulture);
+        AssertParses<Rune>(new(new(0x1f642)), "Some { 🙂 }", CultureInfo.GetCultureInfo("de"));
+        AssertDoesNotParse<Rune>("Some {  }", "", null);
+        AssertDoesNotParse<Rune>("Some { ab }", "ab", null);
     }
 #endif
 
     [Fact]
     public void Parse_Some_Null()
     {
-        AssertParses<string?>(new(null), "Some { }", null, parseFromSpan: true);
-        AssertParses<string?>(new(null), "Some { }", CultureInfo.InvariantCulture, parseFromSpan: true);
-        AssertParses<string?>(new(null), "Some { }", CultureInfo.GetCultureInfo("de"), parseFromSpan: true);
+        AssertParses<string?>(new(null), "Some { }", null);
+        AssertParses<string?>(new(null), "Some { }", CultureInfo.InvariantCulture);
+        AssertParses<string?>(new(null), "Some { }", CultureInfo.GetCultureInfo("de"));
     }
 
     [Fact]
     public void Parse_InvalidStrings()
     {
-        AssertDoesNotParse<int>("", null, null, parseFromSpan: true);
-        AssertDoesNotParse<int>("42", null, null, parseFromSpan: true);
-        AssertDoesNotParse<int>("{ }", null, null, parseFromSpan: true);
-        AssertDoesNotParse<int>("{ 42 }", null, null, parseFromSpan: true);
-        AssertDoesNotParse<int>("Some", null, null, parseFromSpan: true);
-        AssertDoesNotParse<int>("Some {}", null, null, parseFromSpan: true);
-        AssertDoesNotParse<int>("Some { x }", "x", null);
-        AssertDoesNotParse<int>("SOME { 42 }", null, null, parseFromSpan: true);
+        AssertDoesNotParse<int>("", null, null);
+        AssertDoesNotParse<int>("42", null, null);
+        AssertDoesNotParse<int>("{ }", null, null);
+        AssertDoesNotParse<int>("{ 42 }", null, null);
+        AssertDoesNotParse<int>("Some", null, null);
+        AssertDoesNotParse<int>("Some {}", null, null);
+        AssertDoesNotParse<int>("Some { x }", "x", null, ParseMethodsForBuiltInTypes);
+        AssertDoesNotParse<int>("SOME { 42 }", null, null);
     }
 
     [Fact]
@@ -267,104 +267,104 @@ public sealed partial class Optional1Tests
             where T : struct
         {
             // NumberStyles.AllowLeadingWhite and NumberStyles.AllowTrailingWhite are included.
-            AssertParses<T>(new(default), "Some {  0  }", null);
+            AssertParses<T>(new(default), "Some {  0  }", null, ParseMethodsForBuiltInTypes);
 
             if (negativeOne is not null)
             {
                 // NumberStyles.AllowLeadingSign is included
-                AssertParses<T>(new(negativeOne.Value), "Some { -1 }", null);
+                AssertParses<T>(new(negativeOne.Value), "Some { -1 }", null, ParseMethodsForBuiltInTypes);
             }
 
             // NumberStyles.AllowDecimalPoint is *not* included.
-            AssertDoesNotParse<T>("Some { 42.2 }", "42.2", null);
+            AssertDoesNotParse<T>("Some { 42.2 }", "42.2", null, ParseMethodsForBuiltInTypes);
 
             // NumberStyles.AllowThousands is *not* included.
-            AssertDoesNotParse<T>("Some { 10,000 }", "10,000", null);
+            AssertDoesNotParse<T>("Some { 10,000 }", "10,000", null, ParseMethodsForBuiltInTypes);
 
             // NumberStyles.AllowExponent is *not* included.
-            AssertDoesNotParse<T>("Some { 4.22e+1 }", "4.22e+1", null);
+            AssertDoesNotParse<T>("Some { 4.22e+1 }", "4.22e+1", null, ParseMethodsForBuiltInTypes);
 
             // NumberStyles.AllowParentheses is *not* included.
-            AssertDoesNotParse<T>("Some { (42) }", "(42)", null);
+            AssertDoesNotParse<T>("Some { (42) }", "(42)", null, ParseMethodsForBuiltInTypes);
 
             // NumberStyles.AllowHexSpecifier is *not* included.
-            AssertDoesNotParse<T>("Some { f }", "f", null);
+            AssertDoesNotParse<T>("Some { f }", "f", null, ParseMethodsForBuiltInTypes);
         }
 
         static void TestIsFloatAndAllowThousands<T>(T negativeOne, T value1, T value2)
             where T : struct
         {
             // NumberStyles.AllowLeadingWhite and NumberStyles.AllowTrailingWhite are included.
-            AssertParses<T>(new(default), "Some {  0  }", null);
+            AssertParses<T>(new(default), "Some {  0  }", null, ParseMethodsForBuiltInTypes);
 
             // NumberStyles.AllowLeadingSign is included
-            AssertParses<T>(new(negativeOne), "Some { -1 }", null);
+            AssertParses<T>(new(negativeOne), "Some { -1 }", null, ParseMethodsForBuiltInTypes);
 
             // NumberStyles.AllowDecimalPoint is included.
-            AssertParses<T>(new(value1), "Some { 42.2 }", null);
+            AssertParses<T>(new(value1), "Some { 42.2 }", null, ParseMethodsForBuiltInTypes);
 
             // NumberStyles.AllowThousands is included.
-            AssertParses<T>(new(value2), "Some { 10,000 }", null);
+            AssertParses<T>(new(value2), "Some { 10,000 }", null, ParseMethodsForBuiltInTypes);
 
             // NumberStyles.AllowExponent is included.
-            AssertParses<T>(new(value1), "Some { 4.22e+1 }", null);
+            AssertParses<T>(new(value1), "Some { 4.22e+1 }", null, ParseMethodsForBuiltInTypes);
 
             // NumberStyles.AllowParentheses is *not* included.
-            AssertDoesNotParse<T>("Some { (42) }", "(42)", null);
+            AssertDoesNotParse<T>("Some { (42) }", "(42)", null, ParseMethodsForBuiltInTypes);
 
             // NumberStyles.AllowHexSpecifier is *not* included.
-            AssertDoesNotParse<T>("Some { f }", "f", null);
+            AssertDoesNotParse<T>("Some { f }", "f", null, ParseMethodsForBuiltInTypes);
         }
 
         static void TestIsNumber<T>(T negativeOne, T value1, T value2)
             where T : struct
         {
             // NumberStyles.AllowLeadingWhite and NumberStyles.AllowTrailingWhite are included.
-            AssertParses<T>(new(default), "Some {  0  }", null);
+            AssertParses<T>(new(default), "Some {  0  }", null, ParseMethodsForBuiltInTypes);
 
             // NumberStyles.AllowLeadingSign is included
-            AssertParses<T>(new(negativeOne), "Some { -1 }", null);
+            AssertParses<T>(new(negativeOne), "Some { -1 }", null, ParseMethodsForBuiltInTypes);
 
             // NumberStyles.AllowDecimalPoint is included.
-            AssertParses<T>(new(value1), "Some { 42.2 }", null);
+            AssertParses<T>(new(value1), "Some { 42.2 }", null, ParseMethodsForBuiltInTypes);
 
             // NumberStyles.AllowThousands is included.
-            AssertParses<T>(new(value2), "Some { 10,000 }", null);
+            AssertParses<T>(new(value2), "Some { 10,000 }", null, ParseMethodsForBuiltInTypes);
 
             // NumberStyles.AllowExponent is *not* included.
-            AssertDoesNotParse<T>("Some { 4.22e+1 }", "4.22e+1", null);
+            AssertDoesNotParse<T>("Some { 4.22e+1 }", "4.22e+1", null, ParseMethodsForBuiltInTypes);
 
             // NumberStyles.AllowParentheses is *not* included.
-            AssertDoesNotParse<T>("Some { (42) }", "(42)", null);
+            AssertDoesNotParse<T>("Some { (42) }", "(42)", null, ParseMethodsForBuiltInTypes);
 
             // NumberStyles.AllowHexSpecifier is *not* included.
-            AssertDoesNotParse<T>("Some { f }", "f", null);
+            AssertDoesNotParse<T>("Some { f }", "f", null, ParseMethodsForBuiltInTypes);
         }
     }
 
     [Fact]
     public void Parse_CustomParsableNumberStyles()
     {
-        AssertParses<CustomParsable.Default>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsable.Default>(new(new("foo", NumberStyles.Number)), "Some { foo }", null);
 
-        AssertParses<CustomParsable.Int>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<CustomParsable.IntFoo>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<CustomParsable.Int2>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<CustomParsable.int2>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<CustomParsable.Integer>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<CustomParsable.NaN1>(new(new("foo", NumberStyles.Float | NumberStyles.AllowThousands)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<CustomParsable.NaN2>(new(new("foo", NumberStyles.Float | NumberStyles.AllowThousands)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<CustomParsable.NaNWrong1>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<CustomParsable.NaNWrong2>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<CustomParsable.NaNWrong3>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<CustomParsable.NaNWrong4>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<CustomParsable.NaNWrong5>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<CustomParsable.NaNWrong6>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsable.Int>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null);
+        AssertParses<CustomParsable.IntFoo>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null);
+        AssertParses<CustomParsable.Int2>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null);
+        AssertParses<CustomParsable.int2>(new(new("foo", NumberStyles.Number)), "Some { foo }", null);
+        AssertParses<CustomParsable.Integer>(new(new("foo", NumberStyles.Number)), "Some { foo }", null);
+        AssertParses<CustomParsable.NaN1>(new(new("foo", NumberStyles.Float | NumberStyles.AllowThousands)), "Some { foo }", null);
+        AssertParses<CustomParsable.NaN2>(new(new("foo", NumberStyles.Float | NumberStyles.AllowThousands)), "Some { foo }", null);
+        AssertParses<CustomParsable.NaNWrong1>(new(new("foo", NumberStyles.Number)), "Some { foo }", null);
+        AssertParses<CustomParsable.NaNWrong2>(new(new("foo", NumberStyles.Number)), "Some { foo }", null);
+        AssertParses<CustomParsable.NaNWrong3>(new(new("foo", NumberStyles.Number)), "Some { foo }", null);
+        AssertParses<CustomParsable.NaNWrong4>(new(new("foo", NumberStyles.Number)), "Some { foo }", null);
+        AssertParses<CustomParsable.NaNWrong5>(new(new("foo", NumberStyles.Number)), "Some { foo }", null);
+        AssertParses<CustomParsable.NaNWrong6>(new(new("foo", NumberStyles.Number)), "Some { foo }", null);
 
 #if NET7_0_OR_GREATER
-        AssertParses<CustomParsable.ImplementingIBinaryInteger>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<CustomParsable.ImplementingIFloatingPoint>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<CustomParsable.ImplementingIFloatingPointIeee754>(new(new("foo", NumberStyles.Float | NumberStyles.AllowThousands)), "Some { foo }", null, parseFromSpan: true);
+        AssertParses<CustomParsable.ImplementingIBinaryInteger>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null);
+        AssertParses<CustomParsable.ImplementingIFloatingPoint>(new(new("foo", NumberStyles.Number)), "Some { foo }", null);
+        AssertParses<CustomParsable.ImplementingIFloatingPointIeee754>(new(new("foo", NumberStyles.Float | NumberStyles.AllowThousands)), "Some { foo }", null);
 #endif
     }
 
@@ -372,16 +372,16 @@ public sealed partial class Optional1Tests
     public void Parse_DefaultedNumberStyles()
     {
         // Test Parse and TryParse separately to make sure the default value on TryParse is from the TryParse method by default.
-        AssertParses<DefaultedCustomParsable.IntNumberParse>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseMethods: ParseMethods.Parse);
-        AssertParses<DefaultedCustomParsable.IntNumberTryParse>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseMethods: ParseMethods.TryParse);
-        AssertParses<DefaultedCustomParsable.IntegerParse>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseMethods: ParseMethods.Parse);
-        AssertParses<DefaultedCustomParsable.IntegerTryParse>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseMethods: ParseMethods.TryParse);
-        AssertParses<DefaultedCustomParsable.FloatParse>(new(new("foo", NumberStyles.Float)), "Some { foo }", null, parseMethods: ParseMethods.Parse);
-        AssertParses<DefaultedCustomParsable.FloatTryParse>(new(new("foo", NumberStyles.Float)), "Some { foo }", null, parseMethods: ParseMethods.TryParse);
+        AssertParses<DefaultedCustomParsable.IntNumberParse>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, ParseMethods.Parse);
+        AssertParses<DefaultedCustomParsable.IntNumberTryParse>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, ParseMethods.TryParse);
+        AssertParses<DefaultedCustomParsable.IntegerParse>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, ParseMethods.Parse);
+        AssertParses<DefaultedCustomParsable.IntegerTryParse>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, ParseMethods.TryParse);
+        AssertParses<DefaultedCustomParsable.FloatParse>(new(new("foo", NumberStyles.Float)), "Some { foo }", null, ParseMethods.Parse);
+        AssertParses<DefaultedCustomParsable.FloatTryParse>(new(new("foo", NumberStyles.Float)), "Some { foo }", null, ParseMethods.TryParse);
 
         // When there's both Parse and TryParse and the default value is different, it is picked from TryParse by default.
-        AssertParses<DefaultedCustomParsable.DifferentBetweenParseAndTryParse>(new(new("foo", NumberStyles.AllowCurrencySymbol)), "Some { foo }", null, parseMethods: ParseMethods.Parse);
-        AssertParses<DefaultedCustomParsable.DifferentBetweenParseAndTryParse>(new(new("foo", NumberStyles.AllowDecimalPoint)), "Some { foo }", null, parseMethods: ParseMethods.TryParse);
+        AssertParses<DefaultedCustomParsable.DifferentBetweenParseAndTryParse>(new(new("foo", NumberStyles.AllowCurrencySymbol)), "Some { foo }", null, ParseMethods.Parse);
+        AssertParses<DefaultedCustomParsable.DifferentBetweenParseAndTryParse>(new(new("foo", NumberStyles.AllowDecimalPoint)), "Some { foo }", null, ParseMethods.TryParse);
 
         // When there's no default value on TryParse, it is copied from Parse.
         AssertParses<DefaultedCustomParsable.TryParseInheritedFromParse>(new(new("foo", NumberStyles.AllowLeadingSign)), "Some { foo }", null);
@@ -1417,19 +1417,24 @@ public sealed partial class Optional1Tests
     private enum ParseMethods
     {
         None = 0,
-        Parse = 1 << 0,
-        TryParse = 1 << 1,
+        ParseFromString = 1 << 0,
+        ParseFromSpan = 1 << 1,
+        TryParseFromString = 1 << 2,
+        TryParseFromSpan = 1 << 3,
+        Parse = ParseFromString | ParseFromSpan,
+        TryParse = TryParseFromString | TryParseFromSpan,
+        FromString = ParseFromString | TryParseFromString,
+        FromSpan = ParseFromSpan | TryParseFromSpan,
+        All = -1,
     }
 
-    private static void AssertDoesNotParse<T>(string? input, string? nestedInput, IFormatProvider? provider, bool? parseFromSpan = null, ParseMethods parseMethods = ParseMethods.Parse | ParseMethods.TryParse)
+    private static void AssertDoesNotParse<T>(string? input, string? nestedInput, IFormatProvider? provider, ParseMethods parseMethods = ParseMethods.All)
     {
-        var parseSpan = parseFromSpan ?? ShouldParseSpan<T>();
-
         if (provider is null)
         {
-            if (parseMethods.HasFlag(ParseMethods.Parse))
-            {
 #pragma warning disable CA1305 // Specify IFormatProvider
+            if (parseMethods.HasFlag(ParseMethods.ParseFromString))
+            {
                 if (input is null)
                 {
                     Assert.Throws<ArgumentNullException>("s", () => Optional<T>.Parse(input!));
@@ -1437,27 +1442,29 @@ public sealed partial class Optional1Tests
                 else
                 {
                     AssertThrows.Format(input, nestedInput, () => Optional<T>.Parse(input));
-
-                    if (parseSpan)
-                        AssertThrows.Format(input, nestedInput, () => Optional<T>.Parse(input.AsSpan()));
                 }
-#pragma warning restore CA1305 // Specify IFormatProvider
             }
 
-            if (parseMethods.HasFlag(ParseMethods.TryParse))
+            if (parseMethods.HasFlag(ParseMethods.ParseFromSpan))
+            {
+                AssertThrows.Format(input ?? "", nestedInput, () => Optional<T>.Parse(input.AsSpan()));
+            }
+#pragma warning restore CA1305 // Specify IFormatProvider
+
+            if (parseMethods.HasFlag(ParseMethods.TryParseFromString))
             {
                 Assert.False(Optional<T>.TryParse(input, out var resultWithoutProvider1));
                 Assert.Equal(default, resultWithoutProvider1);
+            }
 
-                if (parseSpan)
-                {
-                    Assert.False(Optional<T>.TryParse(input.AsSpan(), out var resultWithoutProvider2));
-                    Assert.Equal(default, resultWithoutProvider2);
-                }
+            if (parseMethods.HasFlag(ParseMethods.TryParseFromSpan))
+            {
+                Assert.False(Optional<T>.TryParse(input.AsSpan(), out var resultWithoutProvider2));
+                Assert.Equal(default, resultWithoutProvider2);
             }
         }
 
-        if (parseMethods.HasFlag(ParseMethods.Parse))
+        if (parseMethods.HasFlag(ParseMethods.ParseFromString))
         {
             if (input is null)
             {
@@ -1466,83 +1473,94 @@ public sealed partial class Optional1Tests
             else
             {
                 AssertThrows.Format(input, nestedInput, () => Optional<T>.Parse(input, provider));
-
-                if (parseSpan)
-                    AssertThrows.Format(input, nestedInput, () => Optional<T>.Parse(input.AsSpan(), provider));
             }
         }
 
-        if (parseMethods.HasFlag(ParseMethods.TryParse))
+        if (parseMethods.HasFlag(ParseMethods.ParseFromSpan))
+        {
+            AssertThrows.Format(input ?? "", nestedInput, () => Optional<T>.Parse(input.AsSpan(), provider));
+        }
+
+        if (parseMethods.HasFlag(ParseMethods.TryParseFromString))
         {
             Assert.False(Optional<T>.TryParse(input, provider, out var resultWithProvider1));
             Assert.Equal(default, resultWithProvider1);
+        }
 
-            if (parseSpan)
-            {
-                Assert.False(Optional<T>.TryParse(input.AsSpan(), provider, out var resultWithProvider2));
-                Assert.Equal(default, resultWithProvider2);
-            }
+        if (parseMethods.HasFlag(ParseMethods.TryParseFromSpan))
+        {
+            Assert.False(Optional<T>.TryParse(input.AsSpan(), provider, out var resultWithProvider2));
+            Assert.Equal(default, resultWithProvider2);
         }
     }
 
-    private static void AssertParses<T>(Optional<T> expected, string input, IFormatProvider? provider, bool? parseFromSpan = null, ParseMethods parseMethods = ParseMethods.Parse | ParseMethods.TryParse)
+    private static void AssertParses<T>(Optional<T> expected, string input, IFormatProvider? provider, ParseMethods parseMethods = ParseMethods.All)
     {
-        var parseSpan = parseFromSpan ?? ShouldParseSpan<T>();
         var comparer = new CustomComparer<T>();
 
         if (provider is null)
         {
-            if (parseMethods.HasFlag(ParseMethods.Parse))
-            {
 #pragma warning disable CA1305 // Specify IFormatProvider
+            if (parseMethods.HasFlag(ParseMethods.ParseFromString))
+            {
                 Assert.Equal(expected, Optional<T>.Parse(input), comparer);
-
-                if (parseSpan)
-                    Assert.Equal(expected, Optional<T>.Parse(input.AsSpan()), comparer);
-#pragma warning restore CA1305 // Specify IFormatProvider
             }
 
-            if (parseMethods.HasFlag(ParseMethods.TryParse))
+            if (parseMethods.HasFlag(ParseMethods.ParseFromSpan))
+            {
+                Assert.Equal(expected, Optional<T>.Parse(input.AsSpan()), comparer);
+            }
+#pragma warning restore CA1305 // Specify IFormatProvider
+
+            if (parseMethods.HasFlag(ParseMethods.TryParseFromString))
             {
                 Assert.True(Optional<T>.TryParse(input, out var resultWithoutProvider1));
                 Assert.Equal(expected, resultWithoutProvider1, comparer);
+            }
 
-                if (parseSpan)
-                {
-                    Assert.True(Optional<T>.TryParse(input.AsSpan(), out var resultWithoutProvider2));
-                    Assert.Equal(expected, resultWithoutProvider2, comparer);
-                }
+            if (parseMethods.HasFlag(ParseMethods.TryParseFromSpan))
+            {
+                Assert.True(Optional<T>.TryParse(input.AsSpan(), out var resultWithoutProvider2));
+                Assert.Equal(expected, resultWithoutProvider2, comparer);
             }
         }
 
-        if (parseMethods.HasFlag(ParseMethods.Parse))
+        if (parseMethods.HasFlag(ParseMethods.ParseFromString))
         {
             Assert.Equal(expected, Optional<T>.Parse(input, provider), comparer);
-
-            if (parseSpan)
-                Assert.Equal(expected, Optional<T>.Parse(input.AsSpan(), provider), comparer);
         }
 
-        if (parseMethods.HasFlag(ParseMethods.TryParse))
+        if (parseMethods.HasFlag(ParseMethods.ParseFromSpan))
+        {
+            Assert.Equal(expected, Optional<T>.Parse(input.AsSpan(), provider), comparer);
+        }
+
+        if (parseMethods.HasFlag(ParseMethods.TryParseFromString))
         {
             Assert.True(Optional<T>.TryParse(input, provider, out var resultWithProvider1));
             Assert.Equal(expected, resultWithProvider1, comparer);
+        }
 
-            if (parseSpan)
-            {
-                Assert.True(Optional<T>.TryParse(input.AsSpan(), provider, out var resultWithProvider2));
-                Assert.Equal(expected, resultWithProvider2, comparer);
-            }
+        if (parseMethods.HasFlag(ParseMethods.TryParseFromSpan))
+        {
+            Assert.True(Optional<T>.TryParse(input.AsSpan(), provider, out var resultWithProvider2));
+            Assert.Equal(expected, resultWithProvider2, comparer);
         }
     }
 
-    private static bool ShouldParseSpan<T>()
+    private static ParseMethods ParseMethodsForBuiltInTypes
     {
+        get
+        {
+            return IsFromSpanSupportedOnBuiltInTypes() ? ParseMethods.All : ParseMethods.FromString;
+
+            static bool IsFromSpanSupportedOnBuiltInTypes() =>
 #if NETCOREAPP2_1_OR_GREATER
-        return true;
+                true;
 #else
-        return false;
+                false;
 #endif
+}
     }
 
     private sealed class CustomComparer<T> : IEqualityComparer<Optional<T>>
