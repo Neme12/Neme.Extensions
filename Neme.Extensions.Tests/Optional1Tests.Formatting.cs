@@ -379,9 +379,13 @@ public sealed partial class Optional1Tests
         AssertParses<DefaultedCustomParsable.FloatParse>(new(new("foo", NumberStyles.Float)), "Some { foo }", null, ParseMethods.Parse);
         AssertParses<DefaultedCustomParsable.FloatTryParse>(new(new("foo", NumberStyles.Float)), "Some { foo }", null, ParseMethods.TryParse);
 
-        // When there's both Parse and TryParse and the default value is different, it is picked from TryParse by default.
-        AssertParses<DefaultedCustomParsable.DifferentBetweenParseAndTryParse>(new(new("foo", NumberStyles.AllowCurrencySymbol)), "Some { foo }", null, ParseMethods.Parse);
-        AssertParses<DefaultedCustomParsable.DifferentBetweenParseAndTryParse>(new(new("foo", NumberStyles.AllowDecimalPoint)), "Some { foo }", null, ParseMethods.TryParse);
+        // When there's both Parse and TryParse and the default value is different, it is picked from TryParse when using TryParse.
+        // It is always picked from each specific used method, except that in case of using string methods, the equivalent span one
+        // is called when present. That's why in cases of string we only test the StringOnly variant.
+        AssertParses<DefaultedCustomParsable.DifferentBetweenParseAndTryParseStringOnly>(new(new("foo", NumberStyles.AllowCurrencySymbol)), "Some { foo }", null, ParseMethods.ParseFromString);
+        AssertParses<DefaultedCustomParsable.DifferentBetweenParseAndTryParse>(new(new("foo", NumberStyles.AllowParentheses)), "Some { foo }", null, ParseMethods.ParseFromSpan);
+        AssertParses<DefaultedCustomParsable.DifferentBetweenParseAndTryParseStringOnly>(new(new("foo", NumberStyles.AllowThousands)), "Some { foo }", null, ParseMethods.TryParseFromString);
+        AssertParses<DefaultedCustomParsable.DifferentBetweenParseAndTryParse>(new(new("foo", NumberStyles.AllowDecimalPoint)), "Some { foo }", null, ParseMethods.TryParseFromSpan);
 
         // When there's no default value on TryParse, it is copied from Parse.
         AssertParses<DefaultedCustomParsable.TryParseInheritedFromParse>(new(new("foo", NumberStyles.AllowLeadingSign)), "Some { foo }", null);
@@ -1374,6 +1378,19 @@ public sealed partial class Optional1Tests
                 TryParseCore(s, style, provider, out result);
         }
 
+        public sealed record DifferentBetweenParseAndTryParseStringOnly(string? Input, NumberStyles Style) : Base<DifferentBetweenParseAndTryParseStringOnly>(Input, Style)
+        {
+            public DifferentBetweenParseAndTryParseStringOnly() : this(default, default)
+            {
+            }
+
+            public static DifferentBetweenParseAndTryParseStringOnly Parse(string s, NumberStyles style = NumberStyles.AllowCurrencySymbol, IFormatProvider? provider = null) =>
+                new(s, style);
+
+            public static bool TryParse([NotNullWhen(true)] string? s, [Optional][DefaultParameterValue(NumberStyles.AllowThousands)] NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out DifferentBetweenParseAndTryParseStringOnly result) =>
+                TryParseCore(s, style, provider, out result);
+        }
+
         public sealed record DifferentBetweenParseAndTryParse(string? Input, NumberStyles Style) : Base<DifferentBetweenParseAndTryParse>(Input, Style)
         {
             public DifferentBetweenParseAndTryParse() : this(default, default)
@@ -1383,10 +1400,10 @@ public sealed partial class Optional1Tests
             public static DifferentBetweenParseAndTryParse Parse(string s, NumberStyles style = NumberStyles.AllowCurrencySymbol, IFormatProvider? provider = null) =>
                 new(s, style);
 
-            public static DifferentBetweenParseAndTryParse Parse(ReadOnlySpan<char> s, NumberStyles style = NumberStyles.AllowCurrencySymbol, IFormatProvider? provider = null) =>
+            public static DifferentBetweenParseAndTryParse Parse(ReadOnlySpan<char> s, NumberStyles style = NumberStyles.AllowParentheses, IFormatProvider? provider = null) =>
                 new(s.ToString(), style);
 
-            public static bool TryParse([NotNullWhen(true)] string? s, [Optional][DefaultParameterValue(NumberStyles.AllowDecimalPoint)] NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out DifferentBetweenParseAndTryParse result) =>
+            public static bool TryParse([NotNullWhen(true)] string? s, [Optional][DefaultParameterValue(NumberStyles.AllowThousands)] NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out DifferentBetweenParseAndTryParse result) =>
                 TryParseCore(s, style, provider, out result);
 
             public static bool TryParse(ReadOnlySpan<char> s, [Optional][DefaultParameterValue(NumberStyles.AllowDecimalPoint)] NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out DifferentBetweenParseAndTryParse result) =>
