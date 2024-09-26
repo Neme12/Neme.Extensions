@@ -174,9 +174,11 @@ internal static class ParseHelper<T>
                 if (GetParseMethod<TryParseProviderDelegate>(nameof(int.TryParse)) is { } method)
                     return method;
 
-                if (GetParseMethod<TryParseNumberStylesProviderDelegate>(nameof(int.TryParse)) is { } numberStylesMethod)
+                if (GetParseMethod<TryParseNumberStylesProviderDelegate>(nameof(int.TryParse), out var defaultStyle) is { } numberStylesMethod)
                 {
-                    GetParseMethodInfo<ParseNumberStylesProviderDelegate>(nameof(int.Parse), out var defaultStyle);
+                    if (defaultStyle is null)
+                        GetParseMethodInfo<ParseNumberStylesProviderDelegate>(nameof(int.Parse), out defaultStyle);
+
                     var style = defaultStyle ?? GetDefaultNumberStyles();
                     return ([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) => numberStylesMethod(s, style, provider, out result);
                 }
@@ -210,9 +212,11 @@ internal static class ParseHelper<T>
                 if (GetParseMethod<TryParseSpanProviderDelegate>(nameof(int.TryParse)) is { } method)
                     return method;
 
-                if (GetParseMethod<TryParseSpanNumberStylesProviderDelegate>(nameof(int.TryParse)) is { } numberStylesMethod)
+                if (GetParseMethod<TryParseSpanNumberStylesProviderDelegate>(nameof(int.TryParse), out var defaultStyle) is { } numberStylesMethod)
                 {
-                    GetParseMethodInfo<ParseSpanNumberStylesProviderDelegate>(nameof(int.Parse), out var defaultStyle);
+                    if (defaultStyle is null)
+                        GetParseMethodInfo<ParseSpanNumberStylesProviderDelegate>(nameof(int.Parse), out defaultStyle);
+
                     var style = defaultStyle ?? GetDefaultNumberStyles();
                     return (ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) => numberStylesMethod(s, style, provider, out result);
                 }

@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Neme.Extensions.Tests;
@@ -370,9 +371,20 @@ public sealed partial class Optional1Tests
     [Fact]
     public void Parse_DefaultedNumberStyles()
     {
-        AssertParses<DefaultedCustomParsable.IntNumber>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<DefaultedCustomParsable.Integer>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseFromSpan: true);
-        AssertParses<DefaultedCustomParsable.Float>(new(new("foo", NumberStyles.Float)), "Some { foo }", null, parseFromSpan: true);
+        // Test Parse and TryParse separately to make sure the default value on TryParse is from the TryParse method by default.
+        AssertParses<DefaultedCustomParsable.IntNumberParse>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseMethods: ParseMethods.Parse);
+        AssertParses<DefaultedCustomParsable.IntNumberTryParse>(new(new("foo", NumberStyles.Number)), "Some { foo }", null, parseMethods: ParseMethods.TryParse);
+        AssertParses<DefaultedCustomParsable.IntegerParse>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseMethods: ParseMethods.Parse);
+        AssertParses<DefaultedCustomParsable.IntegerTryParse>(new(new("foo", NumberStyles.Integer)), "Some { foo }", null, parseMethods: ParseMethods.TryParse);
+        AssertParses<DefaultedCustomParsable.FloatParse>(new(new("foo", NumberStyles.Float)), "Some { foo }", null, parseMethods: ParseMethods.Parse);
+        AssertParses<DefaultedCustomParsable.FloatTryParse>(new(new("foo", NumberStyles.Float)), "Some { foo }", null, parseMethods: ParseMethods.TryParse);
+
+        // When there's both Parse and TryParse and the default value is different, it is picked from TryParse by default.
+        AssertParses<DefaultedCustomParsable.DifferentBetweenParseAndTryParse>(new(new("foo", NumberStyles.AllowCurrencySymbol)), "Some { foo }", null, parseMethods: ParseMethods.Parse);
+        AssertParses<DefaultedCustomParsable.DifferentBetweenParseAndTryParse>(new(new("foo", NumberStyles.AllowDecimalPoint)), "Some { foo }", null, parseMethods: ParseMethods.TryParse);
+
+        // When there's no default value on TryParse, it is copied from Parse.
+        AssertParses<DefaultedCustomParsable.TryParseInheritedFromParse>(new(new("foo", NumberStyles.AllowLeadingSign)), "Some { foo }", null);
     }
 
     private static class CustomParsable
@@ -1089,7 +1101,7 @@ public sealed partial class Optional1Tests
         public abstract record Base<TSelf>(string? Input, NumberStyles Style)
             where TSelf : Base<TSelf>, new()
         {
-            public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out TSelf result)
+            protected static bool TryParseCore([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out TSelf result)
             {
                 if (s is null)
                 {
@@ -1101,237 +1113,338 @@ public sealed partial class Optional1Tests
                 return true;
             }
 
-            public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out TSelf result)
+            protected static bool TryParseCore(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out TSelf result)
             {
                 result = new() { Input = s.ToString(), Style = style };
                 return true;
             }
         }
 
-        public sealed record IntNumber(string? Input, NumberStyles Style) : Base<IntNumber>(Input, Style)
+        public sealed record IntNumberParse(string? Input, NumberStyles Style) : Base<IntNumberParse>(Input, Style)
         {
-            public IntNumber() : this(default, default)
+            public IntNumberParse() : this(default, default)
             {
             }
 
-            public static IntNumber NaN => default!;
+            public static IntNumberParse NaN => default!;
 
-            public static IntNumber Parse(string s, NumberStyles style = NumberStyles.Number, IFormatProvider? provider = null) =>
+            public static IntNumberParse Parse(string s, NumberStyles style = NumberStyles.Number, IFormatProvider? provider = null) =>
                 new(s, style);
 
-            public static IntNumber Parse(ReadOnlySpan<char> s, NumberStyles style = NumberStyles.Number, IFormatProvider? provider = null) =>
+            public static IntNumberParse Parse(ReadOnlySpan<char> s, NumberStyles style = NumberStyles.Number, IFormatProvider? provider = null) =>
                 new(s.ToString(), style);
         }
 
-        public sealed record Integer(string? Input, NumberStyles Style) : Base<Integer>(Input, Style)
+        public sealed record IntNumberTryParse(string? Input, NumberStyles Style) : Base<IntNumberTryParse>(Input, Style)
         {
-            public Integer() : this(default, default)
+            public IntNumberTryParse() : this(default, default)
             {
             }
 
-            public static Integer NaN => default!;
+            public static IntNumberTryParse NaN => default!;
 
-            public static Integer Parse(string s, NumberStyles style = NumberStyles.Integer, IFormatProvider? provider = null) =>
+            public static bool TryParse([NotNullWhen(true)] string? s, [Optional][DefaultParameterValue(NumberStyles.Number)] NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out IntNumberTryParse result) =>
+                TryParseCore(s, style, provider, out result);
+
+            public static bool TryParse(ReadOnlySpan<char> s, [Optional][DefaultParameterValue(NumberStyles.Number)] NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out IntNumberTryParse result) =>
+                TryParseCore(s, style, provider, out result);
+        }
+
+        public sealed record IntegerParse(string? Input, NumberStyles Style) : Base<IntegerParse>(Input, Style)
+        {
+            public IntegerParse() : this(default, default)
+            {
+            }
+
+            public static IntegerParse NaN => default!;
+
+            public static IntegerParse Parse(string s, NumberStyles style = NumberStyles.Integer, IFormatProvider? provider = null) =>
                 new(s, style);
 
-            public static Integer Parse(ReadOnlySpan<char> s, NumberStyles style = NumberStyles.Integer, IFormatProvider? provider = null) =>
+            public static IntegerParse Parse(ReadOnlySpan<char> s, NumberStyles style = NumberStyles.Integer, IFormatProvider? provider = null) =>
                 new(s.ToString(), style);
         }
 
-        public sealed record Float(string? Input, NumberStyles Style) : Base<Float>(Input, Style)
-#if NET7_0_OR_GREATER
-            , IBinaryInteger<Float>
-#endif
+        public sealed record IntegerTryParse(string? Input, NumberStyles Style) : Base<IntegerTryParse>(Input, Style)
         {
-            public Float() : this(default, default)
+            public IntegerTryParse() : this(default, default)
             {
             }
 
-            public static Float Parse(string s, NumberStyles style = NumberStyles.Float, IFormatProvider? provider = null) =>
+            public static IntegerTryParse NaN => default!;
+
+            public static bool TryParse([NotNullWhen(true)] string? s, [Optional][DefaultParameterValue(NumberStyles.Integer)] NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out IntegerTryParse result) =>
+                TryParseCore(s, style, provider, out result);
+
+            public static bool TryParse(ReadOnlySpan<char> s, [Optional][DefaultParameterValue(NumberStyles.Integer)] NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out IntegerTryParse result) =>
+                TryParseCore(s, style, provider, out result);
+        }
+
+        public abstract record FloatBase<TSelf>(string? Input, NumberStyles Style) : Base<TSelf>(Input, Style)
+#if NET7_0_OR_GREATER
+            , IBinaryInteger<TSelf>
+#endif
+            where TSelf : FloatBase<TSelf>, new()
+        {
+#if NET7_0_OR_GREATER
+            static TSelf INumberBase<TSelf>.One => throw new NotImplementedException();
+
+            static int INumberBase<TSelf>.Radix => throw new NotImplementedException();
+
+            static TSelf INumberBase<TSelf>.Zero => throw new NotImplementedException();
+
+            static TSelf IAdditiveIdentity<TSelf, TSelf>.AdditiveIdentity => throw new NotImplementedException();
+
+            static TSelf IMultiplicativeIdentity<TSelf, TSelf>.MultiplicativeIdentity => throw new NotImplementedException();
+
+            static TSelf INumberBase<TSelf>.Abs(TSelf value) => throw new NotImplementedException();
+
+            static bool INumberBase<TSelf>.IsCanonical(TSelf value) => throw new NotImplementedException();
+
+            static bool INumberBase<TSelf>.IsComplexNumber(TSelf value) => throw new NotImplementedException();
+
+            static bool INumberBase<TSelf>.IsEvenInteger(TSelf value) => throw new NotImplementedException();
+
+            static bool INumberBase<TSelf>.IsFinite(TSelf value) => throw new NotImplementedException();
+
+            static bool INumberBase<TSelf>.IsImaginaryNumber(TSelf value) => throw new NotImplementedException();
+
+            static bool INumberBase<TSelf>.IsInfinity(TSelf value) => throw new NotImplementedException();
+
+            static bool INumberBase<TSelf>.IsInteger(TSelf value) => throw new NotImplementedException();
+
+            static bool INumberBase<TSelf>.IsNaN(TSelf value) => throw new NotImplementedException();
+
+            static bool INumberBase<TSelf>.IsNegative(TSelf value) => throw new NotImplementedException();
+
+            static bool INumberBase<TSelf>.IsNegativeInfinity(TSelf value) => throw new NotImplementedException();
+
+            static bool INumberBase<TSelf>.IsNormal(TSelf value) => throw new NotImplementedException();
+
+            static bool INumberBase<TSelf>.IsOddInteger(TSelf value) => throw new NotImplementedException();
+
+            static bool INumberBase<TSelf>.IsPositive(TSelf value) => throw new NotImplementedException();
+
+            static bool INumberBase<TSelf>.IsPositiveInfinity(TSelf value) => throw new NotImplementedException();
+
+            static bool IBinaryNumber<TSelf>.IsPow2(TSelf value) => throw new NotImplementedException();
+
+            static bool INumberBase<TSelf>.IsRealNumber(TSelf value) => throw new NotImplementedException();
+
+            static bool INumberBase<TSelf>.IsSubnormal(TSelf value) => throw new NotImplementedException();
+
+            static bool INumberBase<TSelf>.IsZero(TSelf value) => throw new NotImplementedException();
+
+            static TSelf IBinaryNumber<TSelf>.Log2(TSelf value) => throw new NotImplementedException();
+
+            static TSelf INumberBase<TSelf>.MaxMagnitude(TSelf x, TSelf y) => throw new NotImplementedException();
+
+            static TSelf INumberBase<TSelf>.MaxMagnitudeNumber(TSelf x, TSelf y) => throw new NotImplementedException();
+
+            static TSelf INumberBase<TSelf>.MinMagnitude(TSelf x, TSelf y) => throw new NotImplementedException();
+
+            static TSelf INumberBase<TSelf>.MinMagnitudeNumber(TSelf x, TSelf y) => throw new NotImplementedException();
+
+            static TSelf INumberBase<TSelf>.Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider) => throw new NotImplementedException();
+
+            static TSelf INumberBase<TSelf>.Parse(string s, NumberStyles style, IFormatProvider? provider) => throw new NotImplementedException();
+
+            static TSelf ISpanParsable<TSelf>.Parse(ReadOnlySpan<char> s, IFormatProvider? provider) => throw new NotImplementedException();
+
+            static TSelf IParsable<TSelf>.Parse(string s, IFormatProvider? provider) => throw new NotImplementedException();
+
+            static TSelf IBinaryInteger<TSelf>.PopCount(TSelf value) => throw new NotImplementedException();
+
+            static TSelf IBinaryInteger<TSelf>.TrailingZeroCount(TSelf value) => throw new NotImplementedException();
+
+            static bool INumberBase<TSelf>.TryConvertFromChecked<TOther>(TOther value, out TSelf result) => throw new NotImplementedException();
+
+            static bool INumberBase<TSelf>.TryConvertFromSaturating<TOther>(TOther value, out TSelf result) => throw new NotImplementedException();
+
+            static bool INumberBase<TSelf>.TryConvertFromTruncating<TOther>(TOther value, out TSelf result) => throw new NotImplementedException();
+
+            static bool INumberBase<TSelf>.TryConvertToChecked<TOther>(TSelf value, out TOther result) => throw new NotImplementedException();
+
+            static bool INumberBase<TSelf>.TryConvertToSaturating<TOther>(TSelf value, out TOther result) => throw new NotImplementedException();
+
+            static bool INumberBase<TSelf>.TryConvertToTruncating<TOther>(TSelf value, out TOther result) => throw new NotImplementedException();
+
+            static bool INumberBase<TSelf>.TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out TSelf result) => throw new NotImplementedException();
+
+            static bool INumberBase<TSelf>.TryParse(string? s, NumberStyles style, IFormatProvider? provider, out TSelf result) => throw new NotImplementedException();
+
+            static bool ISpanParsable<TSelf>.TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out TSelf result) => throw new NotImplementedException();
+
+            static bool IParsable<TSelf>.TryParse(string? s, IFormatProvider? provider, out TSelf result) => throw new NotImplementedException();
+
+            static bool IBinaryInteger<TSelf>.TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out TSelf value) => throw new NotImplementedException();
+
+            static bool IBinaryInteger<TSelf>.TryReadLittleEndian(ReadOnlySpan<byte> source, bool isUnsigned, out TSelf value) => throw new NotImplementedException();
+
+            int IComparable.CompareTo(object? obj) => throw new NotImplementedException();
+
+            int IComparable<TSelf>.CompareTo(TSelf? other) => throw new NotImplementedException();
+
+#pragma warning disable CA1065 // Do not raise exceptions in unexpected locations
+            bool IEquatable<TSelf>.Equals(TSelf? other) => throw new NotImplementedException();
+#pragma warning restore CA1065 // Do not raise exceptions in unexpected locations
+
+            int IBinaryInteger<TSelf>.GetByteCount() => throw new NotImplementedException();
+
+            int IBinaryInteger<TSelf>.GetShortestBitLength() => throw new NotImplementedException();
+
+            string IFormattable.ToString(string? format, IFormatProvider? formatProvider) =>
+                ToString();
+
+            bool ISpanFormattable.TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider) => throw new NotImplementedException();
+
+            bool IBinaryInteger<TSelf>.TryWriteBigEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
+
+            bool IBinaryInteger<TSelf>.TryWriteLittleEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
+
+            static TSelf IUnaryPlusOperators<TSelf, TSelf>.operator +(TSelf value) => throw new NotImplementedException();
+
+            static TSelf IAdditionOperators<TSelf, TSelf, TSelf>.operator +(TSelf left, TSelf right) => throw new NotImplementedException();
+
+            static TSelf IUnaryNegationOperators<TSelf, TSelf>.operator -(TSelf value) => throw new NotImplementedException();
+
+            static TSelf ISubtractionOperators<TSelf, TSelf, TSelf>.operator -(TSelf left, TSelf right) => throw new NotImplementedException();
+
+            static TSelf IBitwiseOperators<TSelf, TSelf, TSelf>.operator ~(TSelf value) => throw new NotImplementedException();
+
+            static TSelf IIncrementOperators<TSelf>.operator ++(TSelf value) => throw new NotImplementedException();
+
+            static TSelf IDecrementOperators<TSelf>.operator --(TSelf value) => throw new NotImplementedException();
+
+            static TSelf IMultiplyOperators<TSelf, TSelf, TSelf>.operator *(TSelf left, TSelf right) => throw new NotImplementedException();
+
+            static TSelf IDivisionOperators<TSelf, TSelf, TSelf>.operator /(TSelf left, TSelf right) => throw new NotImplementedException();
+
+            static TSelf IModulusOperators<TSelf, TSelf, TSelf>.operator %(TSelf left, TSelf right) => throw new NotImplementedException();
+
+            static TSelf IBitwiseOperators<TSelf, TSelf, TSelf>.operator &(TSelf left, TSelf right) => throw new NotImplementedException();
+
+            static TSelf IBitwiseOperators<TSelf, TSelf, TSelf>.operator |(TSelf left, TSelf right) => throw new NotImplementedException();
+
+            static TSelf IBitwiseOperators<TSelf, TSelf, TSelf>.operator ^(TSelf left, TSelf right) => throw new NotImplementedException();
+
+            static TSelf IShiftOperators<TSelf, int, TSelf>.operator <<(TSelf value, int shiftAmount) => throw new NotImplementedException();
+
+            static TSelf IShiftOperators<TSelf, int, TSelf>.operator >>(TSelf value, int shiftAmount) => throw new NotImplementedException();
+
+            static bool IEqualityOperators<TSelf, TSelf, bool>.operator ==(TSelf? left, TSelf? right) => throw new NotImplementedException();
+
+            static bool IEqualityOperators<TSelf, TSelf, bool>.operator !=(TSelf? left, TSelf? right) => throw new NotImplementedException();
+
+            static bool IComparisonOperators<TSelf, TSelf, bool>.operator <(TSelf left, TSelf right) => throw new NotImplementedException();
+
+            static bool IComparisonOperators<TSelf, TSelf, bool>.operator >(TSelf left, TSelf right) => throw new NotImplementedException();
+
+            static bool IComparisonOperators<TSelf, TSelf, bool>.operator <=(TSelf left, TSelf right) => throw new NotImplementedException();
+
+            static bool IComparisonOperators<TSelf, TSelf, bool>.operator >=(TSelf left, TSelf right) => throw new NotImplementedException();
+
+            static TSelf IShiftOperators<TSelf, int, TSelf>.operator >>>(TSelf value, int shiftAmount) => throw new NotImplementedException();
+#endif
+        }
+
+        public sealed record FloatParse(string? Input, NumberStyles Style) : FloatBase<FloatParse>(Input, Style)
+        {
+            public FloatParse() : this(default, default)
+            {
+            }
+
+            public static FloatParse Parse(string s, NumberStyles style = NumberStyles.Float, IFormatProvider? provider = null) =>
                 new(s, style);
 
-            public static Float Parse(ReadOnlySpan<char> s, NumberStyles style = NumberStyles.Float, IFormatProvider? provider = null) =>
+            public static FloatParse Parse(ReadOnlySpan<char> s, NumberStyles style = NumberStyles.Float, IFormatProvider? provider = null) =>
+                new(s.ToString(), style);
+        }
+
+        public sealed record FloatTryParse(string? Input, NumberStyles Style) : FloatBase<FloatTryParse>(Input, Style)
+        {
+            public FloatTryParse() : this(default, default)
+            {
+            }
+
+            public static bool TryParse([NotNullWhen(true)] string? s, [Optional][DefaultParameterValue(NumberStyles.Float)] NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out FloatTryParse result) =>
+                TryParseCore(s, style, provider, out result);
+
+            public static bool TryParse(ReadOnlySpan<char> s, [Optional][DefaultParameterValue(NumberStyles.Float)] NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out FloatTryParse result) =>
+                TryParseCore(s, style, provider, out result);
+        }
+
+        public sealed record DifferentBetweenParseAndTryParse(string? Input, NumberStyles Style) : Base<DifferentBetweenParseAndTryParse>(Input, Style)
+        {
+            public DifferentBetweenParseAndTryParse() : this(default, default)
+            {
+            }
+
+            public static DifferentBetweenParseAndTryParse Parse(string s, NumberStyles style = NumberStyles.AllowCurrencySymbol, IFormatProvider? provider = null) =>
+                new(s, style);
+
+            public static DifferentBetweenParseAndTryParse Parse(ReadOnlySpan<char> s, NumberStyles style = NumberStyles.AllowCurrencySymbol, IFormatProvider? provider = null) =>
                 new(s.ToString(), style);
 
-#if NET7_0_OR_GREATER
-        static Float INumberBase<Float>.One => throw new NotImplementedException();
+            public static bool TryParse([NotNullWhen(true)] string? s, [Optional][DefaultParameterValue(NumberStyles.AllowDecimalPoint)] NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out DifferentBetweenParseAndTryParse result) =>
+                TryParseCore(s, style, provider, out result);
 
-        static int INumberBase<Float>.Radix => throw new NotImplementedException();
+            public static bool TryParse(ReadOnlySpan<char> s, [Optional][DefaultParameterValue(NumberStyles.AllowDecimalPoint)] NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out DifferentBetweenParseAndTryParse result) =>
+                TryParseCore(s, style, provider, out result);
+        }
 
-        static Float INumberBase<Float>.Zero => throw new NotImplementedException();
+        public sealed record TryParseInheritedFromParse(string? Input, NumberStyles Style) : Base<TryParseInheritedFromParse>(Input, Style)
+        {
+            public TryParseInheritedFromParse() : this(default, default)
+            {
+            }
 
-        static Float IAdditiveIdentity<Float, Float>.AdditiveIdentity => throw new NotImplementedException();
+            public static TryParseInheritedFromParse Parse(string s, NumberStyles style = NumberStyles.AllowLeadingSign, IFormatProvider? provider = null) =>
+                new(s, style);
 
-        static Float IMultiplicativeIdentity<Float, Float>.MultiplicativeIdentity => throw new NotImplementedException();
+            public static TryParseInheritedFromParse Parse(ReadOnlySpan<char> s, NumberStyles style = NumberStyles.AllowLeadingSign, IFormatProvider? provider = null) =>
+                new(s.ToString(), style);
 
-        static Float INumberBase<Float>.Abs(Float value) => throw new NotImplementedException();
+            public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out TryParseInheritedFromParse result) =>
+                TryParseCore(s, style, provider, out result);
 
-        static bool INumberBase<Float>.IsCanonical(Float value) => throw new NotImplementedException();
-
-        static bool INumberBase<Float>.IsComplexNumber(Float value) => throw new NotImplementedException();
-
-        static bool INumberBase<Float>.IsEvenInteger(Float value) => throw new NotImplementedException();
-
-        static bool INumberBase<Float>.IsFinite(Float value) => throw new NotImplementedException();
-
-        static bool INumberBase<Float>.IsImaginaryNumber(Float value) => throw new NotImplementedException();
-
-        static bool INumberBase<Float>.IsInfinity(Float value) => throw new NotImplementedException();
-
-        static bool INumberBase<Float>.IsInteger(Float value) => throw new NotImplementedException();
-
-        static bool INumberBase<Float>.IsNaN(Float value) => throw new NotImplementedException();
-
-        static bool INumberBase<Float>.IsNegative(Float value) => throw new NotImplementedException();
-
-        static bool INumberBase<Float>.IsNegativeInfinity(Float value) => throw new NotImplementedException();
-
-        static bool INumberBase<Float>.IsNormal(Float value) => throw new NotImplementedException();
-
-        static bool INumberBase<Float>.IsOddInteger(Float value) => throw new NotImplementedException();
-
-        static bool INumberBase<Float>.IsPositive(Float value) => throw new NotImplementedException();
-
-        static bool INumberBase<Float>.IsPositiveInfinity(Float value) => throw new NotImplementedException();
-
-        static bool IBinaryNumber<Float>.IsPow2(Float value) => throw new NotImplementedException();
-
-        static bool INumberBase<Float>.IsRealNumber(Float value) => throw new NotImplementedException();
-
-        static bool INumberBase<Float>.IsSubnormal(Float value) => throw new NotImplementedException();
-
-        static bool INumberBase<Float>.IsZero(Float value) => throw new NotImplementedException();
-
-        static Float IBinaryNumber<Float>.Log2(Float value) => throw new NotImplementedException();
-
-        static Float INumberBase<Float>.MaxMagnitude(Float x, Float y) => throw new NotImplementedException();
-
-        static Float INumberBase<Float>.MaxMagnitudeNumber(Float x, Float y) => throw new NotImplementedException();
-
-        static Float INumberBase<Float>.MinMagnitude(Float x, Float y) => throw new NotImplementedException();
-
-        static Float INumberBase<Float>.MinMagnitudeNumber(Float x, Float y) => throw new NotImplementedException();
-
-        static Float INumberBase<Float>.Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider) => throw new NotImplementedException();
-
-        static Float INumberBase<Float>.Parse(string s, NumberStyles style, IFormatProvider? provider) => throw new NotImplementedException();
-
-        static Float ISpanParsable<Float>.Parse(ReadOnlySpan<char> s, IFormatProvider? provider) => throw new NotImplementedException();
-
-        static Float IParsable<Float>.Parse(string s, IFormatProvider? provider) => throw new NotImplementedException();
-
-        static Float IBinaryInteger<Float>.PopCount(Float value) => throw new NotImplementedException();
-
-        static Float IBinaryInteger<Float>.TrailingZeroCount(Float value) => throw new NotImplementedException();
-
-        static bool INumberBase<Float>.TryConvertFromChecked<TOther>(TOther value, out Float result) => throw new NotImplementedException();
-
-        static bool INumberBase<Float>.TryConvertFromSaturating<TOther>(TOther value, out Float result) => throw new NotImplementedException();
-
-        static bool INumberBase<Float>.TryConvertFromTruncating<TOther>(TOther value, out Float result) => throw new NotImplementedException();
-
-        static bool INumberBase<Float>.TryConvertToChecked<TOther>(Float value, out TOther result) => throw new NotImplementedException();
-
-        static bool INumberBase<Float>.TryConvertToSaturating<TOther>(Float value, out TOther result) => throw new NotImplementedException();
-
-        static bool INumberBase<Float>.TryConvertToTruncating<TOther>(Float value, out TOther result) => throw new NotImplementedException();
-
-        static bool INumberBase<Float>.TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out Float result) => throw new NotImplementedException();
-
-        static bool INumberBase<Float>.TryParse(string? s, NumberStyles style, IFormatProvider? provider, out Float result) => throw new NotImplementedException();
-
-        static bool ISpanParsable<Float>.TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out Float result) => throw new NotImplementedException();
-
-        static bool IParsable<Float>.TryParse(string? s, IFormatProvider? provider, out Float result) => throw new NotImplementedException();
-
-        static bool IBinaryInteger<Float>.TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out Float value) => throw new NotImplementedException();
-
-        static bool IBinaryInteger<Float>.TryReadLittleEndian(ReadOnlySpan<byte> source, bool isUnsigned, out Float value) => throw new NotImplementedException();
-
-        int IComparable.CompareTo(object? obj) => throw new NotImplementedException();
-
-        int IComparable<Float>.CompareTo(Float? other) => throw new NotImplementedException();
-
-        int IBinaryInteger<Float>.GetByteCount() => throw new NotImplementedException();
-
-        int IBinaryInteger<Float>.GetShortestBitLength() => throw new NotImplementedException();
-
-        string IFormattable.ToString(string? format, IFormatProvider? formatProvider) =>
-            ToString();
-
-        bool ISpanFormattable.TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider) => throw new NotImplementedException();
-
-        bool IBinaryInteger<Float>.TryWriteBigEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
-
-        bool IBinaryInteger<Float>.TryWriteLittleEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
-
-        static Float IUnaryPlusOperators<Float, Float>.operator +(Float value) => throw new NotImplementedException();
-
-        static Float IAdditionOperators<Float, Float, Float>.operator +(Float left, Float right) => throw new NotImplementedException();
-
-        static Float IUnaryNegationOperators<Float, Float>.operator -(Float value) => throw new NotImplementedException();
-
-        static Float ISubtractionOperators<Float, Float, Float>.operator -(Float left, Float right) => throw new NotImplementedException();
-
-        static Float IBitwiseOperators<Float, Float, Float>.operator ~(Float value) => throw new NotImplementedException();
-
-        static Float IIncrementOperators<Float>.operator ++(Float value) => throw new NotImplementedException();
-
-        static Float IDecrementOperators<Float>.operator --(Float value) => throw new NotImplementedException();
-
-        static Float IMultiplyOperators<Float, Float, Float>.operator *(Float left, Float right) => throw new NotImplementedException();
-
-        static Float IDivisionOperators<Float, Float, Float>.operator /(Float left, Float right) => throw new NotImplementedException();
-
-        static Float IModulusOperators<Float, Float, Float>.operator %(Float left, Float right) => throw new NotImplementedException();
-
-        static Float IBitwiseOperators<Float, Float, Float>.operator &(Float left, Float right) => throw new NotImplementedException();
-
-        static Float IBitwiseOperators<Float, Float, Float>.operator |(Float left, Float right) => throw new NotImplementedException();
-
-        static Float IBitwiseOperators<Float, Float, Float>.operator ^(Float left, Float right) => throw new NotImplementedException();
-
-        static Float IShiftOperators<Float, int, Float>.operator <<(Float value, int shiftAmount) => throw new NotImplementedException();
-
-        static Float IShiftOperators<Float, int, Float>.operator >>(Float value, int shiftAmount) => throw new NotImplementedException();
-
-        static bool IEqualityOperators<Float, Float, bool>.operator ==(Float? left, Float? right) => throw new NotImplementedException();
-
-        static bool IEqualityOperators<Float, Float, bool>.operator !=(Float? left, Float? right) => throw new NotImplementedException();
-
-        static bool IComparisonOperators<Float, Float, bool>.operator <(Float left, Float right) => throw new NotImplementedException();
-
-        static bool IComparisonOperators<Float, Float, bool>.operator >(Float left, Float right) => throw new NotImplementedException();
-
-        static bool IComparisonOperators<Float, Float, bool>.operator <=(Float left, Float right) => throw new NotImplementedException();
-
-        static bool IComparisonOperators<Float, Float, bool>.operator >=(Float left, Float right) => throw new NotImplementedException();
-
-        static Float IShiftOperators<Float, int, Float>.operator >>>(Float value, int shiftAmount) => throw new NotImplementedException();
-#endif
+            public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out TryParseInheritedFromParse result) =>
+                TryParseCore(s, style, provider, out result);
         }
     }
 
-    private static void AssertDoesNotParse<T>(string? input, string? nestedInput, IFormatProvider? provider, bool? parseFromSpan = null, bool tryParse = true)
+    [Flags]
+    private enum ParseMethods
+    {
+        None = 0,
+        Parse = 1 << 0,
+        TryParse = 1 << 1,
+    }
+
+    private static void AssertDoesNotParse<T>(string? input, string? nestedInput, IFormatProvider? provider, bool? parseFromSpan = null, ParseMethods parseMethods = ParseMethods.Parse | ParseMethods.TryParse)
     {
         var parseSpan = parseFromSpan ?? ShouldParseSpan<T>();
 
         if (provider is null)
         {
+            if (parseMethods.HasFlag(ParseMethods.Parse))
+            {
 #pragma warning disable CA1305 // Specify IFormatProvider
-            if (input is null)
-            {
-                Assert.Throws<ArgumentNullException>("s", () => Optional<T>.Parse(input!));
-            }
-            else
-            {
-                AssertThrows.Format(input, nestedInput, () => Optional<T>.Parse(input));
+                if (input is null)
+                {
+                    Assert.Throws<ArgumentNullException>("s", () => Optional<T>.Parse(input!));
+                }
+                else
+                {
+                    AssertThrows.Format(input, nestedInput, () => Optional<T>.Parse(input));
 
-                if (parseSpan)
-                    AssertThrows.Format(input, nestedInput, () => Optional<T>.Parse(input.AsSpan()));
+                    if (parseSpan)
+                        AssertThrows.Format(input, nestedInput, () => Optional<T>.Parse(input.AsSpan()));
+                }
+#pragma warning restore CA1305 // Specify IFormatProvider
             }
 
-            if (tryParse)
+            if (parseMethods.HasFlag(ParseMethods.TryParse))
             {
                 Assert.False(Optional<T>.TryParse(input, out var resultWithoutProvider1));
                 Assert.Equal(default, resultWithoutProvider1);
@@ -1342,22 +1455,24 @@ public sealed partial class Optional1Tests
                     Assert.Equal(default, resultWithoutProvider2);
                 }
             }
-#pragma warning restore CA1305 // Specify IFormatProvider
         }
 
-        if (input is null)
+        if (parseMethods.HasFlag(ParseMethods.Parse))
         {
-            Assert.Throws<ArgumentNullException>("s", () => Optional<T>.Parse(input!, provider));
-        }
-        else
-        {
-            AssertThrows.Format(input, nestedInput, () => Optional<T>.Parse(input, provider));
+            if (input is null)
+            {
+                Assert.Throws<ArgumentNullException>("s", () => Optional<T>.Parse(input!, provider));
+            }
+            else
+            {
+                AssertThrows.Format(input, nestedInput, () => Optional<T>.Parse(input, provider));
 
-            if (parseSpan)
-                AssertThrows.Format(input, nestedInput, () => Optional<T>.Parse(input.AsSpan(), provider));
+                if (parseSpan)
+                    AssertThrows.Format(input, nestedInput, () => Optional<T>.Parse(input.AsSpan(), provider));
+            }
         }
 
-        if (tryParse)
+        if (parseMethods.HasFlag(ParseMethods.TryParse))
         {
             Assert.False(Optional<T>.TryParse(input, provider, out var resultWithProvider1));
             Assert.Equal(default, resultWithProvider1);
@@ -1370,21 +1485,24 @@ public sealed partial class Optional1Tests
         }
     }
 
-    private static void AssertParses<T>(Optional<T> expected, string input, IFormatProvider? provider, bool? parseFromSpan = null, bool tryParse = true)
+    private static void AssertParses<T>(Optional<T> expected, string input, IFormatProvider? provider, bool? parseFromSpan = null, ParseMethods parseMethods = ParseMethods.Parse | ParseMethods.TryParse)
     {
         var parseSpan = parseFromSpan ?? ShouldParseSpan<T>();
         var comparer = new CustomComparer<T>();
 
         if (provider is null)
         {
+            if (parseMethods.HasFlag(ParseMethods.Parse))
+            {
 #pragma warning disable CA1305 // Specify IFormatProvider
-            Assert.Equal(expected, Optional<T>.Parse(input), comparer);
+                Assert.Equal(expected, Optional<T>.Parse(input), comparer);
 
-            if (parseSpan)
-                Assert.Equal(expected, Optional<T>.Parse(input.AsSpan()), comparer);
+                if (parseSpan)
+                    Assert.Equal(expected, Optional<T>.Parse(input.AsSpan()), comparer);
 #pragma warning restore CA1305 // Specify IFormatProvider
+            }
 
-            if (tryParse)
+            if (parseMethods.HasFlag(ParseMethods.TryParse))
             {
                 Assert.True(Optional<T>.TryParse(input, out var resultWithoutProvider1));
                 Assert.Equal(expected, resultWithoutProvider1, comparer);
@@ -1397,12 +1515,15 @@ public sealed partial class Optional1Tests
             }
         }
 
-        Assert.Equal(expected, Optional<T>.Parse(input, provider), comparer);
+        if (parseMethods.HasFlag(ParseMethods.Parse))
+        {
+            Assert.Equal(expected, Optional<T>.Parse(input, provider), comparer);
 
-        if (parseSpan)
-            Assert.Equal(expected, Optional<T>.Parse(input.AsSpan(), provider), comparer);
+            if (parseSpan)
+                Assert.Equal(expected, Optional<T>.Parse(input.AsSpan(), provider), comparer);
+        }
 
-        if (tryParse)
+        if (parseMethods.HasFlag(ParseMethods.TryParse))
         {
             Assert.True(Optional<T>.TryParse(input, provider, out var resultWithProvider1));
             Assert.Equal(expected, resultWithProvider1, comparer);
