@@ -263,6 +263,11 @@ public sealed partial class Optional1Tests
 
         TestIsNumber<decimal>(-1m, 42.2m, 10_000m);
 
+        // Not .NET 7 because the implementation is broken in .NET 7.
+#if NET8_0_OR_GREATER
+        TestIsFloatAndAllowThousandsComplex();
+#endif
+
         static void TestIsInteger<T>(T? negativeOne)
             where T : struct
         {
@@ -315,6 +320,32 @@ public sealed partial class Optional1Tests
             // NumberStyles.AllowHexSpecifier is *not* included.
             AssertDoesNotParse<T>("Some { f }", "f", null, ParseMethodsForBuiltInTypes);
         }
+
+#if NET8_0_OR_GREATER
+        static void TestIsFloatAndAllowThousandsComplex()
+        {
+            // NumberStyles.AllowLeadingWhite and NumberStyles.AllowTrailingWhite are included.
+            AssertParses<Complex>(new(default), "Some { < 0 ;  0 > }", null, ParseMethodsForBuiltInTypes);
+
+            // NumberStyles.AllowLeadingSign is included
+            AssertParses<Complex>(new(new(-1, 0)), "Some { <-1; 0> }", null, ParseMethodsForBuiltInTypes);
+
+            // NumberStyles.AllowDecimalPoint is included.
+            AssertParses<Complex>(new(new(42.2d, 1)), "Some { <42.2; 1> }", null, ParseMethodsForBuiltInTypes);
+
+            // NumberStyles.AllowThousands is included.
+            AssertParses<Complex>(new(new(10_000d, 2)), "Some { <10,000; 2> }", null, ParseMethodsForBuiltInTypes);
+
+            // NumberStyles.AllowExponent is included.
+            AssertParses<Complex>(new(new(42.2d, 1)), "Some { <4.22e+1; 1> }", null, ParseMethodsForBuiltInTypes);
+
+            // NumberStyles.AllowParentheses is *not* included.
+            AssertDoesNotParse<Complex>("Some { (<4.22e+1; 1>) }", "(<4.22e+1; 1>)", null, ParseMethodsForBuiltInTypes);
+
+            // NumberStyles.AllowHexSpecifier is *not* included.
+            AssertDoesNotParse<Complex>("Some { f }", "f", null, ParseMethodsForBuiltInTypes);
+        }
+#endif
 
         static void TestIsNumber<T>(T negativeOne, T value1, T value2)
             where T : struct
@@ -1458,13 +1489,13 @@ public sealed partial class Optional1Tests
                 }
                 else
                 {
-                    AssertThrows.Format(input, nestedInput, () => Optional<T>.Parse(input));
+                    AssertThrowsFormat<T>(input, nestedInput, () => Optional<T>.Parse(input));
                 }
             }
 
             if (parseMethods.HasFlag(ParseMethods.ParseFromSpan))
             {
-                AssertThrows.Format(input ?? "", nestedInput, () => Optional<T>.Parse(input.AsSpan()));
+                AssertThrowsFormat<T>(input ?? "", nestedInput, () => Optional<T>.Parse(input.AsSpan()));
             }
 #pragma warning restore CA1305 // Specify IFormatProvider
 
@@ -1489,13 +1520,13 @@ public sealed partial class Optional1Tests
             }
             else
             {
-                AssertThrows.Format(input, nestedInput, () => Optional<T>.Parse(input, provider));
+                AssertThrowsFormat<T>(input, nestedInput, () => Optional<T>.Parse(input, provider));
             }
         }
 
         if (parseMethods.HasFlag(ParseMethods.ParseFromSpan))
         {
-            AssertThrows.Format(input ?? "", nestedInput, () => Optional<T>.Parse(input.AsSpan(), provider));
+            AssertThrowsFormat<T>(input ?? "", nestedInput, () => Optional<T>.Parse(input.AsSpan(), provider));
         }
 
         if (parseMethods.HasFlag(ParseMethods.TryParseFromString))
@@ -1508,6 +1539,14 @@ public sealed partial class Optional1Tests
         {
             Assert.False(Optional<T>.TryParse(input.AsSpan(), provider, out var resultWithProvider2));
             Assert.Equal(default, resultWithProvider2);
+        }
+
+        static void AssertThrowsFormat<TNestedException>(string input, string? nestedInput, Action testCode)
+        {
+            if (typeof(T) == typeof(Complex))
+                Assert.Throws<OverflowException>(testCode);
+            else
+                Assert.Throws<FormatException>(testCode);
         }
     }
 

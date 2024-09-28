@@ -20,7 +20,8 @@ internal static class AssertThrows
         Assert.Equal($"Object must be of type {typeName}.", GetCoreMessage(e));
     }
 
-    public static void Format(string input, string? nestedInput, Action testCode)
+    public static void Format<TNestedException>(string input, string? nestedInput, Action testCode)
+        where TNestedException : Exception
     {
         var e = Assert.Throws<FormatException>(testCode);
         Assert.Equal($"The input string '{input}' was not in a correct format.", e.Message);
@@ -31,12 +32,16 @@ internal static class AssertThrows
         }
         else
         {
-            var inner = Assert.IsType<FormatException>(e.InnerException);
-            if (inner.Message != "Input string was not in a correct format." &&
-                inner.Message != "The value could not be parsed." &&
-                inner.Message != "String must be exactly one character long.")
+            var inner = Assert.IsType<TNestedException>(e.InnerException);
+
+            if (typeof(TNestedException) == typeof(FormatException))
             {
-                Assert.Equal($"The input string '{nestedInput}' was not in a correct format.", inner.Message);
+                if (inner.Message != "Input string was not in a correct format." &&
+                    inner.Message != "The value could not be parsed." &&
+                    inner.Message != "String must be exactly one character long.")
+                {
+                    Assert.Equal($"The input string '{nestedInput}' was not in a correct format.", inner.Message);
+                }
             }
         }
     }
