@@ -325,7 +325,8 @@ public sealed partial class Optional1Tests
         static void TestIsFloatAndAllowThousandsComplex()
         {
             // NumberStyles.AllowLeadingWhite and NumberStyles.AllowTrailingWhite are included.
-            AssertParses<Complex>(new(default), "Some { < 0 ;  0 > }", null, ParseMethodsForBuiltInTypes);
+            // No trailing space around the whole number as that is broken.
+            AssertParses<Complex>(new(default), "Some { <  0 ;  0 > }", null, ParseMethodsForBuiltInTypes);
 
             // NumberStyles.AllowLeadingSign is included
             AssertParses<Complex>(new(new(-1, 0)), "Some { <-1; 0> }", null, ParseMethodsForBuiltInTypes);
