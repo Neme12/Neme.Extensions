@@ -1547,7 +1547,7 @@ public sealed partial class Optional1Tests
             if (typeof(T) == typeof(Complex))
                 Assert.Throws<OverflowException>(testCode);
             else
-                Assert.Throws<FormatException>(testCode);
+                AssertThrows.Format(input, nestedInput, testCode);
         }
     }
 
