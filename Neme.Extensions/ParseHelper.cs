@@ -106,6 +106,19 @@ internal static class ParseHelper<T>
 					return static (s, provider) => UnsafeExtensions.InAs<Rune, T>(RuneExtensions.Parse(s));
 #endif
 
+#if NET7_0_OR_GREATER
+                if (typeof(T).GetInterfaces().FirstOrDefault(i =>
+                    i.IsConstructedGenericType &&
+                    i.GetGenericTypeDefinition() == typeof(IParsable<>) &&
+                    i.GetGenericArguments()[0] == typeof(T)) is { } @interface)
+                {
+                    return typeof(T)
+                        .GetInterfaceMap(@interface)
+                        .GetImplementationMethod(@interface.GetMethod<ParseProviderDelegate>(nameof(int.Parse), BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)!)
+                        .CreateDelegate<ParseProviderDelegate>();
+                }
+#endif
+
                 if (GetParseMethod<ParseProviderDelegate>(nameof(int.Parse)) is { } method)
                     return method;
 
@@ -133,6 +146,19 @@ internal static class ParseHelper<T>
 #if NETCOREAPP3_0_OR_GREATER
                 if (typeof(T) == typeof(Rune))
                     return static (s, provider) => UnsafeExtensions.InAs<Rune, T>(RuneExtensions.Parse(s));
+#endif
+
+#if NET7_0_OR_GREATER
+                if (typeof(T).GetInterfaces().FirstOrDefault(i =>
+                    i.IsConstructedGenericType &&
+                    i.GetGenericTypeDefinition() == typeof(ISpanParsable<>) &&
+                    i.GetGenericArguments()[0] == typeof(T)) is { } @interface)
+                {
+                    return typeof(T)
+                        .GetInterfaceMap(@interface)
+                        .GetImplementationMethod(@interface.GetMethod<ParseSpanProviderDelegate>(nameof(int.Parse), BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)!)
+                        .CreateDelegate<ParseSpanProviderDelegate>();
+                }
 #endif
 
                 if (GetParseMethod<ParseSpanProviderDelegate>(nameof(int.Parse)) is { } method)
@@ -171,6 +197,19 @@ internal static class ParseHelper<T>
 				}
 #endif
 
+#if NET7_0_OR_GREATER
+                if (typeof(T).GetInterfaces().FirstOrDefault(i =>
+                    i.IsConstructedGenericType &&
+                    i.GetGenericTypeDefinition() == typeof(IParsable<>) &&
+                    i.GetGenericArguments()[0] == typeof(T)) is { } @interface)
+                {
+                    return typeof(T)
+                        .GetInterfaceMap(@interface)
+                        .GetImplementationMethod(@interface.GetMethod<TryParseProviderDelegate>(nameof(int.TryParse), BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)!)
+                        .CreateDelegate<TryParseProviderDelegate>();
+                }
+#endif
+
                 if (GetParseMethod<TryParseProviderDelegate>(nameof(int.TryParse)) is { } method)
                     return method;
 
@@ -206,6 +245,19 @@ internal static class ParseHelper<T>
                 {
                     return static (ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) =>
 						RuneExtensions.TryParse(s, out UnsafeExtensions.OutAs<T, Rune>(out result));
+                }
+#endif
+
+#if NET7_0_OR_GREATER
+                if (typeof(T).GetInterfaces().FirstOrDefault(i =>
+                    i.IsConstructedGenericType &&
+                    i.GetGenericTypeDefinition() == typeof(ISpanParsable<>) &&
+                    i.GetGenericArguments()[0] == typeof(T)) is { } @interface)
+                {
+                    return typeof(T)
+                        .GetInterfaceMap(@interface)
+                        .GetImplementationMethod(@interface.GetMethod<TryParseSpanProviderDelegate>(nameof(int.TryParse), BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)!)
+                        .CreateDelegate<TryParseSpanProviderDelegate>();
                 }
 #endif
 
