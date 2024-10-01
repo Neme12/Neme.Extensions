@@ -374,13 +374,18 @@ public sealed partial class Optional1Tests
         }
     }
 
-#if NET7_0_OR_GREATER
     [Fact]
     public void Parse_CustomParsable()
     {
-        AssertParses<CustomParsable.ImplementingIParsable>(new(new("foo")), "Some { foo }", null);
-    }
+#if NET7_0_OR_GREATER
+        AssertParses<CustomParsable.Interface>(new(new(ParseImplementationMethodKind.Interface, "foo")), "Some { foo }", null);
 #endif
+        AssertParses<CustomParsable.Provider>(new(new(ParseImplementationMethodKind.Provider, "foo")), "Some { foo }", null);
+        AssertParses<CustomParsable.NumberStylesProvider>(new(new(ParseImplementationMethodKind.NumberStylesProvider, "foo")), "Some { foo }", null);
+        AssertParses<CustomParsable.Plain>(new(new(ParseImplementationMethodKind.Plain, "foo")), "Some { foo }", null);
+
+        AssertNoParseMethod<CustomParsable.None>("Some { foo }", null);
+    }
 
     [Fact]
     public void Parse_CustomParsableNumberStyles()
@@ -431,34 +436,253 @@ public sealed partial class Optional1Tests
         AssertParses<CustomParsableDefaultedNumberStyles.TryParseInheritedFromParse>(new(new("foo", NumberStyles.AllowLeadingSign)), "Some { foo }", null);
     }
 
+    public enum ParseImplementationMethodKind
+    {
+        Interface,
+        Plain,
+        Provider,
+        NumberStylesProvider,
+    }
+
     private static class CustomParsable
     {
 #if NET7_0_OR_GREATER
-        public sealed record ImplementingIParsable(string? Input) : ISpanParsable<ImplementingIParsable>
+        public sealed record Interface(ParseImplementationMethodKind Method, string? Input) : ISpanParsable<Interface>
         {
-            static ImplementingIParsable IParsable<ImplementingIParsable>.Parse(string s, IFormatProvider? provider)
+            static Interface IParsable<Interface>.Parse(string s, IFormatProvider? provider)
             {
-                return new(s);
+                return new(ParseImplementationMethodKind.Interface, s);
             }
 
-            static ImplementingIParsable ISpanParsable<ImplementingIParsable>.Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
+            public static Interface Parse(string s)
             {
-                return new(s.ToString());
+                return new(ParseImplementationMethodKind.Plain, s);
             }
 
-            static bool IParsable<ImplementingIParsable>.TryParse(string? s, IFormatProvider? provider, out ImplementingIParsable result)
+            public static Interface Parse(string s, IFormatProvider? provider)
             {
-                result = new(s);
+                return new(ParseImplementationMethodKind.Provider, s);
+            }
+
+            public static Interface Parse(string s, NumberStyles style, IFormatProvider? provider)
+            {
+                return new(ParseImplementationMethodKind.NumberStylesProvider, s);
+            }
+
+            static Interface ISpanParsable<Interface>.Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
+            {
+                return new(ParseImplementationMethodKind.Interface, s.ToString());
+            }
+
+            public static Interface Parse(ReadOnlySpan<char> s)
+            {
+                return new(ParseImplementationMethodKind.Plain, s.ToString());
+            }
+
+            public static Interface Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
+            {
+                return new(ParseImplementationMethodKind.Provider, s.ToString());
+            }
+
+            public static Interface Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
+            {
+                return new(ParseImplementationMethodKind.NumberStylesProvider, s.ToString());
+            }
+
+            static bool IParsable<Interface>.TryParse(string? s, IFormatProvider? provider, out Interface result)
+            {
+                result = new(ParseImplementationMethodKind.Interface, s);
                 return true;
             }
 
-            static bool ISpanParsable<ImplementingIParsable>.TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out ImplementingIParsable result)
+            public static bool TryParse(string? s, out Interface result)
             {
-                result = new(s.ToString());
+                result = new(ParseImplementationMethodKind.Plain, s);
+                return true;
+            }
+
+            public static bool TryParse(string? s, IFormatProvider? provider, out Interface result)
+            {
+                result = new(ParseImplementationMethodKind.Provider, s);
+                return true;
+            }
+
+            public static bool TryParse(string? s, NumberStyles style, IFormatProvider? provider, out Interface result)
+            {
+                result = new(ParseImplementationMethodKind.NumberStylesProvider, s);
+                return true;
+            }
+
+            static bool ISpanParsable<Interface>.TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out Interface result)
+            {
+                result = new(ParseImplementationMethodKind.Interface, s.ToString());
+                return true;
+            }
+
+            public static bool TryParse(ReadOnlySpan<char> s, out Interface result)
+            {
+                result = new(ParseImplementationMethodKind.Plain, s.ToString());
+                return true;
+            }
+
+            public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out Interface result)
+            {
+                result = new(ParseImplementationMethodKind.Provider, s.ToString());
+                return true;
+            }
+
+            public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out Interface result)
+            {
+                result = new(ParseImplementationMethodKind.NumberStylesProvider, s.ToString());
                 return true;
             }
         }
 #endif
+
+        public sealed record Provider(ParseImplementationMethodKind Method, string? Input)
+        {
+            public static Provider Parse(string s)
+            {
+                return new(ParseImplementationMethodKind.Plain, s);
+            }
+
+            public static Provider Parse(string s, IFormatProvider? provider)
+            {
+                return new(ParseImplementationMethodKind.Provider, s);
+            }
+
+            public static Provider Parse(string s, NumberStyles style, IFormatProvider? provider)
+            {
+                return new(ParseImplementationMethodKind.NumberStylesProvider, s);
+            }
+
+            public static Provider Parse(ReadOnlySpan<char> s)
+            {
+                return new(ParseImplementationMethodKind.Plain, s.ToString());
+            }
+
+            public static Provider Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
+            {
+                return new(ParseImplementationMethodKind.Provider, s.ToString());
+            }
+
+            public static Provider Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
+            {
+                return new(ParseImplementationMethodKind.NumberStylesProvider, s.ToString());
+            }
+
+            public static bool TryParse(string? s, out Provider result)
+            {
+                result = new(ParseImplementationMethodKind.Plain, s);
+                return true;
+            }
+
+            public static bool TryParse(string? s, IFormatProvider? provider, out Provider result)
+            {
+                result = new(ParseImplementationMethodKind.Provider, s);
+                return true;
+            }
+
+            public static bool TryParse(string? s, NumberStyles style, IFormatProvider? provider, out Provider result)
+            {
+                result = new(ParseImplementationMethodKind.NumberStylesProvider, s);
+                return true;
+            }
+
+            public static bool TryParse(ReadOnlySpan<char> s, out Provider result)
+            {
+                result = new(ParseImplementationMethodKind.Plain, s.ToString());
+                return true;
+            }
+
+            public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out Provider result)
+            {
+                result = new(ParseImplementationMethodKind.Provider, s.ToString());
+                return true;
+            }
+
+            public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out Provider result)
+            {
+                result = new(ParseImplementationMethodKind.NumberStylesProvider, s.ToString());
+                return true;
+            }
+        }
+
+        public sealed record NumberStylesProvider(ParseImplementationMethodKind Method, string? Input)
+        {
+            public static NumberStylesProvider Parse(string s)
+            {
+                return new(ParseImplementationMethodKind.Plain, s);
+            }
+
+            public static NumberStylesProvider Parse(string s, NumberStyles style, IFormatProvider? provider)
+            {
+                return new(ParseImplementationMethodKind.NumberStylesProvider, s);
+            }
+
+            public static NumberStylesProvider Parse(ReadOnlySpan<char> s)
+            {
+                return new(ParseImplementationMethodKind.Plain, s.ToString());
+            }
+
+            public static NumberStylesProvider Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
+            {
+                return new(ParseImplementationMethodKind.NumberStylesProvider, s.ToString());
+            }
+
+            public static bool TryParse(string? s, out NumberStylesProvider result)
+            {
+                result = new(ParseImplementationMethodKind.Plain, s);
+                return true;
+            }
+
+            public static bool TryParse(string? s, NumberStyles style, IFormatProvider? provider, out NumberStylesProvider result)
+            {
+                result = new(ParseImplementationMethodKind.NumberStylesProvider, s);
+                return true;
+            }
+
+            public static bool TryParse(ReadOnlySpan<char> s, out NumberStylesProvider result)
+            {
+                result = new(ParseImplementationMethodKind.Plain, s.ToString());
+                return true;
+            }
+
+            public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out NumberStylesProvider result)
+            {
+                result = new(ParseImplementationMethodKind.NumberStylesProvider, s.ToString());
+                return true;
+            }
+        }
+
+        public sealed record Plain(ParseImplementationMethodKind Method, string? Input)
+        {
+            public static Plain Parse(string s)
+            {
+                return new(ParseImplementationMethodKind.Plain, s);
+            }
+
+            public static Plain Parse(ReadOnlySpan<char> s)
+            {
+                return new(ParseImplementationMethodKind.Plain, s.ToString());
+            }
+
+            public static bool TryParse(string? s, out Plain result)
+            {
+                result = new(ParseImplementationMethodKind.Plain, s);
+                return true;
+            }
+
+            public static bool TryParse(ReadOnlySpan<char> s, out Plain result)
+            {
+                result = new(ParseImplementationMethodKind.Plain, s.ToString());
+                return true;
+            }
+        }
+
+        public sealed record None
+        {
+        }
     }
 
     private static class CustomParsableNumberStyles
@@ -1547,6 +1771,64 @@ public sealed partial class Optional1Tests
         FromString = ParseFromString | TryParseFromString,
         FromSpan = ParseFromSpan | TryParseFromSpan,
         All = -1,
+    }
+
+    private static void AssertNoParseMethod<T>(string input, IFormatProvider? provider, ParseMethods parseMethods = ParseMethods.All)
+    {
+        if (provider is null)
+        {
+#pragma warning disable CA1305 // Specify IFormatProvider
+            if (parseMethods.HasFlag(ParseMethods.ParseFromString))
+            {
+                AssertThrowsNoParseMethod(nameof(Optional<int>.Parse), () => Optional<T>.Parse(input));
+            }
+
+            if (parseMethods.HasFlag(ParseMethods.ParseFromSpan))
+            {
+                AssertThrowsNoParseMethod(nameof(Optional<int>.Parse), () => Optional<T>.Parse(input.AsSpan()));
+            }
+#pragma warning restore CA1305 // Specify IFormatProvider
+
+            if (parseMethods.HasFlag(ParseMethods.TryParseFromString))
+            {
+#pragma warning disable CA1806 // Do not ignore method results
+                AssertThrowsNoParseMethod(nameof(Optional<int>.TryParse), () => Optional<T>.TryParse(input, out _));
+#pragma warning restore CA1806 // Do not ignore method results
+            }
+
+            if (parseMethods.HasFlag(ParseMethods.TryParseFromSpan))
+            {
+#pragma warning disable CA1806 // Do not ignore method results
+                AssertThrowsNoParseMethod(nameof(Optional<int>.TryParse), () => Optional<T>.TryParse(input.AsSpan(), out _));
+#pragma warning restore CA1806 // Do not ignore method results
+            }
+        }
+
+        if (parseMethods.HasFlag(ParseMethods.ParseFromString))
+        {
+            AssertThrowsNoParseMethod(nameof(Optional<int>.Parse), () => Optional<T>.Parse(input, provider));
+        }
+
+        if (parseMethods.HasFlag(ParseMethods.ParseFromSpan))
+        {
+            AssertThrowsNoParseMethod(nameof(Optional<int>.Parse), () => Optional<T>.Parse(input.AsSpan(), provider));
+        }
+
+        if (parseMethods.HasFlag(ParseMethods.TryParseFromString))
+        {
+            AssertThrowsNoParseMethod(nameof(Optional<int>.TryParse), () => Optional<T>.TryParse(input, provider, out _));
+        }
+
+        if (parseMethods.HasFlag(ParseMethods.TryParseFromSpan))
+        {
+            AssertThrowsNoParseMethod(nameof(Optional<int>.TryParse), () => Optional<T>.TryParse(input.AsSpan(), provider, out _));
+        }
+
+        static void AssertThrowsNoParseMethod(string methodName, Action testCode)
+        {
+            var e = Assert.Throws<NotSupportedException>(testCode);
+            Assert.Equal($"Type {typeof(T)} has no appropriate {methodName} method.", e.Message);
+        }
     }
 
     private static void AssertDoesNotParse<T>(string? input, string? nestedInput, IFormatProvider? provider, ParseMethods parseMethods = ParseMethods.All)
