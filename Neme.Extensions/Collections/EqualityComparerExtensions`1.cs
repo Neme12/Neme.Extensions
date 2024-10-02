@@ -25,7 +25,9 @@ internal static class EqualityComparerExtensions<T>
             return resultComparer.Equals(selector(x), selector(y));
         }
 
+#pragma warning disable CS8765 // Nullability of type of parameter doesn't match overridden member (possibly because of nullability attributes).
         public override int GetHashCode([DisallowNull] T obj)
+#pragma warning restore CS8765 // Nullability of type of parameter doesn't match overridden member (possibly because of nullability attributes).
         {
             var result = selector(obj);
             if (result is null)
