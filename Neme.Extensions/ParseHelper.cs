@@ -299,7 +299,7 @@ internal static class ParseHelper<T>
             "NaN",
             MemberTypes.Field | MemberTypes.Property,
             BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly | BindingFlags.ExactBinding)
-            is [var member] && member.GetReturnType() == typeof(T) && member.IsReadOnly() && !(member is PropertyInfo property && property.GetIndexParameters().Length > 0))
+            is [var member] && FieldOrPropertyInfo.Get(member) is { IsReadOnly: true } fieldOrProperty && fieldOrProperty.Type == typeof(T))
         {
             return NumberStyles.Float | NumberStyles.AllowThousands;
         }
