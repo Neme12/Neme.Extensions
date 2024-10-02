@@ -168,10 +168,6 @@ public readonly partial struct Optional<T>
 		return false;
 	}
 
-    [DoesNotReturn]
-	private static void ThrowNoParseMethod(string methodName) =>
-		throw new NotSupportedException($"Type {typeof(T)} has no appropriate {methodName} method.");
-
 	private enum ParseResult
 	{
 		Error,
