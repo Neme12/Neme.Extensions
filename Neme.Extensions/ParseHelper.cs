@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Numerics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Neme.Extensions;
@@ -99,11 +100,11 @@ internal static class ParseHelper<T>
             static () =>
             {
                 if (typeof(T) == typeof(char))
-                    return static (s, provider) => UnsafeExtensions.InAs<char, T>(char.Parse(s));
+                    return Unsafe.As<ParseProviderDelegate>((ParseHelper<char>.ParseProviderDelegate)CharExtensions.Parse);
 
 #if NETCOREAPP3_0_OR_GREATER
 				if (typeof(T) == typeof(Rune))
-					return static (s, provider) => UnsafeExtensions.InAs<Rune, T>(RuneExtensions.Parse(s));
+                    return Unsafe.As<ParseProviderDelegate>((ParseHelper<Rune>.ParseProviderDelegate)RuneExtensions.Parse);
 #endif
 
 #if NET7_0_OR_GREATER
@@ -141,11 +142,11 @@ internal static class ParseHelper<T>
             static () =>
             {
                 if (typeof(T) == typeof(char))
-                    return static (s, provider) => UnsafeExtensions.InAs<char, T>(CharExtensions.Parse(s));
+                    return Unsafe.As<ParseSpanProviderDelegate>((ParseHelper<char>.ParseSpanProviderDelegate)CharExtensions.Parse);
 
 #if NETCOREAPP3_0_OR_GREATER
                 if (typeof(T) == typeof(Rune))
-                    return static (s, provider) => UnsafeExtensions.InAs<Rune, T>(RuneExtensions.Parse(s));
+                    return Unsafe.As<ParseSpanProviderDelegate>((ParseHelper<Rune>.ParseSpanProviderDelegate)RuneExtensions.Parse);
 #endif
 
 #if NET7_0_OR_GREATER
@@ -184,17 +185,11 @@ internal static class ParseHelper<T>
             static () =>
             {
                 if (typeof(T) == typeof(char))
-                {
-                    return static ([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) =>
-                        char.TryParse(s, out UnsafeExtensions.OutAs<T, char>(out result));
-                }
+                    return Unsafe.As<TryParseProviderDelegate>((ParseHelper<char>.TryParseProviderDelegate)CharExtensions.TryParse);
 
 #if NETCOREAPP3_0_OR_GREATER
 				if (typeof(T) == typeof(Rune))
-				{
-					return static ([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) =>
-						RuneExtensions.TryParse(s, out UnsafeExtensions.OutAs<T, Rune>(out result));
-				}
+                    return Unsafe.As<TryParseProviderDelegate>((ParseHelper<Rune>.TryParseProviderDelegate)RuneExtensions.TryParse);
 #endif
 
 #if NET7_0_OR_GREATER
@@ -235,17 +230,11 @@ internal static class ParseHelper<T>
             static () =>
             {
                 if (typeof(T) == typeof(char))
-                {
-                    return static (ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) =>
-                        CharExtensions.TryParse(s, out UnsafeExtensions.OutAs<T, char>(out result));
-                }
+                    return Unsafe.As<TryParseSpanProviderDelegate>((ParseHelper<char>.TryParseSpanProviderDelegate)CharExtensions.TryParse);
 
 #if NETCOREAPP3_0_OR_GREATER
                 if (typeof(T) == typeof(Rune))
-                {
-                    return static (ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out T result) =>
-						RuneExtensions.TryParse(s, out UnsafeExtensions.OutAs<T, Rune>(out result));
-                }
+                    return Unsafe.As<TryParseSpanProviderDelegate>((ParseHelper<Rune>.TryParseSpanProviderDelegate)RuneExtensions.TryParse);
 #endif
 
 #if NET7_0_OR_GREATER
