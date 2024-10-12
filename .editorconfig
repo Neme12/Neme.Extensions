@@ -40,6 +40,8 @@ dotnet_diagnostic.RS0026.severity = none
 # CA1805: Do not initialize unnecessarily
 dotnet_diagnostic.CA1805.severity = none
 
+dotnet_diagnostic.CA1046.severity = none
+
 [*.{cs,vb}]
 #### Naming styles ####
 
