@@ -103,7 +103,7 @@ internal static class ParseHelper<T>
                     return Unsafe.As<ParseProviderDelegate>((ParseHelper<char>.ParseProviderDelegate)CharExtensions.Parse);
 
 #if NETCOREAPP3_0_OR_GREATER
-				if (typeof(T) == typeof(Rune))
+                if (typeof(T) == typeof(Rune))
                     return Unsafe.As<ParseProviderDelegate>((ParseHelper<Rune>.ParseProviderDelegate)RuneExtensions.Parse);
 #endif
 
@@ -186,9 +186,9 @@ internal static class ParseHelper<T>
             {
                 if (typeof(T) == typeof(char))
                     return Unsafe.As<TryParseProviderDelegate>((ParseHelper<char>.TryParseProviderDelegate)CharExtensions.TryParse);
-
+                
 #if NETCOREAPP3_0_OR_GREATER
-				if (typeof(T) == typeof(Rune))
+                if (typeof(T) == typeof(Rune))
                     return Unsafe.As<TryParseProviderDelegate>((ParseHelper<Rune>.TryParseProviderDelegate)RuneExtensions.TryParse);
 #endif
 
@@ -287,8 +287,9 @@ internal static class ParseHelper<T>
         if (typeof(T).GetMember(
             "NaN",
             MemberTypes.Field | MemberTypes.Property,
-            BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly | BindingFlags.ExactBinding)
-            is [var member] && FieldOrPropertyInfo.Get(member) is { IsReadOnly: true } fieldOrProperty && fieldOrProperty.Type == typeof(T))
+            BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly | BindingFlags.ExactBinding) is [var member] &&
+            member.ToFieldOrPropertyInfo() is { CanRead: true, IsReadOnly: true, HasParameters: false } fieldOrProperty &&
+            fieldOrProperty.Type == typeof(T))
         {
             return NumberStyles.Float | NumberStyles.AllowThousands;
         }
