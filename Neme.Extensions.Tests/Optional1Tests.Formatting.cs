@@ -383,8 +383,11 @@ public sealed partial class Optional1Tests
         AssertParses<CustomParsable.Provider>(new(new(ParseImplementationMethodKind.Provider, "foo")), "Some { foo }", null);
         AssertParses<CustomParsable.NumberStylesProvider>(new(new(ParseImplementationMethodKind.NumberStylesProvider, "foo")), "Some { foo }", null);
         AssertParses<CustomParsable.Plain>(new(new(ParseImplementationMethodKind.Plain, "foo")), "Some { foo }", null);
-
         AssertNoParseMethod<CustomParsable.None>("Some { foo }", null);
+
+#if NET7_0_OR_GREATER
+        AssertNoParseMethod<CustomParsable.InterfaceWrong>("Some { foo }", null);
+#endif
     }
 
     [Fact]
@@ -683,6 +686,23 @@ public sealed partial class Optional1Tests
         public sealed record None
         {
         }
+
+#if NET7_0_OR_GREATER
+        public sealed record InterfaceWrong : ISpanParsable<int>
+        {
+            static int IParsable<int>.Parse(string s, IFormatProvider? provider) =>
+                throw new NotImplementedException();
+
+            static int ISpanParsable<int>.Parse(ReadOnlySpan<char> s, IFormatProvider? provider) =>
+                throw new NotImplementedException();
+
+            static bool IParsable<int>.TryParse(string? s, IFormatProvider? provider, out int result) =>
+                throw new NotImplementedException();
+
+            static bool ISpanParsable<int>.TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out int result) =>
+                throw new NotImplementedException();
+        }
+#endif
     }
 
     private static class CustomParsableNumberStyles
