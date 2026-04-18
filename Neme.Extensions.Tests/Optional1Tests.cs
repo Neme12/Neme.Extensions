@@ -51,6 +51,7 @@ public sealed partial class Optional1Tests
         Assert.Equal(42, value);
     }
 
+#if !NET10_0_OR_GREATER
     [Fact]
     public void Serialization()
     {
@@ -120,6 +121,7 @@ public sealed partial class Optional1Tests
 #pragma warning restore CA2300 // Do not use insecure deserializer BinaryFormatter
 #pragma warning restore SYSLIB0011 // Type or member is obsolete
     }
+#endif
 
 #if NETCOREAPP2_0_OR_GREATER || NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER
     [Fact]
