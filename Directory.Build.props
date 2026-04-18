@@ -3,6 +3,7 @@
   <PropertyGroup>
     <LibraryTargetFrameworks>net10.0;net8.0;net6.0;netstandard2.1;netstandard2.0;net48</LibraryTargetFrameworks>
     <TestTargetFrameworks>net10.0;net8.0;net6.0;net48</TestTargetFrameworks>
+	<SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
@@ -11,12 +12,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(IsTestProject)' == 'false'">
     <AnalysisLevel>10</AnalysisLevel>
     <AnalysisMode>All</AnalysisMode>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+	<AnalysisLevel>10</AnalysisLevel>
+	<AnalysisMode>None</AnalysisMode>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 

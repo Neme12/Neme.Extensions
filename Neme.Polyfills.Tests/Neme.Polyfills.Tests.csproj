@@ -1,12 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(LibraryTargetFrameworks)</TargetFrameworks>
+    <TargetFrameworks>$(TestTargetFrameworks)</TargetFrameworks>  
+    <IsTestProject>true</IsTestProject>
   </PropertyGroup>
-
-  <ItemGroup>
-    <InternalsVisibleTo Include="Neme.Extensions.Tests" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Neme.Polyfills\Neme.Polyfills.csproj" />

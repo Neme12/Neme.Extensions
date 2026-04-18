@@ -2,14 +2,15 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(LibraryTargetFrameworks)</TargetFrameworks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Neme.Extensions.Tests" />
+    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Neme.Polyfills\Neme.Polyfills.csproj" />
+    <ProjectReference Include="..\Neme.Extensions\Neme.Extensions.csproj" />
   </ItemGroup>
 
 </Project>

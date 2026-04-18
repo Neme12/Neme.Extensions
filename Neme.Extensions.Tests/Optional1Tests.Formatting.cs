@@ -688,7 +688,9 @@ public sealed partial class Optional1Tests
         }
 
 #if NET7_0_OR_GREATER
+#pragma warning disable CA2260 // Use correct type parameter
         public sealed record InterfaceWrong : ISpanParsable<int>
+#pragma warning restore CA2260 // Use correct type parameter
         {
             static int IParsable<int>.Parse(string s, IFormatProvider? provider) =>
                 throw new NotImplementedException();
