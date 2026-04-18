@@ -226,8 +226,6 @@ public sealed partial class Optional1Tests
     [Fact]
     public void Parse_InvalidStrings()
     {
-        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
-
         AssertDoesNotParse<int>("", null, null);
         AssertDoesNotParse<int>("42", null, null);
         AssertDoesNotParse<int>("{ }", null, null);
@@ -241,8 +239,6 @@ public sealed partial class Optional1Tests
     [Fact]
     public void Parse_BultInTypesNumberStyles()
     {
-        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
-
         TestIsInteger<ushort>(null);
         TestIsInteger<short>(-1);
         TestIsInteger<uint>(null);
