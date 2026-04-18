@@ -22,7 +22,7 @@ internal abstract class FieldOrPropertyInfo : MemberInfo
         {
             return (MemberInfo)this switch
             {
-                FieldInfo field => field.FieldType,
+                FieldInfo field => @field.FieldType,
                 PropertyInfo property => property.PropertyType,
                 _ => throw new InvalidOperationException(),
             };
@@ -40,7 +40,7 @@ internal abstract class FieldOrPropertyInfo : MemberInfo
     public bool CanWrite =>
         (MemberInfo)this switch
         {
-            FieldInfo field => !field.IsLiteral,
+            FieldInfo field => !@field.IsLiteral,
             PropertyInfo property => property.CanWrite,
             _ => throw new InvalidOperationException(),
         };
@@ -51,7 +51,7 @@ internal abstract class FieldOrPropertyInfo : MemberInfo
     public bool IsReadOnly =>
         (MemberInfo)this switch
         {
-            FieldInfo field => field.IsLiteral || field.IsInitOnly,
+            FieldInfo field => @field.IsLiteral || @field.IsInitOnly,
             PropertyInfo property => !property.CanWrite,
             _ => throw new InvalidOperationException(),
         };

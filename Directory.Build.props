@@ -1,18 +1,18 @@
 <Project>
 
   <PropertyGroup>
-    <LibraryTargetFrameworks>net8.0;net7.0;net6.0;netstandard2.1;netstandard2.0;net48</LibraryTargetFrameworks>
-    <TestTargetFrameworks>net8.0;net7.0;net6.0;net48</TestTargetFrameworks>
+    <LibraryTargetFrameworks>net10.0;net8.0;net6.0;netstandard2.1;netstandard2.0;net48</LibraryTargetFrameworks>
+    <TestTargetFrameworks>net10.0;net8.0;net6.0;net48</TestTargetFrameworks>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
-    <LangVersion>12</LangVersion>
+    <LangVersion>14</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <PropertyGroup>
-    <AnalysisLevel>8</AnalysisLevel>
+    <AnalysisLevel>10</AnalysisLevel>
     <AnalysisMode>All</AnalysisMode>
   </PropertyGroup>
 
@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Collections.Immutable" Version="8.0.0" />
+    <PackageReference Include="System.Collections.Immutable" Version="10.0.6" />
 	<PackageReference Include="PolyKit.Embedded" Version="3.0.9">
 		<PrivateAssets>all</PrivateAssets>
 		<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
