@@ -4,4 +4,8 @@
     <TargetFrameworks>$(LibraryTargetFrameworks)</TargetFrameworks>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Neme.Extensions.Tests" />
+  </ItemGroup>
+
 </Project>
