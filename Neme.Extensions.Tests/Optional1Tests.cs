@@ -7,12 +7,14 @@ namespace Neme.Extensions.Tests;
 
 public sealed partial class Optional1Tests
 {
+#if !NET10_0_OR_GREATER
     private static readonly ConstructorInfo _serializationConstructor = typeof(Optional<int>)
         .GetConstructor(
             BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.ExactBinding | BindingFlags.DeclaredOnly,
             binder: null,
             [typeof(SerializationInfo), typeof(StreamingContext)],
             modifiers: null)!;
+#endif
 
     [Fact]
     public void DefaultHasNoValue()
