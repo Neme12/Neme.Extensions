@@ -26,7 +26,7 @@ jobs:
   - task: UseDotNet@2
     inputs:
       packageType: 'sdk'
-      version: '10'
+      version: '10.0'
       includePreviewVersions: true
   - task: DotNetCoreCLI@2
     displayName: "dotnet build"
@@ -45,7 +45,7 @@ jobs:
   - task: UseDotNet@2
     inputs:
       packageType: 'sdk'
-      version: '10'
+      version: '10.0'
       includePreviewVersions: true
   - task: DotNetCoreCLI@2
     displayName: "dotnet pack"
