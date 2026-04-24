@@ -41,9 +41,35 @@ jobs:
     inputs:
       command: 'build'
   - task: DotNetCoreCLI@2
-    displayName: "dotnet test"
+    displayName: "dotnet test net10.0"
     inputs:
       command: 'test'
+      arguments: '--framework net10.0 --no-build'
+      projects: |
+        **/*Tests.csproj
+      publishTestResults: true
+  - task: DotNetCoreCLI@2
+    displayName: "dotnet test net8.0"
+    inputs:
+      command: 'test'
+      arguments: '--framework net8.0 --no-build'
+      projects: |
+        **/*Tests.csproj
+      publishTestResults: true
+  - task: DotNetCoreCLI@2
+    displayName: "dotnet test net6.0"
+    inputs:
+      command: 'test'
+      arguments: '--framework net6.0 --no-build'
+      projects: |
+        **/*Tests.csproj
+      publishTestResults: true
+  - task: DotNetCoreCLI@2
+    displayName: "dotnet test net48"
+    condition: eq( variables['Agent.OS'], 'Windows_NT' )
+    inputs:
+      command: 'test'
+      arguments: '--framework net48 --no-build'
       projects: |
         **/*Tests.csproj
       publishTestResults: true
