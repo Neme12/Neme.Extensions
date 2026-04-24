@@ -1,4 +1,4 @@
-﻿namespace Neme.Extensions.Utilities;
+﻿namespace Neme.Extensions.Ownership;
 
 public static class OwnedOrBorrowed
 {

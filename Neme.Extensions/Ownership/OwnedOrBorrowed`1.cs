@@ -1,5 +1,4 @@
-﻿
-namespace Neme.Extensions.Utilities;
+﻿namespace Neme.Extensions.Ownership;
 
 public struct OwnedOrBorrowed<T>(T value, bool ownsValue = true) : IDisposable
     where T : IDisposable

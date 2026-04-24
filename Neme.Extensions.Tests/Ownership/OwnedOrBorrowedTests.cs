@@ -1,8 +1,6 @@
 using Moq;
-using Neme.Extensions.Utilities;
-using Xunit;
 
-namespace Neme.Extensions.Utilities.Tests;
+namespace Neme.Extensions.Ownership.Tests;
 
 public sealed class OwnedOrBorrowedTests
 {
