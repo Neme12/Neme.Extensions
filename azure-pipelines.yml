@@ -23,6 +23,11 @@ jobs:
   pool:
     vmImage: $(imageName)
   steps:
+  - task: UseDotNet@2
+    inputs:
+      packageType: 'sdk'
+      version: '10.0.x'
+      includePreviewVersions: true
   - task: DotNetCoreCLI@2
     displayName: "dotnet build"
     inputs:
@@ -37,6 +42,11 @@ jobs:
   pool:
     vmImage: "ubuntu-latest"
   steps:
+  - task: UseDotNet@2
+    inputs:
+      packageType: 'sdk'
+      version: '10.0.x'
+      includePreviewVersions: true
   - task: DotNetCoreCLI@2
     displayName: "dotnet pack"
     inputs:
