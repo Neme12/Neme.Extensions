@@ -36,6 +36,9 @@ jobs:
     displayName: "dotnet test"
     inputs:
       command: 'test'
+      projects: |
+        **/*Tests.csproj
+      publishTestResults: true
 - job: Package
   displayName: Package
   dependsOn: BuildAndTest
