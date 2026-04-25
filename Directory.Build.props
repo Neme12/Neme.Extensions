@@ -24,7 +24,7 @@
 	<VSTestUseVsixExtensions>false</VSTestUseVsixExtensions>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(IsTestProject)' != 'true'">
     <PackageReference Include="System.Collections.Immutable" Version="10.0.6" />
 	<PackageReference Include="PolyKit.Embedded" Version="3.0.9">
 		<PrivateAssets>all</PrivateAssets>
