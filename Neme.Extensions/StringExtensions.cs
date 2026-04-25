@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Neme.Extensions;
 
-internal static class StringExtensions
+public static class StringExtensions
 {
     extension(string @string)
     {

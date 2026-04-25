@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace Neme.Extensions;
@@ -16,7 +17,7 @@ public static class ObjectExtensions
         }
     }
 
-    extension<T>(T? obj)
+    extension<T>([NotNull] T? obj)
     {
         public T NotNull()
         {
