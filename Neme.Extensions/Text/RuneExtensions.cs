@@ -6,7 +6,7 @@ using System.Text;
 namespace Neme.Extensions.Text;
 
 #if NETCOREAPP3_0_OR_GREATER
-internal static class RuneExtensions
+public static class RuneExtensions
 {
     public static Rune Parse(string s)
     {

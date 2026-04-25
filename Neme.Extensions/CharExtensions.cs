@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Neme.Extensions;
 
-internal static class CharExtensions
+public static class CharExtensions
 {
     public static char Parse(string s) =>
         char.Parse(s);

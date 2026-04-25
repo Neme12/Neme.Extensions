@@ -1,7 +1,7 @@
 ﻿namespace Neme.Extensions.InteropServices;
 
 #pragma warning disable CA1028 // Enum Storage should be Int32
-internal enum Facility : ushort
+public enum Facility : ushort
 #pragma warning restore CA1028 // Enum Storage should be Int32
 {
     // Values from https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/0642cb2f-2075-4469-918c-4441e69c548a

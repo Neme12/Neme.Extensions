@@ -1,6 +1,6 @@
 ﻿namespace Neme.Extensions.IO;
 
-internal static class FileStreamExtensions
+public static class FileStreamExtensions
 {
     public const int DefaultBufferSize = 4096;
 

@@ -2,7 +2,7 @@
 
 namespace Neme.Extensions.Reflection;
 
-internal static class ParameterInfoExtensions
+public static class ParameterInfoExtensions
 {
     public static Optional<object?> GetDefaultValue(this ParameterInfo parameter)
     {

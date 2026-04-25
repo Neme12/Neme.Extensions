@@ -9,7 +9,7 @@ using static Neme.Extensions.Utilities.FormatHelper;
 namespace Neme.Extensions.InteropServices;
 
 [DebuggerDisplay("{ToString(\"Xf\", null), nq}")]
-internal readonly partial struct HResult : IEquatable<HResult>, IFormattable, IConvertible
+public readonly partial struct HResult : IEquatable<HResult>, IFormattable, IConvertible
 #if NET6_0_OR_GREATER
     , ISpanFormattable
 #endif

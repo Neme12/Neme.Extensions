@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace Neme.Extensions.InteropServices;
 
-internal readonly partial struct HResult
+public readonly partial struct HResult
 {
     private static readonly FrozenDictionary<int, (string name, string? description)> _constants =
         typeof(HResult)

@@ -2,7 +2,7 @@
 
 namespace Neme.Extensions.Collections;
 
-internal static class EqualityComparerExtensions<T>
+public static class EqualityComparerExtensions<T>
 {
     public static EqualityComparer<T> CreateBy<TResult>(Func<T, TResult> selector, IEqualityComparer<TResult>? resultComparer = null)
     {

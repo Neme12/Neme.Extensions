@@ -3,7 +3,7 @@
 namespace Neme.Extensions.InteropServices;
 
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter, Inherited = false)]
-internal abstract class HResultConstantAttributeBase : CustomConstantAttribute
+public abstract class HResultConstantAttributeBase : CustomConstantAttribute
 {
     private protected readonly HResult _value;
 
@@ -16,7 +16,7 @@ internal abstract class HResultConstantAttributeBase : CustomConstantAttribute
 }
 
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter, Inherited = false)]
-internal sealed class HResultConstantAttribute : HResultConstantAttributeBase
+public sealed class HResultConstantAttribute : HResultConstantAttributeBase
 {
 #pragma warning disable CA1019 // Define accessors for attribute arguments
     public HResultConstantAttribute(uint value)

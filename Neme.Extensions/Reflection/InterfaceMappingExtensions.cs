@@ -2,7 +2,7 @@
 
 namespace Neme.Extensions.Reflection;
 
-internal static class InterfaceMappingExtensions
+public static class InterfaceMappingExtensions
 {
     public static MethodInfo GetImplementationMethod(this InterfaceMapping interfaceMapping, MethodInfo interfaceMethod)
     {

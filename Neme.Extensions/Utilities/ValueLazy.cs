@@ -3,7 +3,7 @@
 namespace Neme.Extensions.Utilities;
 
 [StructLayout(LayoutKind.Auto)]
-internal struct ValueLazy<T>
+public struct ValueLazy<T>
 {
     private T _value;
     private bool _initialized;

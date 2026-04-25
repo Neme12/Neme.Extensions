@@ -1,6 +1,6 @@
 ﻿namespace Neme.Extensions.Collections;
 
-internal static class ComparerExtensions<T>
+public static class ComparerExtensions<T>
 {
     public static Comparer<T> CreateBy<TResult>(Func<T, TResult> selector, IComparer<TResult>? resultComparer = null)
     {

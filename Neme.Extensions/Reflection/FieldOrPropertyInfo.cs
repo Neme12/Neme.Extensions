@@ -8,7 +8,7 @@ namespace Neme.Extensions.Reflection;
 
 #pragma warning disable CS0660 // Type defines operator == or operator != but does not override Object.Equals(object o)
 #pragma warning disable CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
-internal abstract class FieldOrPropertyInfo : MemberInfo
+public abstract class FieldOrPropertyInfo : MemberInfo
 #pragma warning restore CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
 #pragma warning restore CS0660 // Type defines operator == or operator != but does not override Object.Equals(object o)
 {

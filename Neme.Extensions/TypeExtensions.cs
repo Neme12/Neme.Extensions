@@ -2,7 +2,7 @@
 
 namespace Neme.Extensions;
 
-internal static class TypeExtensions
+public static class TypeExtensions
 {
     public static MethodInfo? GetMethod<TDelegate>(this Type type, string name, BindingFlags bindingAttr)
         where TDelegate : Delegate

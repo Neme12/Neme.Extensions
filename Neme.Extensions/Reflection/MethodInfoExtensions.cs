@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Neme.Extensions.Reflection;
 
-internal static class MethodInfoExtensions
+public static class MethodInfoExtensions
 {
     private static readonly EqualityComparer<ParameterInfo> _parameterEqualityComparer =
         EqualityComparerExtensions<ParameterInfo>.CreateBy(static p => (p.ParameterType, p.IsOut, p.IsIn));
