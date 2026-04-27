@@ -1,5 +1,5 @@
 ﻿using Microsoft.Win32.SafeHandles;
-using System.ComponentModel;
+using Neme.Extensions.Utilities;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -35,7 +35,7 @@ public static class FileIO
         fileInfo.Anonymous.ReplaceIfExists = overwrite;
 
         if (!PInvoke.SetFileInformationByHandle(sourceFile, FILE_INFO_BY_HANDLE_CLASS.FileRenameInfo, fileInfoBuffer))
-            ThrowWin32();
+            throw Win32Marshal.GetExceptionForLastWin32Error(destFileName);
     }
 
     [SupportedOSPlatform("windows6.0.6000")]
@@ -50,7 +50,7 @@ public static class FileIO
         fileInfo.DeleteFile = true;
 
         if (!PInvoke.SetFileInformationByHandle(file, FILE_INFO_BY_HANDLE_CLASS.FileDispositionInfo, fileInfoBuffer))
-            ThrowWin32();
+            throw Win32Marshal.GetExceptionForLastWin32Error();
     }
 
     [SupportedOSPlatform("windows6.0.6000")]
@@ -66,7 +66,7 @@ public static class FileIO
         fileInfo.FileAttributes = (uint)attributes;
 
         if (!PInvoke.SetFileInformationByHandle(file, FILE_INFO_BY_HANDLE_CLASS.FileBasicInfo, fileInfoBuffer))
-            ThrowWin32();
+            throw Win32Marshal.GetExceptionForLastWin32Error();
     }
 
     private static unsafe ref T AllocateFileInfo<T>(Span<byte> buffer, out Span<byte> fileInfoBuffer) where T : unmanaged
@@ -126,7 +126,7 @@ public static class FileIO
             options.TemplateFile);
 
         if (handle.IsInvalid)
-            ThrowWin32();
+            throw Win32Marshal.GetExceptionForLastWin32Error(path);
 
         return handle;
     }
@@ -168,11 +168,5 @@ public static class FileIO
 
         if (path.Length > MaxWindowsPathLength)
             throw new ArgumentException($"Path cannot exceed {MaxWindowsPathLength} characters.", paramName);
-    }
-
-    private static void ThrowWin32()
-    {
-        var win32Exception = new Win32Exception();
-        throw new IOException(win32Exception.Message, win32Exception);
     }
 }
