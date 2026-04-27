@@ -1,6 +1,7 @@
-﻿using System.Runtime.CompilerServices;
+﻿using Neme.Extensions.Win32.InteropServices;
+using System.Runtime.CompilerServices;
 
-namespace Neme.Extensions.InteropServices;
+namespace Neme.Extensions.Win32.CompilerServices;
 
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter, Inherited = false)]
 public abstract class HResultConstantAttributeBase : CustomConstantAttribute

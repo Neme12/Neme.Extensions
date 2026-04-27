@@ -1,9 +1,9 @@
-﻿using System.Collections.Frozen;
+﻿using Neme.Extensions.Win32.CompilerServices;
+using System.Collections.Frozen;
 using System.ComponentModel;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
-namespace Neme.Extensions.InteropServices;
+namespace Neme.Extensions.Win32.InteropServices;
 
 public readonly partial struct HResult
 {

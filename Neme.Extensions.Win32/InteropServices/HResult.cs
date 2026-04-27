@@ -1,12 +1,8 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Numerics;
-using System.Runtime.CompilerServices;
-using static Neme.Extensions.Utilities.FormatHelper;
 
-namespace Neme.Extensions.InteropServices;
+namespace Neme.Extensions.Win32.InteropServices;
 
 [DebuggerDisplay("{ToString(\"Xf\", null), nq}")]
 public readonly partial struct HResult : IEquatable<HResult>, IFormattable, IConvertible
@@ -210,9 +206,9 @@ public readonly partial struct HResult : IEquatable<HResult>, IFormattable, ICon
         {
             NumberFormat.Signed => unchecked((int)_value).ToString("d", provider),
             NumberFormat.Unsigned => _value.ToString("d", provider),
-            NumberFormat.Binary => Format(provider, $"0b{_value:b32}"),
-            NumberFormat.HexadecimalLower => Format(provider, $"0x{_value:x8}"),
-            NumberFormat.HexadecimalUpper => Format(provider, $"0x{_value:X8}"),
+            NumberFormat.Binary => string.Create(provider, $"0b{_value:b32}"),
+            NumberFormat.HexadecimalLower => string.Create(provider, $"0x{_value:x8}"),
+            NumberFormat.HexadecimalUpper => string.Create(provider, $"0x{_value:X8}"),
             _ => throw null!,
         };
 

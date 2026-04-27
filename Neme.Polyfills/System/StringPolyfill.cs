@@ -18,24 +18,27 @@ public static class StringPolyfill
 #endif
     }
 
-    /// <summary>Creates a new string by using the specified provider to control the formatting of the specified interpolated string.</summary>
-    /// <param name="provider">An object that supplies culture-specific formatting information.</param>
-    /// <param name="handler">The interpolated string.</param>
-    /// <returns>The string that results for formatting the interpolated string using the specified format provider.</returns>
+    extension(string)
+    {
+        /// <summary>Creates a new string by using the specified provider to control the formatting of the specified interpolated string.</summary>
+        /// <param name="provider">An object that supplies culture-specific formatting information.</param>
+        /// <param name="handler">The interpolated string.</param>
+        /// <returns>The string that results for formatting the interpolated string using the specified format provider.</returns>
 #pragma warning disable IDE0060 // Remove unused parameter
-    public static string Create(IFormatProvider? provider, [InterpolatedStringHandlerArgument(nameof(provider))] ref DefaultInterpolatedStringHandler handler) =>
-        handler.ToStringAndClear();
+        public static string Create(IFormatProvider? provider, [InterpolatedStringHandlerArgument(nameof(provider))] ref DefaultInterpolatedStringHandler handler) =>
+            handler.ToStringAndClear();
 #pragma warning restore IDE0060 // Remove unused parameter
 
-    /// <summary>Creates a new string by using the specified provider to control the formatting of the specified interpolated string.</summary>
-    /// <param name="provider">An object that supplies culture-specific formatting information.</param>
-    /// <param name="initialBuffer">The initial buffer that may be used as temporary space as part of the formatting operation. The contents of this buffer may be overwritten.</param>
-    /// <param name="handler">The interpolated string.</param>
-    /// <returns>The string that results for formatting the interpolated string using the specified format provider.</returns>
+        /// <summary>Creates a new string by using the specified provider to control the formatting of the specified interpolated string.</summary>
+        /// <param name="provider">An object that supplies culture-specific formatting information.</param>
+        /// <param name="initialBuffer">The initial buffer that may be used as temporary space as part of the formatting operation. The contents of this buffer may be overwritten.</param>
+        /// <param name="handler">The interpolated string.</param>
+        /// <returns>The string that results for formatting the interpolated string using the specified format provider.</returns>
 #pragma warning disable IDE0060 // Remove unused parameter
-    public static string Create(IFormatProvider? provider, Span<char> initialBuffer, [InterpolatedStringHandlerArgument(nameof(provider), nameof(initialBuffer))] ref DefaultInterpolatedStringHandler handler) =>
-        handler.ToStringAndClear();
+        public static string Create(IFormatProvider? provider, Span<char> initialBuffer, [InterpolatedStringHandlerArgument(nameof(provider), nameof(initialBuffer))] ref DefaultInterpolatedStringHandler handler) =>
+            handler.ToStringAndClear();
 #pragma warning restore IDE0060 // Remove unused parameter
+    }
 
     /// <summary>Copies the contents of this string into the destination span.</summary>
     /// <param name="destination">The span into which to copy this string's contents.</param>

@@ -1,4 +1,4 @@
-﻿namespace Neme.Extensions.InteropServices;
+﻿namespace Neme.Extensions.Win32.InteropServices;
 
 #pragma warning disable CA1028 // Enum Storage should be Int32
 public enum Facility : ushort
