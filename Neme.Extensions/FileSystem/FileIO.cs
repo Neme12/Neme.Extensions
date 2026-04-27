@@ -13,9 +13,8 @@ public static class FileIO
     private const int MaxWindowsFileNameLength = 255;
     private const int MaxWindowsPathLength = short.MaxValue - 4; // 4 for the \\?\ prefix.
 
-#if NETCOREAPP3_0_OR_GREATER
     [SupportedOSPlatform("windows6.0.6000")]
-    public static void Move(SafeFileHandle sourceFile, string destFileName, bool overwrite = false)
+    public static unsafe void Move(SafeFileHandle sourceFile, string destFileName, bool overwrite = false)
     {
         ValidateFileHandle(sourceFile);
         ValidateFileName(destFileName);
@@ -29,8 +28,16 @@ public static class FileIO
 
         fileInfo.FileNameLength = (uint)(destFileName.Length * sizeof(char));
 
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
         var fileNameBuffer = MemoryMarshal.CreateSpan(ref fileInfo.FileName.e0, destFileName.Length);
         destFileName.CopyTo(fileNameBuffer);
+#else
+        fixed (char* fileNamePtr = &fileInfo.FileName.e0)
+        {
+            var fileNameBuffer = new Span<char>(fileNamePtr, destFileName.Length);
+            destFileName.CopyTo(fileNameBuffer);
+        }
+#endif
 
         fileInfo.Anonymous.ReplaceIfExists = overwrite;
 
@@ -75,9 +82,13 @@ public static class FileIO
             throw new ArgumentException($"Buffer must be at least {sizeof(T)} bytes long.", nameof(buffer));
 
         fileInfoBuffer = buffer;
+
+#if NETCOREAPP3_0_OR_GREATER
         return ref MemoryMarshal.AsRef<T>(buffer);
-    }
+#else
+        return ref Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(buffer));
 #endif
+    }
 
     [SupportedOSPlatform("windows5.1.2600")]
     public static SafeFileHandle Open(string path, FsFileOptions options)
@@ -152,7 +163,6 @@ public static class FileIO
             throw new ArgumentException("File handle must be valid and open.", paramName);
     }
 
-#if NETCOREAPP3_0_OR_GREATER
     private static void ValidateFileName(string fileName, [CallerArgumentExpression(nameof(fileName))] string? paramName = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(fileName, paramName);
@@ -160,7 +170,6 @@ public static class FileIO
         if (fileName.Length > MaxWindowsFileNameLength)
             throw new ArgumentException($"File name cannot exceed {MaxWindowsFileNameLength} characters.", paramName);
     }
-#endif
 
     private static void ValidatePath(string path, [CallerArgumentExpression(nameof(path))] string? paramName = null)
     {
