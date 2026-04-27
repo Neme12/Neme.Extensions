@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+  </Folder>
+  <Project Path="Neme.Extensions.Tests/Neme.Extensions.Tests.csproj" />
+  <Project Path="Neme.Extensions.Win32/Neme.Extensions.Win32.csproj" />
+  <Project Path="Neme.Extensions/Neme.Extensions.csproj" />
+  <Project Path="Neme.Polyfills.Tests/Neme.Polyfills.Tests.csproj" />
+  <Project Path="Neme.Polyfills/Neme.Polyfills.csproj" />
+</Solution>
