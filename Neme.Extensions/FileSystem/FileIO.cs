@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Windows.Win32;
+using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
 
 namespace Neme.Extensions.FileSystem;
@@ -95,20 +96,6 @@ public static class FileIO
     {
         ValidatePath(path);
 
-        FILE_ACCESS_RIGHTS desiredAccess = 0;
-
-        if ((options.Access & FsFileAccess.Read) != 0)
-            desiredAccess |= FILE_ACCESS_RIGHTS.FILE_GENERIC_READ;
-
-        if ((options.Access & FsFileAccess.Write) != 0)
-            desiredAccess |= FILE_ACCESS_RIGHTS.FILE_GENERIC_WRITE;
-
-        if ((options.Access & FsFileAccess.Delete) != 0)
-            desiredAccess |= FILE_ACCESS_RIGHTS.DELETE;
-
-        if ((options.Access & FsFileAccess.WriteAttributes) != 0)
-            desiredAccess |= FILE_ACCESS_RIGHTS.FILE_WRITE_ATTRIBUTES;
-
         // The values of FileShare map directly to FILE_SHARE_MODE.
         var shareMode = (FILE_SHARE_MODE)options.Share;
 
@@ -129,7 +116,7 @@ public static class FileIO
 
         var handle = PInvoke.CreateFile(
             path,
-            (uint)desiredAccess,
+            (uint)options.Access.ToWin32(),
             shareMode,
             null,
             creationDisposition,
@@ -140,6 +127,28 @@ public static class FileIO
             throw Win32Marshal.GetExceptionForLastWin32Error(path);
 
         return handle;
+    }
+
+    [SupportedOSPlatform("windows5.0")]
+    public static SafeFileHandle Duplicate(SafeFileHandle file, FsFileAccess? access)
+    {
+        ValidateFileHandle(file);
+
+        var currentProcess = new SafeProcessHandle((nint)(-1), ownsHandle: false); // Pseudo-handle for the current process
+
+        if (!PInvoke.DuplicateHandle(
+            currentProcess,
+            file,
+            currentProcess,
+            out var duplicatedHandle,
+            access is null ? 0u : (uint)access.Value.ToWin32(),
+            false,
+            access is null ? DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS : 0u))
+        {
+            throw Win32Marshal.GetExceptionForLastWin32Error();
+        }
+
+        return duplicatedHandle;
     }
 
     public static FileStream CreateFileStream(SafeFileHandle file, FsFileOptions options, int bufferSize = 4096)
