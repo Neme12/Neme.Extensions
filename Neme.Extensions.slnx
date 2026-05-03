@@ -3,6 +3,7 @@
     <File Path=".editorconfig" />
     <File Path="Directory.Build.props" />
   </Folder>
+  <Project Path="Neme.Extensions.AspNetCore/Neme.Extensions.AspNetCore.csproj" />
   <Project Path="Neme.Extensions.Tests/Neme.Extensions.Tests.csproj" />
   <Project Path="Neme.Extensions.Win32/Neme.Extensions.Win32.csproj" />
   <Project Path="Neme.Extensions/Neme.Extensions.csproj" />
