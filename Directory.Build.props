@@ -3,7 +3,7 @@
   <PropertyGroup>
     <LibraryTargetFrameworks>net10.0;net8.0;net6.0;netstandard2.1;netstandard2.0;net48</LibraryTargetFrameworks>
     <TestTargetFrameworks>net10.0;net8.0;net6.0;net48</TestTargetFrameworks>
-	<SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
@@ -18,18 +18,21 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
-	<AnalysisLevel>10</AnalysisLevel>
-	<AnalysisMode>None</AnalysisMode>
+    <AnalysisLevel>10</AnalysisLevel>
+    <AnalysisMode>None</AnalysisMode>
     <IsPackable>false</IsPackable>
-	<VSTestUseVsixExtensions>false</VSTestUseVsixExtensions>
+    <VSTestUseVsixExtensions>false</VSTestUseVsixExtensions>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(IsTestProject)' != 'true'">
-    <PackageReference Include="System.Collections.Immutable" Version="10.0.6" />
-	<PackageReference Include="PolyKit.Embedded" Version="3.0.9">
-		<PrivateAssets>all</PrivateAssets>
-		<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-	</PackageReference>
+    <PackageReference Include="PolyKit.Embedded" Version="3.0.9">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsTestProject)' != 'true' AND !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net10.0'))">
+	  <PackageReference Include="System.Collections.Immutable" Version="10.0.7" />
   </ItemGroup>
   
   <ItemGroup>
@@ -41,29 +44,29 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsTestProject)' == 'true' And '$(TargetFramework)' == 'net6.0'">
-	  <PackageReference Include="coverlet.collector" Version="10.0.0">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-	  </PackageReference>
-	  <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
-	  <PackageReference Include="xunit" Version="2.9.3" />
-	  <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-	  </PackageReference>
+      <PackageReference Include="coverlet.collector" Version="10.0.0">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+      <PackageReference Include="xunit" Version="2.9.3" />
+      <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
   </ItemGroup>
-	
+    
   <ItemGroup Condition="'$(IsTestProject)' == 'true' And '$(TargetFramework)' != 'net6.0'">
-	  <PackageReference Include="coverlet.collector" Version="10.0.0">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-	  </PackageReference>
-	  <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.4.0" />
-	  <PackageReference Include="xunit" Version="2.9.3" />
-	  <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-	  </PackageReference>
+      <PackageReference Include="coverlet.collector" Version="10.0.0">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.4.0" />
+      <PackageReference Include="xunit" Version="2.9.3" />
+      <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
   </ItemGroup>
   
 </Project>
