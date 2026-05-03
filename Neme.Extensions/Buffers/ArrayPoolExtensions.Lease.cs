@@ -2,7 +2,7 @@
 
 namespace Neme.Extensions.Buffers;
 
-internal static partial class ArrayPoolExtensions
+public static partial class ArrayPoolExtensions
 {
     public struct Lease<T> : IDisposable
     {

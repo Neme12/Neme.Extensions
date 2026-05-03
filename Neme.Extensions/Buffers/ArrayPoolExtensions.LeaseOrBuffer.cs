@@ -5,7 +5,7 @@ namespace Neme.Extensions.Buffers;
 
 #pragma warning disable CA2265 // Do not compare Span<T> to 'null' or 'default'
 
-internal static partial class ArrayPoolExtensions
+public static partial class ArrayPoolExtensions
 {
     public ref struct LeaseOrBuffer<T> : IDisposable
     {
