@@ -1,6 +1,7 @@
 SetFileInformationByHandle
 CreateFile
 DuplicateHandle
+GetFinalPathNameByHandle
 FILE_RENAME_INFO
 FILE_DISPOSITION_INFO
 FILE_BASIC_INFO

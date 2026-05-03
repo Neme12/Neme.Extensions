@@ -1,5 +1,8 @@
 ﻿using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.Buffers;
 using Neme.Extensions.Utilities;
+using System.Buffers;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -13,6 +16,35 @@ public static class FileIO
 {
     private const int MaxWindowsFileNameLength = 255;
     private const int MaxWindowsPathLength = short.MaxValue - 4; // 4 for the \\?\ prefix.
+
+    [SupportedOSPlatform("windows6.0.6000")]
+    public static string GetPath(SafeFileHandle file)
+    {
+        ValidateFileHandle(file);
+
+        using var bufferLease = ArrayPool<char>.Shared.RentLeaseOrStackalloc(
+            256, stackalloc char[256]);
+
+        uint charsWritten;
+
+        while (true)
+        {
+            charsWritten = PInvoke.GetFinalPathNameByHandle(file, bufferLease.Buffer, 0u);
+            if (charsWritten != bufferLease.Length)
+                break;
+
+            var exception = new Win32Exception();
+            if (exception.NativeErrorCode != (int)WIN32_ERROR.ERROR_NOT_ENOUGH_MEMORY)
+                throw exception;
+
+            bufferLease.RentMore();
+        }
+
+        const string prefix = @"\\?\";
+        return bufferLease.Buffer.StartsWith(prefix)
+            ? bufferLease.Buffer[prefix.Length..(int)charsWritten].ToString()
+            : bufferLease.Buffer[..(int)charsWritten].ToString();
+    }
 
     [SupportedOSPlatform("windows6.0.6000")]
     public static unsafe void Move(SafeFileHandle sourceFile, string destFileName, bool overwrite = false)
