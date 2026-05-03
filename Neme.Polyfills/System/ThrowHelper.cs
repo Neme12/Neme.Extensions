@@ -92,6 +92,36 @@ internal static class ThrowHelper
         throw new ArgumentOutOfRangeException(GetArgumentName(argument));
     }
 
+    [DoesNotReturn]
+    internal static void ThrowObjectDisposedException(object? instance)
+    {
+        throw new ObjectDisposedException(instance?.GetType().FullName);
+    }
+
+    [DoesNotReturn]
+    internal static void ThrowObjectDisposedException(Type? type)
+    {
+        throw new ObjectDisposedException(type?.FullName);
+    }
+
+    [DoesNotReturn]
+    internal static void ThrowObjectDisposedException_StreamClosed(string? objectName)
+    {
+        throw new ObjectDisposedException(objectName, SR.ObjectDisposed_StreamClosed);
+    }
+
+    [DoesNotReturn]
+    internal static void ThrowObjectDisposedException_FileClosed()
+    {
+        throw new ObjectDisposedException(null, SR.ObjectDisposed_FileClosed);
+    }
+
+    [DoesNotReturn]
+    internal static void ThrowObjectDisposedException(ExceptionResource resource)
+    {
+        throw new ObjectDisposedException(null, GetResourceString(resource));
+    }
+
     private static ArgumentException GetArgumentException(ExceptionResource resource)
     {
         return new ArgumentException(GetResourceString(resource));
