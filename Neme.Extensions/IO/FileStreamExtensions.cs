@@ -6,6 +6,7 @@ public static class FileStreamExtensions
 
     extension(FileStream fileStream)
     {
-        public static int DefaultBufferSize => 4096;
+        public static int DefaultBufferSize =>
+            DefaultBufferSize;
     }
 }
