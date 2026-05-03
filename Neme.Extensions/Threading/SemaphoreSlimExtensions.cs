@@ -20,6 +20,9 @@ public static class SemaphoreSlimExtensions
             _semaphore = semaphore;
         }
 
+        public readonly SemaphoreSlim Semaphore =>
+            _semaphore;
+
         public void Dispose()
         {
             if (_semaphore is not null)
