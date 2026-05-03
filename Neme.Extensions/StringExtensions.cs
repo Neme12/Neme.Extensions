@@ -5,6 +5,12 @@ namespace Neme.Extensions;
 
 public static class StringExtensions
 {
+    extension([NotNullWhen(false)] string? @string)
+    {
+        public bool IsNullOrEmpty() =>
+            string.IsNullOrEmpty(@string);
+    }
+
     extension(string @string)
     {
         public bool StartsWith(ReadOnlySpan<char> value, StringComparison comparisonType, [NotNullWhen(true)] out string? rest)
