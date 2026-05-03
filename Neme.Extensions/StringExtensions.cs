@@ -9,6 +9,9 @@ public static class StringExtensions
     {
         public bool IsNullOrEmpty() =>
             string.IsNullOrEmpty(@string);
+
+        public bool IsNullOrWhiteSpace() =>
+            string.IsNullOrWhiteSpace(@string);
     }
 
     extension(string @string)
