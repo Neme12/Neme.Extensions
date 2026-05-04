@@ -95,11 +95,8 @@ jobs:
     inputs:
       command: 'pack'
       packagesToPack: '**/*.csproj'
-      arguments: '--no-build'
-      versioningScheme: 'byPrereleaseNumber'
-      majorVersion: '1'
-      minorVersion: '0'
-      patchVersion: '0'
+      arguments: '--no-build /p:VersionPrefix=1.0.0 /p:VersionSuffix=$(Build.BuildNumber)'
+      versioningScheme: 'off'
   - task: DotNetCoreCLI@2
     displayName: "dotnet nuget push"
     inputs:
@@ -124,11 +121,8 @@ jobs:
       command: 'pack'
       packagesToPack: '**/*.csproj'
       configuration: 'Debug'
-      arguments: '/p:Version=$(Version)-debug'
-      versioningScheme: 'byPrereleaseNumber'
-      majorVersion: '1'
-      minorVersion: '0'
-      patchVersion: '0'
+      arguments: '/p:VersionPrefix=1.0.0 /p:VersionSuffix=$(Build.BuildNumber)-Debug'
+      versioningScheme: 'off'
   - task: DotNetCoreCLI@2
     displayName: "dotnet nuget push"
     inputs:
