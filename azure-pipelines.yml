@@ -12,6 +12,8 @@ trigger:
     include:
       - master
 
+name: $(Date:yyyyMMdd).$(Rev:r)
+
 variables:
   buildConfiguration: 'Release'
 
