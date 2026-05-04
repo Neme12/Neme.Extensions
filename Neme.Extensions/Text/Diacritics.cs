@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Reflexy.Utilities;
+namespace Neme.Extensions.Text;
 
 public static class Diacritics
 {
