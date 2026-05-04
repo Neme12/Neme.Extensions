@@ -21,12 +21,12 @@ jobs:
   displayName: "Build and test"
   strategy:
     matrix:
-      windows:
-        imageName: "windows-latest"
+      # windows:
+      #   imageName: "windows-latest"
       linux:
         imageName: "ubuntu-latest"
-      macOS:
-        imageName: "macOS-latest"
+      # macOS:
+      #   imageName: "macOS-latest"
   pool:
     vmImage: $(imageName)
   steps:
@@ -88,6 +88,10 @@ jobs:
   steps:
   - script: echo "BuildNumber='$(Build.BuildNumber)' BuildId='$(Build.BuildId)'"
   - script: echo "buildSuffix='$(buildSuffix)' buildSuffix2='$buildSuffix"
+  - script: |
+      echo "BUILD_BUILDNUMBER=$BUILD_BUILDNUMBER"
+      echo "BUILD_BUILDID=$BUILD_BUILDID"
+      echo "buildSuffix=$buildSuffix"
   - task: UseDotNet@2
     inputs:
       packageType: 'sdk'
