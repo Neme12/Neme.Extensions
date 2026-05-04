@@ -91,7 +91,7 @@ jobs:
       version: '10.0.x'
       includePreviewVersions: true
   - script: |
-      dotnet pack Neme.Extensions.sln \
+      dotnet pack Neme.Extensions.slnx \
         --configuration Release \
         --version-suffix "$(Build.BuildNumber)" \
         --output "$(Build.ArtifactStagingDirectory)"
@@ -114,7 +114,7 @@ jobs:
       version: '10.0.x'
       includePreviewVersions: true
   - script: |
-      dotnet pack Neme.Extensions.sln \
+      dotnet pack Neme.Extensions.slnx \
         --configuration Debug \
         --version-suffix "$(Build.BuildNumber)-debug" \
         --output "$(Build.ArtifactStagingDirectory)"
