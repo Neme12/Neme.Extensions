@@ -14,7 +14,6 @@ trigger:
 
 variables:
   buildConfiguration: 'Release'
-  buildSuffix: $[format('{0}-{1}', format('{0:yyyyMMdd}', pipeline.startTime), counter('rev', 1))]
 
 jobs:
 - job: BuildAndTest
@@ -86,11 +85,6 @@ jobs:
   pool:
     vmImage: "ubuntu-latest"
   steps:
-  - script: echo "BuildNumber='$(Build.BuildNumber)' BuildId='$Build.BuildId'"
-  - script: echo "buildSuffix='$(buildSuffix)' buildSuffix2='$buildSuffix'"
-  - script: echo "BuildNumber=$BUILD_BUILDNUMBER"
-  - script: echo "buildSuffix=$BUILDSUFFIX"
-
   - task: UseDotNet@2
     inputs:
       packageType: 'sdk'
@@ -101,7 +95,7 @@ jobs:
     inputs:
       command: 'pack'
       packagesToPack: '**/*.csproj'
-      arguments: '--no-build /p:VersionPrefix=0.0.0 /p:VersionSuffix="$BUILD_BUILDNUMBER"'
+      arguments: '--no-build -p:VersionPrefix=1.0.0 -p:VersionSuffix=$(Build.BuildNumber)'
       versioningScheme: 'off'
   - task: DotNetCoreCLI@2
     displayName: "dotnet nuget push"
@@ -127,7 +121,7 @@ jobs:
       command: 'pack'
       packagesToPack: '**/*.csproj'
       configuration: 'Debug'
-      arguments: '/p:VersionPrefix=1.0.0 /p:VersionSuffix=$BUILD_BUILDNUMBER-debug'
+      arguments: '-p:VersionPrefix=1.0.0 -p:VersionSuffix=$(Build.BuildNumber)-debug'
       versioningScheme: 'off'
   - task: DotNetCoreCLI@2
     displayName: "dotnet nuget push"
