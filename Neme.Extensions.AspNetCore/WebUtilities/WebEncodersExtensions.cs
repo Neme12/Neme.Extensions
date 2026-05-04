@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.WebUtilities;
+using Neme.Extensions.Contracts;
 using System.Buffers.Text;
-using System.Diagnostics;
 
 namespace Neme.Extensions.AspNetCore.WebUtilities;
 
@@ -11,7 +11,7 @@ public static class WebEncodersExtensions
         public static string Base64UrlEncodeGuid(Guid input)
         {
             Span<byte> bytes = stackalloc byte[Guid.ByteLength];
-            Trace.Assert(input.TryWriteBytes(bytes));
+            Assert.True(input.TryWriteBytes(bytes));
 
 #if NET9_0_OR_GREATER
             return Base64Url.EncodeToString(bytes);
