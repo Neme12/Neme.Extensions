@@ -124,7 +124,7 @@ jobs:
       command: 'pack'
       packagesToPack: '**/*.csproj'
       configuration: 'Debug'
-      arguments: '/p:VersionSuffix=$(VersionSuffix)-debug'
+      arguments: '/p:Version=$(Version)-debug'
       versioningScheme: 'byPrereleaseNumber'
       majorVersion: '1'
       minorVersion: '0'
