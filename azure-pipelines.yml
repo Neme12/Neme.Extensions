@@ -95,6 +95,7 @@ jobs:
     inputs:
       command: 'pack'
       packagesToPack: '**/*.csproj'
+      arguments: '--no-build'
       versioningScheme: 'byPrereleaseNumber'
       majorVersion: '1'
       minorVersion: '0'
@@ -106,7 +107,7 @@ jobs:
       packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
       nuGetFeedType: 'internal'
       publishVstsFeed: '2bd7f127-944b-4d55-b863-c18d972416cd/67d0c6fc-0641-4977-8730-61fbb8b117f3'
-- job: Package
+- job: DebugPackage
   displayName: Debug Package
   dependsOn: BuildAndTest
   pool:
@@ -123,7 +124,7 @@ jobs:
       command: 'pack'
       packagesToPack: '**/*.csproj'
       configuration: 'Debug'
-      arguments: '/p:PackageId=$(PackageId).Debug'
+      arguments: '--no-build /p:PackageId=$(PackageId).Debug'
       versioningScheme: 'byPrereleaseNumber'
       majorVersion: '1'
       minorVersion: '0'
