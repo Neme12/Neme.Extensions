@@ -4,10 +4,13 @@ namespace Neme.Extensions.IO.Pipelines;
 
 public static class PipeWriterExtensions
 {
-    public static Scope CreateScope(Stream stream, StreamPipeWriterOptions? writerOptions = null)
+    extension(PipeWriter)
     {
-        var pipeWriter = PipeWriter.Create(stream, writerOptions);
-        return new Scope(pipeWriter);
+        public static Scope CreateScope(Stream stream, StreamPipeWriterOptions? writerOptions = null)
+        {
+            var pipeWriter = PipeWriter.Create(stream, writerOptions);
+            return new Scope(pipeWriter);
+        }
     }
 
     public struct Scope : IDisposable, IAsyncDisposable
