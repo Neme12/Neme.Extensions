@@ -90,12 +90,11 @@ jobs:
       packageType: 'sdk'
       version: '10.0.x'
       includePreviewVersions: true
-  - task: DotNetCoreCLI@2
-    displayName: "dotnet pack"
-    inputs:
-      command: 'pack'
-      packagesToPack: '**/*.csproj'
-      arguments: '--no-build --version 0.0.0'
+  - script: |
+      dotnet pack Neme.Extensions.sln \
+        --configuration Release \
+        --version-suffix "$(Build.BuildNumber)" \
+        --output "$(Build.ArtifactStagingDirectory)"
   - task: DotNetCoreCLI@2
     displayName: "dotnet nuget push"
     inputs:
@@ -114,13 +113,11 @@ jobs:
       packageType: 'sdk'
       version: '10.0.x'
       includePreviewVersions: true
-  - task: DotNetCoreCLI@2
-    displayName: "dotnet pack"
-    inputs:
-      command: 'pack'
-      packagesToPack: '**/*.csproj'
-      configuration: 'Debug'
-      arguments: '--version 0.0.0'
+  - script: |
+      dotnet pack Neme.Extensions.sln \
+        --configuration Debug \
+        --version-suffix "$(Build.BuildNumber)-debug" \
+        --output "$(Build.ArtifactStagingDirectory)"
   - task: DotNetCoreCLI@2
     displayName: "dotnet nuget push"
     inputs:
