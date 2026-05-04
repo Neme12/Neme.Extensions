@@ -86,12 +86,11 @@ jobs:
   pool:
     vmImage: "ubuntu-latest"
   steps:
-  - script: echo "BuildNumber='$(Build.BuildNumber)' BuildId='$(Build.BuildId)'"
-  - script: echo "buildSuffix='$(buildSuffix)' buildSuffix2='$buildSuffix"
-  - script: |
-      echo "BUILD_BUILDNUMBER=$BUILD_BUILDNUMBER"
-      echo "BUILD_BUILDID=$BUILD_BUILDID"
-      echo "buildSuffix=$buildSuffix"
+  - script: echo "BuildNumber='$(Build.BuildNumber)' BuildId='$Build.BuildId'"
+  - script: echo "buildSuffix='$(buildSuffix)' buildSuffix2='$buildSuffix'"
+  - script: echo "BuildNumber=$BUILD_BUILDNUMBER"
+  - script: echo "buildSuffix=$BUILDSUFFIX"
+
   - task: UseDotNet@2
     inputs:
       packageType: 'sdk'
@@ -102,7 +101,7 @@ jobs:
     inputs:
       command: 'pack'
       packagesToPack: '**/*.csproj'
-      arguments: '--no-build /p:VersionPrefix=1.0.0 /p:VersionSuffix=$BUILD_BUILDNUMBER'
+      arguments: '--no-build /p:VersionPrefix=0.0.0 /p:VersionSuffix="$BUILD_BUILDNUMBER"'
       versioningScheme: 'off'
   - task: DotNetCoreCLI@2
     displayName: "dotnet nuget push"
