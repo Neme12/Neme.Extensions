@@ -98,7 +98,7 @@ jobs:
     inputs:
       command: 'pack'
       packagesToPack: '**/*.csproj'
-      arguments: '--no-build /p:VersionPrefix=1.0.0 /p:VersionSuffix=$(buildSuffix)'
+      arguments: '--no-build /p:VersionPrefix=1.0.0 /p:VersionSuffix=$BUILD_BUILDNUMBER'
       versioningScheme: 'off'
   - task: DotNetCoreCLI@2
     displayName: "dotnet nuget push"
@@ -124,7 +124,7 @@ jobs:
       command: 'pack'
       packagesToPack: '**/*.csproj'
       configuration: 'Debug'
-      arguments: '/p:VersionPrefix=1.0.0 /p:VersionSuffix=$(buildSuffix)-debug'
+      arguments: '/p:VersionPrefix=1.0.0 /p:VersionSuffix=$BUILD_BUILDNUMBER-debug'
       versioningScheme: 'off'
   - task: DotNetCoreCLI@2
     displayName: "dotnet nuget push"
