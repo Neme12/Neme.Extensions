@@ -86,6 +86,8 @@ jobs:
   pool:
     vmImage: "ubuntu-latest"
   steps:
+  - script: echo "BuildNumber='$(Build.BuildNumber)' BuildId='$(Build.BuildId)'"
+  - script: echo "buildSuffix='$(buildSuffix)' buildSuffix2='$buildSuffix"
   - task: UseDotNet@2
     inputs:
       packageType: 'sdk'
