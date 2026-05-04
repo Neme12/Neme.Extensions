@@ -124,7 +124,7 @@ jobs:
       command: 'pack'
       packagesToPack: '**/*.csproj'
       configuration: 'Debug'
-      arguments: '/p:PackageId=$(MSBuildProjectName).Debug'
+      arguments: '/p:VersionSuffix=debug'
       versioningScheme: 'byPrereleaseNumber'
       majorVersion: '1'
       minorVersion: '0'
