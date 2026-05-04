@@ -121,7 +121,7 @@ jobs:
       command: 'pack'
       packagesToPack: '**/*.csproj'
       configuration: 'Debug'
-      arguments: '/p:VersionPrefix=1.0.0 /p:VersionSuffix=$(Build.BuildNumber)-Debug'
+      arguments: '/p:VersionPrefix=1.0.0 /p:VersionSuffix=$(Build.BuildNumber)-debug'
       versioningScheme: 'off'
   - task: DotNetCoreCLI@2
     displayName: "dotnet nuget push"
