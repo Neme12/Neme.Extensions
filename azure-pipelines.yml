@@ -20,12 +20,12 @@ jobs:
   displayName: "Build and test"
   strategy:
     matrix:
-      # windows:
-      #   imageName: "windows-latest"
+      windows:
+        imageName: "windows-latest"
       linux:
         imageName: "ubuntu-latest"
-      # macOS:
-      #   imageName: "macOS-latest"
+      macOS:
+        imageName: "macOS-latest"
   pool:
     vmImage: $(imageName)
   steps:
@@ -93,7 +93,7 @@ jobs:
   - script: |
       dotnet pack Neme.Extensions.slnx \
         --configuration Release \
-        --version-suffix "$(Build.BuildNumber)" \
+        --version-suffix "CI-$(Build.BuildNumber)" \
         --output "$(Build.ArtifactStagingDirectory)"
   - task: DotNetCoreCLI@2
     displayName: "dotnet nuget push"
@@ -116,7 +116,7 @@ jobs:
   - script: |
       dotnet pack Neme.Extensions.slnx \
         --configuration Debug \
-        --version-suffix "$(Build.BuildNumber)-debug" \
+        --version-suffix "CI-$(Build.BuildNumber)-debug" \
         --output "$(Build.ArtifactStagingDirectory)"
   - task: DotNetCoreCLI@2
     displayName: "dotnet nuget push"
