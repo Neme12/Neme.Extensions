@@ -12,8 +12,6 @@ trigger:
     include:
       - master
 
-name: $(Date:yyyyMMdd).$(Rev:r)
-
 variables:
   buildConfiguration: 'Release'
 
@@ -97,7 +95,7 @@ jobs:
     inputs:
       command: 'pack'
       packagesToPack: '**/*.csproj'
-      arguments: '--no-build /p:VersionPrefix=1.0.0 /p:VersionSuffix=$(Build.BuildNumber)'
+      arguments: '--no-build /p:VersionPrefix=1.0.0 /p:VersionSuffix=$(Build.BuildId)'
       versioningScheme: 'off'
   - task: DotNetCoreCLI@2
     displayName: "dotnet nuget push"
@@ -123,7 +121,7 @@ jobs:
       command: 'pack'
       packagesToPack: '**/*.csproj'
       configuration: 'Debug'
-      arguments: '/p:VersionPrefix=1.0.0 /p:VersionSuffix=$(Build.BuildNumber)-debug'
+      arguments: '/p:VersionPrefix=1.0.0 /p:VersionSuffix=$(Build.BuildId)-debug'
       versioningScheme: 'off'
   - task: DotNetCoreCLI@2
     displayName: "dotnet nuget push"
