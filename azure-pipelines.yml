@@ -90,15 +90,34 @@ jobs:
       packageType: 'sdk'
       version: '10.0.x'
       includePreviewVersions: true
+  - script: |
+      dotnet pack Neme.Extensions.slnx \
+        --configuration Release \
+        --version-suffix "CI-$(Build.BuildNumber)" \
+        --output "$(Build.ArtifactStagingDirectory)"
   - task: DotNetCoreCLI@2
-    displayName: "dotnet pack"
+    displayName: "dotnet nuget push"
     inputs:
-      command: 'pack'
-      packagesToPack: '**/*.csproj'
-      versioningScheme: 'byPrereleaseNumber'
-      majorVersion: '1'
-      minorVersion: '0'
-      patchVersion: '0'
+      command: 'push'
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+      nuGetFeedType: 'internal'
+      publishVstsFeed: '2bd7f127-944b-4d55-b863-c18d972416cd/67d0c6fc-0641-4977-8730-61fbb8b117f3'
+- job: DebugPackage
+  displayName: Debug Package
+  dependsOn: BuildAndTest
+  pool:
+    vmImage: "ubuntu-latest"
+  steps:
+  - task: UseDotNet@2
+    inputs:
+      packageType: 'sdk'
+      version: '10.0.x'
+      includePreviewVersions: true
+  - script: |
+      dotnet pack Neme.Extensions.slnx \
+        --configuration Debug \
+        --version-suffix "CI-$(Build.BuildNumber)-debug" \
+        --output "$(Build.ArtifactStagingDirectory)"
   - task: DotNetCoreCLI@2
     displayName: "dotnet nuget push"
     inputs:
