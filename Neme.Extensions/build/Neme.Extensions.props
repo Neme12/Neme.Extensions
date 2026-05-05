@@ -1,0 +1,7 @@
+<Project>
+  <ItemGroup>
+	<Compile Include="$(MSBuildThisFileDirectory)..\contentFiles\cs\any\**\*.cs" 
+			 Link="%(RecursiveDir)%(Filename)%(Extension)" 
+			 Visible="false" />
+  </ItemGroup>
+</Project>

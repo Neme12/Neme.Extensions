@@ -39,4 +39,18 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <!-- Exclude embedded files from compilation in DEBUG builds -->
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+  	<Compile Remove="Embedded\**\*.cs" />
+  	<None Include="Embedded\**\*.cs" />
+  </ItemGroup>
+
+  <!-- Compile and pack embedded files in RELEASE builds -->
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+  	<Compile Include="Embedded\**\*.cs" Pack="true" PackagePath="contentFiles/cs/any/" />
+  
+  	<!-- Pack the .props file into build and buildTransitive folders -->
+  	<None Include="build\Neme.Extensions.props" Pack="true" PackagePath="build;buildTransitive" />
+  </ItemGroup>
+
 </Project>
