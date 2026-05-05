@@ -5,7 +5,7 @@ using System.Runtime.Versioning;
 namespace Neme.Extensions.FileSystem;
 
 [SupportedOSPlatform("windows6.0.6000")]
-internal sealed class PartialFileStream :
+public sealed class PartialFileStream :
     IDisposable
 #if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
     , IAsyncDisposable
