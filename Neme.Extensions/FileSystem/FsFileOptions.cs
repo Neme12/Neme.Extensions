@@ -42,14 +42,7 @@ public readonly record struct FsFileOptions
         return new FsFileOptions
         {
             Mode = options.Mode,
-            Access = options.Access switch
-            {
-                0 => FsFileAccess.None,
-                FileAccess.Read => FsFileAccess.Read,
-                FileAccess.Write => FsFileAccess.Write,
-                FileAccess.ReadWrite => FsFileAccess.ReadWrite,
-                _ => throw new ArgumentOutOfRangeException(nameof(options), $"Invalid FileAccess value: {options.Access}"),
-            },
+            Access = FsFileAccess.FromFileAccess(options.Access),
             Share = options.Share,
             Options = options.Options,
         };
