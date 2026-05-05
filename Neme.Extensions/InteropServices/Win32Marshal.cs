@@ -6,16 +6,16 @@ using System.Diagnostics;
 using System.Runtime.Versioning;
 using Windows.Win32.Foundation;
 
-namespace Neme.Extensions.Utilities;
+namespace Neme.Extensions.InteropServices;
 
 [SupportedOSPlatform("windows")]
-internal static class Win32Marshal
+public static class Win32Marshal
 {
-    internal static Exception GetExceptionForLastWin32Error(string? path = "") =>
+    public static Exception GetExceptionForLastWin32Error(string? path = "") =>
         GetExceptionForWin32Error(new Win32Exception(), path);
 
-    internal static Exception GetExceptionForWin32Error(
-        Win32Exception exception, string? path = "", string? errorDetails = null)
+    public static Exception GetExceptionForWin32Error(
+        Win32Exception exception, string? path = "")
     {
         var errorCode = (WIN32_ERROR)exception.NativeErrorCode;
         Debug.Assert(errorCode != WIN32_ERROR.ERROR_SUCCESS);

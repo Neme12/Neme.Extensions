@@ -1,6 +1,6 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using Neme.Extensions.Buffers;
-using Neme.Extensions.Utilities;
+using Neme.Extensions.InteropServices;
 using System.Buffers;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
