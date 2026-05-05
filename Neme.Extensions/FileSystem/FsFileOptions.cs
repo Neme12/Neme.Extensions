@@ -7,6 +7,22 @@ namespace Neme.Extensions.FileSystem;
 [StructLayout(LayoutKind.Auto)]
 public readonly record struct FsFileOptions
 {
+    public FsFileOptions(FileMode mode, FsFileAccess access, FileShare share)
+    {
+        Mode = mode;
+        Access = access;
+        Share = share;
+    }
+
+    public FsFileOptions(FileMode mode, FsFileAccess access)
+    {
+        Mode = mode;
+        Access = access;
+        Share = (access & FsFileAccess.Write) != 0 || (access & FsFileAccess.Delete) != 0
+            ? FileShare.None
+            : FileShare.Read;
+    }
+
     [Borrowed]
     public SafeFileHandle? TemplateFile { get; init; }
 
