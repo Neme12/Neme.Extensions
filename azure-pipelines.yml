@@ -93,7 +93,7 @@ jobs:
   - script: |
       dotnet pack Neme.Extensions.slnx \
         --configuration Release \
-        --version "1.0.0-CI-$(Build.BuildNumber)" \
+        --version-suffix "CI-$(Build.BuildNumber)" \
         --output "$(Build.ArtifactStagingDirectory)"
     displayName: "dotnet pack"
   - task: DotNetCoreCLI@2
@@ -117,7 +117,7 @@ jobs:
   - script: |
       dotnet pack Neme.Extensions.slnx \
         --configuration Debug \
-        --version "1.0.0-CI-$(Build.BuildNumber)+debug" \
+        --version-suffix "CI-$(Build.BuildNumber).debug" \
         --output "$(Build.ArtifactStagingDirectory)"
     displayName: "dotnet pack"
   - task: DotNetCoreCLI@2
