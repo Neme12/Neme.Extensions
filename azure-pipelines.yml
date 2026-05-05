@@ -95,6 +95,7 @@ jobs:
         --configuration Release \
         --version-suffix "CI-$(Build.BuildNumber)" \
         --output "$(Build.ArtifactStagingDirectory)"
+    displayName: "dotnet pack"
   - task: DotNetCoreCLI@2
     displayName: "dotnet nuget push"
     inputs:
@@ -118,6 +119,7 @@ jobs:
         --configuration Debug \
         --version-suffix "CI-$(Build.BuildNumber)-debug" \
         --output "$(Build.ArtifactStagingDirectory)"
+    displayName: "dotnet pack"
   - task: DotNetCoreCLI@2
     displayName: "dotnet nuget push"
     inputs:
