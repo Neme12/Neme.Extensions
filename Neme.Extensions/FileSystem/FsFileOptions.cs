@@ -23,9 +23,6 @@ public readonly record struct FsFileOptions
             : FileShare.Read;
     }
 
-    [Borrowed]
-    public SafeFileHandle? TemplateFile { get; init; }
-
     public FileMode Mode { get; init; }
 
     public FsFileAccess Access { get; init; }
@@ -35,6 +32,9 @@ public readonly record struct FsFileOptions
     public FileOptions Options { get; init; }
 
     public FileAttributes Attributes { get; init; }
+
+    [Borrowed]
+    public SafeFileHandle? TemplateFile { get; init; }
 
 #if NET6_0_OR_GREATER
     public static FsFileOptions FromFileStreamOptions(FileStreamOptions options)
