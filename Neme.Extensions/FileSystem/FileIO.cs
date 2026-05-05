@@ -183,7 +183,7 @@ public static class FileIO
         return duplicatedHandle;
     }
 
-    public static FileStream CreateFileStream(SafeFileHandle file, FsFileOptions options, int bufferSize = 4096)
+    public static CheckedFileStream CreateFileStream(SafeFileHandle file, FsFileOptions options, int bufferSize = 4096)
     {
         ValidateFileHandle(file);
 
@@ -195,7 +195,7 @@ public static class FileIO
         if ((options.Access & FsFileAccess.Write) != 0)
             access |= FileAccess.Write;
 
-        return new FileStream(file, access, bufferSize, isAsync: (options.Options & FileOptions.Asynchronous) != 0);
+        return new CheckedFileStream(file, access, bufferSize, isAsync: (options.Options & FileOptions.Asynchronous) != 0);
     }
 
     private static void ValidateFileHandle(SafeFileHandle file, [CallerArgumentExpression(nameof(file))] string? paramName = null)
