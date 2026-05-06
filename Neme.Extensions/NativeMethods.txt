@@ -4,7 +4,6 @@ DuplicateHandle
 GetFinalPathNameByHandle
 NtCreateFile
 RtlInitUnicodeString
-RtlFreeUnicodeString
 RtlNtStatusToDosError
 FILE_RENAME_INFO
 FILE_DISPOSITION_INFO

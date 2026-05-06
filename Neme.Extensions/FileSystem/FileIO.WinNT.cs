@@ -36,9 +36,11 @@ public static partial class FileIO
 
         UNICODE_STRING unicodeString = default;
 
-        using var unicodeStringScope = path is not null
-            ? new UnicodeStringScope(&unicodeString, @"\??\" + path)
-            : default;
+        if (path is not null)
+        {
+            path = @"\??\" + path;
+            Win32PInvoke.RtlInitUnicodeString(ref unicodeString, path);
+        }
 
         using var rootDirectoryHandle = rootDirectoory?.CreateScope();
 
@@ -71,6 +73,6 @@ public static partial class FileIO
             throw Win32Marshal.GetExceptionForWin32Error(win32Exception, path);
         }
 
-        return new SafeFileHandle(handle,ownsHandle: true);
+        return new SafeFileHandle(handle, ownsHandle: true);
     }
 }
