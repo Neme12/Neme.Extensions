@@ -12,7 +12,7 @@ using Windows.Win32.Storage.FileSystem;
 
 namespace Neme.Extensions.FileSystem;
 
-public static class FileIO
+public static partial class FileIO
 {
     private const int MaxWindowsFileNameLength = 255;
     private const int MaxWindowsPathLength = short.MaxValue - 4; // 4 for the \\?\ prefix.

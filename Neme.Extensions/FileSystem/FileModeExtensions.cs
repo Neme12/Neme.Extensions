@@ -21,7 +21,7 @@ internal static class FileModeExtensions
             };
         }
 
-        public NTCREATEFILE_CREATE_DISPOSITION ToWindowsNT()
+        public NTCREATEFILE_CREATE_DISPOSITION ToWinNT()
         {
             return mode switch
             {
