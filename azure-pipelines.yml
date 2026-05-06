@@ -95,6 +95,7 @@ jobs:
         --configuration Release \
         --version-suffix "CI-$(Build.BuildNumber)" \
         --output "$(Build.ArtifactStagingDirectory)"
+    displayName: "dotnet pack"
   - task: DotNetCoreCLI@2
     displayName: "dotnet nuget push"
     inputs:
@@ -118,10 +119,11 @@ jobs:
         --configuration Debug \
         --version-suffix "CI-$(Build.BuildNumber)-debug" \
         --output "$(Build.ArtifactStagingDirectory)"
+    displayName: "dotnet pack"
   - task: DotNetCoreCLI@2
     displayName: "dotnet nuget push"
     inputs:
       command: 'push'
       packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
       nuGetFeedType: 'internal'
-      publishVstsFeed: '2bd7f127-944b-4d55-b863-c18d972416cd/67d0c6fc-0641-4977-8730-61fbb8b117f3'
+      publishVstsFeed: '2bd7f127-944b-4d55-b863-c18d972416cd/39656df3-0e3a-44f5-b0fe-1b8a95016276'
