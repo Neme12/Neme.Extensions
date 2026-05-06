@@ -5,7 +5,7 @@ using Win32PInvoke = Windows.Win32.PInvoke;
 namespace Neme.Extensions.InteropServices;
 
 [SupportedOSPlatform("windows5.0")]
-internal unsafe ref struct UnicodeStringScope : IDisposable
+internal unsafe struct UnicodeStringScope : IDisposable
 {
     private UNICODE_STRING* _unicodeString;
 
