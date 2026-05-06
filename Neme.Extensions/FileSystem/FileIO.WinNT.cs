@@ -36,51 +36,41 @@ public static partial class FileIO
 
         UNICODE_STRING unicodeString = default;
 
-        if (path is not null)
+        using var unicodeStringScope = path is not null
+            ? new UnicodeStringScope(&unicodeString, @"\??\" + path)
+            : default;
+
+        using var rootDirectoryHandle = rootDirectoory?.CreateScope();
+
+        var objectAttributes = new OBJECT_ATTRIBUTES
         {
-            path = @"\??\" + path;
-            Win32PInvoke.RtlInitUnicodeString(ref unicodeString, path);
+            Length = (uint)sizeof(OBJECT_ATTRIBUTES),
+            RootDirectory = rootDirectoryHandle is not null
+                ? new(rootDirectoryHandle.Value.Handle)
+                : HANDLE.Null,
+            ObjectName = &unicodeString,
+            Attributes = OBJECT_ATTRIBUTE_FLAGS.OBJ_CASE_INSENSITIVE,
+        };
+
+        var status = WinNTPInvoke.NtCreateFile(
+            out var handle,
+            options.Access.ToWin32(),
+            in objectAttributes,
+            out _,
+            0,
+            options.Attributes.ToWin32(),
+            options.Share.ToWin32(),
+            options.Mode.ToWinNT(),
+            options.Options.ToWinNT() | NTCREATEFILE_CREATE_OPTIONS.FILE_NON_DIRECTORY_FILE,
+            []);
+
+        if (status.SeverityCode != NTSTATUS.Severity.Success)
+        {
+            var win32Error = Win32PInvoke.RtlNtStatusToDosError(status);
+            var win32Exception = new Win32Exception((int)win32Error);
+            throw Win32Marshal.GetExceptionForWin32Error(win32Exception, path);
         }
 
-        try
-        {
-            using var rootDirectoryHandle = rootDirectoory?.CreateScope();
-
-            OBJECT_ATTRIBUTES objectAttributes = new OBJECT_ATTRIBUTES
-            {
-                Length = (uint)sizeof(OBJECT_ATTRIBUTES),
-                RootDirectory = rootDirectoryHandle is not null
-                    ? new(rootDirectoryHandle.Value.Handle)
-                    : HANDLE.Null,
-                ObjectName = &unicodeString,
-                Attributes = OBJECT_ATTRIBUTE_FLAGS.OBJ_CASE_INSENSITIVE,
-            };
-
-            var status = WinNTPInvoke.NtCreateFile(
-                out var handle,
-                options.Access.ToWin32(),
-                in objectAttributes,
-                out _,
-                0,
-                options.Attributes.ToWin32(),
-                options.Share.ToWin32(),
-                options.Mode.ToWinNT(),
-                options.Options.ToWinNT() | NTCREATEFILE_CREATE_OPTIONS.FILE_NON_DIRECTORY_FILE,
-                []);
-
-            if (status.SeverityCode != NTSTATUS.Severity.Success)
-            {
-                var win32Error = Win32PInvoke.RtlNtStatusToDosError(status);
-                var win32Exception = new Win32Exception((int)win32Error);
-                throw Win32Marshal.GetExceptionForWin32Error(win32Exception, path);
-            }
-
-            return new SafeFileHandle(handle,ownsHandle: true);
-        }
-        finally
-        {
-            if (path is not null)
-                Win32PInvoke.RtlFreeUnicodeString(ref unicodeString);
-        }
+        return new SafeFileHandle(handle,ownsHandle: true);
     }
 }
