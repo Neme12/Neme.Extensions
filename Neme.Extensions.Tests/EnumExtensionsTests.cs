@@ -110,7 +110,7 @@ public sealed class EnumExtensionsTests
         var value = TestFlags.Read | TestFlags.Write;
 
         // Act
-        var result = TestFlags.IsDefinedFlags(value);
+        var result = Enum.IsDefinedFlags(value);
 
         // Assert
         Assert.True(result);
@@ -123,7 +123,7 @@ public sealed class EnumExtensionsTests
         var value = TestFlags.None;
 
         // Act
-        var result = TestFlags.IsDefinedFlags(value);
+        var result = Enum.IsDefinedFlags(value);
 
         // Assert
         Assert.True(result);
@@ -136,7 +136,7 @@ public sealed class EnumExtensionsTests
         var value = TestFlags.All;
 
         // Act
-        var result = TestFlags.IsDefinedFlags(value);
+        var result = Enum.IsDefinedFlags(value);
 
         // Assert
         Assert.True(result);
@@ -149,7 +149,7 @@ public sealed class EnumExtensionsTests
         var value = (TestFlags)16;
 
         // Act
-        var result = TestFlags.IsDefinedFlags(value);
+        var result = Enum.IsDefinedFlags(value);
 
         // Assert
         Assert.False(result);
@@ -162,7 +162,7 @@ public sealed class EnumExtensionsTests
         var value = TestFlags.Read | (TestFlags)16;
 
         // Act
-        var result = TestFlags.IsDefinedFlags(value);
+        var result = Enum.IsDefinedFlags(value);
 
         // Assert
         Assert.False(result);
@@ -175,7 +175,7 @@ public sealed class EnumExtensionsTests
         var value = NonFlagsEnum.One;
 
         // Act & Assert
-        var exception = Assert.Throws<InvalidOperationException>(() => NonFlagsEnum.IsDefinedFlags(value));
+        var exception = Assert.Throws<InvalidOperationException>(() => Enum.IsDefinedFlags(value));
         Assert.Equal("The enum type must be a [Flags] enum.", exception.Message);
     }
 
@@ -186,7 +186,7 @@ public sealed class EnumExtensionsTests
         var value = TestFlags.Read;
 
         // Act
-        var result = TestFlags.IsDefinedFlags(value);
+        var result = Enum.IsDefinedFlags(value);
 
         // Assert
         Assert.True(result);
@@ -199,7 +199,7 @@ public sealed class EnumExtensionsTests
         var value = TestFlags.Read | TestFlags.Write | TestFlags.Execute;
 
         // Act
-        var result = TestFlags.IsDefinedFlags(value);
+        var result = Enum.IsDefinedFlags(value);
 
         // Assert
         Assert.True(result);

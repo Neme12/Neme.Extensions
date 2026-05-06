@@ -12,8 +12,12 @@ public static class EnumExtensions
         {
             return enumValue.HasFlag(flag);
         }
+    }
 
-        public static bool IsDefinedFlags(T value)
+    extension(Enum)
+    {
+        public static bool IsDefinedFlags<T>(T value)
+            where T : struct, Enum
         {
             var flagsAttribute = typeof(T).GetCustomAttribute<FlagsAttribute>(); 
             if  (flagsAttribute is null)
