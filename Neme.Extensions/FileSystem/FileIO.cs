@@ -128,31 +128,13 @@ public static class FileIO
     {
         ValidatePath(path);
 
-        // The values of FileShare map directly to FILE_SHARE_MODE.
-        var shareMode = (FILE_SHARE_MODE)options.Share;
-
-        var creationDisposition = options.Mode switch
-        {
-            FileMode.CreateNew => FILE_CREATION_DISPOSITION.CREATE_NEW,
-            FileMode.Create => FILE_CREATION_DISPOSITION.CREATE_ALWAYS,
-            FileMode.Open => FILE_CREATION_DISPOSITION.OPEN_EXISTING,
-            FileMode.OpenOrCreate => FILE_CREATION_DISPOSITION.OPEN_ALWAYS,
-            FileMode.Truncate => FILE_CREATION_DISPOSITION.TRUNCATE_EXISTING,
-            FileMode.Append => FILE_CREATION_DISPOSITION.OPEN_ALWAYS,
-            _ => throw new ArgumentOutOfRangeException(nameof(options), "Invalid FileMode value.")
-        };
-
-        // The values of FileOptions map directly to FILE_FLAGS_AND_ATTRIBUTES,
-        // and so do the values of FileAttributes, so we don't have to do any mapping.
-        var flagsAndAttributes = (FILE_FLAGS_AND_ATTRIBUTES)((uint)options.Options | (uint)options.Attributes);
-
         var handle = PInvoke.CreateFile(
             path,
             (uint)options.Access.ToWin32(),
-            shareMode,
+            options.Share.ToWin32(),
             null,
-            creationDisposition,
-            flagsAndAttributes,
+            options.Mode.ToWin32(),
+            options.Options.ToWin32() | options.Attributes.ToWin32(),
             options.TemplateFile);
 
         if (handle.IsInvalid)
