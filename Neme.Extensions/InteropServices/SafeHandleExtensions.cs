@@ -21,8 +21,8 @@ public static class SafeHandleExtensions
 
         internal Scope(THandle handle)
         {
-            _handle = handle;
             handle.DangerousAddRef(ref _succeeded);
+            _handle = handle;
         }
 
         public readonly nint Handle =>
