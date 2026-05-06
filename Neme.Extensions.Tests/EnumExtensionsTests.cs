@@ -12,14 +12,14 @@ public class EnumExtensionsTests
         Read = 1,
         Write = 2,
         Execute = 4,
-        All = Read | Write | Execute
+        All = Read | Write | Execute,
     }
 
     private enum NonFlagsEnum
     {
         One = 1,
         Two = 2,
-        Three = 3
+        Three = 3,
     }
 
     [Fact]
