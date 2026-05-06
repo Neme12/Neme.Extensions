@@ -1,9 +1,6 @@
-﻿using Neme.Extensions;
-using Xunit;
+﻿namespace Neme.Extensions.Tests;
 
-namespace Neme.Extensions.Tests;
-
-public class EnumExtensionsTests
+public sealed class EnumExtensionsTests
 {
     [Flags]
     private enum TestFlags
@@ -30,7 +27,7 @@ public class EnumExtensionsTests
         var flag = TestFlags.Read;
 
         // Act
-        var result = value.HasFlag(flag);
+        var result = EnumExtensions.HasFlag(value, flag);
 
         // Assert
         Assert.True(result);
@@ -44,7 +41,7 @@ public class EnumExtensionsTests
         var flag = TestFlags.Execute;
 
         // Act
-        var result = value.HasFlag(flag);
+        var result = EnumExtensions.HasFlag(value, flag);
 
         // Assert
         Assert.False(result);
@@ -58,7 +55,7 @@ public class EnumExtensionsTests
         var flag = TestFlags.Read | TestFlags.Write;
 
         // Act
-        var result = value.HasFlag(flag);
+        var result = EnumExtensions.HasFlag(value, flag);
 
         // Assert
         Assert.True(result);
@@ -72,7 +69,7 @@ public class EnumExtensionsTests
         var flag = TestFlags.None;
 
         // Act
-        var result = value.HasFlag(flag);
+        var result = EnumExtensions.HasFlag(value, flag);
 
         // Assert
         Assert.True(result);
@@ -86,7 +83,7 @@ public class EnumExtensionsTests
         var flag = TestFlags.All;
 
         // Act
-        var result = value.HasFlag(flag);
+        var result = EnumExtensions.HasFlag(value, flag);
 
         // Assert
         Assert.True(result);
@@ -100,14 +97,14 @@ public class EnumExtensionsTests
         var flag = TestFlags.None;
 
         // Act
-        var result = value.HasFlag(flag);
+        var result = EnumExtensions.HasFlag(value, flag);
 
         // Assert
         Assert.True(result);
     }
 
     [Fact]
-    public void AreFlagsDefined_WithValidDefinedFlags_ReturnsTrue()
+    public void IsDefinedFlags_WithValidDefinedFlags_ReturnsTrue()
     {
         // Arrange
         var value = TestFlags.Read | TestFlags.Write;
@@ -120,7 +117,7 @@ public class EnumExtensionsTests
     }
 
     [Fact]
-    public void AreFlagsDefined_WithNone_ReturnsTrue()
+    public void IsDefinedFlags_WithNone_ReturnsTrue()
     {
         // Arrange
         var value = TestFlags.None;
@@ -133,7 +130,7 @@ public class EnumExtensionsTests
     }
 
     [Fact]
-    public void AreFlagsDefined_WithAllFlags_ReturnsTrue()
+    public void IsDefinedFlags_WithAllFlags_ReturnsTrue()
     {
         // Arrange
         var value = TestFlags.All;
@@ -146,7 +143,7 @@ public class EnumExtensionsTests
     }
 
     [Fact]
-    public void AreFlagsDefined_WithUndefinedFlags_ReturnsFalse()
+    public void IsDefinedFlags_WithUndefinedFlags_ReturnsFalse()
     {
         // Arrange
         var value = (TestFlags)16;
@@ -159,7 +156,7 @@ public class EnumExtensionsTests
     }
 
     [Fact]
-    public void AreFlagsDefined_WithMixedDefinedAndUndefinedFlags_ReturnsFalse()
+    public void IsDefinedFlags_WithMixedDefinedAndUndefinedFlags_ReturnsFalse()
     {
         // Arrange
         var value = TestFlags.Read | (TestFlags)16;
@@ -172,7 +169,7 @@ public class EnumExtensionsTests
     }
 
     [Fact]
-    public void AreFlagsDefined_WithNonFlagsEnum_ThrowsInvalidOperationException()
+    public void IsDefinedFlags_WithNonFlagsEnum_ThrowsInvalidOperationException()
     {
         // Arrange
         var value = NonFlagsEnum.One;
@@ -183,7 +180,7 @@ public class EnumExtensionsTests
     }
 
     [Fact]
-    public void AreFlagsDefined_WithSingleDefinedFlag_ReturnsTrue()
+    public void IsDefinedFlags_WithSingleDefinedFlag_ReturnsTrue()
     {
         // Arrange
         var value = TestFlags.Read;
@@ -196,7 +193,7 @@ public class EnumExtensionsTests
     }
 
     [Fact]
-    public void AreFlagsDefined_WithCombinedDefinedFlags_ReturnsTrue()
+    public void IsDefinedFlags_WithCombinedDefinedFlags_ReturnsTrue()
     {
         // Arrange
         var value = TestFlags.Read | TestFlags.Write | TestFlags.Execute;
