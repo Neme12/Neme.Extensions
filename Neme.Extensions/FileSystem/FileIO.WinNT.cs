@@ -1,7 +1,6 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using Neme.Extensions.InteropServices;
 using Neme.Extensions.Ownership;
-using System.ComponentModel;
 using System.Runtime.Versioning;
 using Windows.Wdk.Foundation;
 using Windows.Wdk.Storage.FileSystem;
@@ -68,11 +67,7 @@ public static partial class FileIO
             []);
 
         if (status.SeverityCode != NTSTATUS.Severity.Success)
-        {
-            var win32Error = Win32PInvoke.RtlNtStatusToDosError(status);
-            var win32Exception = new Win32Exception((int)win32Error);
-            throw Win32Marshal.GetExceptionForWin32Error(win32Exception, path);
-        }
+            throw WinNtMarshal.GetExceptionForNtStatus(status, path);
 
         return new SafeFileHandle(handle, ownsHandle: true);
     }
