@@ -5,8 +5,6 @@ using System.Runtime.Versioning;
 using Windows.Wdk.Foundation;
 using Windows.Wdk.Storage.FileSystem;
 using Windows.Win32.Foundation;
-using Win32PInvoke = Windows.Win32.PInvoke;
-using WinNTPInvoke = Windows.Wdk.PInvoke;
 
 namespace Neme.Extensions.FileSystem;
 

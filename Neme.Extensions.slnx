@@ -9,4 +9,5 @@
   <Project Path="Neme.Extensions/Neme.Extensions.csproj" />
   <Project Path="Neme.Polyfills.Tests/Neme.Polyfills.Tests.csproj" />
   <Project Path="Neme.Polyfills/Neme.Polyfills.csproj" />
+  <Project Path="Test/Test.csproj" />
 </Solution>

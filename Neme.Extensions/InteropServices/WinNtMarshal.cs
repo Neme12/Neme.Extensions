@@ -2,8 +2,6 @@
 using System.Runtime.Versioning;
 using Windows.Win32.Foundation;
 
-using Win32PInvoke = Windows.Win32.PInvoke;
-
 namespace Neme.Extensions.InteropServices;
 
 [SupportedOSPlatform("windows")]
