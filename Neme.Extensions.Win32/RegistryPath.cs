@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
+using Neme.Extensions.Buffers;
 using Neme.Extensions.Ownership;
-using Neme.Extensions.Utilities;
+using System.Buffers;
 using System.Diagnostics;
 
 namespace Neme.Extensions.Win32;
@@ -105,11 +106,13 @@ public readonly struct RegistryPath
 
         if (NeedsNormalization(path))
         {
-            var buffer = (Span<char>)stackalloc char[path.Length];
-            var written = NormalizePath(path, buffer);
+            using var bufferLease = ArrayPool<char>.Shared.RentLeaseOrStackalloc(
+                path.Length, path.Length < Stackalloc.MaxLength<char>() ? stackalloc char[path.Length] : default);
+
+            var written = NormalizePath(path, bufferLease.Buffer);
 
 #pragma warning disable CS9080 // stackalloc'ed buffers are method-scoped, not block-scoped like variables.
-            path = buffer[..written];
+            path = bufferLease.Buffer[..written];
 #pragma warning restore CS9080
         }
 
