@@ -8,14 +8,15 @@ internal static class FsFileAccessExtensions
     {
         public static FsFileAccess FromFileAccess(FileAccess fileAccess)
         {
-            return fileAccess switch
-            {
-                0 => FsFileAccess.None,
-                FileAccess.Read => FsFileAccess.Read,
-                FileAccess.Write => FsFileAccess.Write,
-                FileAccess.ReadWrite => FsFileAccess.ReadWrite,
-                _ => throw new ArgumentOutOfRangeException(nameof(fileAccess), $"Invalid FileAccess value: {fileAccess}"),
-            };
+            FsFileAccess result = default;
+
+            if ((fileAccess & FileAccess.Read) != 0)
+                result |= FsFileAccess.Read;
+
+            if ((fileAccess & FileAccess.Write) != 0)
+                result |= FsFileAccess.Write;
+
+            return result;
         }
 
         public FILE_ACCESS_RIGHTS ToWin32()
