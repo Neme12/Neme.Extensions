@@ -62,6 +62,11 @@ public sealed class PartialFileStream :
 
     public static PartialFileStream Create(string finalPath, FsFileOptions options, bool createDirectory = false)
     {
+        ArgumentException.ThrowIfNullOrEmpty(finalPath);
+
+        if ((options.Access & FsFileAccess.Delete) == 0)
+            throw new ArgumentException("Options must include delete access.", nameof(options));
+
         var partialPath = finalPath + ".part";
 
         if (createDirectory)
