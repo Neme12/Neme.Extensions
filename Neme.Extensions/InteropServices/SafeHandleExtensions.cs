@@ -21,7 +21,19 @@ public static class SafeHandleExtensions
 
         internal Scope(THandle handle)
         {
-            handle.DangerousAddRef(ref _succeeded);
+            bool success = false;
+
+            try
+            {
+                handle.DangerousAddRef(ref _succeeded);
+                success = true;
+            }
+            finally
+            {
+                if (!success && _succeeded)
+                    handle.DangerousRelease();
+            }
+
             _handle = handle;
         }
 
