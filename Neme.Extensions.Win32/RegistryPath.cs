@@ -166,6 +166,7 @@ public readonly struct RegistryPath
     /// <remarks>
     /// The returned RegistryKey must be disposed when no longer needed.
     /// </remarks>
+    [return: OwnershipTransfer]
     public RegistryKey? OpenKey(bool writable = false, RegistryView view = RegistryView.Default)
     {
         using var baseKey = view == RegistryView.Default
@@ -191,6 +192,7 @@ public readonly struct RegistryPath
         return baseKey.Value.OpenSubKey(_hiveRelativePath, writable);
     }
 
+    [return: Borrow]
     private static RegistryKey GetHiveKey(RegistryHive hive)
     {
         return hive switch
