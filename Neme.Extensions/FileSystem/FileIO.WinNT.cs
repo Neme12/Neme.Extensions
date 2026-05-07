@@ -39,7 +39,7 @@ public static partial class FileIO
 
         if (path is not null)
         {
-            path = @"\??\" + path;
+            path = @"\??\" + Path.GetFullPath(path);
             Win32PInvoke.RtlInitUnicodeString(ref unicodeString, path);
         }
 
