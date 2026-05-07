@@ -180,22 +180,33 @@ public static partial class FileIO
         return new CheckedFileStream(file, access, bufferSize, isAsync: (options.Options & FileOptions.Asynchronous) != 0);
     }
 
-    private static void ValidateFileHandle(SafeFileHandle file, [CallerArgumentExpression(nameof(file))] string? paramName = null)
+    private static void ValidateFileHandle(SafeFileHandle? file, bool optional = false,  [CallerArgumentExpression(nameof(file))] string? paramName = null)
     {
+        if (optional && file is null)
+            return;
+
+        ArgumentNullException.ThrowIfNull(file, paramName);
+
         if (file.IsClosed || file.IsInvalid)
             throw new ArgumentException("File handle must be valid and open.", paramName);
     }
 
-    private static void ValidateFileName(string fileName, [CallerArgumentExpression(nameof(fileName))] string? paramName = null)
+    private static void ValidateFileName(string? fileName, bool optional = false, [CallerArgumentExpression(nameof(fileName))] string? paramName = null)
     {
+        if (optional && fileName is null)
+            return;
+
         ArgumentException.ThrowIfNullOrEmpty(fileName, paramName);
 
         if (fileName.Length > MaxWindowsFileNameLength)
             throw new ArgumentException($"File name cannot exceed {MaxWindowsFileNameLength} characters.", paramName);
     }
 
-    private static void ValidatePath(string path, [CallerArgumentExpression(nameof(path))] string? paramName = null)
+    private static void ValidatePath(string? path, bool optional = false, [CallerArgumentExpression(nameof(path))] string? paramName = null)
     {
+        if (optional && path is null)
+            return;
+
         ArgumentException.ThrowIfNullOrEmpty(path, paramName);
 
         if (path.Length > MaxWindowsPathLength)

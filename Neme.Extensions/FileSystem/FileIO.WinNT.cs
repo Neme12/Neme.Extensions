@@ -25,16 +25,15 @@ public static partial class FileIO
     [SupportedOSPlatform("windows5.1.2600")]
     [return: OwnershipTransfer]
     public static unsafe SafeFileHandle Open(
-        SafeFileHandle? rootDirectoory,
+        SafeFileHandle? rootDirectory,
         string? path,
         FsFileOptions options)
     {
-        if (rootDirectoory is null && path is null)
-            throw new ArgumentException($"Either {nameof(rootDirectoory)} or {nameof(path)} must be provided.");
-        if (rootDirectoory is not null)
-            ValidateFileHandle(rootDirectoory);
-        if (path is not null)
-            ValidatePath(path);
+        if (rootDirectory is null && path is null)
+            throw new ArgumentException($"Either {nameof(rootDirectory)} or {nameof(path)} must be provided.");
+
+        ValidateFileHandle(rootDirectory, optional: true);
+        ValidatePath(path, optional: true);
 
         UNICODE_STRING unicodeString = default;
 
@@ -44,7 +43,7 @@ public static partial class FileIO
             Win32PInvoke.RtlInitUnicodeString(ref unicodeString, path);
         }
 
-        using var rootDirectoryHandle = rootDirectoory?.CreateScope();
+        using var rootDirectoryHandle = rootDirectory?.CreateScope();
 
         var objectAttributes = new OBJECT_ATTRIBUTES
         {
