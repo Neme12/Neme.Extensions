@@ -29,6 +29,8 @@ public static partial class FileIO
         string? path,
         FsFileOptions options)
     {
+        if (rootDirectoory is null && path is null)
+            throw new ArgumentException($"Either {nameof(rootDirectoory)} or {nameof(path)} must be provided.");
         if (rootDirectoory is not null)
             ValidateFileHandle(rootDirectoory);
         if (path is not null)

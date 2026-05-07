@@ -135,7 +135,7 @@ public static partial class FileIO
             null,
             options.Mode.ToWin32(),
             options.Options.ToWin32() | options.Attributes.ToWin32(),
-            options.TemplateFile);
+            null);
 
         if (handle.IsInvalid)
             throw Win32Marshal.GetExceptionForLastWin32Error(path);

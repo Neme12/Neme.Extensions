@@ -1,6 +1,4 @@
-﻿using Microsoft.Win32.SafeHandles;
-using Neme.Extensions.Ownership;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace Neme.Extensions.FileSystem;
 
@@ -32,9 +30,6 @@ public readonly record struct FsFileOptions
     public FileOptions Options { get; init; }
 
     public FileAttributes Attributes { get; init; }
-
-    [Borrowed]
-    public SafeFileHandle? TemplateFile { get; init; }
 
 #if NET6_0_OR_GREATER
     public static FsFileOptions FromFileStreamOptions(FileStreamOptions options)
