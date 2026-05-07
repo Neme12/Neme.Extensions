@@ -107,7 +107,8 @@ public readonly struct RegistryPath
         if (NeedsNormalization(path))
         {
             using var bufferLease = ArrayPool<char>.Shared.RentLeaseOrStackalloc(
-                path.Length, path.Length < Stackalloc.MaxLength<char>() ? stackalloc char[path.Length] : default);
+                path.Length,
+                path.Length < Stackalloc.MaxLength<char>() ? stackalloc char[path.Length] : default);
 
             var written = NormalizePath(path, bufferLease.Buffer);
 
