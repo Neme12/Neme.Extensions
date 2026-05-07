@@ -23,6 +23,12 @@ internal static class FsFileAccessExtensions
         {
             FILE_ACCESS_RIGHTS desiredAccess = 0;
 
+            if ((access & FsFileAccess.ReadAttributes) != 0)
+                desiredAccess |= FILE_ACCESS_RIGHTS.FILE_READ_ATTRIBUTES;
+
+            if ((access & FsFileAccess.WriteAttributes) != 0)
+                desiredAccess |= FILE_ACCESS_RIGHTS.FILE_WRITE_ATTRIBUTES;
+
             if ((access & FsFileAccess.Read) != 0)
                 desiredAccess |= FILE_ACCESS_RIGHTS.FILE_GENERIC_READ;
 
@@ -32,8 +38,9 @@ internal static class FsFileAccessExtensions
             if ((access & FsFileAccess.Delete) != 0)
                 desiredAccess |= FILE_ACCESS_RIGHTS.DELETE;
 
-            if ((access & FsFileAccess.WriteAttributes) != 0)
-                desiredAccess |= FILE_ACCESS_RIGHTS.FILE_WRITE_ATTRIBUTES;
+            if ((access & FsFileAccess.Execute) != 0)
+                desiredAccess |= FILE_ACCESS_RIGHTS.FILE_GENERIC_EXECUTE;
+
 
             return desiredAccess;
 

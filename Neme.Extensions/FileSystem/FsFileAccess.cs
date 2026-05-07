@@ -4,10 +4,11 @@
 public enum FsFileAccess
 {
     None = 0,
-    Read = 1,
-    Write = 2,
-    Delete = 4,
-    WriteAttributes = 8,
+    ReadAttributes = 1 << 0,
+    WriteAttributes = 1 << 1,
+    Read = 1 << 2 | ReadAttributes,
+    Write = 1 << 3 | WriteAttributes,
+    Delete = 1 << 4,
+    Execute = 1 << 5 | ReadAttributes,
     ReadWrite = Read | Write,
-    ReadWriteDelete = Read | Write | Delete,
 }
