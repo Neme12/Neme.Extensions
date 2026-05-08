@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using Roslyn.Utilities;
+using System.Runtime.InteropServices;
 
 namespace Neme.Extensions.InteropServices;
 
@@ -13,6 +14,7 @@ public static class SafeHandleExtensions
         }
     }
 
+    [NonCopyable]
     public struct Scope<THandle> : IDisposable
         where THandle : SafeHandle
     {

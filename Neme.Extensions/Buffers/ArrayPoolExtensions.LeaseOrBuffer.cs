@@ -1,4 +1,5 @@
-﻿using System.Buffers;
+﻿using Roslyn.Utilities;
+using System.Buffers;
 using System.Diagnostics;
 
 namespace Neme.Extensions.Buffers;
@@ -7,6 +8,7 @@ namespace Neme.Extensions.Buffers;
 
 public static partial class ArrayPoolExtensions
 {
+    [NonCopyable]
     public ref struct LeaseOrBuffer<T> : IDisposable
     {
         private ArrayPool<T>? _arrayPool;

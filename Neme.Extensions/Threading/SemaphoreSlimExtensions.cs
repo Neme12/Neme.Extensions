@@ -1,4 +1,6 @@
-﻿namespace Neme.Extensions.Threading;
+﻿using Roslyn.Utilities;
+
+namespace Neme.Extensions.Threading;
 
 public static class SemaphoreSlimExtensions
 {
@@ -11,9 +13,12 @@ public static class SemaphoreSlimExtensions
         }
     }
 
+    [NonCopyable]
     public struct Scope : IDisposable
     {
+#pragma warning disable RS0040
         private SemaphoreSlim _semaphore;
+#pragma warning restore RS0040
 
         internal Scope(SemaphoreSlim semaphore)
         {

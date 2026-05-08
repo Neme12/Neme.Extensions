@@ -25,6 +25,7 @@ public static partial class FileIO
         SafeFileHandle? rootDirectory,
         string? path,
         FsFileOptions options)
+#pragma warning disable RS0042
     {
         if (rootDirectory is null && path is null)
             throw new ArgumentException($"Either {nameof(rootDirectory)} or {nameof(path)} must be provided.");
@@ -69,4 +70,5 @@ public static partial class FileIO
 
         return new SafeFileHandle(handle, ownsHandle: true);
     }
+#pragma warning restore RS0042
 }

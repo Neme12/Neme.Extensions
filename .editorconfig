@@ -42,6 +42,9 @@ dotnet_diagnostic.CA1805.severity = none
 
 dotnet_diagnostic.CA1046.severity = none
 
+# RS0038: Prefer null literal
+dotnet_diagnostic.RS0038.severity = none
+
 [*.{cs,vb}]
 #### Naming styles ####
 

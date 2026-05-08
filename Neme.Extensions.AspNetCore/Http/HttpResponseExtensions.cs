@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Roslyn.Utilities;
 
 namespace Microsoft.Extensions.AspNetCore.Http;
 
@@ -13,9 +14,12 @@ public static class HttpResponseExtensions
         }
     }
 
+    [NonCopyable]
     public struct Scope : IAsyncDisposable
     {
+#pragma warning disable RS0040
         private HttpResponse _response;
+#pragma warning restore RS0040
 
         internal Scope(HttpResponse response)
         {

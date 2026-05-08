@@ -1,4 +1,5 @@
-﻿using System.IO.Pipelines;
+﻿using Roslyn.Utilities;
+using System.IO.Pipelines;
 
 namespace Neme.Extensions.IO.Pipelines;
 
@@ -13,9 +14,12 @@ public static class PipeWriterExtensions
         }
     }
 
+    [NonCopyable]
     public struct Scope : IDisposable, IAsyncDisposable
     {
+#pragma warning disable RS0040
         private PipeWriter _pipeWriter;
+#pragma warning restore RS0040
 
         internal Scope(PipeWriter pipeWriter)
         {

@@ -9,6 +9,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Roslyn.Diagnostics.Analyzers" Version="3.3.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
 	<ProjectReference Include="..\Neme.Extensions\Neme.Extensions.csproj" />
   </ItemGroup>
 
