@@ -40,10 +40,14 @@ dotnet_diagnostic.RS0026.severity = none
 # CA1805: Do not initialize unnecessarily
 dotnet_diagnostic.CA1805.severity = none
 
+# CA1046: Do not overload operators on reference types
 dotnet_diagnostic.CA1046.severity = none
 
 # RS0038: Prefer null literal
 dotnet_diagnostic.RS0038.severity = none
+
+# RS0016: Add public types and members to the declared API
+dotnet_diagnostic.RS0016.severity = none
 
 [*.{cs,vb}]
 #### Naming styles ####
