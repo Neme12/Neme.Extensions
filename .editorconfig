@@ -49,6 +49,8 @@ dotnet_diagnostic.RS0038.severity = none
 # RS0016: Add public types and members to the declared API
 dotnet_diagnostic.RS0016.severity = none
 
+dotnet_public_api_analyzer.require_api_files = true
+
 [*.{cs,vb}]
 #### Naming styles ####
 
