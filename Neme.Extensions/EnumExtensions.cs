@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+﻿using Neme.Extensions.Internal;
 using System.Runtime.CompilerServices;
 
 namespace Neme.Extensions;
@@ -16,27 +16,10 @@ public static class EnumExtensions
 
     extension(Enum)
     {
-        public static bool IsDefinedFlags<T>(T value)
+        public static bool FlagsDefined<T>(T value)
             where T : struct, Enum
         {
-            var flagsAttribute = typeof(T).GetCustomAttribute<FlagsAttribute>(); 
-            if  (flagsAttribute is null)
-                throw new InvalidOperationException("The enum type must be a [Flags] enum.");
-
-
-            var values =
-#if NET50_OR_GREATER
-                Enum.GetValues<T>();
-#else
-                Enum.GetValues(typeof(T)).Cast<T>();
-#endif
-
-            ulong allFlags = default;
-
-            foreach (var flag in values)
-                allFlags |= Convert.ToUInt64(flag);
-
-            return (Convert.ToUInt64(value) | allFlags) == allFlags;
+            return EnumCache<T>.Instance.FlagsDefined(value);
         }
     }
 }

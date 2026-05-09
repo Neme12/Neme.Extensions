@@ -104,102 +104,103 @@ public sealed class EnumExtensionsTests
     }
 
     [Fact]
-    public void IsDefinedFlags_WithValidDefinedFlags_ReturnsTrue()
+    public void FlagsDefined_WithValidDefinedFlags_ReturnsTrue()
     {
         // Arrange
         var value = TestFlags.Read | TestFlags.Write;
 
         // Act
-        var result = Enum.IsDefinedFlags(value);
+        var result = Enum.FlagsDefined(value);
 
         // Assert
         Assert.True(result);
     }
 
     [Fact]
-    public void IsDefinedFlags_WithNone_ReturnsTrue()
+    public void FlagsDefined_WithNone_ReturnsTrue()
     {
         // Arrange
         var value = TestFlags.None;
 
         // Act
-        var result = Enum.IsDefinedFlags(value);
+        var result = Enum.FlagsDefined(value);
 
         // Assert
         Assert.True(result);
     }
 
     [Fact]
-    public void IsDefinedFlags_WithAllFlags_ReturnsTrue()
+    public void FlagsDefined_WithAllFlags_ReturnsTrue()
     {
         // Arrange
         var value = TestFlags.All;
 
         // Act
-        var result = Enum.IsDefinedFlags(value);
+        var result = Enum.FlagsDefined(value);
 
         // Assert
         Assert.True(result);
     }
 
     [Fact]
-    public void IsDefinedFlags_WithUndefinedFlags_ReturnsFalse()
+    public void FlagsDefined_WithUndefinedFlags_ReturnsFalse()
     {
         // Arrange
         var value = (TestFlags)16;
 
         // Act
-        var result = Enum.IsDefinedFlags(value);
+        var result = Enum.FlagsDefined(value);
 
         // Assert
         Assert.False(result);
     }
 
     [Fact]
-    public void IsDefinedFlags_WithMixedDefinedAndUndefinedFlags_ReturnsFalse()
+    public void FlagsDefined_WithMixedDefinedAndUndefinedFlags_ReturnsFalse()
     {
         // Arrange
         var value = TestFlags.Read | (TestFlags)16;
 
         // Act
-        var result = Enum.IsDefinedFlags(value);
+        var result = Enum.FlagsDefined(value);
 
         // Assert
         Assert.False(result);
     }
 
     [Fact]
-    public void IsDefinedFlags_WithNonFlagsEnum_ThrowsInvalidOperationException()
+    public void FlagsDefined_WithNonFlagsEnum_ThrowsArgumentException()
     {
         // Arrange
         var value = NonFlagsEnum.One;
 
         // Act & Assert
-        var exception = Assert.Throws<InvalidOperationException>(() => Enum.IsDefinedFlags(value));
-        Assert.Equal("The enum type must be a [Flags] enum.", exception.Message);
+        var exception = Assert.Throws<ArgumentException2>("value", () => Enum.FlagsDefined(value));
+        Assert.Equal(value, exception.ActualValue.Value);
+        Assert.StartsWith("The enum type must be a [Flags] enum.", exception.Message);
     }
 
     [Fact]
-    public void IsDefinedFlags_WithSingleDefinedFlag_ReturnsTrue()
+    public void FlagsDefined_WithSingleDefinedFlag_ReturnsTrue()
     {
         // Arrange
         var value = TestFlags.Read;
 
         // Act
-        var result = Enum.IsDefinedFlags(value);
+        var result = Enum.FlagsDefined(value);
 
         // Assert
         Assert.True(result);
     }
 
     [Fact]
-    public void IsDefinedFlags_WithCombinedDefinedFlags_ReturnsTrue()
+    public void FlagsDefined_WithCombinedDefinedFlags_ReturnsTrue()
     {
         // Arrange
         var value = TestFlags.Read | TestFlags.Write | TestFlags.Execute;
 
         // Act
-        var result = Enum.IsDefinedFlags(value);
+        var result = Enum.FlagsDefined(value);
 
         // Assert
         Assert.True(result);
