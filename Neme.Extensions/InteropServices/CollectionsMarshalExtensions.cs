@@ -1,38 +1,45 @@
-﻿using System.Runtime.CompilerServices;
-using Neme.Extensions.Contracts;
-using Neme.Extensions.Internal;
+﻿using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Neme.Extensions.InteropServices;
 
 public static class CollectionsMarshalExtensions
 {
-    public static Memory<T> AsMemory<T>(List<T>? list)
-    {
-        if (list is null)
-            return default;
+#if !NET8_0_OR_GREATER
+    private static readonly FieldInfo? _itemsField = typeof(List<>)
+        .GetField("_items", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.ExactBinding);
+#endif
 
-        var array = ListShadow<T>.From(list)._items;
-        return array.AsMemory(0, list.Count);
+    private static class Accessors<T>
+    {
+#if NET8_0_OR_GREATER
+        [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_items")]
+        public static extern ref T[] GetItems(List<T> list);
+#else
+        public static readonly FieldInfo? ItemsField =
+            _itemsField is null
+                ? null
+                : (FieldInfo)typeof(List<T>).GetMemberWithSameMetadataDefinitionAs(_itemsField);
+#endif
     }
 
-#pragma warning disable CA1812 // Avoid uninstantiated internal classes
-    private sealed class ListShadow<T>
-#pragma warning restore CA1812 // Avoid uninstantiated internal classes
+    extension(CollectionsMarshal)
     {
-#pragma warning disable CS0649 // Field 'CollectionsMarshalEx.ListShadow<T>._size' is never assigned to, and will always have its default value 0
-        public T[] _items = null!;
-        public int _size;
-        public int _version;
-#pragma warning restore CS0649 // Field 'CollectionsMarshalEx.ListShadow<T>._size' is never assigned to, and will always have its default value 0
-
-        private ListShadow()
+        public static Memory<T> AsMemory<T>(List<T>? list)
         {
-        }
+            if (list is null)
+                return default;
 
-        public static ListShadow<T> From(List<T> list)
-        {
-            Assert.True(ShadowTypeUtilities.MatchesShadow(typeof(List<T>), typeof(ListShadow<T>)));
-            return Unsafe.As<ListShadow<T>>(list);
+#if NET8_0_OR_GREATER
+            return Accessors<T>.GetItems(list).AsMemory(0..list.Count);
+#else
+            if (Accessors<T>.ItemsField is not { } itemsField)
+                throw new PlatformNotSupportedException();
+
+            var array = (T[])itemsField.GetValue(list)!;
+            return array.AsMemory(0, list.Count);
+#endif
         }
     }
 }

@@ -138,7 +138,7 @@ public static class CollectionExtensionsPolyfill
             ThrowHelper.ThrowArgumentNullException(ExceptionArgument.list);
         }
 
-        CollectionsMarshalPolyfill.AsSpan(list).CopyTo(destination);
+        CollectionsMarshal.AsSpan(list).CopyTo(destination);
 #endif
     }
 }
