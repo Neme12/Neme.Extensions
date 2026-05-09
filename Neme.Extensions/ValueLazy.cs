@@ -1,7 +1,9 @@
-﻿using System.Runtime.InteropServices;
+﻿using Roslyn.Utilities;
+using System.Runtime.InteropServices;
 
-namespace Neme.Extensions.Utilities;
+namespace Neme.Extensions;
 
+[NonCopyable]
 [StructLayout(LayoutKind.Auto)]
 public struct ValueLazy<T>
 {
