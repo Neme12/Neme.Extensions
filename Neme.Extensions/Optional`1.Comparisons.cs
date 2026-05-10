@@ -94,8 +94,10 @@ public readonly partial struct Optional<T>
         return GetHashCode(comparer.AsGeneric<T>());
     }
 
+#pragma warning disable RS0042
     private static ValueLazy<Func<T, T, bool>?> s_opEqualityMethodLazy;
     private static ValueLazy<Func<T, T, bool>?> s_opInequalityMethodLazy;
+#pragma warning restore RS0042
 
     public static bool operator ==(Optional<T> left, Optional<T> right)
     {

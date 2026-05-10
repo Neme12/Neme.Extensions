@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Neme.Extensions.Buffers;
 using Neme.Extensions.Collections;
@@ -77,7 +78,7 @@ public static class SmallImmutableArray
         if (array._items is { IsDefault: false } items)
             return action(items.AsSpan());
 
-        Assert.InRange(array._length, 0, SmallImmutableArray<T>.InlineCapacity);
+        Debug.AssertInRange(array._length, 0, SmallImmutableArray<T>.InlineCapacity);
 
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
         return action(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef(in array._item1!), array._length));
@@ -101,7 +102,7 @@ public static class SmallImmutableArray
         if (array._items is { IsDefault: false } items)
             return action(items.AsSpan(), state);
 
-        Assert.InRange(array._length, 0, SmallImmutableArray<T>.InlineCapacity);
+        Debug.AssertInRange(array._length, 0, SmallImmutableArray<T>.InlineCapacity);
 
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
         return action(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef(in array._item1!), array._length), state);
@@ -124,7 +125,7 @@ public static class SmallImmutableArray
         if (builder._items is { } items)
             return action(ImmutableCollectionsMarshalExtensions.AsSpan(items));
 
-        Assert.InRange(builder._count, 0, SmallImmutableArray<T>.InlineCapacity);
+        Debug.AssertInRange(builder._count, 0, SmallImmutableArray<T>.InlineCapacity);
 
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
         return action(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef(in builder._item1!), builder._count));
@@ -148,7 +149,7 @@ public static class SmallImmutableArray
         if (builder._items is { } items)
             return action(ImmutableCollectionsMarshalExtensions.AsSpan(items), state);
 
-        Assert.InRange(builder._count, 0, SmallImmutableArray<T>.InlineCapacity);
+        Debug.AssertInRange(builder._count, 0, SmallImmutableArray<T>.InlineCapacity);
 
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
         return action(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef(in builder._item1!), builder._count), state);
@@ -166,7 +167,7 @@ public static class SmallImmutableArray
         if (array._items is { IsDefault: false } items)
             return ref ImmutableCollectionsMarshalPolyfill.AsArray(items)![0];
 
-        Assert.InRange(array._length, 0, SmallImmutableArray<T>.InlineCapacity);
+        Debug.AssertInRange(array._length, 0, SmallImmutableArray<T>.InlineCapacity);
         return ref array._item1!;
     }
 

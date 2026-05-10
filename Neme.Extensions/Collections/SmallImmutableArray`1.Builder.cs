@@ -47,8 +47,8 @@ public readonly partial struct SmallImmutableArray<T>
                 }
                 else
                 {
-                    Assert.InRange(_count, 1, InlineCapacity);
-                    Assert.InRange(index, 0, InlineCapacity - 1);
+                    Debug.AssertInRange(_count, 1, InlineCapacity);
+                    Debug.AssertInRange(index, 0, InlineCapacity - 1);
 
                     return index switch
                     {
@@ -72,8 +72,8 @@ public readonly partial struct SmallImmutableArray<T>
                     }
                     else
                     {
-                        Assert.InRange(_count, 1, InlineCapacity);
-                        Assert.InRange(index, 0, InlineCapacity - 1);
+                        Debug.AssertInRange(_count, 1, InlineCapacity);
+                        Debug.AssertInRange(index, 0, InlineCapacity - 1);
 
                         switch (index)
                         {
@@ -158,7 +158,7 @@ public readonly partial struct SmallImmutableArray<T>
                 }
                 else
                 {
-                    Assert.InRange(_count, 0, InlineCapacity);
+                    Debug.AssertInRange(_count, 0, InlineCapacity);
 
                     switch (_count)
                     {
@@ -227,7 +227,7 @@ public readonly partial struct SmallImmutableArray<T>
                 }
                 else
                 {
-                    Assert.InRange(_count, 0, InlineCapacity);
+                    Debug.AssertInRange(_count, 0, InlineCapacity);
 
                     switch (_count)
                     {
@@ -274,7 +274,7 @@ public readonly partial struct SmallImmutableArray<T>
                 }
                 else
                 {
-                    Assert.InRange(_count, 0, InlineCapacity);
+                    Debug.AssertInRange(_count, 0, InlineCapacity);
 
                     switch (_count)
                     {
@@ -326,7 +326,7 @@ public readonly partial struct SmallImmutableArray<T>
                 }
                 else
                 {
-                    Assert.InRange(_count, 0, InlineCapacity);
+                    Debug.AssertInRange(_count, 0, InlineCapacity);
 
                     if (_count > 0 && equalityComparer.Equals(_item0!, item))
                     {
@@ -355,8 +355,8 @@ public readonly partial struct SmallImmutableArray<T>
         [MemberNotNull(nameof(_items))]
         private void MoveInlineToBuilderCountIsLessThanMax(int capacity)
         {
-            Assert.Null(_items);
-            Assert.InRange(_count, 0, InlineCapacity);
+            Debug.AssertNull(_items);
+            Debug.AssertInRange(_count, 0, InlineCapacity);
 
             _items = ImmutableArray.CreateBuilder<T>(capacity);
 
@@ -376,8 +376,8 @@ public readonly partial struct SmallImmutableArray<T>
         [MemberNotNull(nameof(_items))]
         private void MoveInlineToBuilderCountIsMax(int capacity)
         {
-            Assert.Null(_items);
-            Assert.Equal(_count, InlineCapacity);
+            Debug.AssertNull(_items);
+            Debug.AssertEqual(_count, InlineCapacity);
 
             _items = ImmutableArray.CreateBuilder<T>(capacity);
             _items.Add(_item0!);
@@ -389,8 +389,8 @@ public readonly partial struct SmallImmutableArray<T>
 
         private void MoveBuilderToInlineCountIsLessThanMax()
         {
-            Assert.NotNull(_items);
-            Assert.InRange(_count, 0, InlineCapacity);
+            Debug.AssertNotNull(_items);
+            Debug.AssertInRange(_count, 0, InlineCapacity);
 
             if (_count > 0)
                 _item0 = _items[0];
@@ -534,8 +534,8 @@ public readonly partial struct SmallImmutableArray<T>
 
         private readonly SmallImmutableArray<T> InlineToImmutable()
         {
-            Assert.Null(_items);
-            Assert.InRange(_count, 0, InlineCapacity);
+            Debug.AssertNull(_items);
+            Debug.AssertInRange(_count, 0, InlineCapacity);
 
             return _count switch
             {
@@ -550,20 +550,20 @@ public readonly partial struct SmallImmutableArray<T>
         {
             if (_items is not null)
             {
-                Assert.GreaterThan(_count, InlineCapacity);
-                Assert.Equal(_count, _items.Count);
-                Assert.Default(_item0);
-                Assert.Default(_item1);
+                Debug.AssertGreaterThan(_count, InlineCapacity);
+                Debug.AssertEqual(_count, _items.Count);
+                Debug.AssertDefault(_item0);
+                Debug.AssertDefault(_item1);
             }
             else
             {
-                Assert.InRange(_count, 0, InlineCapacity);
+                Debug.AssertInRange(_count, 0, InlineCapacity);
 
                 if (_count < 2)
-                    Assert.Default(_item1);
+                    Debug.AssertDefault(_item1);
 
                 if (_count < 1)
-                    Assert.Default(_item0);
+                    Debug.AssertDefault(_item0);
             }
         }
 
@@ -594,7 +594,7 @@ public readonly partial struct SmallImmutableArray<T>
             {
 #pragma warning disable RS0042 // Do not copy value
                 // We *do* copy the value, but only use readonly methods, so it's safe.
-                Assert.NotNull(builder);
+                Debug.AssertNotNull(builder);
 
                 _builder = builder;
 #pragma warning restore RS0042 // Do not copy value
@@ -609,9 +609,9 @@ public readonly partial struct SmallImmutableArray<T>
             public bool MoveNext()
             {
                 if (_nextIndex == 0)
-                    Assert.Default(_current);
+                    Debug.AssertDefault(_current);
 
-                Assert.InRange(_nextIndex, 0, _builder.Count);
+                Debug.AssertInRange(_nextIndex, 0, _builder.Count);
 
                 if (_nextIndex == _builder.Count)
                     return false;

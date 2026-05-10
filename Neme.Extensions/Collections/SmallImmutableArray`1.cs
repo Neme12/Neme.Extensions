@@ -51,7 +51,7 @@ public readonly partial struct SmallImmutableArray<T> :
 
     internal SmallImmutableArray(ImmutableArray<T> items)
     {
-        Assert.NotDefault(items);
+        Debug.AssertNotDefault(items);
 
         switch (items)
         {
@@ -125,8 +125,8 @@ public readonly partial struct SmallImmutableArray<T> :
 
     internal SmallImmutableArray(bool _, ImmutableArray<T> items)
     {
-        Assert.NotEmpty(items);
-        Assert.GreaterThan(items.Length, InlineCapacity);
+        Debug.AssertNotEmpty(items);
+        Debug.AssertGreaterThan(items.Length, InlineCapacity);
 
         _items = items;
         _length = items.Length;
@@ -149,8 +149,8 @@ public readonly partial struct SmallImmutableArray<T> :
             }
             else
             {
-                Assert.InRange(_length, 1, InlineCapacity);
-                Assert.InRange(index, 0, InlineCapacity - 1);
+                Debug.AssertInRange(_length, 1, InlineCapacity);
+                Debug.AssertInRange(index, 0, InlineCapacity - 1);
 
                 return index switch
                 {
@@ -246,7 +246,7 @@ public readonly partial struct SmallImmutableArray<T> :
         if (_items is { } items)
             return items.AsSpan();
 
-        Assert.InRange(_length, 0, InlineCapacity);
+        Debug.AssertInRange(_length, 0, InlineCapacity);
         return MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef(in _item1!), _length);
     }
 
@@ -256,7 +256,7 @@ public readonly partial struct SmallImmutableArray<T> :
         Require.ArgumentInRange(Length, 0, InlineCapacity);
         Require.ArgumentInRange(length, 0, InlineCapacity);
 
-        Assert.Default(_items);
+        Debug.AssertDefault(_items);
         return MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef(in _item1!), length);
     }
 #endif
@@ -269,8 +269,8 @@ public readonly partial struct SmallImmutableArray<T> :
         if (_items is { } items)
             return ref items.ItemRef(index);
 
-        Assert.InRange(_length, 1, InlineCapacity);
-        Assert.InRange(index, 0, InlineCapacity - 1);
+        Debug.AssertInRange(_length, 1, InlineCapacity);
+        Debug.AssertInRange(index, 0, InlineCapacity - 1);
 
         switch (index)
         {
@@ -286,20 +286,20 @@ public readonly partial struct SmallImmutableArray<T> :
     {
         if (!_items.IsDefault)
         {
-            Assert.GreaterThan(_length, InlineCapacity);
-            Assert.Equal(_length, _items.Length);
-            Assert.Default(_item1);
-            Assert.Default(_item2);
+            Debug.AssertGreaterThan(_length, InlineCapacity);
+            Debug.AssertEqual(_length, _items.Length);
+            Debug.AssertDefault(_item1);
+            Debug.AssertDefault(_item2);
         }
         else
         {
-            Assert.InRange(_length, 0, InlineCapacity);
+            Debug.AssertInRange(_length, 0, InlineCapacity);
 
             if (_length < 2)
-                Assert.Default(_item2);
+                Debug.AssertDefault(_item2);
 
             if (_length < 1)
-                Assert.Default(_item1);
+                Debug.AssertDefault(_item1);
         }
     }
 
@@ -340,7 +340,7 @@ public readonly partial struct SmallImmutableArray<T> :
 
         if (!_items.IsDefault)
         {
-            Assert.NotDefault(other._items);
+            Debug.AssertNotDefault(other._items);
             return _items.SequenceEqual(other._items, equalityComparer);
         }
         else
@@ -389,7 +389,7 @@ public readonly partial struct SmallImmutableArray<T> :
 
         if (!_items.IsDefault)
         {
-            Assert.NotDefault(other._items);
+            Debug.AssertNotDefault(other._items);
             return _items.SequenceEqual(other._items, equalityComparer);
         }
         else
@@ -579,9 +579,9 @@ public readonly partial struct SmallImmutableArray<T> :
         public bool MoveNext()
         {
             if (_nextIndex == 0)
-                Assert.Default(_current);
+                Debug.AssertDefault(_current);
 
-            Assert.InRange(_nextIndex, 0, _array.Length);
+            Debug.AssertInRange(_nextIndex, 0, _array.Length);
 
             if (_nextIndex >= _array.Length)
                 return false;
