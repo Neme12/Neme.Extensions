@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using Neme.Extensions.Contracts;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -6,14 +7,16 @@ namespace Neme.Extensions.InteropServices;
 
 public static class CollectionsMarshalExtensions
 {
-#if !NET8_0_OR_GREATER
-    private static readonly FieldInfo? _itemsField = typeof(List<>)
-        .GetField("_items", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.ExactBinding);
+    // For some reason, UnsafeAccessor doesn't work on .NET 8:
+    // System.BadImageFormatException : Invalid usage of UnsafeAccessorAttribute.
+#if !NET9_0_OR_GREATER
+    private static readonly FieldInfo _itemsField = typeof(List<>)
+        .GetField("_items", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.ExactBinding).NotNull();
 #endif
 
     private static class Accessors<T>
     {
-#if NET8_0_OR_GREATER
+#if NET9_0_OR_GREATER
         [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_items")]
         public static extern ref T[] GetItems(List<T> list);
 #else
@@ -31,7 +34,7 @@ public static class CollectionsMarshalExtensions
             if (list is null)
                 return default;
 
-#if NET8_0_OR_GREATER
+#if NET9_0_OR_GREATER
             return Accessors<T>.GetItems(list).AsMemory(0..list.Count);
 #else
             if (Accessors<T>.ItemsField is not { } itemsField)
