@@ -1,7 +1,7 @@
 namespace Neme.Extensions.Ownership;
 
 public struct AsyncOwnedOrBorrowed<T>(T value, bool ownsValue = true) : IAsyncDisposable
-    where T : IAsyncDisposable
+    where T : IAsyncDisposable?
 {
     private T _value = value;
     private State _state = ownsValue ? State.Owned : State.Borrowed;
