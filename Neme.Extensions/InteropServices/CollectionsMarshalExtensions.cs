@@ -1,5 +1,4 @@
 ﻿using Neme.Extensions.Contracts;
-using Neme.Extensions.Reflection;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -21,12 +20,8 @@ public static class CollectionsMarshalExtensions
         [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_items")]
         public static extern ref T[] GetItems(List<T> list);
 #else
-        private static readonly FieldInfo _itemsField =
+        public static readonly FieldInfo ItemsField =
             typeof(List<T>).GetFieldWithSameMetadataDefinitionAs(CollectionsMarshalExtensions._itemsField);
-
-        public static readonly GetItemsDelegate GetItems = _itemsField.CreateGetDelegate<GetItemsDelegate>();
-
-        public delegate T[] GetItemsDelegate(List<T> list);
 #endif
     }
 
@@ -37,8 +32,13 @@ public static class CollectionsMarshalExtensions
             if (list is null)
                 return default;
 
+#if NET9_0_OR_GREATER
             var array = Accessors<T>.GetItems(list);
             return array.AsMemory(0, list.Count);
+#else
+            var array = (T[])Accessors<T>.ItemsField.GetValue(list)!;
+            return array.AsMemory(0, list.Count);
+#endif
         }
     }
 }
