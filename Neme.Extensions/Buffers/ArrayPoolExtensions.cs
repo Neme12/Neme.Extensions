@@ -1,5 +1,5 @@
-﻿using System.Buffers;
-using System.Diagnostics;
+﻿using Neme.Extensions.Contracts;
+using System.Buffers;
 
 namespace Neme.Extensions.Buffers;
 
@@ -11,11 +11,17 @@ public static partial class ArrayPoolExtensions
     {
         public Lease<T> RentLease(int minimumLength, bool clearArray = false)
         {
+            Require.ArgumentNotNull(arrayPool);
+            Require.ArgumentNotNegative(minimumLength);
+
             return new Lease<T>(arrayPool, minimumLength, clearArray);
         }
 
         public LeaseOrBuffer<T> RentLeaseOrStackalloc(int minimumLength, Span<T> buffer, bool clearArray = false)
         {
+            Require.ArgumentNotNull(arrayPool);
+            Require.ArgumentNotNegative(minimumLength);
+
             return buffer != default
                 ? new(buffer, clearArray)
                 : new(arrayPool, minimumLength, clearArray);

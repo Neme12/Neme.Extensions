@@ -1,4 +1,5 @@
-﻿using Roslyn.Utilities;
+﻿using Neme.Extensions.Contracts;
+using Roslyn.Utilities;
 using System.Buffers;
 using System.Diagnostics;
 
@@ -16,8 +17,11 @@ public static partial class ArrayPoolExtensions
         private Span<T> _buffer;
         private readonly bool _clearBuffer;
 
-        public LeaseOrBuffer(ArrayPool<T> arrayPool, int minimumLength, bool clearArray = false)
+        internal LeaseOrBuffer(ArrayPool<T> arrayPool, int minimumLength, bool clearArray = false)
         {
+            Debug.AssertNotNull(arrayPool);
+            Debug.AssertNotNegative(minimumLength);
+
             _arrayPool = arrayPool;
             _array = arrayPool.Rent(minimumLength);
             _buffer = default;
@@ -36,9 +40,9 @@ public static partial class ArrayPoolExtensions
         {
             get
             {
+                Debug.Assert(_array is null == _arrayPool is null);
                 ObjectDisposedException.ThrowIf(_array is null && _buffer == default, typeof(LeaseOrBuffer<T>));
 
-                Debug.Assert(_array is null == _arrayPool is null);
                 Debug.Assert(_array is null != (_buffer == default));
 
                 return _array is not null
@@ -51,9 +55,9 @@ public static partial class ArrayPoolExtensions
         {
             get
             {
+                Debug.Assert(_array is null == _arrayPool is null);
                 ObjectDisposedException.ThrowIf(_array is null && _buffer == default, typeof(LeaseOrBuffer<T>));
 
-                Debug.Assert(_array is null == _arrayPool is null);
                 Debug.Assert(_array is null != (_buffer == default));
 
                 return _array is not null
@@ -64,10 +68,11 @@ public static partial class ArrayPoolExtensions
 
         public void RentMore(int minimumLength = -1)
         {
+            Debug.Assert(_array is null == _arrayPool is null);
             ObjectDisposedException.ThrowIf(_array is null && _buffer == default, typeof(LeaseOrBuffer<T>));
 
-            Debug.Assert(_array is null == _arrayPool is null);
             Debug.Assert(_array is null != (_buffer == default));
+            Require.ArgumentGreaterThanOrEqual(minimumLength, -1);
 
             var length = _array is not null ? _array.Length : _buffer.Length;
 
@@ -88,9 +93,10 @@ public static partial class ArrayPoolExtensions
 
         public void Dispose()
         {
+            Debug.Assert(_array is null == _arrayPool is null);
+
             if (_array is not null || _buffer != default)
             {
-                Debug.Assert(_array is null == _arrayPool is null);
                 Debug.Assert(_array is null != (_buffer == default));
 
                 if (_array is not null)
