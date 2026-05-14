@@ -5,6 +5,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Neme.Polyfills\System\Globalization\CharUnicodeInfoPolyfill.cs" Link="Text\Polyfills\CharUnicodeInfoPolyfill.cs" />
+    <Compile Include="..\Neme.Polyfills\System\Globalization\CharUnicodeInfoPolyfillData.cs" Link="Text\Polyfills\CharUnicodeInfoPolyfillData.cs" />
+    <Compile Include="..\Neme.Polyfills\System\Text\UnicodeDebug.cs" Link="Text\Polyfills\UnicodeDebug.cs" />
+    <Compile Include="..\Neme.Polyfills\System\Text\UnicodeUtility.cs" Link="Text\Polyfills\UnicodeUtility.cs" />
+    <Compile Include="..\Neme.Polyfills\System\Text\Unicode\GraphemeClusterBreakType.cs" Link="Text\Polyfills\GraphemeClusterBreakType.cs" />
+    <Compile Include="..\Neme.Polyfills\System\Text\Unicode\TextSegmentationUtility.cs" Link="Text\Polyfills\TextSegmentationUtility.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="Neme.Extensions.Tests" />
   </ItemGroup>
 

@@ -5,9 +5,15 @@ using System.Text;
 
 namespace Neme.Extensions.Text;
 
-#if NETCOREAPP3_0_OR_GREATER
 public static class RuneExtensions
 {
+    public static bool IsValid(char ch) =>
+    !char.IsSurrogate(ch);
+
+    public static bool IsValid(char highSurrogate, char lowSurrogate) =>
+        char.IsHighSurrogate(highSurrogate) && char.IsLowSurrogate(lowSurrogate);
+
+#if NETCOREAPP3_0_OR_GREATER
     public static Rune Parse(string s)
     {
         if (s is null)
@@ -51,5 +57,5 @@ public static class RuneExtensions
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out Rune result) =>
         TryParse(s, out result);
-}
 #endif
+}
