@@ -1,41 +1,69 @@
 ﻿namespace Neme.Extensions.Ownership;
 
 public struct OwnedOrBorrowed<T>(T value, bool ownsValue = true) : IDisposable
-    where T : IDisposable
+    where T : IDisposable?
 {
     private T _value = value;
-    private bool _ownsValue = ownsValue;
+    private State _state = ownsValue ? State.Owned : State.Borrowed;
 
-    public readonly T Value =>
-        _value;
+    public readonly T Value
+    {
+        get
+        {
+            ObjectDisposedException.ThrowIf(_state == State.Disposed, this);
+            return _value;
+        }
+    }
 
-    public readonly bool OwnsValue =>
-        _ownsValue;
+    public readonly bool OwnsValue
+    {
+        get
+        {
+            ObjectDisposedException.ThrowIf(_state == State.Disposed, this);
+            return _state == State.Owned;
+        }
+    }
 
     public void SetValue(T newValue, bool ownsNewValue = true)
     {
-        if (_ownsValue)
-            _value.Dispose();
+        ObjectDisposedException.ThrowIf(_state == State.Disposed, this);
+
+        if (_state == State.Owned)
+            _value?.Dispose();
 
         _value = newValue;
-        _ownsValue = ownsNewValue;
+        _state = ownsNewValue ? State.Owned : State.Borrowed;
     }
 
     public T Move()
     {
-        if (!_ownsValue)
-            throw new InvalidOperationException("Cannot move a value that is not owned.");
+        ObjectDisposedException.ThrowIf(_state == State.Disposed, this);
 
-        _ownsValue = false;
+        if (_state != State.Owned)
+            ThrowNotOwned();
+
+        _state = State.Borrowed;
         return _value;
+
+        static void ThrowNotOwned() =>
+            throw new InvalidOperationException("Cannot move a value that is not owned.");
     }
 
     public void Dispose()
     {
-        if (_ownsValue)
+        if (_state != State.Disposed)
         {
-            _value.Dispose();
-            _ownsValue = false;
+            if (_state == State.Owned)
+                _value?.Dispose();
+
+            _state = State.Disposed;
         }
+    }
+
+    private enum State : byte
+    {
+        Owned,
+        Borrowed,
+        Disposed,
     }
 }

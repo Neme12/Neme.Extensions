@@ -4,38 +4,66 @@ public struct AsyncOwnedOrBorrowed<T>(T value, bool ownsValue = true) : IAsyncDi
     where T : IAsyncDisposable
 {
     private T _value = value;
-    private bool _ownsValue = ownsValue;
+    private State _state = ownsValue ? State.Owned : State.Borrowed;
 
-    public readonly T Value =>
-        _value;
+    public readonly T Value
+    {
+        get
+        {
+            ObjectDisposedException.ThrowIf(_state == State.Disposed, this);
+            return _value;
+        }
+    }
 
-    public readonly bool OwnsValue =>
-        _ownsValue;
+    public readonly bool OwnsValue
+    {
+        get
+        {
+            ObjectDisposedException.ThrowIf(_state == State.Disposed, this);
+            return _state == State.Owned;
+        }
+    }
 
     public async ValueTask SetValueAsync(T newValue, bool ownsNewValue = true)
     {
-        if (_ownsValue)
-            await _value.DisposeAsync();
+        ObjectDisposedException.ThrowIf(_state == State.Disposed, this);
+
+        if (_state == State.Owned && _value is { } value)
+            await value.DisposeAsync();
 
         _value = newValue;
-        _ownsValue = ownsNewValue;
+        _state = ownsNewValue ? State.Owned : State.Borrowed;
     }
 
     public T Move()
     {
-        if (!_ownsValue)
-            throw new InvalidOperationException("Cannot move a value that is not owned.");
+        ObjectDisposedException.ThrowIf(_state == State.Disposed, this);
 
-        _ownsValue = false;
+        if (_state != State.Owned)
+            ThrowNotOwned();
+
+        _state = State.Borrowed;
         return _value;
+
+        static void ThrowNotOwned() =>
+            throw new InvalidOperationException("Cannot move a value that is not owned.");
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (_ownsValue)
+        if (_state != State.Disposed)
         {
-            await _value.DisposeAsync();
-            _ownsValue = false;
+            if (_state == State.Owned && _value is { } value)
+                await value.DisposeAsync();
+
+            _state = State.Disposed;
         }
+    }
+
+    private enum State : byte
+    {
+        Owned,
+        Borrowed,
+        Disposed,
     }
 }
