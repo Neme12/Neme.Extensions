@@ -3,6 +3,7 @@ using Neme.Extensions.Buffers;
 using Neme.Extensions.InteropServices;
 using Neme.Extensions.Ownership;
 using Neme.Utilities.Contracts;
+using NodaTime;
 using System.Buffers;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -11,6 +12,7 @@ using System.Runtime.Versioning;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
+using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 
 namespace Neme.Extensions.FileSystem;
 
@@ -104,11 +106,49 @@ public static partial class FileIO
             stackalloc byte[sizeof(FILE_BASIC_INFO)],
             out var fileInfoBuffer);
 
-        // The values of FileAttributes map directly to Win32.
-        fileInfo.FileAttributes = (uint)attributes;
+        fileInfo.FileAttributes = (uint)attributes.ToWin32();
 
         if (!PInvoke.SetFileInformationByHandle(file, FILE_INFO_BY_HANDLE_CLASS.FileBasicInfo, fileInfoBuffer))
             throw Win32Marshal.GetExceptionForLastWin32Error();
+    }
+
+    [SupportedOSPlatform("windows5.1.2600")]
+    public static FileAttributes GetFileAttributes([Borrow] SafeFileHandle file)
+    {
+        ValidateFileHandle(file);
+
+        if (!PInvoke.GetFileInformationByHandle(file, out var fileInformation))
+            throw Win32Marshal.GetExceptionForLastWin32Error();
+
+        // The values of FileAttributes map directly to Win32.
+        return FileAttributes.FromWin32((FILE_FLAGS_AND_ATTRIBUTES)fileInformation.dwFileAttributes);
+    }
+
+    [SupportedOSPlatform("windows5.1.2600")]
+    public static FsFileInfo GetFileInfo([Borrow] SafeFileHandle file)
+    {
+        ValidateFileHandle(file);
+
+        if (!PInvoke.GetFileInformationByHandle(file, out var fileInformation))
+            throw Win32Marshal.GetExceptionForLastWin32Error();
+
+        return new FsFileInfo
+        {
+            Attributes = FileAttributes.FromWin32((FILE_FLAGS_AND_ATTRIBUTES)fileInformation.dwFileAttributes),
+            CreationTime = InstantFromFileTime(fileInformation.ftCreationTime),
+            LastAccessTime = InstantFromFileTime(fileInformation.ftLastAccessTime),
+            LastWriteTime = InstantFromFileTime(fileInformation.ftLastWriteTime),
+            Size = (long)(((ulong)fileInformation.nFileSizeHigh << 32) | fileInformation.nFileSizeLow),
+        };
+    }
+
+    private static Instant InstantFromFileTime(FILETIME fileTime)
+    {
+        if (fileTime.dwHighDateTime == 0 && fileTime.dwLowDateTime == 0)
+            return Instant.MinValue;
+
+        var ticks = (long)(((ulong)fileTime.dwHighDateTime << 32) | (uint)fileTime.dwLowDateTime);
+        return Instant.FromDateTimeOffset(DateTimeOffset.FromFileTime(ticks));
     }
 
     private static unsafe ref T AllocateFileInfo<T>(Span<byte> buffer, out Span<byte> fileInfoBuffer) where T : unmanaged

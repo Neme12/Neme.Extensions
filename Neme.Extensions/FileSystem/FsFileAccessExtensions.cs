@@ -43,7 +43,6 @@ internal static class FsFileAccessExtensions
 
 
             return desiredAccess;
-
         }
     }
 }
