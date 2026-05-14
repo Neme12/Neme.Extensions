@@ -12,17 +12,26 @@ public static partial class FileIO
 {
     [SupportedOSPlatform("windows5.1.2600")]
     [return: OwnershipTransfer]
-    public static SafeFileHandle Reopen(SafeFileHandle file, FsFileOptions options)
+    public static SafeFileHandle Reopen([Borrow] SafeFileHandle file, FsFileOptions options)
     {
         ValidateFileHandle(file);
 
-        return Open(file, null, options);
+        return OpenBy(file, null, options);
     }
 
     [SupportedOSPlatform("windows5.1.2600")]
     [return: OwnershipTransfer]
-    public static unsafe SafeFileHandle Open(
-        SafeFileHandle? rootDirectory,
+    public static CheckedFileStream ReopenFileStream([Borrow] SafeFileHandle file, FsFileOptions options)
+    {
+        ValidateFileHandle(file);
+
+        return OpenFileStreamBy(file, null, options);
+    }
+
+    [SupportedOSPlatform("windows5.1.2600")]
+    [return: OwnershipTransfer]
+    public static unsafe SafeFileHandle OpenBy(
+        [Borrow] SafeFileHandle? rootDirectory,
         string? path,
         FsFileOptions options)
 #pragma warning disable RS0042
@@ -71,4 +80,14 @@ public static partial class FileIO
         return new SafeFileHandle(handle, ownsHandle: true);
     }
 #pragma warning restore RS0042
+
+    [SupportedOSPlatform("windows5.1.2600")]
+    [return: OwnershipTransfer]
+    public static unsafe CheckedFileStream OpenFileStreamBy(
+        [Borrow] SafeFileHandle? rootDirectory,
+        string? path,
+        FsFileOptions options)
+    {
+        return CreateFileStream(OpenBy(rootDirectory, path, options), options);
+    }
 }

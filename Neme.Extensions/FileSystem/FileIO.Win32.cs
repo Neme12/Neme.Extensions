@@ -1,6 +1,8 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using Neme.Extensions.Buffers;
 using Neme.Extensions.InteropServices;
+using Neme.Extensions.Ownership;
+using Neme.Utilities.Contracts;
 using System.Buffers;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -18,7 +20,7 @@ public static partial class FileIO
     private const int MaxWindowsPathLength = short.MaxValue - 4; // 4 for the \\?\ prefix.
 
     [SupportedOSPlatform("windows6.0.6000")]
-    public static string GetPath(SafeFileHandle file)
+    public static string GetPath([Borrow] SafeFileHandle file)
     {
         ValidateFileHandle(file);
 
@@ -47,7 +49,7 @@ public static partial class FileIO
     }
 
     [SupportedOSPlatform("windows6.0.6000")]
-    public static unsafe void Move(SafeFileHandle sourceFile, string destFileName, bool overwrite = false)
+    public static unsafe void Move([Borrow] SafeFileHandle sourceFile, string destFileName, bool overwrite = false)
     {
         ValidateFileHandle(sourceFile);
         ValidateFileName(destFileName);
@@ -79,7 +81,7 @@ public static partial class FileIO
     }
 
     [SupportedOSPlatform("windows6.0.6000")]
-    public static unsafe void Delete(SafeFileHandle file)
+    public static unsafe void Delete([Borrow] SafeFileHandle file)
     {
         ValidateFileHandle(file);
 
@@ -94,7 +96,7 @@ public static partial class FileIO
     }
 
     [SupportedOSPlatform("windows6.0.6000")]
-    public static unsafe void SetFileAttributes(SafeFileHandle file, FileAttributes attributes)
+    public static unsafe void SetFileAttributes([Borrow] SafeFileHandle file, FileAttributes attributes)
     {
         ValidateFileHandle(file);
 
@@ -124,6 +126,7 @@ public static partial class FileIO
     }
 
     [SupportedOSPlatform("windows5.1.2600")]
+    [return: OwnershipTransfer]
     public static SafeFileHandle Open(string path, FsFileOptions options)
     {
         ValidatePath(path);
@@ -143,8 +146,14 @@ public static partial class FileIO
         return handle;
     }
 
+    [SupportedOSPlatform("windows5.1.2600")]
+    [return: OwnershipTransfer]
+    public static CheckedFileStream OpenFileStream(string path, FsFileOptions options) =>
+        CreateFileStream(Open(path, options), options);
+
     [SupportedOSPlatform("windows5.0")]
-    public static SafeFileHandle Duplicate(SafeFileHandle file, FsFileAccess? access)
+    [return: OwnershipTransfer]
+    public static SafeFileHandle Duplicate([Borrow] SafeFileHandle file, FsFileAccess? access)
     {
         ValidateFileHandle(file);
 
@@ -165,7 +174,8 @@ public static partial class FileIO
         return duplicatedHandle;
     }
 
-    public static CheckedFileStream CreateFileStream(SafeFileHandle file, FsFileOptions options, int bufferSize = 4096)
+    [return: OwnershipTransfer]
+    public static CheckedFileStream CreateFileStream([OwnershipTransfer] SafeFileHandle file, FsFileOptions options, int bufferSize = 4096)
     {
         ValidateFileHandle(file);
 
@@ -180,7 +190,7 @@ public static partial class FileIO
         return new CheckedFileStream(file, access, bufferSize, isAsync: (options.Options & FileOptions.Asynchronous) != 0);
     }
 
-    private static void ValidateFileHandle(SafeFileHandle? file, bool optional = false,  [CallerArgumentExpression(nameof(file))] string? paramName = null)
+    private static void ValidateFileHandle([Borrow] SafeFileHandle? file, bool optional = false,  [CallerArgumentExpression(nameof(file))] string? paramName = null)
     {
         if (optional && file is null)
             return;
@@ -188,7 +198,7 @@ public static partial class FileIO
         ArgumentNullException.ThrowIfNull(file, paramName);
 
         if (file.IsClosed || file.IsInvalid)
-            throw new ArgumentException("File handle must be valid and open.", paramName);
+            Throw.ArgumentException(file, "File handle must be valid and open.", paramName);
     }
 
     private static void ValidateFileName(string? fileName, bool optional = false, [CallerArgumentExpression(nameof(fileName))] string? paramName = null)
@@ -199,7 +209,7 @@ public static partial class FileIO
         ArgumentException.ThrowIfNullOrEmpty(fileName, paramName);
 
         if (fileName.Length > MaxWindowsFileNameLength)
-            throw new ArgumentException($"File name cannot exceed {MaxWindowsFileNameLength} characters.", paramName);
+            Throw.ArgumentException(fileName, $"File name cannot exceed {MaxWindowsFileNameLength} characters.", paramName);
     }
 
     private static void ValidatePath(string? path, bool optional = false, [CallerArgumentExpression(nameof(path))] string? paramName = null)
@@ -210,6 +220,6 @@ public static partial class FileIO
         ArgumentException.ThrowIfNullOrEmpty(path, paramName);
 
         if (path.Length > MaxWindowsPathLength)
-            throw new ArgumentException($"Path cannot exceed {MaxWindowsPathLength} characters.", paramName);
+            Throw.ArgumentException(path, $"Path cannot exceed {MaxWindowsPathLength} characters.", paramName);
     }
 }
