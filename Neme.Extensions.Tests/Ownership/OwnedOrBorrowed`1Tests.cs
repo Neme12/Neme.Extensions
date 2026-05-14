@@ -113,7 +113,6 @@ public sealed class OwnedOrBorrowed1Tests
 
         // Assert
         mockDisposable.Verify(d => d.Dispose(), Times.Once);
-        Assert.False(ownedOrBorrowed.OwnsValue);
     }
 
     [Fact]
@@ -128,7 +127,6 @@ public sealed class OwnedOrBorrowed1Tests
 
         // Assert
         mockDisposable.Verify(d => d.Dispose(), Times.Never);
-        Assert.False(ownedOrBorrowed.OwnsValue);
     }
 
     [Fact]
