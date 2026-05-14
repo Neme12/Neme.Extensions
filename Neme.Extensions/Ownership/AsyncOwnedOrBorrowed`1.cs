@@ -3,7 +3,7 @@ namespace Neme.Extensions.Ownership;
 public struct AsyncOwnedOrBorrowed<T>(T value, bool ownsValue = true) : IAsyncDisposable
     where T : IAsyncDisposable
 {
-    private readonly T _value = value;
+    private T _value = value;
     private bool _ownsValue = ownsValue;
 
     public readonly T Value =>
@@ -11,6 +11,15 @@ public struct AsyncOwnedOrBorrowed<T>(T value, bool ownsValue = true) : IAsyncDi
 
     public readonly bool OwnsValue =>
         _ownsValue;
+
+    public async ValueTask SetValueAsync(T newValue, bool ownsNewValue = true)
+    {
+        if (_ownsValue)
+            await _value.DisposeAsync();
+
+        _value = newValue;
+        _ownsValue = ownsNewValue;
+    }
 
     public T Move()
     {

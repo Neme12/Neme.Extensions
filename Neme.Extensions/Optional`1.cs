@@ -77,6 +77,7 @@ public readonly partial struct Optional<T> :
     public T? GetValueOrDefault() =>
         _value;
 
+    [return: NotNullIfNotNull(nameof(defaultValue))]
     public T? GetValueOrDefault(T? defaultValue) =>
         _hasValue ? _value : defaultValue;
 
