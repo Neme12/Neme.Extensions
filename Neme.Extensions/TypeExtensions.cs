@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using Neme.Extensions.Contracts;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 
 namespace Neme.Extensions;
 
@@ -96,4 +98,114 @@ public static class TypeExtensions
 
         return type.IsClass && type.IsSealed && type.BaseType == typeof(MulticastDelegate);
     }
+
+    public static bool IsReferenceType(this Type type)
+    {
+        Require.ArgumentNotNull(type);
+
+        if (type.IsGenericParameter)
+        {
+            var attributes = type.GenericParameterAttributes;
+            if (attributes.HasFlag(GenericParameterAttributes.ReferenceTypeConstraint))
+                return true;
+
+            var constraints = type.GetGenericParameterConstraints();
+            if (constraints.Any(type => type != typeof(object) && type != typeof(ValueType) && !type.IsInterface && type.IsReferenceType()))
+                return true;
+
+            return false;
+        }
+
+        return
+            (type.IsClass || type.IsInterface)
+            && !type.IsByRef
+            && !type.IsPointer
+#if NET8_0_OR_GREATER
+            && !type.IsFunctionPointer
+#endif
+            ;
+    }
+
+    public static bool IsNullable(this Type type)
+    {
+        Require.ArgumentNotNull(type);
+
+        return
+            type.IsByRef ||
+            type.IsPointer ||
+#if NET8_0_OR_GREATER
+            type.IsFunctionPointer ||
+#endif
+            type.GetGenericTypeDefinitionOrSelf() == typeof(Nullable<>) ||
+            type.IsReferenceType();
+    }
+
+    public static Type GetGenericTypeDefinitionOrSelf(this Type type)
+    {
+        Require.ArgumentNotNull(type);
+
+        if (type.IsGenericType)
+            return type.GetGenericTypeDefinition();
+
+        return type;
+    }
+
+    public static FieldInfo GetFieldWithSameMetadataDefinitionAs(this Type type, FieldInfo member)
+    {
+        Require.ArgumentNotNull(type);
+        Require.ArgumentNotNull(member);
+
+        return (FieldInfo)type.GetMemberWithSameMetadataDefinitionAs(member);
+    }
+
+    public static PropertyInfo GetPropertyWithSameMetadataDefinitionAs(this Type type, PropertyInfo member)
+    {
+        Require.ArgumentNotNull(type);
+        Require.ArgumentNotNull(member);
+
+        return (PropertyInfo)type.GetMemberWithSameMetadataDefinitionAs(member);
+    }
+
+    public static EventInfo GetEventWithSameMetadataDefinitionAs(this Type type, EventInfo member)
+    {
+        Require.ArgumentNotNull(type);
+        Require.ArgumentNotNull(member);
+
+        return (EventInfo)type.GetMemberWithSameMetadataDefinitionAs(member);
+    }
+
+    public static MethodInfo GetMethodWithSameMetadataDefinitionAs(this Type type, MethodInfo member)
+    {
+        Require.ArgumentNotNull(type);
+        Require.ArgumentNotNull(member);
+
+        return (MethodInfo)type.GetMemberWithSameMetadataDefinitionAs(member);
+    }
+
+    public static ConstructorInfo GetConstructorWithSameMetadataDefinitionAs(this Type type, ConstructorInfo member)
+    {
+        Require.ArgumentNotNull(type);
+        Require.ArgumentNotNull(member);
+
+        return (ConstructorInfo)type.GetMemberWithSameMetadataDefinitionAs(member);
+    }
+
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+    public static MethodInfo? GetMethod(
+        [DynamicallyAccessedMembers(
+            DynamicallyAccessedMemberTypes.PublicMethods |
+            DynamicallyAccessedMemberTypes.NonPublicMethods)] this Type type,
+        string name,
+        int genericParameterCount,
+        BindingFlags bindingAttr,
+        Type[] types)
+    {
+        Require.ArgumentNotNull(type);
+        Require.ArgumentNotNull(name);
+        Require.ArgumentNotNegative(genericParameterCount);
+        Require.ArgumentNotNullAndItemsNotNull(types);
+
+        return type.GetMethod(name, genericParameterCount, bindingAttr, binder: null, types, modifiers: null);
+    }
+#endif
 }
