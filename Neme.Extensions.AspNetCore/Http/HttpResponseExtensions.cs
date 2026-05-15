@@ -33,8 +33,9 @@ public static class HttpResponseExtensions
         {
             if (_response is not null)
             {
+                var response = _response;
                 _response = null!;
-                await _response.CompleteAsync();
+                await response.CompleteAsync();
             }
         }
     }
