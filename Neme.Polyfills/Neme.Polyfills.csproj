@@ -4,6 +4,7 @@
     <TargetFrameworks>$(LibraryTargetFrameworks)</TargetFrameworks>
 	<DefineConstants>$(DefineConstants);SYSTEM_PRIVATE_CORELIB;POLYFILLS</DefineConstants>
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	<AnalysisMode>Minimum</AnalysisMode>
   </PropertyGroup>
 
   <ItemGroup>
