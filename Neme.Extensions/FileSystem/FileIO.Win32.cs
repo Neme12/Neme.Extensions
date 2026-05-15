@@ -167,7 +167,7 @@ public static partial class FileIO
 
     [SupportedOSPlatform("windows5.1.2600")]
     [return: OwnershipTransfer]
-    public static SafeFileHandle Open(string path, FsFileOptions options)
+    public static SafeFileHandle OpenHandle(string path, FsFileOptions options)
     {
         ValidatePath(path);
 
@@ -188,12 +188,12 @@ public static partial class FileIO
 
     [SupportedOSPlatform("windows5.1.2600")]
     [return: OwnershipTransfer]
-    public static CheckedFileStream OpenFileStream(string path, FsFileOptions options) =>
-        CreateFileStream(Open(path, options), options);
+    public static FsFile Open(string path, FsFileOptions options) =>
+        new(OpenHandle(path, options), options);
 
     [SupportedOSPlatform("windows5.0")]
     [return: OwnershipTransfer]
-    public static SafeFileHandle Duplicate([Borrow] SafeFileHandle file, FsFileAccess? access)
+    public static SafeFileHandle DuplicateHandle([Borrow] SafeFileHandle file, FsFileAccess? access)
     {
         ValidateFileHandle(file);
 
@@ -213,6 +213,11 @@ public static partial class FileIO
 
         return duplicatedHandle;
     }
+
+    [SupportedOSPlatform("windows5.0")]
+    [return: OwnershipTransfer]
+    public static FsFile Duplicate([Borrow] FsFile file) =>
+        new(DuplicateHandle(file.Handle, file.Options.Access), file.Options);
 
     [return: OwnershipTransfer]
     public static CheckedFileStream CreateFileStream([OwnershipTransfer] SafeFileHandle file, FsFileOptions options, int bufferSize = 4096)

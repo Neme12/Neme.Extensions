@@ -12,25 +12,25 @@ public static partial class FileIO
 {
     [SupportedOSPlatform("windows5.1.2600")]
     [return: OwnershipTransfer]
-    public static SafeFileHandle Reopen([Borrow] SafeFileHandle file, FsFileOptions options)
+    public static SafeFileHandle ReopenHandle([Borrow] SafeFileHandle file, FsFileOptions options)
     {
         ValidateFileHandle(file);
 
-        return OpenBy(file, null, options);
+        return OpenHandleBy(file, null, options);
     }
 
     [SupportedOSPlatform("windows5.1.2600")]
     [return: OwnershipTransfer]
-    public static CheckedFileStream ReopenFileStream([Borrow] SafeFileHandle file, FsFileOptions options)
+    public static FsFile Reopen([Borrow] FsFile file)
     {
-        ValidateFileHandle(file);
+        ValidateFileHandle(file.Handle);
 
-        return OpenFileStreamBy(file, null, options);
+        return new(OpenHandleBy(file.Handle, null, file.Options), file.Options);
     }
 
     [SupportedOSPlatform("windows5.1.2600")]
     [return: OwnershipTransfer]
-    public static unsafe SafeFileHandle OpenBy(
+    public static unsafe SafeFileHandle OpenHandleBy(
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
         FsFileOptions options)
@@ -83,11 +83,11 @@ public static partial class FileIO
 
     [SupportedOSPlatform("windows5.1.2600")]
     [return: OwnershipTransfer]
-    public static unsafe CheckedFileStream OpenFileStreamBy(
+    public static unsafe FsFile OpenBy(
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
         FsFileOptions options)
     {
-        return CreateFileStream(OpenBy(rootDirectory, path, options), options);
+        return new(OpenHandleBy(rootDirectory, path, options), options);
     }
 }

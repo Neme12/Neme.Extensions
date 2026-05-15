@@ -72,8 +72,7 @@ public sealed class PartialFileStream :
         if (createDirectory)
             Directory.CreateDirectory(Path.GetDirectoryName(finalPath)!);
 
-        var fileHandle = FileIO.Open(partialPath, options);
-        var fileStream = FileIO.CreateFileStream(fileHandle, options);
+        var fileStream = FileIO.Open(partialPath, options).CreateFileStream();
         return new PartialFileStream(fileStream, finalPath, options);
     }
 
@@ -86,8 +85,7 @@ public sealed class PartialFileStream :
 
         var reopenOptions = _options with { Mode = FileMode.Open };
 
-        var fileHandle = FileIO.Open(FinalPath + ".part", reopenOptions);
-        _fileStream = FileIO.CreateFileStream(fileHandle, reopenOptions);
+        _fileStream = FileIO.Open(FinalPath + ".part", reopenOptions).CreateFileStream();
         _state = State.Open;
     }
 
