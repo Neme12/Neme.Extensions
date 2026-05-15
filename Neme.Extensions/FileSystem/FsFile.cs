@@ -7,10 +7,11 @@ namespace Neme.Extensions.FileSystem;
 
 public sealed class FsFile : IDisposable
 {
+    [Owned]
     private SafeFileHandle _handle;
     private readonly FsFileOptions _options;
 
-    public FsFile(SafeFileHandle handle, FsFileOptions options)
+    public FsFile([OwnershipTransfer] SafeFileHandle handle, FsFileOptions options)
     {
         _handle = handle;
         _options = options;
@@ -23,6 +24,7 @@ public sealed class FsFile : IDisposable
     }
 #endif
 
+    [Owned]
     public SafeFileHandle Handle
     {
         get
@@ -48,6 +50,7 @@ public sealed class FsFile : IDisposable
         return FileIO.CreateFileStream(_handle, _options, bufferSize);
     }
 
+    [return: OwnershipTransfer]
     public SafeFileHandle TakeHandle()
     {
         ObjectDisposedException.ThrowIf(_handle is null, this);
