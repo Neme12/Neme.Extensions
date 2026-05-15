@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using Neme.Extensions.IO;
+using Neme.Extensions.Ownership;
 using System.Diagnostics;
 
 namespace Neme.Extensions.FileSystem;
@@ -40,6 +41,7 @@ public sealed class FsFile : IDisposable
         }
     }
 
+    [return: OwnershipTransfer]
     public CheckedFileStream CreateFileStream(int bufferSize = FileStreamExtensions.DefaultBufferSize)
     {
         ObjectDisposedException.ThrowIf(_handle is null, this);
