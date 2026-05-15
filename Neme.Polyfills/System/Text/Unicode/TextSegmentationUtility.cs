@@ -1,6 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if !POLYFILLS
+using Roslyn.Utilities;
+#endif
 using System.Buffers;
 using System.Globalization;
 using System.Runtime.InteropServices;
@@ -211,6 +214,9 @@ internal static class TextSegmentationUtility
         return GetLengthOfFirstExtendedGraphemeCluster(input, _runeDecoder);
     }
 
+#if !POLYFILLS
+    [NonDefaultable]
+#endif
     [StructLayout(LayoutKind.Auto)]
     private ref struct Processor<T>
     {

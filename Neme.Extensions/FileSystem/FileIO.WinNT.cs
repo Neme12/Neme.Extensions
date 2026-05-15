@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using Neme.Extensions.InteropServices;
 using Neme.Extensions.Ownership;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using Windows.Wdk.Foundation;
 using Windows.Wdk.Storage.FileSystem;
@@ -82,6 +83,26 @@ public static partial class FileIO
 #pragma warning restore RS0042
 
     [SupportedOSPlatform("windows5.1.2600")]
+    public static bool TryOpenHandleBy(
+        [Borrow] SafeFileHandle? rootDirectory,
+        string? path,
+        FsFileOptions options,
+        [NotNullWhen(true)][OwnershipTransfer] out SafeFileHandle? file,
+        bool requireDirectory = true)
+    {
+        try
+        {
+            file = OpenHandleBy(rootDirectory, path, options);
+            return true;
+        }
+        catch (Exception e) when (e is FileNotFoundException || !requireDirectory && e is DirectoryNotFoundException)
+        {
+            file = null;
+            return false;
+        }
+    }
+
+    [SupportedOSPlatform("windows5.1.2600")]
     [return: OwnershipTransfer]
     public static unsafe FsFile OpenBy(
         [Borrow] SafeFileHandle? rootDirectory,
@@ -89,5 +110,26 @@ public static partial class FileIO
         FsFileOptions options)
     {
         return new(OpenHandleBy(rootDirectory, path, options), options);
+    }
+
+    [SupportedOSPlatform("windows5.1.2600")]
+    [return: OwnershipTransfer]
+    public static bool TryOpenBy(
+        [Borrow] SafeFileHandle? rootDirectory,
+        string? path,
+        FsFileOptions options,
+        [NotNullWhen(true)][OwnershipTransfer] out FsFile? file,
+        bool requireDirectory = true)
+    {
+        try
+        {
+            file = OpenBy(rootDirectory, path, options);
+            return true;
+        }
+        catch (Exception e) when (e is FileNotFoundException || !requireDirectory && e is DirectoryNotFoundException)
+        {
+            file = null;
+            return false;
+        }
     }
 }

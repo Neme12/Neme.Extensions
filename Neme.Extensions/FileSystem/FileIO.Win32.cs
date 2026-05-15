@@ -6,6 +6,7 @@ using Neme.Utilities.Contracts;
 using NodaTime;
 using System.Buffers;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -187,9 +188,48 @@ public static partial class FileIO
     }
 
     [SupportedOSPlatform("windows5.1.2600")]
+    public static bool TryOpenHandle(
+        string path,
+        FsFileOptions options,
+        [NotNullWhen(true)][OwnershipTransfer] out SafeFileHandle? handle,
+        bool requireDirectory = true)
+    {
+        try
+        {
+            handle = OpenHandle(path, options);
+            return true;
+
+        }
+        catch (Exception e) when (e is FileNotFoundException || !requireDirectory && e is DirectoryNotFoundException)
+        {
+            handle = null;
+            return false;
+        }
+    }
+
+    [SupportedOSPlatform("windows5.1.2600")]
     [return: OwnershipTransfer]
     public static FsFile Open(string path, FsFileOptions options) =>
         new(OpenHandle(path, options), options);
+
+    [SupportedOSPlatform("windows5.1.2600")]
+    public static bool TryOpen(
+        string path,
+        FsFileOptions options,
+        [NotNullWhen(true)] [OwnershipTransfer] out FsFile? file,
+        bool requireDirectory = true)
+    {
+        try
+        {
+            file = Open(path, options);
+            return true;
+        }
+        catch (Exception e) when (e is FileNotFoundException || !requireDirectory && e is DirectoryNotFoundException)
+        {
+            file = null;
+            return false;
+        }
+    }
 
     [SupportedOSPlatform("windows5.0")]
     [return: OwnershipTransfer]
