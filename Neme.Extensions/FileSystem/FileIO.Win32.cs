@@ -260,9 +260,17 @@ public static partial class FileIO
         new(DuplicateHandle(file.Handle, file.Options.Access), file.Options);
 
     [return: OwnershipTransfer]
-    public static CheckedFileStream CreateFileStream([OwnershipTransfer] SafeFileHandle file, FsFileOptions options, int bufferSize = 4096)
+    public static CheckedFileStream CreateFileStream(
+        [OwnershipTransfer] SafeFileHandle file,
+        FsFileOptions options,
+        bool leaveOpen = false,
+        int bufferSize = 4096)
     {
         ValidateFileHandle(file);
+
+        using var handle = OwnedOrBorrowed.Create(leaveOpen
+            ? new SafeFileHandle(file.DangerousGetHandle(), ownsHandle: false)
+            : file);
 
         FileAccess access = 0;
 
@@ -272,7 +280,7 @@ public static partial class FileIO
         if ((options.Access & FsFileAccess.Write) != 0)
             access |= FileAccess.Write;
 
-        return new CheckedFileStream(file, access, bufferSize, isAsync: (options.Options & FileOptions.Asynchronous) != 0);
+        return new CheckedFileStream(handle.Move(), access, bufferSize, isAsync: (options.Options & FileOptions.Asynchronous) != 0);
     }
 
     private static void ValidateFileHandle([Borrow] SafeFileHandle? file, bool optional = false,  [CallerArgumentExpression(nameof(file))] string? paramName = null)

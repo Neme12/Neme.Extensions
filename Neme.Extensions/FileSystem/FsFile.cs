@@ -44,10 +44,19 @@ public sealed class FsFile : IDisposable
     }
 
     [return: OwnershipTransfer]
-    public CheckedFileStream CreateFileStream(int bufferSize = FileStreamExtensions.DefaultBufferSize)
+    public CheckedFileStream CreateFileStream(bool leaveOpen = false, int bufferSize = FileStreamExtensions.DefaultBufferSize)
     {
         ObjectDisposedException.ThrowIf(_handle is null, this);
-        return FileIO.CreateFileStream(_handle, _options, bufferSize);
+
+        var result = FileIO.CreateFileStream(_handle, _options, leaveOpen, bufferSize);
+
+        if (!leaveOpen)
+        {
+            GC.SuppressFinalize(this);
+            _handle = null!;
+        }
+
+        return result;
     }
 
     [return: OwnershipTransfer]
