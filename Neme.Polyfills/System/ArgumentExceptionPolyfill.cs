@@ -22,7 +22,9 @@ public static class ArgumentExceptionPolyfill
             {
                 ThrowNullOrEmptyException(argument, paramName);
             }
+#pragma warning disable CS8777
         }
+#pragma warning restore CS8777
 #endif
 
 #if !NET8_0_OR_GREATER
@@ -37,7 +39,9 @@ public static class ArgumentExceptionPolyfill
             {
                 ThrowNullOrWhiteSpaceException(argument, paramName);
             }
+#pragma warning disable CS8777
         }
+#pragma warning restore CS8777
 #endif
 
 #if !NET7_0_OR_GREATER
