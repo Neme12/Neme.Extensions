@@ -20,5 +20,42 @@ public static class DirectoryExtensions
             {
             }
         }
+
+        public static void Clear(string path)
+        {
+            var exceptions = new List<Exception>();
+
+            foreach (var filePath in Directory.EnumerateFiles(path))
+            {
+                try
+                {
+                    File.Delete(filePath);
+                }
+                catch (Exception e)
+                {
+                    exceptions.Add(e);
+                }
+            }
+
+            foreach (var directoryPath in Directory.EnumerateDirectories(path))
+            {
+                try
+                {
+                    Directory.Delete(directoryPath, recursive: true);
+                }
+                catch (Exception e)
+                {
+                    exceptions.Add(e);
+                }
+            }
+
+            switch (exceptions.Count)
+            {
+                case > 1:
+                    throw new AggregateException(exceptions);
+                case 1:
+                    throw exceptions[0];
+            }
+        }
     }
 }
