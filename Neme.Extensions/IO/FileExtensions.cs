@@ -4,6 +4,40 @@ namespace Neme.Extensions.IO;
 
 public static class FileExtensions
 {
+    extension(File)
+    {
+#if NETCOREAPP3_0_OR_GREATER
+        public static void MoveIfExists(
+            string sourceFileName,
+            string destFileName,
+            bool overwrite = false,
+            bool allowMissingDirectory = false)
+        {
+            try
+            {
+                File.Move(sourceFileName, destFileName, overwrite);
+            }
+            catch (Exception e) when (e is FileNotFoundException || allowMissingDirectory && e is DirectoryNotFoundException)
+            {
+            }
+        }
+#endif
+
+        public static void MoveIfExists(
+            string sourceFileName,
+            string destFileName,
+            bool allowMissingDirectory = false)
+        {
+            try
+            {
+                File.Move(sourceFileName, destFileName);
+            }
+            catch (Exception e) when (e is FileNotFoundException || allowMissingDirectory && e is DirectoryNotFoundException)
+            {
+            }
+        }
+    }
+
     public static FileStream OpenRead(string path, FileOptions options)
     {
         Require.ArgumentNotNull(path);
