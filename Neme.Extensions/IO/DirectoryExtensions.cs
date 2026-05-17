@@ -57,5 +57,14 @@ public static class DirectoryExtensions
                     throw exceptions[0];
             }
         }
+
+        public static void CopyContent(string sourcePath, string destPath, bool overwrite = false)
+        {
+            foreach (string dirPath in Directory.EnumerateDirectories(sourcePath, "*", SearchOption.AllDirectories))
+                Directory.CreateDirectory(dirPath.Replace(sourcePath, destPath));
+
+            foreach (string filePath in Directory.EnumerateFiles(sourcePath, "*.*", SearchOption.AllDirectories))
+                File.Copy(filePath, filePath.Replace(sourcePath, destPath), overwrite);
+        }
     }
 }
