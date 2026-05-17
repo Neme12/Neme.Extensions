@@ -5,7 +5,12 @@ using System.Numerics;
 namespace Neme.Extensions.Win32.InteropServices;
 
 [DebuggerDisplay("{ToString(\"Xf\", null), nq}")]
-public readonly partial struct HResult : IEquatable<HResult>, IFormattable, IConvertible
+#if NEME_EXTENSIONS_WIN32
+public
+#else
+internal
+#endif
+readonly partial struct HResult : IEquatable<HResult>, IFormattable, IConvertible
 #if NET6_0_OR_GREATER
     , ISpanFormattable
 #endif

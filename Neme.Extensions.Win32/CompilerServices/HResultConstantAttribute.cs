@@ -4,7 +4,12 @@ using System.Runtime.CompilerServices;
 namespace Neme.Extensions.Win32.CompilerServices;
 
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter, Inherited = false)]
-public abstract class HResultConstantAttributeBase : CustomConstantAttribute
+#if NEME_EXTENSIONS_WIN32
+public
+#else
+internal
+#endif
+abstract class HResultConstantAttributeBase : CustomConstantAttribute
 {
     private protected readonly HResult _value;
 
@@ -17,7 +22,12 @@ public abstract class HResultConstantAttributeBase : CustomConstantAttribute
 }
 
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter, Inherited = false)]
-public sealed class HResultConstantAttribute : HResultConstantAttributeBase
+#if NEME_EXTENSIONS_WIN32
+public
+#else
+internal
+#endif
+sealed class HResultConstantAttribute : HResultConstantAttributeBase
 {
 #pragma warning disable CA1019 // Define accessors for attribute arguments
     public HResultConstantAttribute(uint value)

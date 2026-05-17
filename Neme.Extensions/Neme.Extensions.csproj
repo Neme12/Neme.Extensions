@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(LibraryTargetFrameworks)</TargetFrameworks>
+	<DefineConstants>$(DefineConstants);NEME_EXTENSIONS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,6 +12,11 @@
     <Compile Include="..\Neme.Polyfills\System\Text\UnicodeUtility.cs" Link="Text\Polyfills\UnicodeUtility.cs" />
     <Compile Include="..\Neme.Polyfills\System\Text\Unicode\GraphemeClusterBreakType.cs" Link="Text\Polyfills\GraphemeClusterBreakType.cs" />
     <Compile Include="..\Neme.Polyfills\System\Text\Unicode\TextSegmentationUtility.cs" Link="Text\Polyfills\TextSegmentationUtility.cs" />
+    
+	<Compile Include="..\Neme.Extensions.Win32\CompilerServices\HResultConstantAttribute.cs" Link="CompilerServices\HResultConstantAttribute.cs" />
+	<Compile Include="..\Neme.Extensions.Win32\InteropServices\Facility.cs" Link="InteropServices\Facility.cs" />
+	<Compile Include="..\Neme.Extensions.Win32\InteropServices\HResult.cs" Link="InteropServices\HResult.cs" />
+	<Compile Include="..\Neme.Extensions.Win32\InteropServices\HResult.Constants.cs" Link="InteropServices\HResult.Constants.cs" />
   </ItemGroup>
 
   <ItemGroup>

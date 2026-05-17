@@ -1,8 +1,13 @@
 ﻿namespace Neme.Extensions.Win32.InteropServices;
 
-#pragma warning disable CA1028 // Enum Storage should be Int32
-public enum Facility : ushort
-#pragma warning restore CA1028 // Enum Storage should be Int32
+#pragma warning disable CA1028
+#if NEME_EXTENSIONS_WIN32
+public
+#else
+internal
+#endif
+enum Facility : ushort
+#pragma warning restore CA1028
 {
     // Values from https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/0642cb2f-2075-4469-918c-4441e69c548a
 #pragma warning disable CA1707 // Identifiers should not contain underscores

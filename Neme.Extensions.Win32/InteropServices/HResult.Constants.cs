@@ -5,7 +5,12 @@ using System.Reflection;
 
 namespace Neme.Extensions.Win32.InteropServices;
 
-public readonly partial struct HResult
+#if NEME_EXTENSIONS_WIN32
+public
+#else
+internal
+#endif
+readonly partial struct HResult
 {
     private static readonly FrozenDictionary<int, (string name, string? description)> _constants =
         typeof(HResult)
