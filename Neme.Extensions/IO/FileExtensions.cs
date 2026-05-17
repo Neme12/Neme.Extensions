@@ -10,7 +10,7 @@ public static class FileExtensions
         public static void MoveIfExists(
             string sourceFileName,
             string destFileName,
-            bool overwrite = false,
+            bool overwrite,
             bool allowMissingDirectory = false)
         {
             try
