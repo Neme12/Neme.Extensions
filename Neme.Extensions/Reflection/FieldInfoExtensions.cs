@@ -9,11 +9,23 @@ public static class FieldInfoExtensions
     // CreateGetDelegate and CreateSetDelegate - work on all frameworks including .NET Framework
     extension(FieldInfo field)
     {
-        public T GetValue<T>(object? obj) =>
-            (T)field.GetValue(obj)!;
+        public TValue GetValue<TValue>(object? obj) =>
+            (TValue)field.GetValue(obj)!;
 
-        public T GetValueDirect<T>(TypedReference obj) =>
-            (T)field.GetValueDirect(obj)!;
+        public TValue GetValueDirect<TValue>(TypedReference obj) =>
+            (TValue)field.GetValueDirect(obj)!;
+
+        public object? GetValueDirect<TObject>(ref TObject obj)
+        {
+            var typedReference = __makeref(obj);
+            return field.GetValueDirect(typedReference)!;
+        }
+
+        public TValue GetValueDirect<TObject, TValue>(ref TObject obj)
+        {
+            var typedReference = __makeref(obj);
+            return (TValue)field.GetValueDirect(typedReference)!;
+        }
 
         public Delegate CreateGetDelegate(Type delegateType)
         {
