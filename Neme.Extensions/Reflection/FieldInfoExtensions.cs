@@ -24,5 +24,11 @@ public static partial class FieldInfoExtensions
             var typedReference = __makeref(obj);
             return (TValue)field.GetValueDirect(typedReference)!;
         }
+
+        public void SetValueDirect<TObject>(ref TObject obj, object value)
+        {
+            var typedReference = __makeref(obj);
+            field.SetValueDirect(typedReference, value);
+        }
     }
 }
