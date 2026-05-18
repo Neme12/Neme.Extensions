@@ -12,6 +12,9 @@ public static class FieldInfoExtensions
         public T GetValue<T>(object? obj) =>
             (T)field.GetValue(obj)!;
 
+        public T GetValueDirect<T>(TypedReference obj) =>
+            (T)field.GetValueDirect(obj)!;
+
         public Delegate CreateGetDelegate(Type delegateType)
         {
             Require.ArgumentNotNull(field);
