@@ -9,6 +9,9 @@ public static class FieldInfoExtensions
     // CreateGetDelegate and CreateSetDelegate - work on all frameworks including .NET Framework
     extension(FieldInfo field)
     {
+        public T GetValue<T>(object? obj) =>
+            (T)field.GetValue(obj)!;
+
         public Delegate CreateGetDelegate(Type delegateType)
         {
             Require.ArgumentNotNull(field);
