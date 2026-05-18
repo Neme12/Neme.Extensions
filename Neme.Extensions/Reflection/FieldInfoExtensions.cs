@@ -13,6 +13,9 @@ public static partial class FieldInfoExtensions
         public TValue GetValueDirect<TValue>(TypedReference obj) =>
             (TValue)field.GetValueDirect(obj)!;
 
+        public TValue GetRawConstantValue<TValue>() =>
+            (TValue)field.GetRawConstantValue()!;
+
         public object? GetValueDirect<TObject>(ref TObject obj)
         {
             var typedReference = __makeref(obj);
