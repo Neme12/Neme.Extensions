@@ -4,10 +4,14 @@
     <File Path="Directory.Build.props" />
     <File Path="README.md" />
   </Folder>
+  <Project Path="Neme.Extensions.AspNetCore.Tests/Neme.Extensions.AspNetCore.Tests.csproj" />
   <Project Path="Neme.Extensions.AspNetCore/Neme.Extensions.AspNetCore.csproj" />
+  <Project Path="Neme.Extensions.EntityFrameworkCore.Tests/Neme.Extensions.EntityFrameworkCore.Tests.csproj" />
   <Project Path="Neme.Extensions.EntityFrameworkCore/Neme.Extensions.EntityFrameworkCore.csproj" />
+  <Project Path="Neme.Extensions.MicrosoftExtensions.Tests/Neme.Extensions.MicrosoftExtensions.Tests.csproj" />
   <Project Path="Neme.Extensions.MicrosoftExtensions/Neme.Extensions.MicrosoftExtensions.csproj" />
   <Project Path="Neme.Extensions.Tests/Neme.Extensions.Tests.csproj" />
+  <Project Path="Neme.Extensions.Win32.Tests/Neme.Extensions.Win32.Tests.csproj" />
   <Project Path="Neme.Extensions.Win32/Neme.Extensions.Win32.csproj" />
   <Project Path="Neme.Extensions/Neme.Extensions.csproj" />
   <Project Path="Neme.Polyfills.Tests/Neme.Polyfills.Tests.csproj" />
