@@ -7,29 +7,31 @@ namespace Neme.Extensions.MicrosoftExtensions.Logging;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddResponseLogger(this IServiceCollection services)
+    extension(IServiceCollection services)
     {
-        ArgumentNullException.ThrowIfNull(services);
-
-        services.AddHttpContextAccessor();
-        services.TryAddScoped(typeof(ResponseLogger<>), typeof(ResponseLogger<>));
-
-        return services;
-    }
-
-    public static IServiceCollection AddResponseLogger(
-        this IServiceCollection services,
-        LogLevel logLevel)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        services.Configure<ResponseLoggerOptions>(options =>
+        public IServiceCollection AddResponseLogger()
         {
-            options.LogLevel = logLevel;
-        });
+            ArgumentNullException.ThrowIfNull(services);
 
-        services.AddResponseLogger();
+            services.AddHttpContextAccessor();
+            services.TryAddScoped(typeof(ResponseLogger<>), typeof(ResponseLogger<>));
 
-        return services;
+            return services;
+        }
+
+        public IServiceCollection AddResponseLogger(
+            LogLevel logLevel)
+        {
+            ArgumentNullException.ThrowIfNull(services);
+
+            services.Configure<ResponseLoggerOptions>(options =>
+            {
+                options.LogLevel = logLevel;
+            });
+
+            services.AddResponseLogger();
+
+            return services;
+        }
     }
 }
