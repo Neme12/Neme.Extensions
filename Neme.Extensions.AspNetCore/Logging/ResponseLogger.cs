@@ -146,17 +146,23 @@ public sealed partial class ResponseLogger<T> : ILogger<T>, IAsyncDisposable
             }
             catch (Exception e)
             {
+#if NET7_0_OR_GREATER
                 Logging.ErrorDuringDisposal(_logger, e);
+#else
+                _logger.LogError(new EventId(EventIds.ErrorDuringDisposal, EventIds.ErrorDuringDisposalName), e, "Error during disposal: {Exception}", e);
+#endif
             }
         }
     }
 
     private static partial class Logging
     {
+#if NET7_0_OR_GREATER
 #pragma warning disable SYSLIB1013
         [LoggerMessage(EventId = EventIds.ErrorDuringDisposal, EventName = EventIds.ErrorDuringDisposalName, Level = LogLevel.Error, Message = "Error during disposal: {Exception}")]
         public static partial void ErrorDuringDisposal(ILogger logger, Exception exception);
 #pragma warning restore SYSLIB1013
+#endif
 
         [LoggerMessage(EventId = EventIds.CompleteWasNotCalled, EventName = EventIds.CompleteWasNotCalledName, Level = LogLevel.Warning, Message = "CompleteAsync() was not called.")]
         public static partial void CompleteWasNotCalled(ILogger logger);
