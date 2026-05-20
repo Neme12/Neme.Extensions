@@ -2,7 +2,7 @@
 
 namespace Neme.Extensions.AspNetCore.Middleware;
 
-internal sealed class RequestCanceledMiddleware : IMiddleware
+public sealed class RequestCanceledMiddleware : IMiddleware
 {
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {

@@ -14,5 +14,13 @@ public static class ApplicationBuilderExtensions
             builder.UseMiddleware<RequestCanceledMiddleware>();
             return builder;
         }
+
+        public IApplicationBuilder UseXHtml()
+        {
+            Require.ArgumentNotNull(builder);
+
+            builder.UseMiddleware<XHtmlMiddleware>();
+            return builder;
+        }
     }
 }
