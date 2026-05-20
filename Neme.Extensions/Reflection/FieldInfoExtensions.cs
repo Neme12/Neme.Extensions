@@ -4,7 +4,6 @@ namespace Neme.Extensions.Reflection;
 
 public static partial class FieldInfoExtensions
 {
-    // CreateGetDelegate and CreateSetDelegate - work on all frameworks including .NET Framework
     extension(FieldInfo field)
     {
         public TValue GetValue<TValue>(object? obj) =>

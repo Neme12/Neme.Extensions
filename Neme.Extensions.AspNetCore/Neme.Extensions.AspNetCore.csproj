@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-	<ProjectReference Include="..\Neme.Extensions\Neme.Extensions.csproj" />
+    <ProjectReference Include="..\Neme.Extensions.MicrosoftExtensions\Neme.Extensions.MicrosoftExtensions.csproj" />
   </ItemGroup>
 
 </Project>
