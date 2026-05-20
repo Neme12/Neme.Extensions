@@ -29,6 +29,8 @@
 	<RepositoryUrl>https://github.com/Neme12/Neme.Extensions</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
 
+	<DebugType>portable</DebugType>
+	<DebugSymbols>true</DebugSymbols>
 	<PublishRepositoryUrl>true</PublishRepositoryUrl>
 	<EmbedUntrackedSources>true</EmbedUntrackedSources>
 	<IncludeSymbols>true</IncludeSymbols>
