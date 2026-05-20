@@ -9,4 +9,6 @@ public readonly record struct FileCacheEntryOptions
     public Duration? Expiration { get; init; }
 
     public Duration? SlidingExpiration { get; init; }
+
+    public static FileCacheEntryOptions Default => new();
 }
