@@ -9,7 +9,7 @@ public static class HttpResponseExtensions
     {
         public async Task<Scope> StartScopeAsync(CancellationToken cancellationToken = default)
         {
-            await response.StartAsync(cancellationToken);
+            await response.StartAsync(cancellationToken).ConfigureAwait(false);
             return new Scope(response);
         }
     }
@@ -35,7 +35,7 @@ public static class HttpResponseExtensions
             {
                 var response = _response;
                 _response = null!;
-                await response.CompleteAsync();
+                await response.CompleteAsync().ConfigureAwait(false);
             }
         }
     }

@@ -23,7 +23,7 @@ public sealed class XHtmlMiddleware : IMiddleware
 
         try
         {
-            await next(context);
+            await next(context).ConfigureAwait(false);
         }
         catch
         {

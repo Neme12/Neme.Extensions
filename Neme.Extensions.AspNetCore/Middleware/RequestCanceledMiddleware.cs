@@ -8,7 +8,7 @@ public sealed class RequestCanceledMiddleware : IMiddleware
     {
         try
         {
-            await next(context);
+            await next(context).ConfigureAwait(false);
         }
         catch (OperationCanceledException e) when (e.CancellationToken == context.RequestAborted)
         {
@@ -22,7 +22,7 @@ public sealed class RequestCanceledMiddleware : IMiddleware
 #endif
             }
 
-            await context.Response.CompleteAsync();
+            await context.Response.CompleteAsync().ConfigureAwait(false);
         }
     }
 }
