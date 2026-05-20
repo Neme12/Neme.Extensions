@@ -28,6 +28,11 @@
   <PropertyGroup Condition="'$(IsPackable)' == 'true'">
 	<RepositoryUrl>https://github.com/Neme12/Neme.Extensions</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
+
+	<PublishRepositoryUrl>true</PublishRepositoryUrl>
+	<EmbedUntrackedSources>true</EmbedUntrackedSources>
+	<IncludeSymbols>true</IncludeSymbols>
+	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(IsPackable)' == 'true'">
