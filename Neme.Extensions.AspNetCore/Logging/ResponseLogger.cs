@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Neme.Extensions.Contracts;
 using System.Collections.Concurrent;
 
@@ -15,6 +17,17 @@ public sealed partial class ResponseLogger<T> : ILogger<T>, IAsyncDisposable
     private Task? _task = null;
     private bool _isCompletionRequested = false;
     private bool _disposed = false;
+
+    [ActivatorUtilitiesConstructor]
+    public ResponseLogger(
+        IHttpContextAccessor httpContextAccessor,
+        IOptions<ResponseLoggerOptions> configuration,
+        ILogger<ResponseLogger<T>> logger)
+        : this(httpContextAccessor.HttpContext!.Response,
+               configuration.Value.LogLevel,
+               logger)
+    {
+    }
 
     public ResponseLogger(
         HttpResponse response,
