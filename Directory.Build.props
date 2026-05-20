@@ -30,6 +30,13 @@
 	<RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(IsPackable)' == 'true'">
+	<PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.300">
+		<PrivateAssets>all</PrivateAssets>
+		<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	</PackageReference>
+  </ItemGroup>
+
   <ItemGroup Condition="'$(IsTestProject)' != 'true'">
     <PackageReference Include="PolyKit.Embedded" Version="3.0.9">
         <PrivateAssets>all</PrivateAssets>
