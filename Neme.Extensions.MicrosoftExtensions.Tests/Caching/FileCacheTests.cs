@@ -418,6 +418,60 @@ public sealed class FileCacheTests : IDisposable
     }
 
     [Fact]
+    public async Task CleanupExpiredFilesAsync_DeletesFolderWhenAllFilesExpire()
+    {
+        // Arrange
+        using var cache = CreateFileCache();
+        var folder = "myfolder";
+        var file1Key = $"{folder}/file1.txt";
+        var file2Key = $"{folder}/file2.txt";
+        var data = "Test Data"u8.ToArray();
+
+        // Set first file with short expiration
+        await cache.SetAsync(file1Key, async (stream, ct) =>
+        {
+            await stream.WriteAsync(data, ct);
+        }, new FileCacheEntryOptions { Expiration = Duration.FromMinutes(10) });
+
+        // Set second file with longer expiration
+        await cache.SetAsync(file2Key, async (stream, ct) =>
+        {
+            await stream.WriteAsync(data, ct);
+        }, new FileCacheEntryOptions { Expiration = Duration.FromMinutes(30) });
+
+        var folderPath = Path.Combine(_testCacheDirectory, folder);
+        var file1Path = Path.Combine(_testCacheDirectory, file1Key);
+        var file2Path = Path.Combine(_testCacheDirectory, file2Key);
+
+        // Verify both files and folder exist
+        Assert.True(Directory.Exists(folderPath));
+        Assert.True(File.Exists(file1Path));
+        Assert.True(File.Exists(file2Path));
+
+        // Advance time to expire first file only
+        _clock.Advance(Duration.FromMinutes(15));
+
+        // Act - cleanup should delete file1 but keep folder and file2
+        await cache.CleanupExpiredFilesAsync();
+
+        // Assert - file1 deleted, file2 and folder still exist
+        Assert.False(File.Exists(file1Path));
+        Assert.True(File.Exists(file2Path));
+        Assert.True(Directory.Exists(folderPath));
+
+        // Advance time to expire second file
+        _clock.Advance(Duration.FromMinutes(20));
+
+        // Act - cleanup should delete file2 and the folder
+        await cache.CleanupExpiredFilesAsync();
+
+        // Assert - both files and folder are deleted
+        Assert.False(File.Exists(file1Path));
+        Assert.False(File.Exists(file2Path));
+        Assert.False(Directory.Exists(folderPath));
+    }
+
+    [Fact]
     public async Task SetAsync_ThrowsArgumentNullException_WhenKeyIsNull()
     {
         // Arrange
