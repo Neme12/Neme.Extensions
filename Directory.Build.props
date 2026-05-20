@@ -24,6 +24,11 @@
     <IsPackable>false</IsPackable>
     <VSTestUseVsixExtensions>false</VSTestUseVsixExtensions>
   </PropertyGroup>
+	
+  <PropertyGroup Condition="'$(IsPackable)' == 'true'">
+	<RepositoryUrl>https://github.com/Neme12/Neme.Extensions</RepositoryUrl>
+	<RepositoryType>git</RepositoryType>
+  </PropertyGroup>
 
   <ItemGroup Condition="'$(IsTestProject)' != 'true'">
     <PackageReference Include="PolyKit.Embedded" Version="3.0.9">
