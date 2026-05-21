@@ -6,6 +6,8 @@ public readonly record struct FileCacheEntryOptions
 {
     public FileOptions? FileOptions { get; init; }
 
+    public FileAttributes? FileAttributes { get; init; }
+
     public Duration? Expiration { get; init; }
 
     public Duration? SlidingExpiration { get; init; }

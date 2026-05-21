@@ -114,8 +114,9 @@ public sealed partial class FileCache : IFileCache, IDisposable
         using (await GetLock(key).WaitScopeAsync(cancellationToken))
         {
             var fileOptions = options.FileOptions ?? _options.DefaultFileOptions;
+            var fileAttributes = options.FileAttributes ?? _options.DefaultFileAttributes;
 
-            await SetCoreAsync(key, writeData, options.Expiration, options.SlidingExpiration, fileOptions, cancellationToken);
+            await SetCoreAsync(key, writeData, options.Expiration, options.SlidingExpiration, fileOptions, fileAttributes, cancellationToken);
         }
     }
 
@@ -134,12 +135,13 @@ public sealed partial class FileCache : IFileCache, IDisposable
         using (await GetLock(key).WaitScopeAsync(cancellationToken))
         {
             var fileOptions = options.FileOptions ?? _options.DefaultFileOptions;
+            var fileAttributes = options.FileAttributes ?? _options.DefaultFileAttributes;
 
             var cached = await GetCoreAsync(key, fileOptions, isGetOrCreate: true, getFileHandle: true, cancellationToken);
             if (cached is not null)
                 return cached.Value.FsFile;
 
-            await SetCoreAsync(key, factory, options.Expiration, options.SlidingExpiration, fileOptions, cancellationToken);
+            await SetCoreAsync(key, factory, options.Expiration, options.SlidingExpiration, fileOptions, fileAttributes, cancellationToken);
             return FileIO.Open(GetFilePath(key), s_fileReadOptions with { Options = fileOptions });
         }
     }
@@ -158,12 +160,13 @@ public sealed partial class FileCache : IFileCache, IDisposable
         using (await GetLock(key).WaitScopeAsync(cancellationToken))
         {
             var fileOptions = options.FileOptions ?? _options.DefaultFileOptions;
+            var fileAttributes = options.FileAttributes ?? _options.DefaultFileAttributes;
 
             var cached = await GetCoreAsync(key, fileOptions, isGetOrCreate: true, getFileHandle: false, cancellationToken);
             if (cached is not null)
                 return cached.Value.FilePath;
 
-            await SetCoreAsync(key, factory, options.Expiration, options.SlidingExpiration, fileOptions, cancellationToken);
+            await SetCoreAsync(key, factory, options.Expiration, options.SlidingExpiration, fileOptions, fileAttributes, cancellationToken);
             return GetFilePath(key);
         }
     }
@@ -187,12 +190,11 @@ public sealed partial class FileCache : IFileCache, IDisposable
 
     private SemaphoreSlim GetLock(string key)
     {
-        var clock = _clock;
         return _locks.AddOrUpdate(
             key,
             static (_, clock) => (new SemaphoreSlim(1, 1), clock.GetCurrentInstant()),
             static (_, existing, clock) => (existing.Lock, clock.GetCurrentInstant()),
-            clock).Lock;
+            _clock).Lock;
     }
 
     private async Task WaitForGlobalLockAsync(CancellationToken cancellationToken)
@@ -242,6 +244,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
         Duration? expiration,
         Duration? slidingExpiration,
         FileOptions options,
+        FileAttributes attributes,
         CancellationToken cancellationToken)
     {
         var filePath = GetFilePath(key);
@@ -255,7 +258,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
             SlidingExpiration = slidingExpiration 
         };
 
-        using (var file = OwnedOrBorrowed.Create(PartialFileStream.Create(filePath, s_fileWriteOptions with { Options = options }, createDirectory: true)))
+        using (var file = OwnedOrBorrowed.Create(PartialFileStream.Create(filePath, s_fileWriteOptions with { Options = options, Attributes = attributes }, createDirectory: true)))
         {
             await writeData(file.Value.FileStream, cancellationToken);
             await file.Value.FileStream.FlushAsync(cancellationToken);

@@ -14,4 +14,7 @@ public sealed class FileCacheOptions
 
     public FileOptions DefaultFileOptions { get; set; } =
         FileOptions.Asynchronous | FileOptions.SequentialScan;
+
+    public FileAttributes DefaultFileAttributes { get; set; } =
+        FileAttributes.Normal;
 }
