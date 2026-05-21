@@ -164,12 +164,7 @@ public static partial class FileIO
             fileIdLow = Unsafe.AsRef<ulong>(idBuffer);
         }
 
-        return new FsFileId
-        {
-            VolumeSerialNumber = fileInfo.VolumeSerialNumber,
-            FileIdHigh = fileIdHigh,
-            FileIdLow = fileIdLow,
-        };
+        return new FsFileId(fileInfo.VolumeSerialNumber, fileIdHigh, fileIdLow);
     }
 
     private static Instant InstantFromFileTime(FILETIME fileTime)
