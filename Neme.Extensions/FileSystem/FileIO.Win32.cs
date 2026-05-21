@@ -318,6 +318,12 @@ public static partial class FileIO
             Throw.ArgumentException(file, "File handle must be valid and open.", paramName);
     }
 
+    private static void ValidateFileId(FsFileId fileId,  [CallerArgumentExpression(nameof(fileId))] string? paramName = null)
+    {
+        if (fileId == default)
+            Throw.ArgumentException(fileId, "File ID must be valid.", paramName);
+    }
+
     private static void ValidateFileName(string? fileName, bool optional = false, [CallerArgumentExpression(nameof(fileName))] string? paramName = null)
     {
         if (optional && fileName is null)

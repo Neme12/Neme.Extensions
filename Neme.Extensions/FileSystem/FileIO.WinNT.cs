@@ -6,6 +6,7 @@ using System.Runtime.Versioning;
 using Windows.Wdk.Foundation;
 using Windows.Wdk.Storage.FileSystem;
 using Windows.Win32.Foundation;
+using Windows.Win32.Storage.FileSystem;
 
 namespace Neme.Extensions.FileSystem;
 
@@ -27,6 +28,179 @@ public static partial class FileIO
         ValidateFileHandle(file.Handle);
 
         return new(OpenHandleBy(file.Handle, null, file.Options), file.Options);
+    }
+
+    [SupportedOSPlatform("windows5.1.2600")]
+    [return: OwnershipTransfer]
+    public static unsafe SafeFileHandle OpenHandleById(
+        FsFileId fileId,
+        FsFileOptions options)
+    {
+        ValidateFileId(fileId);
+
+        // Find and open the volume with the matching serial number
+        using var volumeHandle = FindAndOpenVolumeBySerialNumber(fileId.VolumeSerialNumber).CreateScope();
+
+        var fileIdBuffer = stackalloc ulong[2];
+        fileIdBuffer[0] = fileId.FileIdLow;
+        fileIdBuffer[1] = fileId.FileIdHigh;
+
+        UNICODE_STRING unicodeString = new()
+        {
+            Length = 16,
+            MaximumLength = 16,
+            Buffer = (char*)fileIdBuffer,
+        };
+
+        var objectAttributes = new OBJECT_ATTRIBUTES
+        {
+            Length = (uint)sizeof(OBJECT_ATTRIBUTES),
+            RootDirectory = new HANDLE(volumeHandle.Handle),
+            ObjectName = &unicodeString,
+        };
+
+        var status = WinNTPInvoke.NtCreateFile(
+            out var handle,
+            options.Access.ToWin32(),
+            in objectAttributes,
+            out _,
+            0,
+            options.Attributes.ToWin32(),
+            options.Share.ToWin32(),
+            options.Mode.ToWinNT(),
+            options.Options.ToWinNT() | NTCREATEFILE_CREATE_OPTIONS.FILE_NON_DIRECTORY_FILE | NTCREATEFILE_CREATE_OPTIONS.FILE_OPEN_BY_FILE_ID,
+            []);
+
+        if (status.SeverityCode != NTSTATUS.Severity.Success)
+            throw WinNtMarshal.GetExceptionForNtStatus(status);
+
+        return new SafeFileHandle(handle, ownsHandle: true);
+    }
+
+    [SupportedOSPlatform("windows5.1.2600")]
+    [return: OwnershipTransfer]
+    public static FsFile OpenById(
+        FsFileId fileId,
+        FsFileOptions options)
+    {
+        return new(OpenHandleById(fileId, options), options);
+    }
+
+    [SupportedOSPlatform("windows5.1.2600")]
+    public static bool TryOpenHandleById(
+        FsFileId fileId,
+        FsFileOptions options,
+        [NotNullWhen(true)][OwnershipTransfer] out SafeFileHandle? handle,
+        bool requireDirectory = true)
+    {
+        try
+        {
+            handle = OpenHandleById(fileId, options);
+            return true;
+        }
+        catch (Exception e) when (e is FileNotFoundException || !requireDirectory && e is DirectoryNotFoundException)
+        {
+            handle = null;
+            return false;
+        }
+    }
+
+    [SupportedOSPlatform("windows5.1.2600")]
+    public static bool TryOpenById(
+        FsFileId fileId,
+        FsFileOptions options,
+        [NotNullWhen(true)][OwnershipTransfer] out FsFile? file,
+        bool requireDirectory = true)
+    {
+        try
+        {
+            file = OpenById(fileId, options);
+            return true;
+        }
+        catch (Exception e) when (e is FileNotFoundException || !requireDirectory && e is DirectoryNotFoundException)
+        {
+            file = null;
+            return false;
+        }
+    }
+
+    [SupportedOSPlatform("windows5.1.2600")]
+    private static unsafe SafeFileHandle FindAndOpenVolumeBySerialNumber(ulong volumeSerialNumber)
+    {
+        // Note: GetVolumeInformation only returns the lower 32 bits of the volume serial number.
+        // FILE_ID_INFO.VolumeSerialNumber is 64-bit, but we compare only the lower 32 bits.
+        var targetSerial = (uint)volumeSerialNumber;
+
+        char* volumeNameBuffer = stackalloc char[50]; // Volume GUID paths are typically 49 chars
+        Span<char> volumeName = new(volumeNameBuffer, 50);
+
+        var findHandle = Win32PInvoke.FindFirstVolume(volumeName);
+        if (findHandle.IsInvalid)
+            throw Win32Marshal.GetExceptionForLastWin32Error("Failed to enumerate volumes");
+
+        try
+        {
+            do
+            {
+                // Remove trailing backslash for GetVolumeInformation
+                var volumePathLength = volumeName.IndexOf('\0');
+                if (volumePathLength > 0 && volumeName[volumePathLength - 1] == '\\')
+                    volumePathLength--;
+
+                var volumePath = volumeName[..volumePathLength];
+
+                try
+                {
+                    // Get volume information to check serial number
+                    fixed (char* pVolumePath = volumePath)
+                    {
+                        uint serialNumber = default;
+
+                        if (Win32PInvoke.GetVolumeInformation(
+                            new PCWSTR(pVolumePath),
+                            null,
+                            0,
+                            &serialNumber,
+                            null,
+                            null,
+                            null,
+                            0))
+                        {
+                            if (serialNumber == targetSerial)
+                            {
+                                // Found the matching volume, open a handle to it
+                                var volumePathWithSlash = volumeName[..(volumePathLength + 1)].ToString();
+
+                                var handle = Win32PInvoke.CreateFile(
+                                    volumePathWithSlash,
+                                    0, // No specific access needed, just need the handle
+                                    FILE_SHARE_MODE.FILE_SHARE_READ | FILE_SHARE_MODE.FILE_SHARE_WRITE,
+                                    null,
+                                    FILE_CREATION_DISPOSITION.OPEN_EXISTING,
+                                    FILE_FLAGS_AND_ATTRIBUTES.FILE_FLAG_BACKUP_SEMANTICS,
+                                    null);
+
+                                if (handle.IsInvalid)
+                                    throw Win32Marshal.GetExceptionForLastWin32Error($"Failed to open volume {volumePathWithSlash}");
+
+                                return new SafeFileHandle(handle.DangerousGetHandle(), ownsHandle: true);
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    // Volume might not be accessible, continue to next
+                }
+            }
+            while (Win32PInvoke.FindNextVolume((HANDLE)findHandle.DangerousGetHandle(), volumeName));
+        }
+        finally
+        {
+            Win32PInvoke.FindVolumeClose(findHandle);
+        }
+
+        throw new DirectoryNotFoundException($"No volume found with serial number 0x{volumeSerialNumber:X16}");
     }
 
     [SupportedOSPlatform("windows5.1.2600")]

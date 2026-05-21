@@ -4,6 +4,10 @@ SetFileInformationByHandle
 CreateFile
 DuplicateHandle
 GetFinalPathNameByHandle
+FindFirstVolume
+FindNextVolume
+FindVolumeClose
+GetVolumeInformation
 NtCreateFile
 RtlInitUnicodeString
 RtlNtStatusToDosError
