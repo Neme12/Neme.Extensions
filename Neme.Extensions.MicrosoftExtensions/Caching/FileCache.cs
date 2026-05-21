@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using Neme.Extensions.FileSystem;
 using Neme.Extensions.IO;
+using Neme.Extensions.MicrosoftExtensions.InternalUtilities;
 using Neme.Extensions.Ownership;
 using Neme.Extensions.Threading;
 using NodaTime;
@@ -64,6 +65,25 @@ public sealed partial class FileCache : IFileCache, IDisposable
     }
 
     [return: OwnershipTransfer]
+    public FsFile? Get(
+        string key,
+        FileCacheEntryOptions options,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(key);
+
+        WaitForGlobalLockAsync<IAsyncState.Sync>(cancellationToken).GetAwaiter().GetResult();
+
+        using (GetLock(key).WaitScope(cancellationToken))
+        {
+            var fileOptions = options.FileOptions ?? _options.DefaultSyncFileOptions;
+
+            var result = GetCoreAsync<IAsyncState.Sync>(key, fileOptions, isGetOrCreate: false, getFileHandle: true, cancellationToken).GetAwaiter().GetResult();
+            return result?.FsFile;
+        }
+    }
+
+    [return: OwnershipTransfer]
     public async Task<FsFile?> GetAsync(
         string key,
         FileCacheEntryOptions options,
@@ -71,14 +91,32 @@ public sealed partial class FileCache : IFileCache, IDisposable
     {
         ArgumentException.ThrowIfNullOrEmpty(key);
 
-        await WaitForGlobalLockAsync(cancellationToken);
+        await WaitForGlobalLockAsync<IAsyncState.Async>(cancellationToken);
 
         using (await GetLock(key).WaitScopeAsync(cancellationToken))
         {
-            var fileOptions = options.FileOptions ?? _options.DefaultFileOptions;
+            var fileOptions = options.FileOptions ?? _options.DefaultAsyncFileOptions;
 
-            var result = await GetCoreAsync(key, fileOptions, isGetOrCreate: false, getFileHandle: true, cancellationToken);
+            var result = await GetCoreAsync<IAsyncState.Async>(key, fileOptions, isGetOrCreate: false, getFileHandle: true, cancellationToken);
             return result?.FsFile;
+        }
+    }
+
+    public string? GetPath(
+        string key,
+        FileCacheEntryOptions options,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(key);
+
+        WaitForGlobalLockAsync<IAsyncState.Sync>(cancellationToken).GetAwaiter().GetResult();
+
+        using (GetLock(key).WaitScope(cancellationToken))
+        {
+            var fileOptions = options.FileOptions ?? _options.DefaultSyncFileOptions;
+
+            var result = GetCoreAsync<IAsyncState.Sync>(key, fileOptions, isGetOrCreate: false, getFileHandle: false, cancellationToken).GetAwaiter().GetResult();
+            return result?.FilePath;
         }
     }
 
@@ -89,14 +127,40 @@ public sealed partial class FileCache : IFileCache, IDisposable
     {
         ArgumentException.ThrowIfNullOrEmpty(key);
 
-        await WaitForGlobalLockAsync(cancellationToken);
+        await WaitForGlobalLockAsync<IAsyncState.Async>(cancellationToken);
 
         using (await GetLock(key).WaitScopeAsync(cancellationToken))
         {
-            var fileOptions = options.FileOptions ?? _options.DefaultFileOptions;
+            var fileOptions = options.FileOptions ?? _options.DefaultAsyncFileOptions;
 
-            var result = await GetCoreAsync(key, fileOptions, isGetOrCreate: false, getFileHandle: false, cancellationToken);
+            var result = await GetCoreAsync<IAsyncState.Async>(key, fileOptions, isGetOrCreate: false, getFileHandle: false, cancellationToken);
             return result?.FilePath;
+        }
+    }
+
+    public void Set(
+        string key,
+        [Borrow] Action<Stream, CancellationToken> writeData,
+        FileCacheEntryOptions options,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(key);
+        ArgumentNullException.ThrowIfNull(writeData);
+
+        WaitForGlobalLockAsync<IAsyncState.Sync>(cancellationToken).GetAwaiter().GetResult();
+
+        using (GetLock(key).WaitScope(cancellationToken))
+        {
+            var fileOptions = options.FileOptions ?? _options.DefaultSyncFileOptions;
+            var fileAttributes = options.FileAttributes ?? _options.DefaultFileAttributes;
+
+            Func<Stream, CancellationToken, Task> writeDataFunc = (stream, cancellationToken) =>
+            {
+                writeData(stream, cancellationToken);
+                return Task.CompletedTask;
+            };
+
+            SetCoreAsync<IAsyncState.Sync>(key, writeDataFunc, options.Expiration, options.SlidingExpiration, fileOptions, fileAttributes, cancellationToken).GetAwaiter().GetResult();
         }
     }
 
@@ -109,14 +173,46 @@ public sealed partial class FileCache : IFileCache, IDisposable
         ArgumentException.ThrowIfNullOrEmpty(key);
         ArgumentNullException.ThrowIfNull(writeData);
 
-        await WaitForGlobalLockAsync(cancellationToken);
+        await WaitForGlobalLockAsync<IAsyncState.Async>(cancellationToken);
 
         using (await GetLock(key).WaitScopeAsync(cancellationToken))
         {
-            var fileOptions = options.FileOptions ?? _options.DefaultFileOptions;
+            var fileOptions = options.FileOptions ?? _options.DefaultAsyncFileOptions;
             var fileAttributes = options.FileAttributes ?? _options.DefaultFileAttributes;
 
-            await SetCoreAsync(key, writeData, options.Expiration, options.SlidingExpiration, fileOptions, fileAttributes, cancellationToken);
+            await SetCoreAsync<IAsyncState.Async>(key, writeData, options.Expiration, options.SlidingExpiration, fileOptions, fileAttributes, cancellationToken);
+        }
+    }
+
+    [return: OwnershipTransfer]
+    public FsFile GetOrCreate(
+        string key,
+        [Borrow] Action<Stream, CancellationToken> factory,
+        FileCacheEntryOptions options,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(key);
+        ArgumentNullException.ThrowIfNull(factory);
+
+        WaitForGlobalLockAsync<IAsyncState.Sync>(cancellationToken).GetAwaiter().GetResult();
+
+        using (GetLock(key).WaitScope(cancellationToken))
+        {
+            var fileOptions = options.FileOptions ?? _options.DefaultSyncFileOptions;
+            var fileAttributes = options.FileAttributes ?? _options.DefaultFileAttributes;
+
+            var cached = GetCoreAsync<IAsyncState.Sync>(key, fileOptions, isGetOrCreate: true, getFileHandle: true, cancellationToken).GetAwaiter().GetResult();
+            if (cached is not null)
+                return cached.Value.FsFile;
+
+            Func<Stream, CancellationToken, Task> factoryFunc = (stream, cancellationToken) =>
+            {
+                factory(stream, cancellationToken);
+                return Task.CompletedTask;
+            };
+
+            SetCoreAsync<IAsyncState.Sync>(key, factoryFunc, options.Expiration, options.SlidingExpiration, fileOptions, fileAttributes, cancellationToken).GetAwaiter().GetResult();
+            return FileIO.Open(GetFilePath(key), s_fileReadOptions with { Options = fileOptions });
         }
     }
 
@@ -130,19 +226,50 @@ public sealed partial class FileCache : IFileCache, IDisposable
         ArgumentException.ThrowIfNullOrEmpty(key);
         ArgumentNullException.ThrowIfNull(factory);
 
-        await WaitForGlobalLockAsync(cancellationToken);
+        await WaitForGlobalLockAsync<IAsyncState.Async>(cancellationToken);
 
         using (await GetLock(key).WaitScopeAsync(cancellationToken))
         {
-            var fileOptions = options.FileOptions ?? _options.DefaultFileOptions;
+            var fileOptions = options.FileOptions ?? _options.DefaultAsyncFileOptions;
             var fileAttributes = options.FileAttributes ?? _options.DefaultFileAttributes;
 
-            var cached = await GetCoreAsync(key, fileOptions, isGetOrCreate: true, getFileHandle: true, cancellationToken);
+            var cached = await GetCoreAsync<IAsyncState.Async>(key, fileOptions, isGetOrCreate: true, getFileHandle: true, cancellationToken);
             if (cached is not null)
                 return cached.Value.FsFile;
 
-            await SetCoreAsync(key, factory, options.Expiration, options.SlidingExpiration, fileOptions, fileAttributes, cancellationToken);
+            await SetCoreAsync<IAsyncState.Async>(key, factory, options.Expiration, options.SlidingExpiration, fileOptions, fileAttributes, cancellationToken);
             return FileIO.Open(GetFilePath(key), s_fileReadOptions with { Options = fileOptions });
+        }
+    }
+
+    public string GetOrCreatePath(
+        string key,
+        [Borrow] Action<Stream, CancellationToken> factory,
+        FileCacheEntryOptions options,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(key);
+        ArgumentNullException.ThrowIfNull(factory);
+
+        WaitForGlobalLockAsync<IAsyncState.Sync>(cancellationToken).GetAwaiter().GetResult();
+
+        using (GetLock(key).WaitScope(cancellationToken))
+        {
+            var fileOptions = options.FileOptions ?? _options.DefaultSyncFileOptions;
+            var fileAttributes = options.FileAttributes ?? _options.DefaultFileAttributes;
+
+            var cached = GetCoreAsync<IAsyncState.Sync>(key, fileOptions, isGetOrCreate: true, getFileHandle: false, cancellationToken).GetAwaiter().GetResult();
+            if (cached is not null)
+                return cached.Value.FilePath;
+
+            Func<Stream, CancellationToken, Task> factoryFunc = (stream, cancellationToken) =>
+            {
+                factory(stream, cancellationToken);
+                return Task.CompletedTask;
+            };
+
+            SetCoreAsync<IAsyncState.Sync>(key, factoryFunc, options.Expiration, options.SlidingExpiration, fileOptions, fileAttributes, cancellationToken).GetAwaiter().GetResult();
+            return GetFilePath(key);
         }
     }
 
@@ -155,29 +282,46 @@ public sealed partial class FileCache : IFileCache, IDisposable
         ArgumentException.ThrowIfNullOrEmpty(key);
         ArgumentNullException.ThrowIfNull(factory);
 
-        await WaitForGlobalLockAsync(cancellationToken);
+        await WaitForGlobalLockAsync<IAsyncState.Async>(cancellationToken);
 
         using (await GetLock(key).WaitScopeAsync(cancellationToken))
         {
-            var fileOptions = options.FileOptions ?? _options.DefaultFileOptions;
+            var fileOptions = options.FileOptions ?? _options.DefaultAsyncFileOptions;
             var fileAttributes = options.FileAttributes ?? _options.DefaultFileAttributes;
 
-            var cached = await GetCoreAsync(key, fileOptions, isGetOrCreate: true, getFileHandle: false, cancellationToken);
+            var cached = await GetCoreAsync<IAsyncState.Async>(key, fileOptions, isGetOrCreate: true, getFileHandle: false, cancellationToken);
             if (cached is not null)
                 return cached.Value.FilePath;
 
-            await SetCoreAsync(key, factory, options.Expiration, options.SlidingExpiration, fileOptions, fileAttributes, cancellationToken);
+            await SetCoreAsync<IAsyncState.Async>(key, factory, options.Expiration, options.SlidingExpiration, fileOptions, fileAttributes, cancellationToken);
             return GetFilePath(key);
         }
     }
 
-    public async Task RemoveAsync(string key, CancellationToken cancellationToken)
+    public void Remove(string key, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(key);
 
         var filePath = GetFilePath(key);
 
-        await WaitForGlobalLockAsync(cancellationToken);
+        WaitForGlobalLockAsync<IAsyncState.Sync>(cancellationToken).GetAwaiter().GetResult();
+
+        using (GetLock(key).WaitScope(cancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            DeleteFile(filePath);
+            Log.RemovedCacheKey(_logger, key);
+        }
+    }
+
+    public async Task RemoveAsync(string key, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(key);
+
+        var filePath = GetFilePath(key);
+
+        await WaitForGlobalLockAsync<IAsyncState.Async>(cancellationToken);
 
         using (await GetLock(key).WaitScopeAsync(cancellationToken))
         {
@@ -185,6 +329,22 @@ public sealed partial class FileCache : IFileCache, IDisposable
 
             DeleteFile(filePath);
             Log.RemovedCacheKey(_logger, key);
+        }
+    }
+
+    public void Clear(CancellationToken cancellationToken = default)
+    {
+        using (_globalLock.WaitScope(cancellationToken))
+        {
+            ClearCore(cancellationToken);
+        }
+    }
+
+    public async Task ClearAsync(CancellationToken cancellationToken = default)
+    {
+        using (await _globalLock.WaitScopeAsync(cancellationToken))
+        {
+            ClearCore(cancellationToken);
         }
     }
 
@@ -197,33 +357,39 @@ public sealed partial class FileCache : IFileCache, IDisposable
             _clock).Lock;
     }
 
-    private async Task WaitForGlobalLockAsync(CancellationToken cancellationToken)
+    private async Task WaitForGlobalLockAsync<TAsync>(CancellationToken cancellationToken)
+        where TAsync : IAsyncState
     {
         // Check if the global lock is currently held without acquiring it
         if (_globalLock.CurrentCount == 0)
         {
             // Lock is currently held, wait for it to be released
-            await _globalLock.WaitAsync(cancellationToken);
+            if (TAsync.IsAsync)
+                await _globalLock.WaitAsync(cancellationToken);
+            else
+                _globalLock.Wait(cancellationToken);
+
             _globalLock.Release();
         }
     }
 
     [return: OwnershipTransfer]
-    private async Task<FilePathOrFsFile?> GetCoreAsync(
+    private async Task<FilePathOrFsFile?> GetCoreAsync<TAsync>(
         string key,
         FileOptions options,
         bool isGetOrCreate,
         bool getFileHandle,
         CancellationToken cancellationToken)
+        where TAsync : IAsyncState
     {
         var filePath = GetFilePath(key);
 
-        var metadata = await ReadMetadataAsync(filePath, cancellationToken);
+        var metadata = await ReadMetadataAsync<TAsync>(filePath, cancellationToken);
         if (metadata is null)
             return null;
 
         if (metadata.Value.SlidingExpiration.HasValue)
-            metadata = await RefreshSlidingExpirationAsync(filePath, metadata.Value, cancellationToken);
+            metadata = await RefreshSlidingExpirationAsync<TAsync>(filePath, metadata.Value, cancellationToken);
 
         var isExpired = _clock.GetCurrentInstant() > metadata.Value.ExpiresAt;
         if (isExpired && !isGetOrCreate)
@@ -238,7 +404,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
     }
 
     [return: OwnershipTransfer]
-    private async Task SetCoreAsync(
+    private async Task SetCoreAsync<TAsync>(
         string key,
         [Borrow] Func<Stream, CancellationToken, Task> writeData,
         Duration? expiration,
@@ -246,24 +412,33 @@ public sealed partial class FileCache : IFileCache, IDisposable
         FileOptions options,
         FileAttributes attributes,
         CancellationToken cancellationToken)
+        where TAsync : IAsyncState
     {
         var filePath = GetFilePath(key);
 
         var expirationDuration = slidingExpiration ?? expiration ?? _options.DefaultExpiration;
         var expiresAt = _clock.GetCurrentInstant().Plus(expirationDuration);
 
-        var metadata = new FileCacheMetadata 
-        { 
-            ExpiresAt = expiresAt, 
-            SlidingExpiration = slidingExpiration 
+        var metadata = new FileCacheMetadata
+        {
+            ExpiresAt = expiresAt,
+            SlidingExpiration = slidingExpiration
         };
 
         using (var file = OwnedOrBorrowed.Create(PartialFileStream.Create(filePath, s_fileWriteOptions with { Options = options, Attributes = attributes }, createDirectory: true)))
         {
-            await writeData(file.Value.FileStream, cancellationToken);
-            await file.Value.FileStream.FlushAsync(cancellationToken);
+            if (TAsync.IsAsync)
+            {
+                await writeData(file.Value.FileStream, cancellationToken);
+                await file.Value.FileStream.FlushAsync(cancellationToken);
+            }
+            else
+            {
+                writeData(file.Value.FileStream, cancellationToken).GetAwaiter().GetResult();
+                file.Value.FileStream.Flush();
+            }
 
-            await WriteMetadataAsync(file.Value.CurrentPath, metadata, cancellationToken);
+            await WriteMetadataAsync<TAsync>(file.Value.CurrentPath, metadata, cancellationToken);
 
             file.Value.FinalizeFile();
 
@@ -271,48 +446,45 @@ public sealed partial class FileCache : IFileCache, IDisposable
         }
     }
 
-    public async Task ClearAsync(CancellationToken cancellationToken)
+    public void ClearCore(CancellationToken cancellationToken)
     {
-        using (await _globalLock.WaitScopeAsync(cancellationToken))
+        foreach (var file in Directory.EnumerateFiles(_cacheDirectory))
         {
-            foreach (var file in Directory.EnumerateFiles(_cacheDirectory))
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                try
-                {
-                    File.Delete(file);
-                }
-                catch (Exception e)
-                {
-#if NET7_0_OR_GREATER
-                    Log.FailedToDeleteCacheFile(_logger, e, file);
-#else
-                    _logger.LogWarning(new EventId(EventIds.FileCache.FailedToDeleteCacheFile, EventIds.FileCache.FailedToDeleteCacheFileName), e, "Failed to delete cache file: {File}. Error: {Exception}", file, e);
-#endif
-                }
+                File.Delete(file);
             }
-
-            foreach (var directory in Directory.EnumerateDirectories(_cacheDirectory))
+            catch (Exception e)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                try
-                {
-                    Directory.Delete(directory, recursive: true);
-                }
-                catch (Exception e)
-                {
 #if NET7_0_OR_GREATER
-                    Log.FailedToDeleteCacheFile(_logger, e, directory);
+                Log.FailedToDeleteCacheFile(_logger, e, file);
 #else
-                    _logger.LogWarning(new EventId(EventIds.FileCache.FailedToDeleteCacheFile, EventIds.FileCache.FailedToDeleteCacheFileName), e, "Failed to delete cache file: {File}. Error: {Exception}", directory, e);
+                _logger.LogWarning(new EventId(EventIds.FileCache.FailedToDeleteCacheFile, EventIds.FileCache.FailedToDeleteCacheFileName), e, "Failed to delete cache file: {File}. Error: {Exception}", file, e);
 #endif
-                }
             }
-
-            Log.CacheCleared(_logger);
         }
+
+        foreach (var directory in Directory.EnumerateDirectories(_cacheDirectory))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                Directory.Delete(directory, recursive: true);
+            }
+            catch (Exception e)
+            {
+#if NET7_0_OR_GREATER
+                Log.FailedToDeleteCacheFile(_logger, e, directory);
+#else
+                _logger.LogWarning(new EventId(EventIds.FileCache.FailedToDeleteCacheFile, EventIds.FileCache.FailedToDeleteCacheFileName), e, "Failed to delete cache file: {File}. Error: {Exception}", directory, e);
+#endif
+            }
+        }
+
+        Log.CacheCleared(_logger);
     }
 
     private string GetFilePath(string key)
@@ -320,9 +492,10 @@ public sealed partial class FileCache : IFileCache, IDisposable
         return Path.Join(_cacheDirectory, key);
     }
 
-    private static async Task<FileCacheMetadata?> ReadMetadataAsync(
+    private static async Task<FileCacheMetadata?> ReadMetadataAsync<TAsync>(
         string filePath,
         CancellationToken cancellationToken)
+        where TAsync : IAsyncState
     {
         var metadataPath = filePath + ":" + MetadataStreamName;
 
@@ -338,23 +511,40 @@ public sealed partial class FileCache : IFileCache, IDisposable
         }
 
         using (file)
-        await using (var fileStream = file.CreateFileStream())
         {
-            return await JsonSerializer.DeserializeAsync(fileStream, FileCacheJsonSerializerContext.Default.FileCacheMetadata, cancellationToken);
+            if (TAsync.IsAsync)
+            {
+                await using (var fileStream = file.CreateFileStream())
+                    return await JsonSerializer.DeserializeAsync(fileStream, FileCacheJsonSerializerContext.Default.FileCacheMetadata, cancellationToken);
+            }
+            else
+            {
+                using (var fileStream = file.CreateFileStream())
+                    return JsonSerializer.Deserialize(fileStream, FileCacheJsonSerializerContext.Default.FileCacheMetadata);
+            }
         }
     }
 
-    private static async Task WriteMetadataAsync(
+    private static async Task WriteMetadataAsync<TAsync>(
         string filePath,
         FileCacheMetadata metadata,
         CancellationToken cancellationToken)
+        where TAsync : IAsyncState
     {
         var metadataPath = filePath + ":" + MetadataStreamName;
 
         using (var file = FileIO.Open(metadataPath, s_fileWriteOptions))
-        await using (var fileStream = file.CreateFileStream())
         {
-            await JsonSerializer.SerializeAsync(fileStream, metadata, FileCacheJsonSerializerContext.Default.FileCacheMetadata, cancellationToken);
+            if (TAsync.IsAsync)
+            {
+                await using (var fileStream = file.CreateFileStream())
+                    await JsonSerializer.SerializeAsync(fileStream, metadata, FileCacheJsonSerializerContext.Default.FileCacheMetadata, cancellationToken);
+            }
+            else
+            {
+                using (var fileStream = file.CreateFileStream())
+                    JsonSerializer.Serialize(fileStream, metadata, FileCacheJsonSerializerContext.Default.FileCacheMetadata);
+            }
         }
     }
 
@@ -363,10 +553,11 @@ public sealed partial class FileCache : IFileCache, IDisposable
         File.Delete(filePath);
     }
 
-    private async Task<FileCacheMetadata> RefreshSlidingExpirationAsync(
+    private async Task<FileCacheMetadata> RefreshSlidingExpirationAsync<TAsync>(
         string filePath,
         FileCacheMetadata metadata,
         CancellationToken cancellationToken)
+        where TAsync : IAsyncState
     {
         if (metadata.SlidingExpiration is null)
             return metadata;
@@ -375,7 +566,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
             .Plus(metadata.SlidingExpiration.Value);
 
         var updatedMetadata = metadata with { ExpiresAt = newExpiration };
-        await WriteMetadataAsync(filePath, updatedMetadata, cancellationToken);
+        await WriteMetadataAsync<TAsync>(filePath, updatedMetadata, cancellationToken);
 
         Log.RefreshedSlidingExpiration(_logger, filePath, newExpiration);
         return updatedMetadata;
@@ -397,7 +588,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
                     }
                     else
                     {
-                        var metadata = await ReadMetadataAsync(filePath, CancellationToken.None);
+                        var metadata = await ReadMetadataAsync<IAsyncState.Async>(filePath, CancellationToken.None);
                         if (metadata is null)
                             Log.MetadataMissingForFile(_logger, filePath);
 

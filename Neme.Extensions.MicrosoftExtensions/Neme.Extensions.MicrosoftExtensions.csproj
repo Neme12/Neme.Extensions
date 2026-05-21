@@ -4,6 +4,12 @@
 	<TargetFrameworks>$(AspNetCoreLibraryTargetFrameworks)</TargetFrameworks>
   </PropertyGroup>
 	
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
+	<EnablePreviewFeatures>true</EnablePreviewFeatures>
+	<GenerateRequiresPreviewFeaturesAttribute>false</GenerateRequiresPreviewFeaturesAttribute>
+	<NoWarn>$(NoWarn);CA2252</NoWarn>
+  </PropertyGroup>
+	
   <ItemGroup>
     <InternalsVisibleTo Include="Neme.Extensions.MicrosoftExtensions.Tests" />
   </ItemGroup>

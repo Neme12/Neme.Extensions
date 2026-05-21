@@ -6,7 +6,18 @@ namespace Neme.Extensions.MicrosoftExtensions.Caching;
 public interface IFileCache
 {
     [return: OwnershipTransfer]
+    FsFile? Get(
+        string key,
+        FileCacheEntryOptions options,
+        CancellationToken cancellationToken = default);
+
+    [return: OwnershipTransfer]
     Task<FsFile?> GetAsync(
+        string key,
+        FileCacheEntryOptions options,
+        CancellationToken cancellationToken = default);
+
+    string? GetPath(
         string key,
         FileCacheEntryOptions options,
         CancellationToken cancellationToken = default);
@@ -17,9 +28,22 @@ public interface IFileCache
         CancellationToken cancellationToken = default);
 
     [return: OwnershipTransfer]
+    FsFile GetOrCreate(
+        string key,
+        [Borrow] Action<Stream, CancellationToken> factory,
+        FileCacheEntryOptions options,
+        CancellationToken cancellationToken = default);
+
+    [return: OwnershipTransfer]
     Task<FsFile> GetOrCreateAsync(
         string key,
         [Borrow] Func<Stream, CancellationToken, Task> factory,
+        FileCacheEntryOptions options,
+        CancellationToken cancellationToken = default);
+
+    string GetOrCreatePath(
+        string key,
+        [Borrow] Action<Stream, CancellationToken> factory,
         FileCacheEntryOptions options,
         CancellationToken cancellationToken = default);
 
@@ -29,13 +53,23 @@ public interface IFileCache
         FileCacheEntryOptions options,
         CancellationToken cancellationToken = default);
 
+    void Set(
+        string key,
+        [Borrow] Action<Stream, CancellationToken> writeData,
+        FileCacheEntryOptions options,
+        CancellationToken cancellationToken = default);
+
     Task SetAsync(
         string key,
         [Borrow] Func<Stream, CancellationToken, Task> writeData,
         FileCacheEntryOptions options,
         CancellationToken cancellationToken = default);
 
-    Task RemoveAsync(string key, CancellationToken cancellationToken);
+    void Remove(string key, CancellationToken cancellationToken = default);
 
-    Task ClearAsync(CancellationToken cancellationToken);
+    Task RemoveAsync(string key, CancellationToken cancellationToken = default);
+
+    void Clear(CancellationToken cancellationToken = default);
+
+    Task ClearAsync(CancellationToken cancellationToken = default);
 }

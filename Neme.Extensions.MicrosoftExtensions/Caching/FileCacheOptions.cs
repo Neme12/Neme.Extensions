@@ -12,7 +12,10 @@ public sealed class FileCacheOptions
     public Duration DefaultExpiration { get; set; } =
         Duration.FromHours(1);
 
-    public FileOptions DefaultFileOptions { get; set; } =
+    public FileOptions DefaultSyncFileOptions { get; set; } =
+        FileOptions.SequentialScan;
+
+    public FileOptions DefaultAsyncFileOptions { get; set; } =
         FileOptions.Asynchronous | FileOptions.SequentialScan;
 
     public FileAttributes DefaultFileAttributes { get; set; } =

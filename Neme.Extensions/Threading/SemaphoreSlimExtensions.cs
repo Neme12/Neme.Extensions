@@ -6,6 +6,12 @@ public static class SemaphoreSlimExtensions
 {
     extension(SemaphoreSlim semaphore)
     {
+        public Scope WaitScope(CancellationToken cancellationToken)
+        {
+            semaphore.Wait(cancellationToken);
+            return new Scope(semaphore);
+        }
+
         public async Task<Scope> WaitScopeAsync(CancellationToken cancellationToken)
         {
             await semaphore.WaitAsync(cancellationToken);
