@@ -149,9 +149,6 @@ public sealed partial class FileCache : IFileCache, IDisposable
     /// Retrieves the file path of a cached entry by key without opening a file handle.
     /// </summary>
     /// <param name="key">The cache key. Must not be null or empty.</param>
-    /// <param name="options">Entry-specific options. Currently only used for consistency with other methods;
-    /// since no file handle is opened, <see cref="FileCacheEntryOptions.FileOptions"/> has no effect.
-    /// Metadata is always read using internal default options.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The absolute file path to the cached file, or <c>null</c> if the key doesn't exist or the entry has expired.</returns>
     /// <remarks>
@@ -164,7 +161,6 @@ public sealed partial class FileCache : IFileCache, IDisposable
     /// </remarks>
     public string? GetPath(
         string key,
-        FileCacheEntryOptions options,
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(key);
@@ -173,9 +169,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
 
         using (GetLock(key).WaitScope(cancellationToken))
         {
-            var fileOptions = options.FileOptions ?? _options.DefaultSyncFileOptions;
-
-            var result = GetCoreAsync<IAsyncState.Sync>(key, fileOptions, isGetOrCreate: false, getFileHandle: false, cancellationToken).GetAwaiter().GetResult();
+            var result = GetCoreAsync<IAsyncState.Sync>(key, _options.DefaultSyncFileOptions, isGetOrCreate: false, getFileHandle: false, cancellationToken).GetAwaiter().GetResult();
             return result?.FilePath;
         }
     }
@@ -184,9 +178,6 @@ public sealed partial class FileCache : IFileCache, IDisposable
     /// Asynchronously retrieves the file path of a cached entry by key without opening a file handle.
     /// </summary>
     /// <param name="key">The cache key. Must not be null or empty.</param>
-    /// <param name="options">Entry-specific options. Currently only used for consistency with other methods;
-    /// since no file handle is opened, <see cref="FileCacheEntryOptions.FileOptions"/> has no effect.
-    /// Metadata is always read using internal default options.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The absolute file path to the cached file, or <c>null</c> if the key doesn't exist or the entry has expired.</returns>
     /// <remarks>
@@ -199,7 +190,6 @@ public sealed partial class FileCache : IFileCache, IDisposable
     /// </remarks>
     public async Task<string?> GetPathAsync(
         string key,
-        FileCacheEntryOptions options,
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(key);
@@ -208,9 +198,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
 
         using (await GetLock(key).WaitScopeAsync(cancellationToken))
         {
-            var fileOptions = options.FileOptions ?? _options.DefaultAsyncFileOptions;
-
-            var result = await GetCoreAsync<IAsyncState.Async>(key, fileOptions, isGetOrCreate: false, getFileHandle: false, cancellationToken);
+            var result = await GetCoreAsync<IAsyncState.Async>(key, _options.DefaultAsyncFileOptions, isGetOrCreate: false, getFileHandle: false, cancellationToken);
             return result?.FilePath;
         }
     }

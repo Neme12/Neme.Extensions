@@ -19,12 +19,10 @@ public interface IFileCache
 
     string? GetPath(
         string key,
-        FileCacheEntryOptions options,
         CancellationToken cancellationToken = default);
 
     Task<string?> GetPathAsync(
         string key,
-        FileCacheEntryOptions options,
         CancellationToken cancellationToken = default);
 
     [return: OwnershipTransfer]

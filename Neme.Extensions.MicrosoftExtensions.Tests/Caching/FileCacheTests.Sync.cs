@@ -66,7 +66,7 @@ public sealed partial class FileCacheTests
             }, FileCacheEntryOptions.Default);
 
             // Assert
-            var filePath = cache.GetPath(key, FileCacheEntryOptions.Default);
+            var filePath = cache.GetPath(key);
             Assert.NotNull(filePath);
             Assert.True(File.Exists(filePath));
 
@@ -122,7 +122,7 @@ public sealed partial class FileCacheTests
             var key = "non-existent-key";
 
             // Act
-            var result = cache.GetPath(key, FileCacheEntryOptions.Default);
+            var result = cache.GetPath(key);
 
             // Assert
             Assert.Null(result);
@@ -142,7 +142,7 @@ public sealed partial class FileCacheTests
             }, FileCacheEntryOptions.Default);
 
             // Act
-            var result = cache.GetPath(key, FileCacheEntryOptions.Default);
+            var result = cache.GetPath(key);
 
             // Assert
             Assert.NotNull(result);
@@ -332,7 +332,7 @@ public sealed partial class FileCacheTests
                 stream.Write(data);
             }, FileCacheEntryOptions.Default);
 
-            var filePath = cache.GetPath(key, FileCacheEntryOptions.Default);
+            var filePath = cache.GetPath(key);
             Assert.NotNull(filePath);
 
             // Act
@@ -374,7 +374,7 @@ public sealed partial class FileCacheTests
             // Verify all exist
             foreach (var key in keys)
             {
-                var filePath = cache.GetPath(key, FileCacheEntryOptions.Default);
+                var filePath = cache.GetPath(key);
                 Assert.NotNull(filePath);
             }
 
