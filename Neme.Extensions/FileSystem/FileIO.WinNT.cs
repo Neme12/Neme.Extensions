@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using Neme.Extensions.InteropServices;
 using Neme.Extensions.Ownership;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using Windows.Wdk.Foundation;
@@ -12,6 +13,10 @@ namespace Neme.Extensions.FileSystem;
 
 public static partial class FileIO
 {
+    // Cache of volume serial numbers (lower 32 bits) to volume handles
+    // This avoids repeatedly enumerating all volumes for file ID operations
+    private static readonly ConcurrentDictionary<uint, SafeFileHandle> s_volumeHandleCache = new();
+
     [SupportedOSPlatform("windows5.1.2600")]
     [return: OwnershipTransfer]
     public static SafeFileHandle ReopenHandle([Borrow] SafeFileHandle file, FsFileOptions options)
@@ -129,12 +134,23 @@ public static partial class FileIO
     }
 
     [SupportedOSPlatform("windows5.1.2600")]
-    private static unsafe SafeFileHandle FindAndOpenVolumeBySerialNumber(ulong volumeSerialNumber)
+    private static SafeFileHandle FindAndOpenVolumeBySerialNumber(ulong volumeSerialNumber)
     {
         // Note: GetVolumeInformation only returns the lower 32 bits of the volume serial number.
         // FILE_ID_INFO.VolumeSerialNumber is 64-bit, but we compare only the lower 32 bits.
         var targetSerial = (uint)volumeSerialNumber;
 
+        // Use GetOrAdd for atomic cache lookup/creation - ensures only one thread enumerates volumes
+        // for a given serial number, even under concurrent access
+        return s_volumeHandleCache.GetOrAdd(targetSerial, static serial =>
+        {
+            return EnumerateAndOpenVolume(serial);
+        });
+    }
+
+    [SupportedOSPlatform("windows5.1.2600")]
+    private static unsafe SafeFileHandle EnumerateAndOpenVolume(uint targetSerial)
+    {
         char* volumeNameBuffer = stackalloc char[50]; // Volume GUID paths are typically 49 chars
         Span<char> volumeName = new(volumeNameBuffer, 50);
 
@@ -185,9 +201,9 @@ public static partial class FileIO
                                     null);
 
                                 if (handle.IsInvalid)
-                                    throw Win32Marshal.GetExceptionForLastWin32Error($"Failed to open volume {volumePathWithSlash}");
+                                    throw Win32Marshal.GetExceptionForLastWin32Error();
 
-                                return new SafeFileHandle(handle.DangerousGetHandle(), ownsHandle: true);
+                                return handle;
                             }
                         }
                     }
@@ -204,7 +220,7 @@ public static partial class FileIO
             Win32PInvoke.FindVolumeClose(findHandle);
         }
 
-        throw new DirectoryNotFoundException($"No volume found with serial number 0x{volumeSerialNumber:X16}");
+        throw new DirectoryNotFoundException($"No volume found with serial number 0x{targetSerial:X8}");
     }
 
     [SupportedOSPlatform("windows5.1.2600")]
