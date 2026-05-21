@@ -4,12 +4,15 @@ namespace Neme.Extensions.MicrosoftExtensions.Caching;
 
 public readonly record struct FileCacheEntryOptions
 {
-    public FileCacheEntryOptions(Duration expiration, bool isSlidingExpiration = false)
+    public FileCacheEntryOptions(Duration expiration)
     {
-        if (isSlidingExpiration)
-            SlidingExpiration = expiration;
-        else
-            Expiration = expiration;
+        Expiration = expiration;
+    }
+
+    public FileCacheEntryOptions(Duration expiration, bool isSlidingExpiration)
+    {
+        Expiration = expiration;
+        IsSlidingExpiration = isSlidingExpiration;
     }
 
     public FileOptions? FileOptions { get; init; }
@@ -18,7 +21,7 @@ public readonly record struct FileCacheEntryOptions
 
     public Duration? Expiration { get; init; }
 
-    public Duration? SlidingExpiration { get; init; }
+    public bool? IsSlidingExpiration { get; init; }
 
     public static FileCacheEntryOptions Default => new();
 }

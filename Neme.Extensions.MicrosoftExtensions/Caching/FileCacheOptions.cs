@@ -12,6 +12,9 @@ public sealed class FileCacheOptions
     public Duration DefaultExpiration { get; set; } =
         Duration.FromHours(1);
 
+    public bool IsDefaultSlidingExpiration { get; set; }
+        = false;
+
     public FileOptions DefaultSyncFileOptions { get; set; } =
         FileOptions.SequentialScan;
 

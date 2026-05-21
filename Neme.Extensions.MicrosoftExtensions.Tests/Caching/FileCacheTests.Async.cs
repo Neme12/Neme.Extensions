@@ -184,7 +184,7 @@ public sealed partial class FileCacheTests
             await cache.SetAsync(key, async (stream, ct) =>
             {
                 await stream.WriteAsync(data, ct);
-            }, new FileCacheEntryOptions { SlidingExpiration = Duration.FromMinutes(30) });
+            }, new FileCacheEntryOptions(Duration.FromMinutes(30), isSlidingExpiration: true));
 
             // Advance time but access before expiration
             _clock.Advance(Duration.FromMinutes(20));

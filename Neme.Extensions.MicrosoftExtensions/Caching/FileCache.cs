@@ -160,7 +160,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
                 return Task.CompletedTask;
             };
 
-            SetCoreAsync<IAsyncState.Sync>(key, writeDataFunc, options.Expiration, options.SlidingExpiration, fileOptions, fileAttributes, cancellationToken).GetAwaiter().GetResult();
+            SetCoreAsync<IAsyncState.Sync>(key, writeDataFunc, options.Expiration, options.IsSlidingExpiration, fileOptions, fileAttributes, cancellationToken).GetAwaiter().GetResult();
         }
     }
 
@@ -180,7 +180,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
             var fileOptions = options.FileOptions ?? _options.DefaultAsyncFileOptions;
             var fileAttributes = options.FileAttributes ?? _options.DefaultFileAttributes;
 
-            await SetCoreAsync<IAsyncState.Async>(key, writeData, options.Expiration, options.SlidingExpiration, fileOptions, fileAttributes, cancellationToken);
+            await SetCoreAsync<IAsyncState.Async>(key, writeData, options.Expiration, options.IsSlidingExpiration, fileOptions, fileAttributes, cancellationToken);
         }
     }
 
@@ -211,7 +211,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
                 return Task.CompletedTask;
             };
 
-            SetCoreAsync<IAsyncState.Sync>(key, factoryFunc, options.Expiration, options.SlidingExpiration, fileOptions, fileAttributes, cancellationToken).GetAwaiter().GetResult();
+            SetCoreAsync<IAsyncState.Sync>(key, factoryFunc, options.Expiration, options.IsSlidingExpiration, fileOptions, fileAttributes, cancellationToken).GetAwaiter().GetResult();
             return FileIO.Open(GetFilePath(key), s_fileReadOptions with { Options = fileOptions });
         }
     }
@@ -237,7 +237,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
             if (cached is not null)
                 return cached.Value.FsFile;
 
-            await SetCoreAsync<IAsyncState.Async>(key, factory, options.Expiration, options.SlidingExpiration, fileOptions, fileAttributes, cancellationToken);
+            await SetCoreAsync<IAsyncState.Async>(key, factory, options.Expiration, options.IsSlidingExpiration, fileOptions, fileAttributes, cancellationToken);
             return FileIO.Open(GetFilePath(key), s_fileReadOptions with { Options = fileOptions });
         }
     }
@@ -268,7 +268,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
                 return Task.CompletedTask;
             };
 
-            SetCoreAsync<IAsyncState.Sync>(key, factoryFunc, options.Expiration, options.SlidingExpiration, fileOptions, fileAttributes, cancellationToken).GetAwaiter().GetResult();
+            SetCoreAsync<IAsyncState.Sync>(key, factoryFunc, options.Expiration, options.IsSlidingExpiration, fileOptions, fileAttributes, cancellationToken).GetAwaiter().GetResult();
             return GetFilePath(key);
         }
     }
@@ -293,7 +293,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
             if (cached is not null)
                 return cached.Value.FilePath;
 
-            await SetCoreAsync<IAsyncState.Async>(key, factory, options.Expiration, options.SlidingExpiration, fileOptions, fileAttributes, cancellationToken);
+            await SetCoreAsync<IAsyncState.Async>(key, factory, options.Expiration, options.IsSlidingExpiration, fileOptions, fileAttributes, cancellationToken);
             return GetFilePath(key);
         }
     }
@@ -408,7 +408,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
         string key,
         [Borrow] Func<Stream, CancellationToken, Task> writeData,
         Duration? expiration,
-        Duration? slidingExpiration,
+        bool? isSlidingExpiration,
         FileOptions options,
         FileAttributes attributes,
         CancellationToken cancellationToken)
@@ -416,13 +416,14 @@ public sealed partial class FileCache : IFileCache, IDisposable
     {
         var filePath = GetFilePath(key);
 
-        var expirationDuration = slidingExpiration ?? expiration ?? _options.DefaultExpiration;
-        var expiresAt = _clock.GetCurrentInstant().Plus(expirationDuration);
+        var expiration2 = expiration ?? _options.DefaultExpiration;
+        var isSlidingExpiration2 = isSlidingExpiration ?? _options.IsDefaultSlidingExpiration;
+        var expiresAt = _clock.GetCurrentInstant().Plus(expiration2);
 
         var metadata = new FileCacheMetadata
         {
             ExpiresAt = expiresAt,
-            SlidingExpiration = slidingExpiration
+            SlidingExpiration = isSlidingExpiration2 ? expiration2 : null,
         };
 
         using (var file = OwnedOrBorrowed.Create(PartialFileStream.Create(filePath, s_fileWriteOptions with { Options = options, Attributes = attributes }, createDirectory: true)))
