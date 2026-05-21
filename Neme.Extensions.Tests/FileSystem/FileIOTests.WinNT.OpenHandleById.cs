@@ -58,7 +58,7 @@ public sealed partial class FileIOTests
                 var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read);
 
                 // Act
-                using var result = FileIO.OpenHandleById(fileId, options);
+                using var result = FileIO.OpenHandle(fileId, options);
 
                 // Assert
                 Assert.NotNull(result);
@@ -75,7 +75,7 @@ public sealed partial class FileIOTests
 
                 // Act & Assert
                 Assert.Throws<ArgumentException>(() =>
-                    FileIO.OpenHandleById(fileId, options));
+                    FileIO.OpenHandle(fileId, options));
             }
 
             [Fact]
@@ -86,7 +86,7 @@ public sealed partial class FileIOTests
                 var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read, FileShare.ReadWrite);
 
                 // Act
-                using var result = FileIO.OpenHandleById(fileId, options);
+                using var result = FileIO.OpenHandle(fileId, options);
 
                 // Assert
                 Assert.NotNull(result);
@@ -101,7 +101,7 @@ public sealed partial class FileIOTests
                 var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read);
 
                 // Act
-                using var reopenedHandle = FileIO.OpenHandleById(originalFileId, options);
+                using var reopenedHandle = FileIO.OpenHandle(originalFileId, options);
                 var reopenedFileId = FileIO.GetFileId(reopenedHandle);
 
                 // Assert
@@ -116,7 +116,7 @@ public sealed partial class FileIOTests
                 var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read, FileShare.Read);
 
                 // Act
-                using var result = FileIO.OpenHandleById(fileId, options);
+                using var result = FileIO.OpenHandle(fileId, options);
 
                 // Assert
                 Assert.NotNull(result);
@@ -131,7 +131,7 @@ public sealed partial class FileIOTests
                 var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read);
 
                 // Act
-                var result = FileIO.OpenHandleById(fileId, options);
+                var result = FileIO.OpenHandle(fileId, options);
 
                 // Assert
                 Assert.NotNull(result);
@@ -153,7 +153,7 @@ public sealed partial class FileIOTests
 
                 // Act & Assert
                 Assert.Throws<FileNotFoundException>(() =>
-                    FileIO.OpenHandleById(randomFileId, options));
+                    FileIO.OpenHandle(randomFileId, options));
             }
 
             [Fact]
@@ -168,7 +168,7 @@ public sealed partial class FileIOTests
 
                 // Act & Assert
                 Assert.Throws<DirectoryNotFoundException>(() =>
-                    FileIO.OpenHandleById(randomFileId, options));
+                    FileIO.OpenHandle(randomFileId, options));
             }
 
             [Fact]
@@ -183,7 +183,7 @@ public sealed partial class FileIOTests
                 };
 
                 // Act
-                using var result = FileIO.OpenHandleById(directoryId, options);
+                using var result = FileIO.OpenHandle(directoryId, options);
 
                 // Assert
                 Assert.NotNull(result);
@@ -203,7 +203,7 @@ public sealed partial class FileIOTests
                 };
 
                 // Act
-                using var reopenedHandle = FileIO.OpenHandleById(originalDirectoryId, options);
+                using var reopenedHandle = FileIO.OpenHandle(originalDirectoryId, options);
                 var reopenedDirectoryId = FileIO.GetFileId(reopenedHandle);
 
                 // Assert
@@ -222,7 +222,7 @@ public sealed partial class FileIOTests
                 };
 
                 // Act
-                using var result = FileIO.OpenHandleById(directoryId, options);
+                using var result = FileIO.OpenHandle(directoryId, options);
 
                 // Assert
                 Assert.NotNull(result);
@@ -241,7 +241,7 @@ public sealed partial class FileIOTests
                 };
 
                 // Act
-                var result = FileIO.OpenHandleById(directoryId, options);
+                var result = FileIO.OpenHandle(directoryId, options);
 
                 // Assert
                 Assert.NotNull(result);
@@ -267,7 +267,7 @@ public sealed partial class FileIOTests
 
                 // Act & Assert
                 Assert.Throws<FileNotFoundException>(() =>
-                    FileIO.OpenHandleById(randomDirectoryId, options));
+                    FileIO.OpenHandle(randomDirectoryId, options));
             }
         }
     }

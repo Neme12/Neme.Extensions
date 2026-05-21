@@ -32,7 +32,7 @@ public static partial class FileIO
 
     [SupportedOSPlatform("windows5.1.2600")]
     [return: OwnershipTransfer]
-    public static unsafe SafeFileHandle OpenHandleById(
+    public static unsafe SafeFileHandle OpenHandle(
         FsFileId fileId,
         FsFileOptions options)
     {
@@ -83,15 +83,15 @@ public static partial class FileIO
 
     [SupportedOSPlatform("windows5.1.2600")]
     [return: OwnershipTransfer]
-    public static FsFile OpenById(
+    public static FsFile Open(
         FsFileId fileId,
         FsFileOptions options)
     {
-        return new(OpenHandleById(fileId, options), options);
+        return new(OpenHandle(fileId, options), options);
     }
 
     [SupportedOSPlatform("windows5.1.2600")]
-    public static bool TryOpenHandleById(
+    public static bool TryOpenHandle(
         FsFileId fileId,
         FsFileOptions options,
         [NotNullWhen(true)][OwnershipTransfer] out SafeFileHandle? handle,
@@ -99,7 +99,7 @@ public static partial class FileIO
     {
         try
         {
-            handle = OpenHandleById(fileId, options);
+            handle = OpenHandle(fileId, options);
             return true;
         }
         catch (Exception e) when (e is FileNotFoundException || !requireDirectory && e is DirectoryNotFoundException)
@@ -110,7 +110,7 @@ public static partial class FileIO
     }
 
     [SupportedOSPlatform("windows5.1.2600")]
-    public static bool TryOpenById(
+    public static bool TryOpen(
         FsFileId fileId,
         FsFileOptions options,
         [NotNullWhen(true)][OwnershipTransfer] out FsFile? file,
@@ -118,7 +118,7 @@ public static partial class FileIO
     {
         try
         {
-            file = OpenById(fileId, options);
+            file = Open(fileId, options);
             return true;
         }
         catch (Exception e) when (e is FileNotFoundException || !requireDirectory && e is DirectoryNotFoundException)
