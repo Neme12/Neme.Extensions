@@ -108,7 +108,9 @@ public sealed partial class FileCacheTests
             Assert.NotNull(result);
             using var stream = result.CreateFileStream();
             var content = new byte[data.Length];
+#pragma warning disable CA2022 // TODO: Polyfill ReadExactly
             stream.Read(content);
+#pragma warning restore CA2022
             Assert.Equal(data, content);
         }
 
@@ -220,7 +222,9 @@ public sealed partial class FileCacheTests
 
             using var stream = result.CreateFileStream();
             var content = new byte[data.Length];
+#pragma warning disable CA2022 // TODO: Polyfill ReadExactly
             stream.Read(content);
+#pragma warning restore CA2022
             Assert.Equal(data, content);
         }
 
@@ -253,7 +257,9 @@ public sealed partial class FileCacheTests
 
             using var stream = result.CreateFileStream();
             var content = new byte[originalData.Length];
+#pragma warning disable CA2022 // TODO: Polyfill ReadExactly
             stream.Read(content);
+#pragma warning restore
             Assert.Equal(originalData, content);
         }
 
@@ -480,23 +486,22 @@ public sealed partial class FileCacheTests
             var data = "Test Data"u8.ToArray();
             var tasks = new List<Task>();
 
-            cache.Set(key, (stream, ct) =>
-            {
-                stream.Write(data);
-            }, FileCacheEntryOptions.Default);
-
             // Act
             for (int i = 0; i < 10; i++)
             {
                 tasks.Add(Task.Run(() =>
                 {
-                    using var result = cache.Get(key, FileCacheEntryOptions.Default);
-                    Assert.NotNull(result);
+                    cache.Set(key, (stream, ct) =>
+                    {
+                        stream.Write(data);
+                    }, FileCacheEntryOptions.Default);
                 }));
             }
 
             // Assert
+#pragma warning disable xUnit1031
             Task.WaitAll(tasks.ToArray());
+#pragma warning restore xUnit1031
         }
 
         [Fact]

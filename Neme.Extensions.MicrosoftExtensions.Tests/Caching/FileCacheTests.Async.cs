@@ -109,7 +109,9 @@ public sealed partial class FileCacheTests
             Assert.NotNull(result);
             using var stream = result.CreateFileStream();
             var content = new byte[data.Length];
+#pragma warning disable CA2022 // TODO: Polyfill ReadExactly
             await stream.ReadAsync(content);
+#pragma warning restore CA2022
             Assert.Equal(data, content);
         }
 
@@ -221,7 +223,9 @@ public sealed partial class FileCacheTests
 
             using var stream = result.CreateFileStream();
             var content = new byte[data.Length];
+#pragma warning disable CA2022 // TODO: Polyfill ReadExactly
             await stream.ReadAsync(content);
+#pragma warning restore CA2022
             Assert.Equal(data, content);
         }
 
@@ -254,7 +258,9 @@ public sealed partial class FileCacheTests
 
             using var stream = result.CreateFileStream();
             var content = new byte[originalData.Length];
+#pragma warning disable CA2022 // TODO: Polyfill ReadExactly
             await stream.ReadAsync(content);
+#pragma warning restore CA2022
             Assert.Equal(originalData, content);
         }
 
@@ -570,18 +576,15 @@ public sealed partial class FileCacheTests
             var data = "Test Data"u8.ToArray();
             var tasks = new List<Task>();
 
-            await cache.SetAsync(key, async (stream, ct) =>
-            {
-                await stream.WriteAsync(data, ct);
-            }, FileCacheEntryOptions.Default);
-
             // Act
             for (int i = 0; i < 10; i++)
             {
                 tasks.Add(Task.Run(async () =>
                 {
-                    using var result = await cache.GetAsync(key, FileCacheEntryOptions.Default);
-                    Assert.NotNull(result);
+                    await cache.SetAsync(key, async (stream, ct) =>
+                    {
+                        await stream.WriteAsync(data, ct);
+                    }, FileCacheEntryOptions.Default);
                 }));
             }
 
