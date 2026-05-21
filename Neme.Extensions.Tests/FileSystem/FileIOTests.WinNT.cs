@@ -157,4 +157,135 @@ public sealed partial class FileIOTests
                 FileIO.OpenHandleById(randomFileId, options));
         }
     }
+
+    public sealed class WinNTDirectory : IDisposable
+    {
+        private readonly string _tempDirectoryPath;
+
+        public WinNTDirectory()
+        {
+            _tempDirectoryPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(_tempDirectoryPath);
+        }
+
+        public void Dispose()
+        {
+            try
+            {
+                Directory.Delete(_tempDirectoryPath, recursive: true);
+            }
+            catch
+            {
+                // Best effort cleanup
+            }
+        }
+
+        private SafeFileHandle OpenDirectoryHandle()
+        {
+            var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read)
+            {
+                Attributes = FileAttributes.Directory
+            };
+            return FileIO.OpenHandle(_tempDirectoryPath, options);
+        }
+
+        [Fact]
+        public void OpenHandleById_WithValidDirectoryId_ReturnsDirectoryHandle()
+        {
+            // Arrange - Get directory ID from an existing directory
+            using var tempDirHandle = OpenDirectoryHandle();
+            var directoryId = FileIO.GetFileId(tempDirHandle);
+            var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read)
+            {
+                Attributes = FileAttributes.Directory
+            };
+
+            // Act
+            using var result = FileIO.OpenHandleById(directoryId, options);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsInvalid);
+            Assert.False(result.IsClosed);
+        }
+
+        [Fact]
+        public void OpenHandleById_OpenedDirectoryHandle_CanBeUsedToGetSameDirectoryId()
+        {
+            // Arrange
+            using var tempDirHandle = OpenDirectoryHandle();
+            var originalDirectoryId = FileIO.GetFileId(tempDirHandle);
+            var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read)
+            {
+                Attributes = FileAttributes.Directory
+            };
+
+            // Act
+            using var reopenedHandle = FileIO.OpenHandleById(originalDirectoryId, options);
+            var reopenedDirectoryId = FileIO.GetFileId(reopenedHandle);
+
+            // Assert
+            Assert.Equal(originalDirectoryId, reopenedDirectoryId);
+        }
+
+        [Fact]
+        public void OpenHandleById_WithDirectoryIdAndDirectoryAttribute_OpensSuccessfully()
+        {
+            // Arrange
+            using var tempDirHandle = OpenDirectoryHandle();
+            var directoryId = FileIO.GetFileId(tempDirHandle);
+            var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read, FileShare.ReadWrite)
+            {
+                Attributes = FileAttributes.Directory
+            };
+
+            // Act
+            using var result = FileIO.OpenHandleById(directoryId, options);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsInvalid);
+        }
+
+        [Fact]
+        public void OpenHandleById_DirectoryHandle_OwnsResource()
+        {
+            // Arrange
+            using var tempDirHandle = OpenDirectoryHandle();
+            var directoryId = FileIO.GetFileId(tempDirHandle);
+            var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read)
+            {
+                Attributes = FileAttributes.Directory
+            };
+
+            // Act
+            var result = FileIO.OpenHandleById(directoryId, options);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsClosed);
+            result.Dispose();
+            Assert.True(result.IsClosed);
+        }
+
+        [Fact]
+        public void OpenHandleById_WithRandomDirectoryId_ThrowsFileNotFoundException()
+        {
+            // Arrange - Get a valid volume serial number but use random file IDs
+            using var tempDirHandle = OpenDirectoryHandle();
+            var validDirectoryId = FileIO.GetFileId(tempDirHandle);
+            var randomDirectoryId = new FsFileId(
+                volumeSerialNumber: validDirectoryId.VolumeSerialNumber,
+                fileIdHigh: 0xDEADBEEFDEADBEEF,
+                fileIdLow: 0xCAFEBABECAFEBABE);
+            var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read)
+            {
+                Attributes = FileAttributes.Directory
+            };
+
+            // Act & Assert
+            Assert.Throws<FileNotFoundException>(() =>
+                FileIO.OpenHandleById(randomDirectoryId, options));
+        }
+    }
 }

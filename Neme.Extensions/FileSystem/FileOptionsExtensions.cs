@@ -13,7 +13,7 @@ internal static class FileOptionsExtensions
             return (FILE_FLAGS_AND_ATTRIBUTES)(uint)options;
         }
 
-        public NTCREATEFILE_CREATE_OPTIONS ToWinNT()
+        public NTCREATEFILE_CREATE_OPTIONS ToWinNT(FileAttributes attributes)
         {
             NTCREATEFILE_CREATE_OPTIONS ntOptions = 0;
 
@@ -39,6 +39,16 @@ internal static class FileOptionsExtensions
 
             if ((options & FileOptions.Encrypted) != 0)
                 throw new Exception("The Encrypted option is not supported.");
+
+            if ((attributes & FileAttributes.Directory) != 0)
+            {
+                ntOptions |= NTCREATEFILE_CREATE_OPTIONS.FILE_OPEN_FOR_BACKUP_INTENT;
+                ntOptions |= NTCREATEFILE_CREATE_OPTIONS.FILE_DIRECTORY_FILE;
+            }
+            else
+            {
+                ntOptions |= NTCREATEFILE_CREATE_OPTIONS.FILE_NON_DIRECTORY_FILE;
+            }
 
             return ntOptions;
         }

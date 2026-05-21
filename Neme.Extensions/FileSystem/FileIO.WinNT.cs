@@ -49,7 +49,7 @@ public static partial class FileIO
         {
             Length = 16,
             MaximumLength = 16,
-            Buffer = (char*)fileIdBuffer,
+            Buffer = (char*)fileIdBuffer,       
         };
 
         var objectAttributes = new OBJECT_ATTRIBUTES
@@ -59,16 +59,20 @@ public static partial class FileIO
             ObjectName = &unicodeString,
         };
 
+        var createOptions =
+            options.Options.ToWinNT(options.Attributes) |
+            NTCREATEFILE_CREATE_OPTIONS.FILE_OPEN_BY_FILE_ID;
+
         var status = WinNTPInvoke.NtCreateFile(
             out var handle,
             options.Access.ToWin32(),
             in objectAttributes,
             out _,
-            0,
-            options.Attributes.ToWin32(),
+            null,
+            options.Attributes.ToWinNT(),
             options.Share.ToWin32(),
             options.Mode.ToWinNT(),
-            options.Options.ToWinNT() | NTCREATEFILE_CREATE_OPTIONS.FILE_NON_DIRECTORY_FILE | NTCREATEFILE_CREATE_OPTIONS.FILE_OPEN_BY_FILE_ID,
+            createOptions,
             []);
 
         if (status.SeverityCode != NTSTATUS.Severity.Success)
@@ -221,7 +225,9 @@ public static partial class FileIO
 
         if (path is not null)
         {
-            path = @"\??\" + Path.GetFullPath(path);
+            if (rootDirectory is null)
+                path = @"\??\" + Path.GetFullPath(path);
+
             Win32PInvoke.RtlInitUnicodeString(ref unicodeString, path);
         }
 
@@ -242,11 +248,11 @@ public static partial class FileIO
             options.Access.ToWin32(),
             in objectAttributes,
             out _,
-            0,
-            options.Attributes.ToWin32(),
+            null,
+            options.Attributes.ToWinNT(),
             options.Share.ToWin32(),
             options.Mode.ToWinNT(),
-            options.Options.ToWinNT() | NTCREATEFILE_CREATE_OPTIONS.FILE_NON_DIRECTORY_FILE,
+            options.Options.ToWinNT(options.Attributes),
             []);
 
         if (status.SeverityCode != NTSTATUS.Severity.Success)
