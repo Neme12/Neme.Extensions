@@ -26,6 +26,12 @@
     <VSTestUseVsixExtensions>false</VSTestUseVsixExtensions>
   </PropertyGroup>
 	
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
+	<EnablePreviewFeatures>true</EnablePreviewFeatures>
+	<GenerateRequiresPreviewFeaturesAttribute>false</GenerateRequiresPreviewFeaturesAttribute>
+	<NoWarn>$(NoWarn);CA2252</NoWarn>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(IsPackable)' == 'true'">
 	<RepositoryUrl>https://github.com/Neme12/Neme.Extensions</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
