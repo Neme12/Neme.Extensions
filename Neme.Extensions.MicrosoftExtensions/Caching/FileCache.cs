@@ -149,8 +149,9 @@ public sealed partial class FileCache : IFileCache, IDisposable
     /// Retrieves the file path of a cached entry by key without opening a file handle.
     /// </summary>
     /// <param name="key">The cache key. Must not be null or empty.</param>
-    /// <param name="options">Entry-specific options. Use <see cref="FileCacheEntryOptions.Default"/> to apply global defaults.
-    /// Only <see cref="FileCacheEntryOptions.FileOptions"/> is used (for metadata validation); other properties are ignored.</param>
+    /// <param name="options">Entry-specific options. Currently only used for consistency with other methods;
+    /// since no file handle is opened, <see cref="FileCacheEntryOptions.FileOptions"/> has no effect.
+    /// Metadata is always read using internal default options.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The absolute file path to the cached file, or <c>null</c> if the key doesn't exist or the entry has expired.</returns>
     /// <remarks>
@@ -183,8 +184,9 @@ public sealed partial class FileCache : IFileCache, IDisposable
     /// Asynchronously retrieves the file path of a cached entry by key without opening a file handle.
     /// </summary>
     /// <param name="key">The cache key. Must not be null or empty.</param>
-    /// <param name="options">Entry-specific options. Use <see cref="FileCacheEntryOptions.Default"/> to apply global defaults.
-    /// Only <see cref="FileCacheEntryOptions.FileOptions"/> is used (for metadata validation); other properties are ignored.</param>
+    /// <param name="options">Entry-specific options. Currently only used for consistency with other methods;
+    /// since no file handle is opened, <see cref="FileCacheEntryOptions.FileOptions"/> has no effect.
+    /// Metadata is always read using internal default options.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The absolute file path to the cached file, or <c>null</c> if the key doesn't exist or the entry has expired.</returns>
     /// <remarks>
