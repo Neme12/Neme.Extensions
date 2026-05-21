@@ -2,6 +2,7 @@
 using Neme.Extensions.InteropServices;
 using Neme.Extensions.Ownership;
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using Windows.Wdk.Foundation;
@@ -43,6 +44,8 @@ public static partial class FileIO
     {
         ValidateFileId(fileId);
 
+        FileIOEventSource.Log.OpeningFileById(fileId.VolumeSerialNumber, fileId.FileIdLow, fileId.FileIdHigh);
+
         // Find and open the volume with the matching serial number
         using var volumeHandle = FindAndOpenVolumeBySerialNumber(fileId.VolumeSerialNumber).CreateScope();
 
@@ -82,6 +85,8 @@ public static partial class FileIO
 
         if (status.SeverityCode != NTSTATUS.Severity.Success)
             throw WinNtMarshal.GetExceptionForNtStatus(status);
+
+        FileIOEventSource.Log.FileOpenedById(fileId.VolumeSerialNumber, fileId.FileIdLow, fileId.FileIdHigh);
 
         return new SafeFileHandle(handle, ownsHandle: true);
     }
@@ -140,13 +145,18 @@ public static partial class FileIO
         // for a given serial number, even under concurrent access
         return s_volumeHandleCache.GetOrAdd(volumeSerialNumber, static serial =>
         {
-            return EnumerateAndOpenVolume(serial);
+            FileIOEventSource.Log.VolumeHandleCacheMiss(serial);
+            var handle = EnumerateAndOpenVolume(serial);
+            FileIOEventSource.Log.VolumeHandleCached(serial);
+            return handle;
         });
     }
 
     [SupportedOSPlatform("windows6.0.6000")]
     private static unsafe SafeFileHandle EnumerateAndOpenVolume(ulong targetSerial)
     {
+        FileIOEventSource.Log.EnumeratingVolumes(targetSerial);
+
         char* volumeNameBuffer = stackalloc char[50]; // Volume GUID paths are typically 49 chars
         Span<char> volumeName = new(volumeNameBuffer, 50);
 
@@ -165,36 +175,36 @@ public static partial class FileIO
 
                 var volumePath = volumeName[..volumePathLength];
 
-                try
+                // Get volume information to check serial number (lower 32 bits only)
+                fixed (char* pVolumePath = volumePath)
                 {
-                    // Get volume information to check serial number (lower 32 bits only)
-                    fixed (char* pVolumePath = volumePath)
-                    {
-                        uint serialNumberLower32 = default;
+                    uint serialNumberLower32 = default;
 
-                        if (Win32PInvoke.GetVolumeInformation(
-                            new PCWSTR(pVolumePath),
-                            null,
-                            0,
-                            &serialNumberLower32,
-                            null,
-                            null,
-                            null,
-                            0))
+                    if (Win32PInvoke.GetVolumeInformation(
+                        new PCWSTR(pVolumePath),
+                        null,
+                        0,
+                        &serialNumberLower32,
+                        null,
+                        null,
+                        null,
+                        0))
+                    {
+                        // Lower 32 bits match - try to open and verify full 64-bit serial
+                        if (serialNumberLower32 == (uint)targetSerial)
                         {
-                            // Lower 32 bits match - try to open and verify full 64-bit serial
-                            if (serialNumberLower32 == (uint)targetSerial)
-                            {
-                                var volumePathWithSlash = volumeName[..(volumePathLength + 1)].ToString();
-                                if (TryOpenAndVerifyVolume(volumePathWithSlash, targetSerial, out var handle))
-                                    return handle;
-                            }
+                            FileIOEventSource.Log.VolumePartialMatch(serialNumberLower32);
+                            var volumePathWithSlash = volumeName[..(volumePathLength + 1)].ToString();
+                            if (TryOpenAndVerifyVolume(volumePathWithSlash, targetSerial, out var handle))
+                                return handle;
                         }
                     }
-                }
-                catch
-                {
-                    // Volume might not be accessible, continue to next
+                    else
+                    {
+                        // GetVolumeInformation failed - volume might not be accessible
+                        var error = new Win32Exception();
+                        FileIOEventSource.Log.VolumeInformationFailed(volumePath.ToString(), error.NativeErrorCode, error.Message);
+                    }
                 }
             }
             while (Win32PInvoke.FindNextVolume((HANDLE)findHandle.DangerousGetHandle(), volumeName));
@@ -204,6 +214,7 @@ public static partial class FileIO
             Win32PInvoke.FindVolumeClose(findHandle);
         }
 
+        FileIOEventSource.Log.VolumeNotFound(targetSerial);
         throw new DirectoryNotFoundException($"No volume found with serial number 0x{targetSerial:X8}");
     }
 
@@ -224,6 +235,8 @@ public static partial class FileIO
 
         if (volumeHandle.Value.IsInvalid)
         {
+            var error = new Win32Exception();
+            FileIOEventSource.Log.VolumeHandleOpenFailed(volumePath, error.NativeErrorCode, error.Message);
             handle = null;
             return false;
         }
@@ -242,9 +255,21 @@ public static partial class FileIO
             if (fileIdInfo.VolumeSerialNumber == targetSerial)
             {
                 // Full match confirmed
+                FileIOEventSource.Log.VolumeVerified(targetSerial);
                 handle = volumeHandle.Move();
                 return true;
             }
+            else
+            {
+                // Serial number mismatch
+                FileIOEventSource.Log.VolumeSerialMismatch(targetSerial, fileIdInfo.VolumeSerialNumber);
+            }
+        }
+        else
+        {
+            // Failed to get file information
+            var error = new Win32Exception();
+            FileIOEventSource.Log.GetFileInformationFailed(volumePath, error.NativeErrorCode, error.Message);
         }
 
         // Not a match or couldn't get info - close handle and return false
