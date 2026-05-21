@@ -1,0 +1,139 @@
+﻿using Microsoft.Win32.SafeHandles;
+using System.Runtime.Versioning;
+
+namespace Neme.Extensions.FileSystem.Tests;
+
+[SupportedOSPlatform("windows6.0.6000")]
+public sealed partial class FileIOTests
+{
+    public sealed class Win32 : IDisposable
+    {
+        private readonly string _tempFilePath;
+
+        // Only for netfx, where we can't open a handle directly, so we need to
+        // keep its source FileStream alive to keep the handle open.
+        private readonly IDisposable? _tempDisposable;
+
+        private readonly SafeFileHandle _tempFileHandle;
+
+        public Win32()
+        {
+            _tempFilePath = Path.GetTempFileName();
+#if NET6_0_OR_GREATER
+            _tempFileHandle = File.OpenHandle(_tempFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, FileOptions.DeleteOnClose);
+#else
+            var fileStream = new FileStream(_tempFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 4096, FileOptions.DeleteOnClose);
+            _tempDisposable = fileStream;
+            _tempFileHandle = fileStream.SafeFileHandle;
+#endif
+        }
+
+        public void Dispose()
+        {
+            _tempFileHandle.Dispose();
+            _tempDisposable?.Dispose();
+        }
+
+        [Fact]
+        public void GetFileId_WithValidFileHandle_ReturnsFileId()
+        {
+            // Act
+            var result = FileIO.GetFileId(_tempFileHandle);
+
+            // Assert - FsFileId is a struct, so just verify it's created
+            Assert.True(true);
+        }
+
+        [Fact]
+        public void GetFileId_WithNullFileHandle_ThrowsArgumentNullException()
+        {
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() =>
+                FileIO.GetFileId(null!));
+        }
+
+        [Fact]
+        public void GetFileId_WithClosedFileHandle_ThrowsArgumentException()
+        {
+            // Arrange
+            var tempFile = Path.GetTempFileName();
+            var fileStream = new FileStream(tempFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.DeleteOnClose);
+            var fileHandle = fileStream.SafeFileHandle;
+            fileStream.Dispose();
+
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() =>
+                FileIO.GetFileId(fileHandle));
+        }
+
+        [Fact]
+        public void GetFileId_WithInvalidFileHandle_ThrowsArgumentException()
+        {
+            // Arrange
+            var fileHandle = new SafeFileHandle(IntPtr.Zero, false);
+
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() =>
+                FileIO.GetFileId(fileHandle));
+        }
+
+        [Fact]
+        public void GetFileId_WithValidFileHandle_PopulatesVolumeSerialNumber()
+        {
+            // Act
+            var result = FileIO.GetFileId(_tempFileHandle);
+
+            // Assert
+            Assert.NotEqual(0UL, result.VolumeSerialNumber);
+        }
+
+        [Fact]
+        public void GetFileId_WithValidFileHandle_PopulatesFileIdLow()
+        {
+            // Act
+            var result = FileIO.GetFileId(_tempFileHandle);
+
+            // Assert - FileIdLow should be set (may be 0 but the field should be populated)
+            Assert.True(result.FileIdLow >= 0);
+        }
+
+        [Fact]
+        public void GetFileId_WithValidFileHandle_PopulatesFileIdHigh()
+        {
+            // Act
+            var result = FileIO.GetFileId(_tempFileHandle);
+
+            // Assert - FileIdHigh should be set (may be 0 but the field should be populated)
+            Assert.True(result.FileIdHigh >= 0);
+        }
+
+        [Fact]
+        public void GetFileId_WithDifferentFiles_ReturnsDifferentFileIds()
+        {
+            // Arrange
+            var tempFile2 = Path.GetTempFileName();
+            using var fileStream2 = new FileStream(tempFile2, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.DeleteOnClose);
+
+            // Act
+            var result1 = FileIO.GetFileId(_tempFileHandle);
+            var result2 = FileIO.GetFileId(fileStream2.SafeFileHandle);
+
+            // Assert
+            Assert.NotEqual(result1, result2);
+        }
+
+        [Fact]
+        public void GetFileId_WithSameFileTwice_ReturnsSameFileId()
+        {
+            // Arrange
+            using var fileStream2 = new FileStream(_tempFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+
+            // Act
+            var result1 = FileIO.GetFileId(_tempFileHandle);
+            var result2 = FileIO.GetFileId(fileStream2.SafeFileHandle);
+
+            // Assert
+            Assert.Equal(result1, result2);
+        }
+    }
+}

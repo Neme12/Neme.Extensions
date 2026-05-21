@@ -1,4 +1,5 @@
 GetFileInformationByHandle
+GetFileInformationByHandleEx
 SetFileInformationByHandle
 CreateFile
 DuplicateHandle
@@ -8,6 +9,7 @@ RtlInitUnicodeString
 RtlNtStatusToDosError
 FILE_RENAME_INFO
 FILE_DISPOSITION_INFO
+FILE_ID_INFO
 FILE_BASIC_INFO
 FILE_ACCESS_RIGHTS
 WIN32_ERROR

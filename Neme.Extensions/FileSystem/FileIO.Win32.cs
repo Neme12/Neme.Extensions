@@ -143,6 +143,35 @@ public static partial class FileIO
         };
     }
 
+    [SupportedOSPlatform("windows6.0.6000")]
+    public static unsafe FsFileId GetFileId([Borrow] SafeFileHandle file)
+    {
+        ValidateFileHandle(file);
+        
+        ref var fileInfo = ref AllocateFileInfo<FILE_ID_INFO>(
+            stackalloc byte[sizeof(FILE_ID_INFO)],
+            out var fileInfoBuffer);
+
+        if (!PInvoke.GetFileInformationByHandleEx(file, FILE_INFO_BY_HANDLE_CLASS.FileIdInfo, fileInfoBuffer))
+            throw Win32Marshal.GetExceptionForLastWin32Error();
+
+        ulong fileIdHigh;
+        ulong fileIdLow;
+
+        fixed (byte* idBuffer = fileInfo.FileId.Identifier.Value)
+        {
+            fileIdHigh = Unsafe.AsRef<ulong>(idBuffer + 8);
+            fileIdLow = Unsafe.AsRef<ulong>(idBuffer);
+        }
+
+        return new FsFileId
+        {
+            VolumeSerialNumber = fileInfo.VolumeSerialNumber,
+            FileIdHigh = fileIdHigh,
+            FileIdLow = fileIdLow,
+        };
+    }
+
     private static Instant InstantFromFileTime(FILETIME fileTime)
     {
         if (fileTime.dwHighDateTime == 0 && fileTime.dwLowDateTime == 0)
