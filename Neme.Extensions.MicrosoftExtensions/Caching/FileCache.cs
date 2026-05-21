@@ -182,9 +182,9 @@ public sealed partial class FileCache : IFileCache, IDisposable
         var clock = _clock;
         return _locks.AddOrUpdate(
             key,
-            _ => (new SemaphoreSlim(1, 1), clock.GetCurrentInstant()),
-            (_, existing) => (existing.Lock, clock.GetCurrentInstant())
-        ).Lock;
+            static (_, clock) => (new SemaphoreSlim(1, 1), clock.GetCurrentInstant()),
+            static (_, existing, clock) => (existing.Lock, clock.GetCurrentInstant()),
+            clock).Lock;
     }
 
     private async Task WaitForGlobalLockAsync(CancellationToken cancellationToken)
