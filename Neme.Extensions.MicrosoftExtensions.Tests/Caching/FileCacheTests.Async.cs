@@ -83,7 +83,7 @@ public sealed partial class FileCacheTests
             var key = "non-existent-key";
 
             // Act
-            using var result = await cache.GetAsync(key, FileCacheEntryOptions.Default);
+            using var result = await cache.GetAsync(key, FileCacheEntryReadOptions.Default);
 
             // Assert
             Assert.Null(result);
@@ -103,7 +103,7 @@ public sealed partial class FileCacheTests
             }, FileCacheEntryOptions.Default);
 
             // Act
-            using var result = await cache.GetAsync(key, FileCacheEntryOptions.Default);
+            using var result = await cache.GetAsync(key, FileCacheEntryReadOptions.Default);
 
             // Assert
             Assert.NotNull(result);
@@ -167,7 +167,7 @@ public sealed partial class FileCacheTests
             _clock.Advance(Duration.FromMinutes(31));
 
             // Act
-            using var result = await cache.GetAsync(key, FileCacheEntryOptions.Default);
+            using var result = await cache.GetAsync(key, FileCacheEntryReadOptions.Default);
 
             // Assert
             Assert.Null(result);
@@ -188,14 +188,14 @@ public sealed partial class FileCacheTests
 
             // Advance time but access before expiration
             _clock.Advance(Duration.FromMinutes(20));
-            using var firstResult = await cache.GetAsync(key, FileCacheEntryOptions.Default);
+            using var firstResult = await cache.GetAsync(key, FileCacheEntryReadOptions.Default);
             Assert.NotNull(firstResult);
 
             // Advance another 20 minutes (would be expired with absolute expiration)
             _clock.Advance(Duration.FromMinutes(20));
 
             // Act - should still be valid due to sliding expiration
-            using var secondResult = await cache.GetAsync(key, FileCacheEntryOptions.Default);
+            using var secondResult = await cache.GetAsync(key, FileCacheEntryReadOptions.Default);
 
             // Assert
             Assert.NotNull(secondResult);
@@ -341,7 +341,7 @@ public sealed partial class FileCacheTests
 
             // Assert
             Assert.False(File.Exists(filePath));
-            using var result = await cache.GetAsync(key, FileCacheEntryOptions.Default);
+            using var result = await cache.GetAsync(key, FileCacheEntryReadOptions.Default);
             Assert.Null(result);
         }
 
@@ -385,7 +385,7 @@ public sealed partial class FileCacheTests
             // Assert
             foreach (var key in keys)
             {
-                using var result = await cache.GetAsync(key, FileCacheEntryOptions.Default);
+                using var result = await cache.GetAsync(key, FileCacheEntryReadOptions.Default);
                 Assert.Null(result);
             }
         }
@@ -418,10 +418,10 @@ public sealed partial class FileCacheTests
             await cache.CleanupExpiredFilesAsync();
 
             // Assert
-            using var expiredResult = await cache.GetAsync(expiredKey, FileCacheEntryOptions.Default);
+            using var expiredResult = await cache.GetAsync(expiredKey, FileCacheEntryReadOptions.Default);
             Assert.Null(expiredResult);
 
-            using var validResult = await cache.GetAsync(validKey, FileCacheEntryOptions.Default);
+            using var validResult = await cache.GetAsync(validKey, FileCacheEntryReadOptions.Default);
             Assert.NotNull(validResult);
         }
 
@@ -520,7 +520,7 @@ public sealed partial class FileCacheTests
 
             // Act & Assert
             await Assert.ThrowsAsync<ArgumentNullException>(async () =>
-                await cache.GetAsync(null!, FileCacheEntryOptions.Default));
+                await cache.GetAsync(null!, FileCacheEntryReadOptions.Default));
         }
 
         [Fact]
@@ -531,7 +531,7 @@ public sealed partial class FileCacheTests
 
             // Act & Assert
             await Assert.ThrowsAsync<ArgumentException>(async () =>
-                await cache.GetAsync(string.Empty, FileCacheEntryOptions.Default));
+                await cache.GetAsync(string.Empty, FileCacheEntryReadOptions.Default));
         }
 
         [Fact]
@@ -610,7 +610,7 @@ public sealed partial class FileCacheTests
             _clock.Advance(Duration.FromMinutes(4));
 
             // Act
-            using (var validResult = await cache.GetAsync(key, FileCacheEntryOptions.Default))
+            using (var validResult = await cache.GetAsync(key, FileCacheEntryReadOptions.Default))
             {
                 Assert.NotNull(validResult);
             }
@@ -618,7 +618,7 @@ public sealed partial class FileCacheTests
             // Advance time past custom expiration
             _clock.Advance(Duration.FromMinutes(2));
 
-            using (var expiredResult = await cache.GetAsync(key, FileCacheEntryOptions.Default))
+            using (var expiredResult = await cache.GetAsync(key, FileCacheEntryReadOptions.Default))
             {
                 // Assert
                 Assert.Null(expiredResult);

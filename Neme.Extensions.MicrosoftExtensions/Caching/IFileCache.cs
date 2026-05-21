@@ -8,13 +8,13 @@ public interface IFileCache
     [return: OwnershipTransfer]
     FsFile? Get(
         string key,
-        FileCacheEntryOptions options,
+        FileCacheEntryReadOptions options,
         CancellationToken cancellationToken = default);
 
     [return: OwnershipTransfer]
     Task<FsFile?> GetAsync(
         string key,
-        FileCacheEntryOptions options,
+        FileCacheEntryReadOptions options,
         CancellationToken cancellationToken = default);
 
     string? GetPath(

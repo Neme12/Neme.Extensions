@@ -79,8 +79,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
     /// Retrieves a cached file by key and returns a file handle for reading.
     /// </summary>
     /// <param name="key">The cache key. Must not be null or empty.</param>
-    /// <param name="options">Entry-specific options. Use <see cref="FileCacheEntryOptions.Default"/> to apply global defaults.
-    /// Only <see cref="FileCacheEntryOptions.FileOptions"/> is used; other properties are ignored during retrieval.</param>
+    /// <param name="options">Read-specific options. Use <see cref="FileCacheEntryReadOptions.Default"/> to apply global defaults.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A <see cref="FsFile"/> handle with ownership transferred to the caller (you must dispose it),
     /// or <c>null</c> if the key doesn't exist or the entry has expired.</returns>
@@ -94,7 +93,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
     [return: OwnershipTransfer]
     public FsFile? Get(
         string key,
-        FileCacheEntryOptions options,
+        FileCacheEntryReadOptions options,
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(key);
@@ -114,8 +113,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
     /// Asynchronously retrieves a cached file by key and returns a file handle for reading.
     /// </summary>
     /// <param name="key">The cache key. Must not be null or empty.</param>
-    /// <param name="options">Entry-specific options. Use <see cref="FileCacheEntryOptions.Default"/> to apply global defaults.
-    /// Only <see cref="FileCacheEntryOptions.FileOptions"/> is used; other properties are ignored during retrieval.</param>
+    /// <param name="options">Read-specific options. Use <see cref="FileCacheEntryReadOptions.Default"/> to apply global defaults.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A <see cref="FsFile"/> handle with ownership transferred to the caller (you must dispose it),
     /// or <c>null</c> if the key doesn't exist or the entry has expired.</returns>
@@ -129,7 +127,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
     [return: OwnershipTransfer]
     public async Task<FsFile?> GetAsync(
         string key,
-        FileCacheEntryOptions options,
+        FileCacheEntryReadOptions options,
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(key);

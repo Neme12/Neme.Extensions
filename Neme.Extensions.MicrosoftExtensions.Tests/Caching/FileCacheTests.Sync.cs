@@ -82,7 +82,7 @@ public sealed partial class FileCacheTests
             var key = "non-existent-key";
 
             // Act
-            using var result = cache.Get(key, FileCacheEntryOptions.Default);
+            using var result = cache.Get(key, FileCacheEntryReadOptions.Default);
 
             // Assert
             Assert.Null(result);
@@ -102,7 +102,7 @@ public sealed partial class FileCacheTests
             }, FileCacheEntryOptions.Default);
 
             // Act
-            using var result = cache.Get(key, FileCacheEntryOptions.Default);
+            using var result = cache.Get(key, FileCacheEntryReadOptions.Default);
 
             // Assert
             Assert.NotNull(result);
@@ -166,7 +166,7 @@ public sealed partial class FileCacheTests
             _clock.Advance(Duration.FromMinutes(31));
 
             // Act
-            using var result = cache.Get(key, FileCacheEntryOptions.Default);
+            using var result = cache.Get(key, FileCacheEntryReadOptions.Default);
 
             // Assert
             Assert.Null(result);
@@ -187,14 +187,14 @@ public sealed partial class FileCacheTests
 
             // Advance time but access before expiration
             _clock.Advance(Duration.FromMinutes(20));
-            using var firstResult = cache.Get(key, FileCacheEntryOptions.Default);
+            using var firstResult = cache.Get(key, FileCacheEntryReadOptions.Default);
             Assert.NotNull(firstResult);
 
             // Advance another 20 minutes (would be expired with absolute expiration)
             _clock.Advance(Duration.FromMinutes(20));
 
             // Act - should still be valid due to sliding expiration
-            using var secondResult = cache.Get(key, FileCacheEntryOptions.Default);
+            using var secondResult = cache.Get(key, FileCacheEntryReadOptions.Default);
 
             // Assert
             Assert.NotNull(secondResult);
@@ -340,7 +340,7 @@ public sealed partial class FileCacheTests
 
             // Assert
             Assert.False(File.Exists(filePath));
-            using var result = cache.Get(key, FileCacheEntryOptions.Default);
+            using var result = cache.Get(key, FileCacheEntryReadOptions.Default);
             Assert.Null(result);
         }
 
@@ -384,7 +384,7 @@ public sealed partial class FileCacheTests
             // Assert
             foreach (var key in keys)
             {
-                using var result = cache.Get(key, FileCacheEntryOptions.Default);
+                using var result = cache.Get(key, FileCacheEntryReadOptions.Default);
                 Assert.Null(result);
             }
         }
@@ -430,7 +430,7 @@ public sealed partial class FileCacheTests
 
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() =>
-                cache.Get(null!, FileCacheEntryOptions.Default));
+                cache.Get(null!, FileCacheEntryReadOptions.Default));
         }
 
         [Fact]
@@ -441,7 +441,7 @@ public sealed partial class FileCacheTests
 
             // Act & Assert
             Assert.Throws<ArgumentException>(() =>
-                cache.Get(string.Empty, FileCacheEntryOptions.Default));
+                cache.Get(string.Empty, FileCacheEntryReadOptions.Default));
         }
 
         [Fact]
@@ -522,7 +522,7 @@ public sealed partial class FileCacheTests
             _clock.Advance(Duration.FromMinutes(4));
 
             // Act
-            using (var validResult = cache.Get(key, FileCacheEntryOptions.Default))
+            using (var validResult = cache.Get(key, FileCacheEntryReadOptions.Default))
             {
                 Assert.NotNull(validResult);
             }
@@ -530,7 +530,7 @@ public sealed partial class FileCacheTests
             // Advance time past custom expiration
             _clock.Advance(Duration.FromMinutes(2));
 
-            using (var expiredResult = cache.Get(key, FileCacheEntryOptions.Default))
+            using (var expiredResult = cache.Get(key, FileCacheEntryReadOptions.Default))
             {
                 // Assert
                 Assert.Null(expiredResult);
