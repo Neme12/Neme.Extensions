@@ -23,11 +23,11 @@ public static partial class FileIO
 
     [SupportedOSPlatform("windows5.1.2600")]
     [return: OwnershipTransfer]
-    public static FsFile Reopen([Borrow] FsFile file)
+    public static FsFile Reopen([Borrow] FsFile file, FsFileOptions? options = null)
     {
         ValidateFileHandle(file.Handle);
 
-        return new(OpenHandleBy(file.Handle, null, file.Options), file.Options);
+        return new(OpenHandleBy(file.Handle, null, file.Options), options ?? file.Options);
     }
 
     [SupportedOSPlatform("windows5.1.2600")]
