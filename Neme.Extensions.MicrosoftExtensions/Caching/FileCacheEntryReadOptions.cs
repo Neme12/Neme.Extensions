@@ -39,6 +39,23 @@ public readonly record struct FileCacheEntryReadOptions
     public FileOptions? FileOptions { get; init; }
 
     /// <summary>
+    /// Implicitly converts <see cref="FileCacheEntryOptions"/> to <see cref="FileCacheEntryReadOptions"/> by extracting only the <see cref="FileOptions"/> property.
+    /// </summary>
+    /// <param name="options">The entry options to convert.</param>
+    /// <returns>A <see cref="FileCacheEntryReadOptions"/> with the same <see cref="FileOptions"/> value.</returns>
+    /// <remarks>
+    /// <para><strong>Use Case:</strong> Allows passing <see cref="FileCacheEntryOptions"/> directly to Get/GetAsync methods
+    /// without explicitly creating a <see cref="FileCacheEntryReadOptions"/> instance.</para>
+    /// <para><strong>Properties Copied:</strong> Only <see cref="FileOptions"/> is copied; all other properties
+    /// from <see cref="FileCacheEntryOptions"/> (like <see cref="FileCacheEntryOptions.Expiration"/>, 
+    /// <see cref="FileCacheEntryOptions.FileAttributes"/>) are ignored for read operations.</para>
+    /// </remarks>
+    public static implicit operator FileCacheEntryReadOptions(FileCacheEntryOptions options)
+    {
+        return new FileCacheEntryReadOptions { FileOptions = options.FileOptions };
+    }
+
+    /// <summary>
     /// Gets a default instance where all properties are <c>null</c>, causing the cache to use global defaults from <see cref="FileCacheOptions"/>.
     /// </summary>
     /// <remarks>
