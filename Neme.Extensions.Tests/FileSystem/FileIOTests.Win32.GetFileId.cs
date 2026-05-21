@@ -6,9 +6,9 @@ namespace Neme.Extensions.FileSystem.Tests;
 [SupportedOSPlatform("windows6.0.6000")]
 public sealed partial class FileIOTests
 {
-    [SupportedOSPlatform("windows6.0.6000")]
-    public sealed class Win32
+    public sealed partial class Win32
     {
+        [SupportedOSPlatform("windows6.0.6000")]
         public sealed class GetFileId : IDisposable
         {
             private readonly string _tempFilePath;

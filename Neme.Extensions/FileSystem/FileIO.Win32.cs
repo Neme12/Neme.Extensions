@@ -52,6 +52,14 @@ public static partial class FileIO
     }
 
     [SupportedOSPlatform("windows6.0.6000")]
+    public static string GetPath(FsFileId fileId)
+    {
+        var options = new FsFileOptions(FileMode.Open, FsFileAccess.ReadAttributes, FileShare.ReadWrite | FileShare.Delete);
+        using var handle = OpenHandle(fileId, options);
+            return GetPath(handle);
+    }
+
+    [SupportedOSPlatform("windows6.0.6000")]
     public static unsafe void Move([Borrow] SafeFileHandle sourceFile, string destFileName, bool overwrite = false)
     {
         ValidateFileHandle(sourceFile);
