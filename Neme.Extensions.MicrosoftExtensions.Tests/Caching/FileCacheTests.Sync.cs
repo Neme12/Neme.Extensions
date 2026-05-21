@@ -548,5 +548,159 @@ public sealed partial class FileCacheTests
 
             // Assert - no exception should be thrown
         }
+
+        [Fact]
+        public void Get_AppliesSpecifiedFileOptions()
+        {
+            // Arrange
+            using var cache = CreateFileCache();
+            var key = "test-key";
+            var data = "Test Data"u8.ToArray();
+
+            cache.Set(key, (stream, ct) =>
+            {
+                stream.Write(data);
+            }, FileCacheEntryOptions.Default);
+
+            // Act - Request with RandomAccess file options
+            using var result = cache.Get(key, new FileCacheEntryReadOptions(FileOptions.RandomAccess));
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(FileOptions.RandomAccess, result.Options.Options);
+        }
+
+        [Fact]
+        public void Get_AppliesDefaultFileOptionsWhenNotSpecified()
+        {
+            // Arrange
+            using var cache = CreateFileCache();
+            var key = "test-key";
+            var data = "Test Data"u8.ToArray();
+
+            cache.Set(key, (stream, ct) =>
+            {
+                stream.Write(data);
+            }, FileCacheEntryOptions.Default);
+
+            // Act - Use default options
+            using var result = cache.Get(key, FileCacheEntryReadOptions.Default);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(FileOptions.SequentialScan, result.Options.Options);
+        }
+
+        [Fact]
+        public void Get_FileHandleIsNotAsyncWithoutFlag()
+        {
+            // Arrange
+            using var cache = CreateFileCache();
+            var key = "test-key";
+            var data = "Test Data"u8.ToArray();
+
+            cache.Set(key, (stream, ct) =>
+            {
+                stream.Write(data);
+            }, FileCacheEntryOptions.Default);
+
+            // Act - Request without Asynchronous flag
+            using var result = cache.Get(key, new FileCacheEntryReadOptions(FileOptions.SequentialScan));
+
+            // Assert - Handle should NOT be async
+            Assert.NotNull(result);
+            Assert.False(result.Handle.IsAsync);
+        }
+
+        [Fact]
+        public void Get_FileHandleIsAsyncWithFlag()
+        {
+            // Arrange
+            using var cache = CreateFileCache();
+            var key = "test-key";
+            var data = "Test Data"u8.ToArray();
+
+            cache.Set(key, (stream, ct) =>
+            {
+                stream.Write(data);
+            }, FileCacheEntryOptions.Default);
+
+            // Act - Request with Asynchronous flag
+            using var result = cache.Get(key, new FileCacheEntryReadOptions(FileOptions.Asynchronous | FileOptions.SequentialScan));
+
+            // Assert - Handle should be async
+            Assert.NotNull(result);
+            Assert.True(result.Handle.IsAsync);
+        }
+
+        [Fact]
+        public void Set_AppliesSpecifiedFileAttributes()
+        {
+            // Arrange
+            using var cache = CreateFileCache();
+            var key = "test-key";
+            var data = "Test Data"u8.ToArray();
+
+            // Act - Create file with Temporary attribute
+            cache.Set(key, (stream, ct) =>
+            {
+                stream.Write(data);
+            }, new FileCacheEntryOptions 
+            { 
+                Expiration = Duration.FromHours(1),
+                FileAttributes = FileAttributes.Temporary 
+            });
+
+            // Assert
+            var filePath = cache.GetPath(key);
+            Assert.NotNull(filePath);
+            var attributes = File.GetAttributes(filePath);
+            Assert.True(attributes.HasFlag(FileAttributes.Temporary));
+        }
+
+        [Fact]
+        public void Set_AppliesDefaultFileAttributesWhenNotSpecified()
+        {
+            // Arrange
+            using var cache = CreateFileCache();
+            var key = "test-key";
+            var data = "Test Data"u8.ToArray();
+
+            // Act - Create file without specifying attributes
+            cache.Set(key, (stream, ct) =>
+            {
+                stream.Write(data);
+            }, FileCacheEntryOptions.Default);
+
+            // Assert - Should not have Temporary attribute (Windows adds Archive by default)
+            var filePath = cache.GetPath(key);
+            Assert.NotNull(filePath);
+            var attributes = File.GetAttributes(filePath);
+            Assert.False(attributes.HasFlag(FileAttributes.Temporary));
+            Assert.True(attributes.HasFlag(FileAttributes.Archive));
+        }
+
+        [Fact]
+        public void GetOrCreate_AppliesSpecifiedFileOptions()
+        {
+            // Arrange
+            using var cache = CreateFileCache();
+            var key = "test-key";
+            var data = "Test Data"u8.ToArray();
+
+            // Act - Create with specific FileOptions
+            using var result = cache.GetOrCreate(key, (stream, ct) =>
+            {
+                stream.Write(data);
+            }, new FileCacheEntryOptions 
+            { 
+                Expiration = Duration.FromHours(1),
+                FileOptions = FileOptions.RandomAccess 
+            });
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(FileOptions.RandomAccess, result.Options.Options);
+        }
     }
 }
