@@ -13,9 +13,9 @@ namespace Neme.Extensions.FileSystem;
 
 public static partial class FileIO
 {
-    // Cache of volume serial numbers (lower 32 bits) to volume handles
+    // Cache of volume serial numbers (full 64-bit) to volume handles
     // This avoids repeatedly enumerating all volumes for file ID operations
-    private static readonly ConcurrentDictionary<uint, SafeFileHandle> s_volumeHandleCache = new();
+    private static readonly ConcurrentDictionary<ulong, SafeFileHandle> s_volumeHandleCache = new();
 
     [SupportedOSPlatform("windows5.1.2600")]
     [return: OwnershipTransfer]
@@ -35,7 +35,7 @@ public static partial class FileIO
         return new(OpenHandleBy(file.Handle, null, file.Options), options ?? file.Options);
     }
 
-    [SupportedOSPlatform("windows5.1.2600")]
+    [SupportedOSPlatform("windows6.0.6000")]
     [return: OwnershipTransfer]
     public static unsafe SafeFileHandle OpenHandle(
         FsFileId fileId,
@@ -86,7 +86,7 @@ public static partial class FileIO
         return new SafeFileHandle(handle, ownsHandle: true);
     }
 
-    [SupportedOSPlatform("windows5.1.2600")]
+    [SupportedOSPlatform("windows6.0.6000")]
     [return: OwnershipTransfer]
     public static FsFile Open(
         FsFileId fileId,
@@ -95,7 +95,7 @@ public static partial class FileIO
         return new(OpenHandle(fileId, options), options);
     }
 
-    [SupportedOSPlatform("windows5.1.2600")]
+    [SupportedOSPlatform("windows6.0.6000")]
     public static bool TryOpenHandle(
         FsFileId fileId,
         FsFileOptions options,
@@ -114,7 +114,7 @@ public static partial class FileIO
         }
     }
 
-    [SupportedOSPlatform("windows5.1.2600")]
+    [SupportedOSPlatform("windows6.0.6000")]
     public static bool TryOpen(
         FsFileId fileId,
         FsFileOptions options,
@@ -133,23 +133,19 @@ public static partial class FileIO
         }
     }
 
-    [SupportedOSPlatform("windows5.1.2600")]
+    [SupportedOSPlatform("windows6.0.6000")]
     private static SafeFileHandle FindAndOpenVolumeBySerialNumber(ulong volumeSerialNumber)
     {
-        // Note: GetVolumeInformation only returns the lower 32 bits of the volume serial number.
-        // FILE_ID_INFO.VolumeSerialNumber is 64-bit, but we compare only the lower 32 bits.
-        var targetSerial = (uint)volumeSerialNumber;
-
         // Use GetOrAdd for atomic cache lookup/creation - ensures only one thread enumerates volumes
         // for a given serial number, even under concurrent access
-        return s_volumeHandleCache.GetOrAdd(targetSerial, static serial =>
+        return s_volumeHandleCache.GetOrAdd(volumeSerialNumber, static serial =>
         {
             return EnumerateAndOpenVolume(serial);
         });
     }
 
-    [SupportedOSPlatform("windows5.1.2600")]
-    private static unsafe SafeFileHandle EnumerateAndOpenVolume(uint targetSerial)
+    [SupportedOSPlatform("windows6.0.6000")]
+    private static unsafe SafeFileHandle EnumerateAndOpenVolume(ulong targetSerial)
     {
         char* volumeNameBuffer = stackalloc char[50]; // Volume GUID paths are typically 49 chars
         Span<char> volumeName = new(volumeNameBuffer, 50);
@@ -171,39 +167,27 @@ public static partial class FileIO
 
                 try
                 {
-                    // Get volume information to check serial number
+                    // Get volume information to check serial number (lower 32 bits only)
                     fixed (char* pVolumePath = volumePath)
                     {
-                        uint serialNumber = default;
+                        uint serialNumberLower32 = default;
 
                         if (Win32PInvoke.GetVolumeInformation(
                             new PCWSTR(pVolumePath),
                             null,
                             0,
-                            &serialNumber,
+                            &serialNumberLower32,
                             null,
                             null,
                             null,
                             0))
                         {
-                            if (serialNumber == targetSerial)
+                            // Lower 32 bits match - try to open and verify full 64-bit serial
+                            if (serialNumberLower32 == (uint)targetSerial)
                             {
-                                // Found the matching volume, open a handle to it
                                 var volumePathWithSlash = volumeName[..(volumePathLength + 1)].ToString();
-
-                                var handle = Win32PInvoke.CreateFile(
-                                    volumePathWithSlash,
-                                    0, // No specific access needed, just need the handle
-                                    FILE_SHARE_MODE.FILE_SHARE_READ | FILE_SHARE_MODE.FILE_SHARE_WRITE,
-                                    null,
-                                    FILE_CREATION_DISPOSITION.OPEN_EXISTING,
-                                    FILE_FLAGS_AND_ATTRIBUTES.FILE_FLAG_BACKUP_SEMANTICS,
-                                    null);
-
-                                if (handle.IsInvalid)
-                                    throw Win32Marshal.GetExceptionForLastWin32Error();
-
-                                return handle;
+                                if (TryOpenAndVerifyVolume(volumePathWithSlash, targetSerial, out var handle))
+                                    return handle;
                             }
                         }
                     }
@@ -221,6 +205,51 @@ public static partial class FileIO
         }
 
         throw new DirectoryNotFoundException($"No volume found with serial number 0x{targetSerial:X8}");
+    }
+
+    [SupportedOSPlatform("windows6.0.6000")]
+    private static unsafe bool TryOpenAndVerifyVolume(
+        string volumePath,
+        ulong targetSerial,
+        [NotNullWhen(true)] out SafeFileHandle? handle)
+    {
+        var volumeHandle = OwnedOrBorrowed.CreateOwned(Win32PInvoke.CreateFile(
+            volumePath,
+            0, // No specific access needed, just need the handle
+            FILE_SHARE_MODE.FILE_SHARE_READ | FILE_SHARE_MODE.FILE_SHARE_WRITE,
+            null,
+            FILE_CREATION_DISPOSITION.OPEN_EXISTING,
+            FILE_FLAGS_AND_ATTRIBUTES.FILE_FLAG_BACKUP_SEMANTICS,
+            null));
+
+        if (volumeHandle.Value.IsInvalid)
+        {
+            handle = null;
+            return false;
+        }
+
+        using var handleScope = volumeHandle.Value.CreateScope();
+
+        // Get full 64-bit volume serial number to verify
+        FILE_ID_INFO fileIdInfo = default;
+        if (Win32PInvoke.GetFileInformationByHandleEx(
+            new HANDLE(handleScope.Handle),
+            FILE_INFO_BY_HANDLE_CLASS.FileIdInfo,
+            &fileIdInfo,
+            (uint)sizeof(FILE_ID_INFO)))
+        {
+            // Compare the full 64-bit serial number
+            if (fileIdInfo.VolumeSerialNumber == targetSerial)
+            {
+                // Full match confirmed
+                handle = volumeHandle.Move();
+                return true;
+            }
+        }
+
+        // Not a match or couldn't get info - close handle and return false
+        handle = null;
+        return false;
     }
 
     [SupportedOSPlatform("windows5.1.2600")]
