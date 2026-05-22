@@ -4,7 +4,6 @@ using Neme.Extensions.Ownership;
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Net.WebSockets;
 using System.Runtime.Versioning;
 using Windows.Wdk.Foundation;
 using Windows.Wdk.Storage.FileSystem;
@@ -76,22 +75,11 @@ internal sealed partial class WindowsFileIOStrategy
     public override unsafe SafeFileHandle OpenHandleBy([Borrow] SafeFileHandle? rootDirectory, string? path, FsFileOptions options)
 #pragma warning disable RS0042
     {
-        // Write to a file to survive crashes
-        try
-        {
-            File.AppendAllText(Path.Combine(Path.GetTempPath(), "openhandleby_log.txt"), 
-                $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - OpenHandleBy called - rootDir={rootDirectory != null}, path={path}\r\n");
-        }
-        catch { }
-
         if (rootDirectory is null && path is null)
             throw new ArgumentException($"Either {nameof(rootDirectory)} or {nameof(path)} must be provided.");
 
         ValidateFileHandle(rootDirectory, optional: true);
         ValidatePath(path, optional: true);
-
-        File.AppendAllText(Path.Combine(Path.GetTempPath(), "openhandleby_log.txt"),
-            $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - OpenHandleBy validated\r\n");
 
         UNICODE_STRING unicodeString = default;
 
@@ -103,13 +91,7 @@ internal sealed partial class WindowsFileIOStrategy
             Win32PInvoke.RtlInitUnicodeString(ref unicodeString, path);
         }
 
-        File.AppendAllText(Path.Combine(Path.GetTempPath(), "openhandleby_log.txt"),
-            $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - OpenHandleBy: UNICODE_STRING initialized\r\n");
-
         using var rootDirectoryHandle = rootDirectory?.CreateScope();
-
-        File.AppendAllText(Path.Combine(Path.GetTempPath(), "openhandleby_log.txt"),
-            $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - OpenHandleBy: Root directory handle scope created successfully\r\n");
 
         var objectAttributes = new OBJECT_ATTRIBUTES
         {
@@ -120,9 +102,6 @@ internal sealed partial class WindowsFileIOStrategy
             ObjectName = &unicodeString,
             Attributes = OBJECT_ATTRIBUTE_FLAGS.OBJ_CASE_INSENSITIVE,
         };
-
-        File.AppendAllText(Path.Combine(Path.GetTempPath(), "openhandleby_log.txt"),
-            $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - OpenHandleBy: OBJECT_ATTRIBUTES created successfully\r\n");
 
         var status = WinNTPInvoke.NtCreateFile(
             out var handle,
@@ -136,18 +115,8 @@ internal sealed partial class WindowsFileIOStrategy
             options.Options.ToWinNT(options.Attributes),
             []);
 
-        File.AppendAllText(Path.Combine(Path.GetTempPath(), "openhandleby_log.txt"),
-            $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - OpenHandleBy: NtCreateFile called successfully. Status: {status}\r\n");
-
         if (status.SeverityCode != NTSTATUS.Severity.Success)
-        {
-            var exception = WinNtMarshal.GetExceptionForNtStatus(status, path);
-            File.AppendAllText(Path.Combine(Path.GetTempPath(), "openhandleby_log.txt"),
-                $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - OpenHandleBy: NtCreateFile failed with status {status} - {exception.Message}\r\n");
-        }
-
-        File.AppendAllText(Path.Combine(Path.GetTempPath(), "openhandleby_log.txt"),
-            $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - OpenHandleBy: NtCreateFile completed with status {status}\r\n");
+            throw WinNtMarshal.GetExceptionForNtStatus(status, path);
 
         return new SafeFileHandle(handle, ownsHandle: true);
     }

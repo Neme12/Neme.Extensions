@@ -76,7 +76,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "Causes race condition in CI by changing process-wide current directory")]
         public void RootDirectoryNull_RelativePath_OpensFileWithAbsolutePath()
         {
             // Arrange
@@ -114,7 +114,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "Causes race condition in CI by changing process-wide current directory")]
         public void RootDirectoryNull_RelativePath_OpensDirectoryWithAbsolutePath()
         {
             // Arrange
