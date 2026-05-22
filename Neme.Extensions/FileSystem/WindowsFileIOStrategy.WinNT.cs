@@ -4,6 +4,7 @@ using Neme.Extensions.Ownership;
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Net.WebSockets;
 using System.Runtime.Versioning;
 using Windows.Wdk.Foundation;
 using Windows.Wdk.Storage.FileSystem;
@@ -75,11 +76,14 @@ internal sealed partial class WindowsFileIOStrategy
     public override unsafe SafeFileHandle OpenHandleBy([Borrow] SafeFileHandle? rootDirectory, string? path, FsFileOptions options)
 #pragma warning disable RS0042
     {
+        Console.WriteLine("OpenHandleBy is being called");
         if (rootDirectory is null && path is null)
             throw new ArgumentException($"Either {nameof(rootDirectory)} or {nameof(path)} must be provided.");
 
         ValidateFileHandle(rootDirectory, optional: true);
         ValidatePath(path, optional: true);
+
+        Console.WriteLine("OpenHandleBy parameters validated successfully");
 
         UNICODE_STRING unicodeString = default;
 
@@ -91,7 +95,11 @@ internal sealed partial class WindowsFileIOStrategy
             Win32PInvoke.RtlInitUnicodeString(ref unicodeString, path);
         }
 
+        Console.WriteLine("OpenHandleBy: UNICODE_STRING initialized successfully with path: " + (path ?? "<null>"));
+
         using var rootDirectoryHandle = rootDirectory?.CreateScope();
+
+        Console.WriteLine("OpenHandleBy: Root directory handle scope created successfully");
 
         var objectAttributes = new OBJECT_ATTRIBUTES
         {
@@ -102,6 +110,8 @@ internal sealed partial class WindowsFileIOStrategy
             ObjectName = &unicodeString,
             Attributes = OBJECT_ATTRIBUTE_FLAGS.OBJ_CASE_INSENSITIVE,
         };
+
+        Console.WriteLine("OpenHandleBy: OBJECT_ATTRIBUTES initialized successfully");
 
         var status = WinNTPInvoke.NtCreateFile(
             out var handle,
@@ -115,8 +125,15 @@ internal sealed partial class WindowsFileIOStrategy
             options.Options.ToWinNT(options.Attributes),
             []);
 
+        Console.WriteLine("OpenHandleBy: NtCreateFile called successfully");
+
         if (status.SeverityCode != NTSTATUS.Severity.Success)
-            throw WinNtMarshal.GetExceptionForNtStatus(status, path);
+        {
+            var exception = WinNtMarshal.GetExceptionForNtStatus(status, path);
+            Console.WriteLine($"OpenHandleBy: NtCreateFile failed with status {status} - {exception.Message}");
+        }
+
+        Console.WriteLine("OpenHandleBy: NtCreateFile completed with status " + status);
 
         return new SafeFileHandle(handle, ownsHandle: true);
     }
