@@ -11,7 +11,9 @@ public sealed partial class FileIOTests
 
         // Only for netfx, where we can't open a handle directly, so we need to
         // keep its source FileStream alive to keep the handle open.
+#pragma warning disable CS0649 // It is assigned on netfx.
         private readonly IDisposable? _tempDisposable;
+#pragma warning restore CS0649
 
         private readonly SafeFileHandle _tempFileHandle;
 
