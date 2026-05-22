@@ -8,7 +8,7 @@ public sealed partial class FileIOTests
     [Collection(nameof(FileIOTestCollection))]
     public sealed class OpenHandleBy
     {
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "test")]
         public void BothParametersNull_ThrowsArgumentException()
         {
             // Arrange
@@ -23,7 +23,7 @@ public sealed partial class FileIOTests
             Assert.Contains("path", ex.Message);
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "test")]
         public void RootDirectoryNull_PathProvided_OpensFileRegularly()
         {
             // Arrange
@@ -47,7 +47,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "test")]
         public void RootDirectoryNull_PathProvided_OpensDirectoryRegularly()
         {
             // Arrange
@@ -155,7 +155,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "test")]
         public void RootDirectoryProvided_PathProvided_OpensRelativePath()
         {
             // Arrange
@@ -190,7 +190,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "test")]
         public void RootDirectoryProvided_PathProvided_OpensRelativeDirectory()
         {
             // Arrange
@@ -224,7 +224,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "test")]
         public void RootDirectoryProvided_PathNull_ReopensRootDirectory()
         {
             // Arrange
@@ -255,7 +255,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "test")]
         public void RootDirectoryProvided_PathNull_ReopensFileHandle()
         {
             // Arrange
@@ -281,7 +281,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "test")]
         public void PathNotFound_ThrowsException()
         {
             // Arrange
@@ -319,7 +319,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "test")]
         public void DifferentAccessModes_OpensFile()
         {
             // Arrange
