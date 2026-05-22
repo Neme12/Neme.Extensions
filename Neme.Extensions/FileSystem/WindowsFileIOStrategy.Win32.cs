@@ -6,7 +6,6 @@ using Neme.Utilities.Contracts;
 using NodaTime;
 using System.Buffers;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -17,13 +16,55 @@ using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 
 namespace Neme.Extensions.FileSystem;
 
-public static partial class FileIO
+[SupportedOSPlatform("windows6.0.6000")]
+internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
 {
     private const int MaxWindowsFileNameLength = 255;
     private const int MaxWindowsPathLength = short.MaxValue - 4; // 4 for the \\?\ prefix.
 
-    [SupportedOSPlatform("windows6.0.6000")]
-    public static string GetPath([Borrow] SafeFileHandle file)
+    [return: OwnershipTransfer]
+    public override SafeFileHandle OpenHandle(string path, FsFileOptions options)
+    {
+        ValidatePath(path);
+
+        var handle = PInvoke.CreateFile(
+            path,
+            (uint)options.Access.ToWin32(),
+            options.Share.ToWin32(),
+            null,
+            options.Mode.ToWin32(),
+            options.Options.ToWin32() | options.Attributes.ToWin32(),
+            null);
+
+        if (handle.IsInvalid)
+            throw Win32Marshal.GetExceptionForLastWin32Error(path);
+
+        return handle;
+    }
+
+    [return: OwnershipTransfer]
+    public override SafeFileHandle DuplicateHandle([Borrow] SafeFileHandle file, FsFileAccess? access)
+    {
+        ValidateFileHandle(file);
+
+        var currentProcess = new SafeProcessHandle((nint)(-1), ownsHandle: false); // Pseudo-handle for the current process
+
+        if (!PInvoke.DuplicateHandle(
+            currentProcess,
+            file,
+            currentProcess,
+            out var duplicatedHandle,
+            access is null ? 0u : (uint)access.Value.ToWin32(),
+            false,
+            access is null ? DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS : 0u))
+        {
+            throw Win32Marshal.GetExceptionForLastWin32Error();
+        }
+
+        return duplicatedHandle;
+    }
+
+    public override string GetPath([Borrow] SafeFileHandle file)
     {
         ValidateFileHandle(file);
 
@@ -51,16 +92,14 @@ public static partial class FileIO
             : bufferLease.Buffer[..(int)charsWritten].ToString();
     }
 
-    [SupportedOSPlatform("windows6.0.6000")]
-    public static string GetPath(FsFileId fileId)
+    public override string GetPath(FsFileId fileId)
     {
         var options = new FsFileOptions(FileMode.Open, FsFileAccess.ReadAttributes, FileShare.ReadWrite | FileShare.Delete);
         using var handle = OpenHandle(fileId, options);
-            return GetPath(handle);
+        return GetPath(handle);
     }
 
-    [SupportedOSPlatform("windows6.0.6000")]
-    public static unsafe void Move([Borrow] SafeFileHandle sourceFile, string destFileName, bool overwrite = false)
+    public override unsafe void Move([Borrow] SafeFileHandle sourceFile, string destFileName, bool overwrite)
     {
         ValidateFileHandle(sourceFile);
         ValidateFileName(destFileName);
@@ -91,8 +130,7 @@ public static partial class FileIO
             throw Win32Marshal.GetExceptionForLastWin32Error(destFileName);
     }
 
-    [SupportedOSPlatform("windows6.0.6000")]
-    public static unsafe void Delete([Borrow] SafeFileHandle file)
+    public override unsafe void Delete([Borrow] SafeFileHandle file)
     {
         ValidateFileHandle(file);
 
@@ -106,8 +144,7 @@ public static partial class FileIO
             throw Win32Marshal.GetExceptionForLastWin32Error();
     }
 
-    [SupportedOSPlatform("windows6.0.6000")]
-    public static unsafe void SetFileAttributes([Borrow] SafeFileHandle file, FileAttributes attributes)
+    public override unsafe void SetFileAttributes([Borrow] SafeFileHandle file, FileAttributes attributes)
     {
         ValidateFileHandle(file);
 
@@ -121,8 +158,7 @@ public static partial class FileIO
             throw Win32Marshal.GetExceptionForLastWin32Error();
     }
 
-    [SupportedOSPlatform("windows5.1.2600")]
-    public static FileAttributes GetFileAttributes([Borrow] SafeFileHandle file)
+    public override FileAttributes GetFileAttributes([Borrow] SafeFileHandle file)
     {
         ValidateFileHandle(file);
 
@@ -133,8 +169,7 @@ public static partial class FileIO
         return FileAttributes.FromWin32((FILE_FLAGS_AND_ATTRIBUTES)fileInformation.dwFileAttributes);
     }
 
-    [SupportedOSPlatform("windows5.1.2600")]
-    public static FsFileInfo GetFileInfo([Borrow] SafeFileHandle file)
+    public override FsFileInfo GetFileInfo([Borrow] SafeFileHandle file)
     {
         ValidateFileHandle(file);
 
@@ -151,11 +186,10 @@ public static partial class FileIO
         };
     }
 
-    [SupportedOSPlatform("windows6.0.6000")]
-    public static unsafe FsFileId GetFileId([Borrow] SafeFileHandle file)
+    public override unsafe FsFileId GetFileId([Borrow] SafeFileHandle file)
     {
         ValidateFileHandle(file);
-        
+
         ref var fileInfo = ref AllocateFileInfo<FILE_ID_INFO>(
             stackalloc byte[sizeof(FILE_ID_INFO)],
             out var fileInfoBuffer);
@@ -196,140 +230,6 @@ public static partial class FileIO
 #else
         return ref Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(buffer));
 #endif
-    }
-
-    [SupportedOSPlatform("windows5.1.2600")]
-    [return: OwnershipTransfer]
-    public static SafeFileHandle OpenHandle(string path, FsFileOptions options)
-    {
-        ValidatePath(path);
-
-        var handle = PInvoke.CreateFile(
-            path,
-            (uint)options.Access.ToWin32(),
-            options.Share.ToWin32(),
-            null,
-            options.Mode.ToWin32(),
-            options.Options.ToWin32() | options.Attributes.ToWin32(),
-            null);
-
-        if (handle.IsInvalid)
-            throw Win32Marshal.GetExceptionForLastWin32Error(path);
-
-        return handle;
-    }
-
-    [SupportedOSPlatform("windows5.1.2600")]
-    public static bool TryOpenHandle(
-        string path,
-        FsFileOptions options,
-        [NotNullWhen(true)][OwnershipTransfer] out SafeFileHandle? handle,
-        bool requireDirectory = true)
-    {
-        try
-        {
-            handle = OpenHandle(path, options);
-            return true;
-
-        }
-        catch (Exception e) when (e is FileNotFoundException || !requireDirectory && e is DirectoryNotFoundException)
-        {
-            handle = null;
-            return false;
-        }
-    }
-
-    [SupportedOSPlatform("windows5.1.2600")]
-    [return: OwnershipTransfer]
-    public static FsFile Open(string path, FsFileOptions options) =>
-        new(OpenHandle(path, options), options);
-
-    [SupportedOSPlatform("windows5.1.2600")]
-    public static bool TryOpen(
-        string path,
-        FsFileOptions options,
-        [NotNullWhen(true)] [OwnershipTransfer] out FsFile? file,
-        bool requireDirectory = true)
-    {
-        try
-        {
-            file = Open(path, options);
-            return true;
-        }
-        catch (Exception e) when (e is FileNotFoundException || !requireDirectory && e is DirectoryNotFoundException)
-        {
-            file = null;
-            return false;
-        }
-    }
-
-    [SupportedOSPlatform("windows5.0")]
-    [return: OwnershipTransfer]
-    public static SafeFileHandle DuplicateHandle([Borrow] SafeFileHandle file, FsFileAccess? access)
-    {
-        ValidateFileHandle(file);
-
-        var currentProcess = new SafeProcessHandle((nint)(-1), ownsHandle: false); // Pseudo-handle for the current process
-
-        if (!PInvoke.DuplicateHandle(
-            currentProcess,
-            file,
-            currentProcess,
-            out var duplicatedHandle,
-            access is null ? 0u : (uint)access.Value.ToWin32(),
-            false,
-            access is null ? DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS : 0u))
-        {
-            throw Win32Marshal.GetExceptionForLastWin32Error();
-        }
-
-        return duplicatedHandle;
-    }
-
-    [SupportedOSPlatform("windows5.0")]
-    [return: OwnershipTransfer]
-    public static FsFile Duplicate([Borrow] FsFile file) =>
-        new(DuplicateHandle(file.Handle, file.Options.Access), file.Options);
-
-    [return: OwnershipTransfer]
-    public static CheckedFileStream CreateFileStream(
-        [OwnershipTransfer] SafeFileHandle file,
-        FsFileOptions options,
-        bool leaveOpen = false,
-        int bufferSize = 4096)
-    {
-        ValidateFileHandle(file);
-
-        using var handle = OwnedOrBorrowed.Create(leaveOpen
-            ? new SafeFileHandle(file.DangerousGetHandle(), ownsHandle: false)
-            : file);
-
-        FileAccess access = 0;
-
-        if ((options.Access & FsFileAccess.Read) != 0)
-            access |= FileAccess.Read;
-
-        if ((options.Access & FsFileAccess.Write) != 0)
-            access |= FileAccess.Write;
-
-        return new CheckedFileStream(handle.Move(), access, bufferSize, isAsync: (options.Options & FileOptions.Asynchronous) != 0);
-    }
-
-    private static void ValidateFileHandle([Borrow] SafeFileHandle? file, bool optional = false,  [CallerArgumentExpression(nameof(file))] string? paramName = null)
-    {
-        if (optional && file is null)
-            return;
-
-        ArgumentNullException.ThrowIfNull(file, paramName);
-
-        if (file.IsClosed || file.IsInvalid)
-            Throw.ArgumentException(file, "File handle must be valid and open.", paramName);
-    }
-
-    private static void ValidateFileId(FsFileId fileId,  [CallerArgumentExpression(nameof(fileId))] string? paramName = null)
-    {
-        if (fileId == default)
-            Throw.ArgumentException(fileId, "File ID must be valid.", paramName);
     }
 
     private static void ValidateFileName(string? fileName, bool optional = false, [CallerArgumentExpression(nameof(fileName))] string? paramName = null)

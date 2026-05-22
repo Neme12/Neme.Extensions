@@ -12,35 +12,15 @@ using Windows.Win32.Storage.FileSystem;
 
 namespace Neme.Extensions.FileSystem;
 
-public static partial class FileIO
+[SupportedOSPlatform("windows6.0.6000")]
+internal sealed partial class WindowsFileIOStrategy
 {
     // Cache of volume serial numbers (full 64-bit) to volume handles
     // This avoids repeatedly enumerating all volumes for file ID operations
     private static readonly ConcurrentDictionary<ulong, SafeFileHandle> s_volumeHandleCache = new();
 
-    [SupportedOSPlatform("windows5.1.2600")]
     [return: OwnershipTransfer]
-    public static SafeFileHandle ReopenHandle([Borrow] SafeFileHandle file, FsFileOptions options)
-    {
-        ValidateFileHandle(file);
-
-        return OpenHandleBy(file, null, options);
-    }
-
-    [SupportedOSPlatform("windows5.1.2600")]
-    [return: OwnershipTransfer]
-    public static FsFile Reopen([Borrow] FsFile file, FsFileOptions? options = null)
-    {
-        ValidateFileHandle(file.Handle);
-
-        return new(OpenHandleBy(file.Handle, null, file.Options), options ?? file.Options);
-    }
-
-    [SupportedOSPlatform("windows6.0.6000")]
-    [return: OwnershipTransfer]
-    public static unsafe SafeFileHandle OpenHandle(
-        FsFileId fileId,
-        FsFileOptions options)
+    public override unsafe SafeFileHandle OpenHandle(FsFileId fileId, FsFileOptions options)
     {
         ValidateFileId(fileId);
 
@@ -57,7 +37,7 @@ public static partial class FileIO
         {
             Length = 16,
             MaximumLength = 16,
-            Buffer = (char*)fileIdBuffer,       
+            Buffer = (char*)fileIdBuffer,
         };
 
         var objectAttributes = new OBJECT_ATTRIBUTES
@@ -91,54 +71,57 @@ public static partial class FileIO
         return new SafeFileHandle(handle, ownsHandle: true);
     }
 
-    [SupportedOSPlatform("windows6.0.6000")]
     [return: OwnershipTransfer]
-    public static FsFile Open(
-        FsFileId fileId,
-        FsFileOptions options)
+    public override unsafe SafeFileHandle OpenHandleBy([Borrow] SafeFileHandle? rootDirectory, string? path, FsFileOptions options)
+#pragma warning disable RS0042
     {
-        return new(OpenHandle(fileId, options), options);
-    }
+        if (rootDirectory is null && path is null)
+            throw new ArgumentException($"Either {nameof(rootDirectory)} or {nameof(path)} must be provided.");
 
-    [SupportedOSPlatform("windows6.0.6000")]
-    public static bool TryOpenHandle(
-        FsFileId fileId,
-        FsFileOptions options,
-        [NotNullWhen(true)][OwnershipTransfer] out SafeFileHandle? handle,
-        bool requireDirectory = true)
-    {
-        try
-        {
-            handle = OpenHandle(fileId, options);
-            return true;
-        }
-        catch (Exception e) when (e is FileNotFoundException || !requireDirectory && e is DirectoryNotFoundException)
-        {
-            handle = null;
-            return false;
-        }
-    }
+        ValidateFileHandle(rootDirectory, optional: true);
+        ValidatePath(path, optional: true);
 
-    [SupportedOSPlatform("windows6.0.6000")]
-    public static bool TryOpen(
-        FsFileId fileId,
-        FsFileOptions options,
-        [NotNullWhen(true)][OwnershipTransfer] out FsFile? file,
-        bool requireDirectory = true)
-    {
-        try
-        {
-            file = Open(fileId, options);
-            return true;
-        }
-        catch (Exception e) when (e is FileNotFoundException || !requireDirectory && e is DirectoryNotFoundException)
-        {
-            file = null;
-            return false;
-        }
-    }
+        UNICODE_STRING unicodeString = default;
 
-    [SupportedOSPlatform("windows6.0.6000")]
+        if (path is not null)
+        {
+            if (rootDirectory is null)
+                path = @"\??\" + Path.GetFullPath(path);
+
+            Win32PInvoke.RtlInitUnicodeString(ref unicodeString, path);
+        }
+
+        using var rootDirectoryHandle = rootDirectory?.CreateScope();
+
+        var objectAttributes = new OBJECT_ATTRIBUTES
+        {
+            Length = (uint)sizeof(OBJECT_ATTRIBUTES),
+            RootDirectory = rootDirectoryHandle is not null
+                ? new(rootDirectoryHandle.Value.Handle)
+                : HANDLE.Null,
+            ObjectName = &unicodeString,
+            Attributes = OBJECT_ATTRIBUTE_FLAGS.OBJ_CASE_INSENSITIVE,
+        };
+
+        var status = WinNTPInvoke.NtCreateFile(
+            out var handle,
+            options.Access.ToWin32(),
+            in objectAttributes,
+            out _,
+            null,
+            options.Attributes.ToWinNT(),
+            options.Share.ToWin32(),
+            options.Mode.ToWinNT(),
+            options.Options.ToWinNT(options.Attributes),
+            []);
+
+        if (status.SeverityCode != NTSTATUS.Severity.Success)
+            throw WinNtMarshal.GetExceptionForNtStatus(status, path);
+
+        return new SafeFileHandle(handle, ownsHandle: true);
+    }
+#pragma warning restore RS0042
+
     private static SafeFileHandle FindAndOpenVolumeBySerialNumber(ulong volumeSerialNumber)
     {
         // Use GetOrAdd for atomic cache lookup/creation - ensures only one thread enumerates volumes
@@ -152,7 +135,6 @@ public static partial class FileIO
         });
     }
 
-    [SupportedOSPlatform("windows6.0.6000")]
     private static unsafe SafeFileHandle EnumerateAndOpenVolume(ulong targetSerial)
     {
         FileIOEventSource.Log.EnumeratingVolumes(targetSerial);
@@ -218,7 +200,6 @@ public static partial class FileIO
         throw new DirectoryNotFoundException($"No volume found with serial number 0x{targetSerial:X8}");
     }
 
-    [SupportedOSPlatform("windows6.0.6000")]
     private static unsafe bool TryOpenAndVerifyVolume(
         string volumePath,
         ulong targetSerial,
@@ -275,111 +256,5 @@ public static partial class FileIO
         // Not a match or couldn't get info - close handle and return false
         handle = null;
         return false;
-    }
-
-    [SupportedOSPlatform("windows5.1.2600")]
-    [return: OwnershipTransfer]
-    public static unsafe SafeFileHandle OpenHandleBy(
-        [Borrow] SafeFileHandle? rootDirectory,
-        string? path,
-        FsFileOptions options)
-#pragma warning disable RS0042
-    {
-        if (rootDirectory is null && path is null)
-            throw new ArgumentException($"Either {nameof(rootDirectory)} or {nameof(path)} must be provided.");
-
-        ValidateFileHandle(rootDirectory, optional: true);
-        ValidatePath(path, optional: true);
-
-        UNICODE_STRING unicodeString = default;
-
-        if (path is not null)
-        {
-            if (rootDirectory is null)
-                path = @"\??\" + Path.GetFullPath(path);
-
-            Win32PInvoke.RtlInitUnicodeString(ref unicodeString, path);
-        }
-
-        using var rootDirectoryHandle = rootDirectory?.CreateScope();
-
-        var objectAttributes = new OBJECT_ATTRIBUTES
-        {
-            Length = (uint)sizeof(OBJECT_ATTRIBUTES),
-            RootDirectory = rootDirectoryHandle is not null
-                ? new(rootDirectoryHandle.Value.Handle)
-                : HANDLE.Null,
-            ObjectName = &unicodeString,
-            Attributes = OBJECT_ATTRIBUTE_FLAGS.OBJ_CASE_INSENSITIVE,
-        };
-
-        var status = WinNTPInvoke.NtCreateFile(
-            out var handle,
-            options.Access.ToWin32(),
-            in objectAttributes,
-            out _,
-            null,
-            options.Attributes.ToWinNT(),
-            options.Share.ToWin32(),
-            options.Mode.ToWinNT(),
-            options.Options.ToWinNT(options.Attributes),
-            []);
-
-        if (status.SeverityCode != NTSTATUS.Severity.Success)
-            throw WinNtMarshal.GetExceptionForNtStatus(status, path);
-
-        return new SafeFileHandle(handle, ownsHandle: true);
-    }
-#pragma warning restore RS0042
-
-    [SupportedOSPlatform("windows5.1.2600")]
-    public static bool TryOpenHandleBy(
-        [Borrow] SafeFileHandle? rootDirectory,
-        string? path,
-        FsFileOptions options,
-        [NotNullWhen(true)][OwnershipTransfer] out SafeFileHandle? file,
-        bool requireDirectory = true)
-    {
-        try
-        {
-            file = OpenHandleBy(rootDirectory, path, options);
-            return true;
-        }
-        catch (Exception e) when (e is FileNotFoundException || !requireDirectory && e is DirectoryNotFoundException)
-        {
-            file = null;
-            return false;
-        }
-    }
-
-    [SupportedOSPlatform("windows5.1.2600")]
-    [return: OwnershipTransfer]
-    public static unsafe FsFile OpenBy(
-        [Borrow] SafeFileHandle? rootDirectory,
-        string? path,
-        FsFileOptions options)
-    {
-        return new(OpenHandleBy(rootDirectory, path, options), options);
-    }
-
-    [SupportedOSPlatform("windows5.1.2600")]
-    [return: OwnershipTransfer]
-    public static bool TryOpenBy(
-        [Borrow] SafeFileHandle? rootDirectory,
-        string? path,
-        FsFileOptions options,
-        [NotNullWhen(true)][OwnershipTransfer] out FsFile? file,
-        bool requireDirectory = true)
-    {
-        try
-        {
-            file = OpenBy(rootDirectory, path, options);
-            return true;
-        }
-        catch (Exception e) when (e is FileNotFoundException || !requireDirectory && e is DirectoryNotFoundException)
-        {
-            file = null;
-            return false;
-        }
     }
 }
