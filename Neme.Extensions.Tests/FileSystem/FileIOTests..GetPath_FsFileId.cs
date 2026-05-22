@@ -4,6 +4,7 @@ namespace Neme.Extensions.FileSystem.Tests;
 
 public sealed partial class FileIOTests
 {
+    [Collection(nameof(FileIOTestCollection))]
     public sealed class GetPath_FsFileId
     {
         [WindowsOnlyFact]
@@ -17,6 +18,7 @@ public sealed partial class FileIOTests
                 using (var fileStream = File.Open(tempFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
                     fileId = FileIO.GetFileId(fileStream.SafeFileHandle);
+using Xunit;
                 }
 
                 // Act
@@ -45,6 +47,7 @@ public sealed partial class FileIOTests
                 using (var fileStream = File.Open(tempFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
                     fileId = FileIO.GetFileId(fileStream.SafeFileHandle);
+using Xunit;
                 }
 
                 // Act

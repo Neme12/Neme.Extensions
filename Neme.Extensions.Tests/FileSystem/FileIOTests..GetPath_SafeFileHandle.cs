@@ -5,6 +5,7 @@ namespace Neme.Extensions.FileSystem.Tests;
 
 public sealed partial class FileIOTests
 {
+    [Collection(nameof(FileIOTestCollection))]
     public sealed class GetPath_SafeFileHandle
     {
         [WindowsOnlyFact]
@@ -15,6 +16,7 @@ public sealed partial class FileIOTests
             try
             {
                 using var fileStream = File.Open(tempFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+using Xunit;
                 var handle = fileStream.SafeFileHandle;
 
                 // Act
@@ -47,6 +49,7 @@ public sealed partial class FileIOTests
             using (var fileStream = File.Open(tempFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
                 handle = fileStream.SafeFileHandle;
+using Xunit;
             }
 
             try
@@ -78,6 +81,7 @@ public sealed partial class FileIOTests
             try
             {
                 using var fileStream = File.Open(tempFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+using Xunit;
                 var handle = fileStream.SafeFileHandle;
 
                 // Act
@@ -108,6 +112,7 @@ public sealed partial class FileIOTests
                 File.WriteAllText(tempFile, "test");
 
                 using var fileStream = File.Open(tempFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+using Xunit;
                 var handle = fileStream.SafeFileHandle;
 
                 // Act
