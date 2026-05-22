@@ -8,14 +8,20 @@ namespace Neme.Extensions.FileSystem;
 public static partial class FileIO
 {
 #pragma warning disable CA1416 // Old Windows versions are not supported
-    private static readonly FileIOStrategy _strategy = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-        ? new WindowsFileIOStrategy()
-        : throw new PlatformNotSupportedException();
+    private static readonly ValueLazy<FileIOStrategy> _strategyLazy;
+
+#pragma warning disable RS0042
+    private static FileIOStrategy Strategy => _strategyLazy.EnsureInitialized(() =>
+        RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? new WindowsFileIOStrategy()
+            : throw new PlatformNotSupportedException("FileIO is only supported on Windows."));
+#pragma warning restore RS0042
+
 #pragma warning restore CA1416
 
     [return: OwnershipTransfer]
     public static SafeFileHandle OpenHandle(string path, FsFileOptions options) =>
-        _strategy.OpenHandle(path, options);
+        Strategy.OpenHandle(path, options);
 
     [return: OwnershipTransfer]
     public static FsFile Open(string path, FsFileOptions options) =>
@@ -63,7 +69,7 @@ public static partial class FileIO
         FsFileId fileId,
         FsFileOptions options)
     {
-        return _strategy.OpenHandle(fileId, options);
+        return Strategy.OpenHandle(fileId, options);
     }
 
     [return: OwnershipTransfer]
@@ -116,7 +122,7 @@ public static partial class FileIO
         string? path,
         FsFileOptions options)
     {
-        return _strategy.OpenHandleBy(rootDirectory, path, options);
+        return Strategy.OpenHandleBy(rootDirectory, path, options);
     }
 
     [return: OwnershipTransfer]
@@ -184,35 +190,35 @@ public static partial class FileIO
 
     [return: OwnershipTransfer]
     public static SafeFileHandle DuplicateHandle([Borrow] SafeFileHandle file, FsFileAccess? access) =>
-        _strategy.DuplicateHandle(file, access);
+        Strategy.DuplicateHandle(file, access);
 
     [return: OwnershipTransfer]
     public static FsFile Duplicate([Borrow] FsFile file) =>
         new(DuplicateHandle(file.Handle, file.Options.Access), file.Options);
 
     public static string GetPath([Borrow] SafeFileHandle file) =>
-        _strategy.GetPath(file);
+        Strategy.GetPath(file);
 
     public static string GetPath(FsFileId fileId) =>
-        _strategy.GetPath(fileId);
+        Strategy.GetPath(fileId);
 
     public static void Move([Borrow] SafeFileHandle sourceFile, string destFileName, bool overwrite = false) =>
-        _strategy.Move(sourceFile, destFileName, overwrite);
+        Strategy.Move(sourceFile, destFileName, overwrite);
 
     public static void Delete([Borrow] SafeFileHandle file) =>
-        _strategy.Delete(file);
+        Strategy.Delete(file);
 
     public static void SetFileAttributes([Borrow] SafeFileHandle file, FileAttributes attributes) =>
-        _strategy.SetFileAttributes(file, attributes);
+        Strategy.SetFileAttributes(file, attributes);
 
     public static FileAttributes GetFileAttributes([Borrow] SafeFileHandle file) =>
-        _strategy.GetFileAttributes(file);
+        Strategy.GetFileAttributes(file);
 
     public static FsFileInfo GetFileInfo([Borrow] SafeFileHandle file) =>
-        _strategy.GetFileInfo(file);
+        Strategy.GetFileInfo(file);
 
     public static FsFileId GetFileId([Borrow] SafeFileHandle file) =>
-        _strategy.GetFileId(file);
+        Strategy.GetFileId(file);
 
     [return: OwnershipTransfer]
     public static CheckedFileStream CreateFileStream(
