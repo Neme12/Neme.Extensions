@@ -80,14 +80,17 @@ public sealed partial class FileIOTests
         public void RootDirectoryNull_RelativePath_OpensFileWithAbsolutePath()
         {
             // Arrange
-            var tempFile = Path.GetTempFileName();
+            var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tempDir);
             try
             {
+                var tempFile = Path.Combine(tempDir, "testfile.txt");
+                File.WriteAllText(tempFile, "test");
                 var fileName = Path.GetFileName(tempFile);
                 var originalDir = Directory.GetCurrentDirectory();
                 try
                 {
-                    Directory.SetCurrentDirectory(Path.GetDirectoryName(tempFile)!);
+                    Directory.SetCurrentDirectory(tempDir);
                     SafeFileHandle? rootDirectory = null;
                     var options = new FsFileOptions(FileMode.Open, FsFileAccess.ReadAttributes);
 
@@ -106,7 +109,8 @@ public sealed partial class FileIOTests
             }
             finally
             {
-                File.Delete(tempFile);
+                if (Directory.Exists(tempDir))
+                    Directory.Delete(tempDir, recursive: true);
             }
         }
 
@@ -118,11 +122,13 @@ public sealed partial class FileIOTests
             Directory.CreateDirectory(tempDir);
             try
             {
-                var dirName = Path.GetFileName(tempDir);
+                var subDir = Path.Combine(tempDir, "subdir");
+                Directory.CreateDirectory(subDir);
+                var dirName = Path.GetFileName(subDir);
                 var originalDir = Directory.GetCurrentDirectory();
                 try
                 {
-                    Directory.SetCurrentDirectory(Path.GetDirectoryName(tempDir)!);
+                    Directory.SetCurrentDirectory(tempDir);
                     SafeFileHandle? rootDirectory = null;
                     var options = new FsFileOptions(FileMode.Open, FsFileAccess.ReadAttributes)
                     {
