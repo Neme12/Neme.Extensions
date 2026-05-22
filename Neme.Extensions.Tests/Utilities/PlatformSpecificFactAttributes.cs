@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 
 namespace Neme.Extensions.Tests.Utilities;
 
-internal sealed class WindowsOnlyFactAttribute : FactAttribute
+public sealed class WindowsOnlyFactAttribute : FactAttribute
 {
     public WindowsOnlyFactAttribute()
     {
@@ -13,7 +13,7 @@ internal sealed class WindowsOnlyFactAttribute : FactAttribute
     }
 }
 
-internal sealed class WindowsOnlyTheoryAttribute : TheoryAttribute
+public sealed class WindowsOnlyTheoryAttribute : TheoryAttribute
 {
     public WindowsOnlyTheoryAttribute()
     {
@@ -24,7 +24,7 @@ internal sealed class WindowsOnlyTheoryAttribute : TheoryAttribute
     }
 }
 
-internal sealed class LinuxOnlyFactAttribute : FactAttribute
+public sealed class LinuxOnlyFactAttribute : FactAttribute
 {
     public LinuxOnlyFactAttribute()
     {
@@ -35,7 +35,7 @@ internal sealed class LinuxOnlyFactAttribute : FactAttribute
     }
 }
 
-internal sealed class LinuxOnlyTheoryAttribute : TheoryAttribute
+public sealed class LinuxOnlyTheoryAttribute : TheoryAttribute
 {
     public LinuxOnlyTheoryAttribute()
     {
@@ -46,7 +46,7 @@ internal sealed class LinuxOnlyTheoryAttribute : TheoryAttribute
     }
 }
 
-internal sealed class MacOnlyFactAttribute : FactAttribute
+public sealed class MacOnlyFactAttribute : FactAttribute
 {
     public MacOnlyFactAttribute()
     {
@@ -57,7 +57,7 @@ internal sealed class MacOnlyFactAttribute : FactAttribute
     }
 }
 
-internal sealed class MacOnlyTheoryAttribute : TheoryAttribute
+public sealed class MacOnlyTheoryAttribute : TheoryAttribute
 {
     public MacOnlyTheoryAttribute()
     {
@@ -68,7 +68,7 @@ internal sealed class MacOnlyTheoryAttribute : TheoryAttribute
     }
 }
 
-internal sealed class UnixOnlyFactAttribute : FactAttribute
+public sealed class UnixOnlyFactAttribute : FactAttribute
 {
     public UnixOnlyFactAttribute()
     {
@@ -80,7 +80,7 @@ internal sealed class UnixOnlyFactAttribute : FactAttribute
     }
 }
 
-internal sealed class UnixOnlyTheoryAttribute : TheoryAttribute
+public sealed class UnixOnlyTheoryAttribute : TheoryAttribute
 {
     public UnixOnlyTheoryAttribute()
     {
