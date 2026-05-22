@@ -25,9 +25,9 @@ public sealed partial class FileIOTests
             _tempDirectoryPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(_tempDirectoryPath);
 #if NET6_0_OR_GREATER
-            _tempFileHandle = File.OpenHandle(_tempFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, FileOptions.DeleteOnClose);
+            _tempFileHandle = File.OpenHandle(_tempFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
 #else
-            var fileStream = new FileStream(_tempFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 4096, FileOptions.DeleteOnClose);
+            var fileStream = new FileStream(_tempFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 4096);
             _tempDisposable = fileStream;
             _tempFileHandle = fileStream.SafeFileHandle;
 #endif
@@ -35,11 +35,22 @@ public sealed partial class FileIOTests
 
         public void Dispose()
         {
-            _tempFileHandle.Dispose();
+            _tempFileHandle?.Dispose();
             _tempDisposable?.Dispose();
 
-            if (Directory.Exists(_tempDirectoryPath))
-                Directory.Delete(_tempDirectoryPath, recursive: true);
+            try
+            {
+                if (File.Exists(_tempFilePath))
+                    File.Delete(_tempFilePath);
+            }
+            catch { }
+
+            try
+            {
+                if (Directory.Exists(_tempDirectoryPath))
+                    Directory.Delete(_tempDirectoryPath, recursive: true);
+            }
+            catch { }
         }
 
         private SafeFileHandle OpenDirectoryHandle()

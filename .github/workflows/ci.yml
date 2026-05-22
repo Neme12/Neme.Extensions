@@ -54,7 +54,13 @@ jobs:
       run: dotnet build --configuration ${{ matrix.configuration }}
 
     - name: Test .NET 10
-      run: dotnet test --framework net10.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net10.trx"
+      run: |
+        dotnet test Neme.Extensions.Tests/Neme.Extensions.Tests.csproj --framework net10.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net10-extensions.trx"
+        dotnet test Neme.Extensions.Win32.Tests/Neme.Extensions.Win32.Tests.csproj --framework net10.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net10-win32.trx"
+        dotnet test Neme.Polyfills.Tests/Neme.Polyfills.Tests.csproj --framework net10.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net10-polyfills.trx"
+        dotnet test Neme.Extensions.AspNetCore.Tests/Neme.Extensions.AspNetCore.Tests.csproj --framework net10.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net10-aspnetcore.trx"
+        dotnet test Neme.Extensions.EntityFrameworkCore.Tests/Neme.Extensions.EntityFrameworkCore.Tests.csproj --framework net10.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net10-efcore.trx"
+        dotnet test Neme.Extensions.MicrosoftExtensions.Tests/Neme.Extensions.MicrosoftExtensions.Tests.csproj --framework net10.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net10-msext.trx"
 
     - name: Display OpenHandleBy debug log (if exists)
       if: always() && runner.os == 'Windows'
@@ -77,10 +83,22 @@ jobs:
         if-no-files-found: ignore
 
     - name: Test .NET 8
-      run: dotnet test --framework net8.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net8.trx"
+      run: |
+        dotnet test Neme.Extensions.Tests/Neme.Extensions.Tests.csproj --framework net8.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net8-extensions.trx"
+        dotnet test Neme.Extensions.Win32.Tests/Neme.Extensions.Win32.Tests.csproj --framework net8.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net8-win32.trx"
+        dotnet test Neme.Polyfills.Tests/Neme.Polyfills.Tests.csproj --framework net8.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net8-polyfills.trx"
+        dotnet test Neme.Extensions.AspNetCore.Tests/Neme.Extensions.AspNetCore.Tests.csproj --framework net8.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net8-aspnetcore.trx"
+        dotnet test Neme.Extensions.EntityFrameworkCore.Tests/Neme.Extensions.EntityFrameworkCore.Tests.csproj --framework net8.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net8-efcore.trx"
+        dotnet test Neme.Extensions.MicrosoftExtensions.Tests/Neme.Extensions.MicrosoftExtensions.Tests.csproj --framework net8.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net8-msext.trx"
 
     - name: Test .NET 6
-      run: dotnet test --framework net6.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net6.trx"
+      run: |
+        dotnet test Neme.Extensions.Tests/Neme.Extensions.Tests.csproj --framework net6.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net6-extensions.trx"
+        dotnet test Neme.Extensions.Win32.Tests/Neme.Extensions.Win32.Tests.csproj --framework net6.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net6-win32.trx"
+        dotnet test Neme.Polyfills.Tests/Neme.Polyfills.Tests.csproj --framework net6.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net6-polyfills.trx"
+        dotnet test Neme.Extensions.AspNetCore.Tests/Neme.Extensions.AspNetCore.Tests.csproj --framework net6.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net6-aspnetcore.trx"
+        dotnet test Neme.Extensions.EntityFrameworkCore.Tests/Neme.Extensions.EntityFrameworkCore.Tests.csproj --framework net6.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net6-efcore.trx"
+        dotnet test Neme.Extensions.MicrosoftExtensions.Tests/Neme.Extensions.MicrosoftExtensions.Tests.csproj --framework net6.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net6-msext.trx"
 
     - name: Test .NET Framework 4.8 (Windows only)
       if: runner.os == 'Windows'
