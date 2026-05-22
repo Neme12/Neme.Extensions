@@ -144,7 +144,7 @@ internal sealed partial class WindowsFileIOStrategy
 
         var findHandle = Win32PInvoke.FindFirstVolume(volumeName);
         if (findHandle.IsInvalid)
-            throw Win32Marshal.GetExceptionForLastWin32Error("Failed to enumerate volumes");
+            throw Win32Marshal.GetExceptionForLastWin32Error();
 
         try
         {
