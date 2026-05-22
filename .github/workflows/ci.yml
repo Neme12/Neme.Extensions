@@ -56,6 +56,26 @@ jobs:
     - name: Test .NET 10
       run: dotnet test --framework net10.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net10.trx"
 
+    - name: Display OpenHandleBy debug log (if exists)
+      if: always() && runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        $logPath = Join-Path $env:TEMP "openhandleby_log.txt"
+        if (Test-Path $logPath) {
+          Write-Host "=== OpenHandleBy Debug Log ==="
+          Get-Content $logPath
+        } else {
+          Write-Host "No debug log found at $logPath"
+        }
+
+    - name: Upload OpenHandleBy debug log
+      if: always() && runner.os == 'Windows'
+      uses: actions/upload-artifact@v4
+      with:
+        name: openhandleby-debug-log-${{ matrix.os }}-${{ matrix.configuration }}
+        path: ${{ runner.temp }}/openhandleby_log.txt
+        if-no-files-found: ignore
+
     - name: Test .NET 8
       run: dotnet test --framework net8.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net8.trx"
 

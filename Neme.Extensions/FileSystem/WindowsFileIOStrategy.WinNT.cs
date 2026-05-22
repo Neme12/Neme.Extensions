@@ -76,14 +76,19 @@ internal sealed partial class WindowsFileIOStrategy
     public override unsafe SafeFileHandle OpenHandleBy([Borrow] SafeFileHandle? rootDirectory, string? path, FsFileOptions options)
 #pragma warning disable RS0042
     {
-        Console.WriteLine("OpenHandleBy is being called");
+        // Write to a file to survive crashes
+        try
+        {
+            System.IO.File.AppendAllText(Path.Combine(Path.GetTempPath(), "openhandleby_log.txt"), 
+                $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - OpenHandleBy called - rootDir={rootDirectory != null}, path={path}\r\n");
+        }
+        catch { }
+
         if (rootDirectory is null && path is null)
             throw new ArgumentException($"Either {nameof(rootDirectory)} or {nameof(path)} must be provided.");
 
         ValidateFileHandle(rootDirectory, optional: true);
         ValidatePath(path, optional: true);
-
-        Console.WriteLine("OpenHandleBy parameters validated successfully");
 
         UNICODE_STRING unicodeString = default;
 
