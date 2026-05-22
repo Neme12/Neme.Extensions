@@ -1,11 +1,11 @@
 License notice for .NET Runtime and related projects, including Roslyn, ASP.NET Core, and Entity Framework Core
 -------------------------------
 
-Copyright (c) .NET Foundation. All rights reserved.
+Copyright (c) .NET Foundation and Contributors. All rights reserved.
 Licensed under the MIT License (MIT)
 
 Available at
 https://github.com/dotnet/runtime/blob/main/LICENSE.TXT
-https://github.com/dotnet/roslyn/blob/main/LICENSE.TXT
+https://github.com/dotnet/roslyn/blob/main/License.txt
 https://github.com/dotnet/aspnetcore/blob/main/LICENSE.txt
 https://github.com/dotnet/efcore/blob/main/LICENSE.txt
