@@ -87,33 +87,40 @@ internal sealed partial class WindowsFileIOStrategy
         {
             if (rootDirectory is null)
                 path = @"\??\" + Path.GetFullPath(path);
-
-            Win32PInvoke.RtlInitUnicodeString(ref unicodeString, path);
         }
 
-        using var rootDirectoryHandle = rootDirectory?.CreateScope();
+        NTSTATUS status;
+        HANDLE handle;
 
-        var objectAttributes = new OBJECT_ATTRIBUTES
+        fixed (char* pathRef = path)
         {
-            Length = (uint)sizeof(OBJECT_ATTRIBUTES),
-            RootDirectory = rootDirectoryHandle is not null
-                ? new(rootDirectoryHandle.Value.Handle)
-                : HANDLE.Null,
-            ObjectName = &unicodeString,
-            Attributes = OBJECT_ATTRIBUTE_FLAGS.OBJ_CASE_INSENSITIVE,
-        };
+            if (path is not null)
+                Win32PInvoke.RtlInitUnicodeString(&unicodeString, (PCWSTR)pathRef);
 
-        var status = WinNTPInvoke.NtCreateFile(
-            out var handle,
-            options.Access.ToWin32(),
-            in objectAttributes,
-            out _,
-            null,
-            options.Attributes.ToWinNT(),
-            options.Share.ToWin32(),
-            options.Mode.ToWinNT(),
-            options.Options.ToWinNT(options.Attributes),
-            []);
+            using var rootDirectoryHandle = rootDirectory?.CreateScope();
+
+            var objectAttributes = new OBJECT_ATTRIBUTES
+            {
+                Length = (uint)sizeof(OBJECT_ATTRIBUTES),
+                RootDirectory = rootDirectoryHandle is not null
+                    ? new(rootDirectoryHandle.Value.Handle)
+                    : HANDLE.Null,
+                ObjectName = &unicodeString,
+                Attributes = OBJECT_ATTRIBUTE_FLAGS.OBJ_CASE_INSENSITIVE,
+            };
+
+            status = WinNTPInvoke.NtCreateFile(
+                out handle,
+                options.Access.ToWin32(),
+                in objectAttributes,
+                out _,
+                null,
+                options.Attributes.ToWinNT(),
+                options.Share.ToWin32(),
+                options.Mode.ToWinNT(),
+                options.Options.ToWinNT(options.Attributes),
+                []);
+        }
 
         if (status.SeverityCode != NTSTATUS.Severity.Success)
             throw WinNtMarshal.GetExceptionForNtStatus(status, path);
