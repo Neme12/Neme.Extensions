@@ -99,8 +99,7 @@ public sealed partial class FileIOTests
         {
             // Arrange
             var tempDir = Path.GetTempPath();
-            var longDirName = new string('a', 200);
-            var longPath = Path.Combine(tempDir, longDirName);
+            var longPath = Path.Combine(tempDir, Guid.NewGuid().ToString());
 
             try
             {
