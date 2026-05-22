@@ -1,45 +1,11 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
-using Neme.Extensions.Reflection;
-using System.Reflection;
-using static C;
+using Neme.Extensions.FileSystem;
 
-BenchmarkRunner.Run<Benchmarks>();
+using var direcory = FileIO.OpenHandle(@"C:\Users\neme1\OneDrive\Devices\Simča-PC\Desktop\test-file.txt", new(FileMode.Open, FsFileAccess.Read, FileShare.ReadWrite | FileShare.Delete));
 
-public class Benchmarks
+using var file2 = FileIO.Open(FileIO.GetFileId(direcory), new(FileMode.Open, FsFileAccess.Read, FileShare.ReadWrite | FileShare.Delete) { });
+
 {
-    private FieldInfo _field;
-    private C _class;
 
-    [GlobalSetup]
-    public void Setup()
-    {
-        _field = typeof(C).GetField("Field", BindingFlags.Instance | BindingFlags.Public)!;
-        _class = new();
-    }
-
-    [Benchmark]
-    public int[] DirectGetValue()
-    {
-        return _class.Field;
-    }
-
-    [Benchmark]
-    public int[] GetValue()
-    {
-        return (int[])_field.GetValue(_class)!;
-    }
-
-    [Benchmark]
-    public GetterDelegate CreateDelegate()
-    {
-        return _field.CreateGetDelegate<C.GetterDelegate>();
-    }
-}
-
-public class C
-{
-    public int[] Field = [];
-
-    public delegate int[] GetterDelegate(C c);
 }

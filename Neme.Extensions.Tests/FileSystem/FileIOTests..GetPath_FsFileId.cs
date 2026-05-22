@@ -4,6 +4,7 @@ namespace Neme.Extensions.FileSystem.Tests;
 
 public sealed partial class FileIOTests
 {
+    [Collection(nameof(FileIOTestCollection))]
     public sealed class GetPath_FsFileId
     {
         [WindowsOnlyFact]
