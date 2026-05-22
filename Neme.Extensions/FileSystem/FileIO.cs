@@ -7,16 +7,15 @@ namespace Neme.Extensions.FileSystem;
 
 public static partial class FileIO
 {
-#pragma warning disable CA1416 // Old Windows versions are not supported
-    private static readonly ValueLazy<FileIOStrategy> _strategyLazy;
+    private static FileIOStrategy? _strategyLazy;
 
+#pragma warning disable CA1416 // Old Windows versions are not supported
 #pragma warning disable RS0042
-    private static FileIOStrategy Strategy => _strategyLazy.EnsureInitialized(() =>
+    private static FileIOStrategy Strategy => LazyInitializer.EnsureInitialized(ref _strategyLazy, () =>
         RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
             ? new WindowsFileIOStrategy()
-            : throw new PlatformNotSupportedException("FileIO is only supported on Windows."));
+            : throw new PlatformNotSupportedException("FileIO is only supported on Windows."))!;
 #pragma warning restore RS0042
-
 #pragma warning restore CA1416
 
     [return: OwnershipTransfer]
