@@ -5,7 +5,6 @@ namespace Neme.Extensions.FileSystem.Tests;
 
 public sealed partial class FileIOTests
 {
-    [Collection(nameof(FileIOTestCollection))]
     public sealed class OpenHandleBy
     {
         [WindowsOnlyFact]
@@ -35,7 +34,6 @@ public sealed partial class FileIOTests
 
                 // Act
                 using var handle = FileIO.OpenHandleBy(rootDirectory, tempFile, options);
-using Xunit;
 
                 // Assert
                 Assert.NotNull(handle);
@@ -64,7 +62,6 @@ using Xunit;
 
                 // Act
                 using var handle = FileIO.OpenHandleBy(rootDirectory, tempDir, options);
-using Xunit;
 
                 // Assert
                 Assert.NotNull(handle);
@@ -95,7 +92,6 @@ using Xunit;
 
                     // Act
                     using var handle = FileIO.OpenHandleBy(rootDirectory, fileName, options);
-using Xunit;
 
                     // Assert
                     Assert.NotNull(handle);
@@ -134,7 +130,6 @@ using Xunit;
 
                     // Act
                     using var handle = FileIO.OpenHandleBy(rootDirectory, dirName, options);
-using Xunit;
 
                     // Assert
                     Assert.NotNull(handle);
@@ -169,14 +164,12 @@ using Xunit;
                     Attributes = FileAttributes.Directory
                 };
                 using var rootDirectory = FileIO.OpenHandle(tempDir, dirOptions);
-using Xunit;
 
                 var fileName = Path.GetFileName(tempFile);
                 var fileOptions = new FsFileOptions(FileMode.Open, FsFileAccess.ReadAttributes);
 
                 // Act
                 using var handle = FileIO.OpenHandleBy(rootDirectory, fileName, fileOptions);
-using Xunit;
 
                 // Assert
                 Assert.NotNull(handle);
@@ -206,13 +199,11 @@ using Xunit;
                     Attributes = FileAttributes.Directory
                 };
                 using var rootDirectory = FileIO.OpenHandle(tempDir, dirOptions);
-using Xunit;
 
                 var subDirName = Path.GetFileName(subDir);
 
                 // Act
                 using var handle = FileIO.OpenHandleBy(rootDirectory, subDirName, dirOptions);
-using Xunit;
 
                 // Assert
                 Assert.NotNull(handle);
@@ -239,13 +230,11 @@ using Xunit;
                     Attributes = FileAttributes.Directory
                 };
                 using var rootDirectory = FileIO.OpenHandle(tempDir, dirOptions);
-using Xunit;
 
                 string? path = null;
 
                 // Act
                 using var handle = FileIO.OpenHandleBy(rootDirectory, path, dirOptions);
-using Xunit;
 
                 // Assert
                 Assert.NotNull(handle);
@@ -268,13 +257,11 @@ using Xunit;
             {
                 var options = new FsFileOptions(FileMode.Open, FsFileAccess.ReadAttributes);
                 using var rootDirectory = FileIO.OpenHandle(tempFile, options);
-using Xunit;
 
                 string? path = null;
 
                 // Act
                 using var handle = FileIO.OpenHandleBy(rootDirectory, path, options);
-using Xunit;
 
                 // Assert
                 Assert.NotNull(handle);
@@ -312,7 +299,6 @@ using Xunit;
 
                 // Act
                 using var handle = FileIO.OpenHandleBy(rootDirectory, tempFile, options);
-using Xunit;
 
                 // Assert
                 Assert.NotNull(handle);
@@ -338,7 +324,6 @@ using Xunit;
 
                 // Act
                 using var handle = FileIO.OpenHandleBy(rootDirectory, tempFile, options);
-using Xunit;
 
                 // Assert
                 Assert.NotNull(handle);
@@ -363,7 +348,6 @@ using Xunit;
 
                 // Act
                 using var handle = FileIO.OpenHandleBy(rootDirectory, tempFile, options);
-using Xunit;
 
                 // Assert
                 Assert.NotNull(handle);
@@ -408,7 +392,6 @@ using Xunit;
 
                 // Act
                 using var handle = FileIO.OpenHandleBy(rootDirectory, tempFile, options);
-using Xunit;
 
                 // Assert
                 Assert.NotNull(handle);
@@ -434,7 +417,6 @@ using Xunit;
 
                 // Act
                 using var handle = FileIO.OpenHandleBy(rootDirectory, tempFile, options);
-using Xunit;
 
                 // Assert
                 Assert.NotNull(handle);
@@ -459,7 +441,6 @@ using Xunit;
 
                 // Act
                 using var handle = FileIO.OpenHandleBy(rootDirectory, tempFile, options);
-using Xunit;
 
                 // Assert
                 Assert.NotNull(handle);
@@ -484,7 +465,6 @@ using Xunit;
 
                 // Act
                 using var handle = FileIO.OpenHandleBy(rootDirectory, tempFile, options);
-using Xunit;
 
                 // Assert
                 Assert.NotNull(handle);
@@ -514,14 +494,12 @@ using Xunit;
                     Attributes = FileAttributes.Directory
                 };
                 using var rootDirectory = FileIO.OpenHandle(tempDir, dirOptions);
-using Xunit;
 
                 var relativePath = Path.Combine("subdir", "testfile.txt");
                 var fileOptions = new FsFileOptions(FileMode.Open, FsFileAccess.ReadAttributes);
 
                 // Act
                 using var handle = FileIO.OpenHandleBy(rootDirectory, relativePath, fileOptions);
-using Xunit;
 
                 // Assert
                 Assert.NotNull(handle);
@@ -547,7 +525,6 @@ using Xunit;
 
                 // Act
                 using var handle = FileIO.OpenHandleBy(rootDirectory, tempFile, options);
-using Xunit;
 
                 // Assert
                 Assert.NotNull(handle);
@@ -573,7 +550,6 @@ using Xunit;
 
                 // Act
                 using var handle = FileIO.OpenHandleBy(rootDirectory, tempFile, options);
-using Xunit;
 
                 // Assert
                 Assert.NotNull(handle);
@@ -599,7 +575,6 @@ using Xunit;
 
                 // Act
                 using var handle = FileIO.OpenHandleBy(rootDirectory, tempFile, options);
-using Xunit;
 
                 // Assert
                 Assert.NotNull(handle);

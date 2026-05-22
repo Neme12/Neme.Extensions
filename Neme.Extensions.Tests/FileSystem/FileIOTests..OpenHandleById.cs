@@ -5,7 +5,6 @@ namespace Neme.Extensions.FileSystem.Tests;
 
 public sealed partial class FileIOTests
 {
-    [Collection(nameof(FileIOTestCollection))]
     public sealed class OpenHandleById : IDisposable
     {
         private readonly string _tempFilePath;
