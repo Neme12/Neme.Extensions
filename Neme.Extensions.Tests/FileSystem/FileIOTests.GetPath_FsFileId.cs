@@ -7,7 +7,7 @@ public sealed partial class FileIOTests
     [Collection(nameof(FileIOTestCollection))]
     public sealed class GetPath_FsFileId
     {
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlyFact]
         public void GetPath_WithValidFileId_ReturnsPath()
         {
             // Arrange
@@ -33,7 +33,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlyFact]
         public void GetPath_WithFileIdFromExistingFile_ReturnsCorrectPath()
         {
             // Arrange
