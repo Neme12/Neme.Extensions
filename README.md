@@ -12,6 +12,6 @@ Feel free use any of this code or the packages in your project, but I make no gu
 ## Can I contribute?
 Issues and PRs are welcome, especially for fixing bugs, converting extensions to the new C# 14 extension syntax, and implementing classes on Unix that currently only have Windows implementations.
 
-# License
+## License
 
 This repository is licensed under the [MIT](LICENSE.txt) license. See [THIRD-PARTY-NOTICES](THIRD-PARTY-NOTICES.txt) for license notices about third-party code used in this repository.
