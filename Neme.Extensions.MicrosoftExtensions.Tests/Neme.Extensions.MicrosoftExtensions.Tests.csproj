@@ -11,6 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
+	<Compile Include="..\Neme.Extensions.Tests\Utilities\PlatformSpecificFactAttributes.cs" Link="TestUtilities\PlatformSpecificFactAttributes.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Neme.Extensions.MicrosoftExtensions\Neme.Extensions.MicrosoftExtensions.csproj" />
   </ItemGroup>
 
