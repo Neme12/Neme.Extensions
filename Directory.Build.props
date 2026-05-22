@@ -24,7 +24,6 @@
     <AnalysisMode>None</AnalysisMode>
     <IsPackable>false</IsPackable>
     <VSTestUseVsixExtensions>false</VSTestUseVsixExtensions>
-	<EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
 	
   <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
