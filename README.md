@@ -14,4 +14,4 @@ Issues and PRs are welcome, especially for fixing bugs, converting extensions to
 
 ## License
 
-This repository is licensed under the [MIT](LICENSE.txt) license. See [THIRD-PARTY-NOTICES](THIRD-PARTY-NOTICES.txt) for license notices about third-party code used in this repository.
+This repository is licensed under the [MIT](LICENSE) license. See [THIRD-PARTY-NOTICES](THIRD-PARTY-NOTICES.txt) for license notices about third-party code used in this repository.
