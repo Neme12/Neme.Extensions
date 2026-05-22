@@ -1,15 +1,13 @@
-﻿using Microsoft.Win32.SafeHandles;
-using System.Runtime.Versioning;
+using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.Tests.Utilities;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
-[SupportedOSPlatform("windows6.0.6000")]
 public sealed partial class FileIOTests
 {
-    [SupportedOSPlatform("windows6.0.6000")]
     public sealed class GetPath_SafeFileHandle
     {
-        [Fact]
+        [WindowsOnlyFact]
         public void GetPath_WithValidFileHandle_ReturnsPath()
         {
             // Arrange
@@ -33,14 +31,14 @@ public sealed partial class FileIOTests
             }
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void GetPath_WithNullHandle_ThrowsArgumentNullException()
         {
             // Arrange, Act & Assert
             Assert.Throws<ArgumentNullException>(() => FileIO.GetPath((SafeFileHandle)null!));
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void GetPath_WithClosedHandle_ThrowsArgumentException()
         {
             // Arrange
@@ -62,7 +60,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void GetPath_WithInvalidHandle_ThrowsArgumentException()
         {
             // Arrange
@@ -72,7 +70,7 @@ public sealed partial class FileIOTests
             Assert.Throws<ArgumentException>(() => FileIO.GetPath(handle));
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void GetPath_ReturnsPathWithoutPrefix()
         {
             // Arrange
@@ -95,7 +93,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void GetPath_WithLongPath_ReturnsFullPath()
         {
             // Arrange

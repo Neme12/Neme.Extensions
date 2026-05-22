@@ -1,12 +1,10 @@
-﻿using Microsoft.Win32.SafeHandles;
-using System.Runtime.Versioning;
+using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.Tests.Utilities;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
-[SupportedOSPlatform("windows6.0.6000")]
 public sealed partial class FileIOTests
 {
-    [SupportedOSPlatform("windows6.0.6000")]
     public sealed class GetFileId : IDisposable
     {
         private readonly string _tempFilePath;
@@ -35,7 +33,7 @@ public sealed partial class FileIOTests
             _tempDisposable?.Dispose();
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void WithValidFileHandle_ReturnsFileId()
         {
             // Act
@@ -45,7 +43,7 @@ public sealed partial class FileIOTests
             Assert.True(true);
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void WithNullFileHandle_ThrowsArgumentNullException()
         {
             // Act & Assert
@@ -53,7 +51,7 @@ public sealed partial class FileIOTests
                 FileIO.GetFileId(null!));
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void WithClosedFileHandle_ThrowsArgumentException()
         {
             // Arrange
@@ -67,7 +65,7 @@ public sealed partial class FileIOTests
                 FileIO.GetFileId(fileHandle));
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void WithInvalidFileHandle_ThrowsArgumentException()
         {
             // Arrange
@@ -78,7 +76,7 @@ public sealed partial class FileIOTests
                 FileIO.GetFileId(fileHandle));
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void WithValidFileHandle_PopulatesVolumeSerialNumber()
         {
             // Act
@@ -88,7 +86,7 @@ public sealed partial class FileIOTests
             Assert.NotEqual(0UL, result.VolumeSerialNumber);
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void WithValidFileHandle_PopulatesFileIdLow()
         {
             // Act
@@ -98,7 +96,7 @@ public sealed partial class FileIOTests
             Assert.True(result.FileIdLow >= 0);
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void WithValidFileHandle_PopulatesFileIdHigh()
         {
             // Act
@@ -108,7 +106,7 @@ public sealed partial class FileIOTests
             Assert.True(result.FileIdHigh >= 0);
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void WithDifferentFiles_ReturnsDifferentFileIds()
         {
             // Arrange
@@ -123,7 +121,7 @@ public sealed partial class FileIOTests
             Assert.NotEqual(result1, result2);
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void WithSameFileTwice_ReturnsSameFileId()
         {
             // Arrange

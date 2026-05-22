@@ -1,15 +1,13 @@
-﻿using Microsoft.Win32.SafeHandles;
-using System.Runtime.Versioning;
+using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.Tests.Utilities;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
-[SupportedOSPlatform("windows6.0.6000")]
 public sealed partial class FileIOTests
 {
-    [SupportedOSPlatform("windows6.0.6000")]
     public sealed class OpenHandleBy
     {
-        [Fact]
+        [WindowsOnlyFact]
         public void BothParametersNull_ThrowsArgumentException()
         {
             // Arrange
@@ -24,7 +22,7 @@ public sealed partial class FileIOTests
             Assert.Contains("path", ex.Message);
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void RootDirectoryNull_PathProvided_OpensFileRegularly()
         {
             // Arrange
@@ -48,7 +46,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void RootDirectoryNull_PathProvided_OpensDirectoryRegularly()
         {
             // Arrange
@@ -77,7 +75,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void RootDirectoryNull_RelativePath_OpensFileWithAbsolutePath()
         {
             // Arrange
@@ -111,7 +109,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void RootDirectoryNull_RelativePath_OpensDirectoryWithAbsolutePath()
         {
             // Arrange
@@ -150,7 +148,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void RootDirectoryProvided_PathProvided_OpensRelativePath()
         {
             // Arrange
@@ -185,7 +183,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void RootDirectoryProvided_PathProvided_OpensRelativeDirectory()
         {
             // Arrange
@@ -219,7 +217,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void RootDirectoryProvided_PathNull_ReopensRootDirectory()
         {
             // Arrange
@@ -250,7 +248,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void RootDirectoryProvided_PathNull_ReopensFileHandle()
         {
             // Arrange
@@ -276,7 +274,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void PathNotFound_ThrowsException()
         {
             // Arrange
@@ -289,7 +287,7 @@ public sealed partial class FileIOTests
                 FileIO.OpenHandleBy(rootDirectory, path, options));
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void CreateMode_CreatesNewFile()
         {
             // Arrange
@@ -314,7 +312,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void DifferentAccessModes_OpensFile()
         {
             // Arrange
@@ -338,7 +336,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void ShareModeNone_OpensFile()
         {
             // Arrange
@@ -362,7 +360,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void InvalidFileHandle_ThrowsException()
         {
             // Arrange
@@ -382,7 +380,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void OpenOrCreateMode_CreatesFileIfNotExists()
         {
             // Arrange
@@ -407,7 +405,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void OpenOrCreateMode_OpensExistingFile()
         {
             // Arrange
@@ -431,7 +429,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void CombinedAccessFlags_OpensFile()
         {
             // Arrange
@@ -455,7 +453,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void ShareModeReadWrite_OpensFile()
         {
             // Arrange
@@ -479,7 +477,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void RootDirectoryProvided_NestedPath_OpensFile()
         {
             // Arrange
@@ -515,7 +513,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void CreateNewMode_CreatesNewFile()
         {
             // Arrange
@@ -540,7 +538,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void AppendMode_OpensFile()
         {
             // Arrange
@@ -564,7 +562,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void TruncateMode_OpensExistingFile()
         {
             // Arrange

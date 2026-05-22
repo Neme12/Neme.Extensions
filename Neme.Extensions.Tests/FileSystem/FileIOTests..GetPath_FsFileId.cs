@@ -1,14 +1,12 @@
-﻿using System.Runtime.Versioning;
+using Neme.Extensions.Tests.Utilities;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
-[SupportedOSPlatform("windows6.0.6000")]
 public sealed partial class FileIOTests
 {
-    [SupportedOSPlatform("windows6.0.6000")]
     public sealed class GetPath_FsFileId
     {
-        [Fact]
+        [WindowsOnlyFact]
         public void GetPath_WithValidFileId_ReturnsPath()
         {
             // Arrange
@@ -34,7 +32,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void GetPath_WithFileIdFromExistingFile_ReturnsCorrectPath()
         {
             // Arrange
