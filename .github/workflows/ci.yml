@@ -54,13 +54,13 @@ jobs:
       run: dotnet build --configuration ${{ matrix.configuration }}
 
     - name: Test .NET 10
-      run: dotnet test --framework net10.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net10.trx"
+      run: dotnet test --framework net10.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net10.trx" --verbosity detailed
 
     - name: Test .NET 8
-      run: dotnet test --framework net8.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net8.trx"
+      run: dotnet test --framework net8.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net8.trx" --verbosity detailed
 
     - name: Test .NET 6
-      run: dotnet test --framework net6.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net6.trx"
+      run: dotnet test --framework net6.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net6.trx" --verbosity detailed
 
     - name: Test .NET Framework 4.8 (Windows only)
       if: runner.os == 'Windows'
