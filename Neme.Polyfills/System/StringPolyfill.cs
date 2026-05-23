@@ -20,6 +20,10 @@ public static class StringPolyfill
 
     extension(string)
     {
+#if !(NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER)
+        internal static unsafe int strlen(byte* ptr) => SpanHelpers.IndexOfNullByte(ptr);
+#endif
+
         /// <summary>Creates a new string by using the specified provider to control the formatting of the specified interpolated string.</summary>
         /// <param name="provider">An object that supplies culture-specific formatting information.</param>
         /// <param name="handler">The interpolated string.</param>
