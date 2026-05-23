@@ -13,18 +13,6 @@ internal sealed class WindowsOnlyFactAttribute : FactAttribute
     }
 }
 
-internal sealed class WindowsOnlySkipInCIFactAttribute : FactAttribute
-{
-    public WindowsOnlySkipInCIFactAttribute()
-    {
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ||
-            Environment.GetEnvironmentVariable("CI") != null)
-        {
-            Skip = "This test only runs on Windows and fails in CI.";
-        }
-    }
-}
-
 internal sealed class WindowsOnlyTheoryAttribute : TheoryAttribute
 {
     public WindowsOnlyTheoryAttribute()
