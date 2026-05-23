@@ -94,10 +94,9 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
 
     public override string GetPath(FsFileId fileId)
     {
-        throw new NotImplementedException();
-        //var options = new FsFileOptions(FileMode.Open, FsFileAccess.ReadAttributes, FileShare.ReadWrite | FileShare.Delete);
-        //using var handle = OpenHandle(fileId, options);
-        //return GetPath(handle);
+        var options = new FsFileOptions(FileMode.Open, FsFileAccess.ReadAttributes, FileShare.ReadWrite | FileShare.Delete);
+        using var handle = OpenHandle(fileId, options);
+        return GetPath(handle);
     }
 
     public override unsafe void Move([Borrow] SafeFileHandle sourceFile, string destFileName, bool overwrite)
@@ -187,9 +186,9 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
         };
     }
 
-    public override unsafe FsFileId GetFileId([Borrow] SafeHandle file)
+    public override unsafe FsFileId GetFileId([Borrow] SafeFileHandle file)
     {
-        //ValidateFileHandle(file);
+        ValidateFileHandle(file);
 
         ref var fileInfo = ref AllocateFileInfo<FILE_ID_INFO>(
             stackalloc byte[sizeof(FILE_ID_INFO)],

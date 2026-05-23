@@ -2,7 +2,6 @@ GetFileInformationByHandle
 GetFileInformationByHandleEx
 SetFileInformationByHandle
 CreateFile
-CloseHandle
 DuplicateHandle
 GetFinalPathNameByHandle
 FindFirstVolume
