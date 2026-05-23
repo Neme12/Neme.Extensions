@@ -27,6 +27,7 @@ internal sealed partial class WindowsFileIOStrategy
         FileIOEventSource.Log.OpeningFileById(fileId.VolumeSerialNumber, fileId.FileIdLow, fileId.FileIdHigh);
 
         // Find and open the volume with the matching serial number
+        // Do not dispose of the volume handle itself as it's from a cache
         using var volumeHandle = FindAndOpenVolumeBySerialNumber(fileId.VolumeSerialNumber).CreateScope();
 
         var fileIdBuffer = stackalloc ulong[2];
