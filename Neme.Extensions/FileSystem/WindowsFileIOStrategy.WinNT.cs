@@ -127,7 +127,6 @@ internal sealed partial class WindowsFileIOStrategy
                 options.Options.ToWinNT(options.Attributes),
                 []);
         }
-
         finally
         {
             if (path is not null && rootDirectory is null)
