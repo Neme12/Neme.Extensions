@@ -3,7 +3,7 @@
 
 namespace System.IO;
 
-#if !NET70_OR_GREATER
+#if !NET7_0_OR_GREATER
 
 /// <summary>
 /// <para>Represents the Unix filesystem permissions.</para>
