@@ -162,7 +162,7 @@ public sealed partial class FileIOTests
 
                 // Assert
                 Assert.NotNull(result);
-                Assert.False(result.IsInvalid);\
+                Assert.False(result.IsInvalid);
             }
             catch (Exception ex)
             {
