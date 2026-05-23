@@ -133,13 +133,10 @@ internal sealed partial class WindowsFileIOStrategy
     {
         // Use GetOrAdd for atomic cache lookup/creation - ensures only one thread enumerates volumes
         // for a given serial number, even under concurrent access
-        return s_volumeHandleCache.GetOrAdd(volumeSerialNumber, static serial =>
-        {
-            FileIOEventSource.Log.VolumeHandleCacheMiss(serial);
-            var handle = EnumerateAndOpenVolume(serial);
-            FileIOEventSource.Log.VolumeHandleCached(serial);
-            return handle;
-        });
+        FileIOEventSource.Log.VolumeHandleCacheMiss(volumeSerialNumber);
+        var handle = EnumerateAndOpenVolume(volumeSerialNumber);
+        FileIOEventSource.Log.VolumeHandleCached(volumeSerialNumber);
+        return handle;
     }
 
     private static unsafe SafeFileHandle EnumerateAndOpenVolume(ulong targetSerial)

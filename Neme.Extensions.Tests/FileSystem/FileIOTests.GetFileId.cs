@@ -43,7 +43,7 @@ public sealed partial class FileIOTests
             catch { }
         }
 
-        [WindowsOnlySkipInCIFact]
+        [WindowsOnlyFact]
         public void WithValidFileHandle_ReturnsFileId()
         {
             // Act
@@ -53,7 +53,7 @@ public sealed partial class FileIOTests
             Assert.True(true);
         }
 
-        [WindowsOnlySkipInCIFact]
+        [WindowsOnlyFact]
         public void WithNullFileHandle_ThrowsArgumentNullException()
         {
             // Act & Assert
@@ -61,7 +61,7 @@ public sealed partial class FileIOTests
                 FileIO.GetFileId(null!));
         }
 
-        [WindowsOnlySkipInCIFact]
+        [WindowsOnlyFact]
         public void WithClosedFileHandle_ThrowsArgumentException()
         {
             // Arrange
@@ -75,7 +75,7 @@ public sealed partial class FileIOTests
                 FileIO.GetFileId(fileHandle));
         }
 
-        [WindowsOnlySkipInCIFact]
+        [WindowsOnlyFact]
         public void WithInvalidFileHandle_ThrowsArgumentException()
         {
             // Arrange
@@ -86,7 +86,7 @@ public sealed partial class FileIOTests
                 FileIO.GetFileId(fileHandle));
         }
 
-        [WindowsOnlySkipInCIFact]
+        [WindowsOnlyFact]
         public void WithValidFileHandle_PopulatesVolumeSerialNumber()
         {
             // Act
@@ -96,7 +96,7 @@ public sealed partial class FileIOTests
             Assert.NotEqual(0UL, result.VolumeSerialNumber);
         }
 
-        [WindowsOnlySkipInCIFact]
+        [WindowsOnlyFact]
         public void WithValidFileHandle_PopulatesFileIdLow()
         {
             // Act
@@ -106,7 +106,7 @@ public sealed partial class FileIOTests
             Assert.True(result.FileIdLow >= 0);
         }
 
-        [WindowsOnlySkipInCIFact]
+        [WindowsOnlyFact]
         public void WithValidFileHandle_PopulatesFileIdHigh()
         {
             // Act
@@ -116,7 +116,7 @@ public sealed partial class FileIOTests
             Assert.True(result.FileIdHigh >= 0);
         }
 
-        [WindowsOnlySkipInCIFact]
+        [WindowsOnlyFact]
         public void WithDifferentFiles_ReturnsDifferentFileIds()
         {
             // Arrange
@@ -131,7 +131,7 @@ public sealed partial class FileIOTests
             Assert.NotEqual(result1, result2);
         }
 
-        [WindowsOnlySkipInCIFact]
+        [WindowsOnlyFact]
         public void WithSameFileTwice_ReturnsSameFileId()
         {
             // Arrange
