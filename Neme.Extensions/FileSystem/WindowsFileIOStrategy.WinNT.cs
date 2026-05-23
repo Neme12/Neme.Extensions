@@ -212,7 +212,7 @@ internal sealed partial class WindowsFileIOStrategy
         using var volumeHandle = OwnedOrBorrowed.CreateOwned(Win32PInvoke.CreateFile(
             volumePath,
             0, // No specific access needed, just need the handle
-            FILE_SHARE_MODE.FILE_SHARE_READ | FILE_SHARE_MODE.FILE_SHARE_WRITE,
+            FILE_SHARE_MODE.FILE_SHARE_READ | FILE_SHARE_MODE.FILE_SHARE_WRITE | FILE_SHARE_MODE.FILE_SHARE_DELETE,
             null,
             FILE_CREATION_DISPOSITION.OPEN_EXISTING,
             FILE_FLAGS_AND_ATTRIBUTES.FILE_FLAG_BACKUP_SEMANTICS,
