@@ -8,7 +8,7 @@ public sealed partial class FileIOTests
     [Collection(nameof(FileIOTestCollection))]
     public sealed class OpenHandleBy
     {
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void BothParametersNull_ThrowsArgumentException()
         {
             // Arrange
@@ -23,7 +23,7 @@ public sealed partial class FileIOTests
             Assert.Contains("path", ex.Message);
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void RootDirectoryNull_PathProvided_OpensFileRegularly()
         {
             // Arrange
@@ -47,7 +47,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void RootDirectoryNull_PathProvided_OpensDirectoryRegularly()
         {
             // Arrange
@@ -76,7 +76,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact(Skip = "Causes race condition in CI by changing process-wide current directory")]
+        [WindowsOnlySkipInCIFact(Skip = "Causes race condition in CI by changing process-wide current directory")]
         public void RootDirectoryNull_RelativePath_OpensFileWithAbsolutePath()
         {
             // Arrange
@@ -114,7 +114,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact(Skip = "Causes race condition in CI by changing process-wide current directory")]
+        [WindowsOnlySkipInCIFact(Skip = "Causes race condition in CI by changing process-wide current directory")]
         public void RootDirectoryNull_RelativePath_OpensDirectoryWithAbsolutePath()
         {
             // Arrange
@@ -155,7 +155,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void RootDirectoryProvided_PathProvided_OpensRelativePath()
         {
             // Arrange
@@ -190,7 +190,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void RootDirectoryProvided_PathProvided_OpensRelativeDirectory()
         {
             // Arrange
@@ -224,7 +224,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void RootDirectoryProvided_PathNull_ReopensRootDirectory()
         {
             // Arrange
@@ -255,7 +255,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void RootDirectoryProvided_PathNull_ReopensFileHandle()
         {
             // Arrange
@@ -281,7 +281,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void PathNotFound_ThrowsException()
         {
             // Arrange
@@ -294,7 +294,7 @@ public sealed partial class FileIOTests
                 FileIO.OpenHandleBy(rootDirectory, path, options));
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void CreateMode_CreatesNewFile()
         {
             // Arrange
@@ -320,7 +320,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void DifferentAccessModes_OpensFile()
         {
             // Arrange
@@ -344,7 +344,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void ShareModeNone_OpensFile()
         {
             // Arrange
@@ -368,7 +368,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void InvalidFileHandle_ThrowsException()
         {
             // Arrange
@@ -388,7 +388,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void OpenOrCreateMode_CreatesFileIfNotExists()
         {
             // Arrange
@@ -413,7 +413,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void OpenOrCreateMode_OpensExistingFile()
         {
             // Arrange
@@ -437,7 +437,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void CombinedAccessFlags_OpensFile()
         {
             // Arrange
@@ -461,7 +461,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void ShareModeReadWrite_OpensFile()
         {
             // Arrange
@@ -485,7 +485,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void RootDirectoryProvided_NestedPath_OpensFile()
         {
             // Arrange
@@ -521,7 +521,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void CreateNewMode_CreatesNewFile()
         {
             // Arrange
@@ -546,7 +546,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void AppendMode_OpensFile()
         {
             // Arrange
@@ -570,7 +570,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void TruncateMode_OpensExistingFile()
         {
             // Arrange

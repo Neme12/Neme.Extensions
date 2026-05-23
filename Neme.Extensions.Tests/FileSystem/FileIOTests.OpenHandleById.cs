@@ -62,7 +62,7 @@ public sealed partial class FileIOTests
             return FileIO.OpenHandle(_tempDirectoryPath, options);
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void WithValidFileId_ReturnsFileHandle()
         {
             // Arrange - Get file ID from an existing file
@@ -78,7 +78,7 @@ public sealed partial class FileIOTests
             Assert.False(result.IsClosed);
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void WithDefaultFileId_ThrowsArgumentException()
         {
             // Arrange
@@ -90,7 +90,7 @@ public sealed partial class FileIOTests
                 FileIO.OpenHandle(fileId, options));
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void WithValidOptions_OpensFileSuccessfully()
         {
             // Arrange
@@ -105,7 +105,7 @@ public sealed partial class FileIOTests
             Assert.False(result.IsInvalid);
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void OpenedHandleCanBeUsed_ToGetSameFileId()
         {
             // Arrange
@@ -120,7 +120,7 @@ public sealed partial class FileIOTests
             Assert.Equal(originalFileId, reopenedFileId);
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void WithDifferentShareModes_RespectsShareSettings()
         {
             // Arrange
@@ -135,7 +135,7 @@ public sealed partial class FileIOTests
             Assert.False(result.IsInvalid);
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void ReturnsHandleThatOwnsResource()
         {
             // Arrange
@@ -152,7 +152,7 @@ public sealed partial class FileIOTests
             Assert.True(result.IsClosed);
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void WithRandomFileId_ThrowsFileNotFoundException()
         {
             // Arrange - Get a valid volume serial number but use random file IDs
@@ -168,7 +168,7 @@ public sealed partial class FileIOTests
                 FileIO.OpenHandle(randomFileId, options));
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void WithNonExistentVolumeSerial_ThrowsDirectoryNotFoundException()
         {
             // Arrange - Use a completely invalid volume serial number and random file IDs
@@ -183,7 +183,7 @@ public sealed partial class FileIOTests
                 FileIO.OpenHandle(randomFileId, options));
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void WithValidDirectoryId_ReturnsDirectoryHandle()
         {
             // Arrange - Get directory ID from an existing directory
@@ -203,7 +203,7 @@ public sealed partial class FileIOTests
             Assert.False(result.IsClosed);
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void OpenedDirectoryHandle_CanBeUsedToGetSameDirectoryId()
         {
             // Arrange
@@ -222,7 +222,7 @@ public sealed partial class FileIOTests
             Assert.Equal(originalDirectoryId, reopenedDirectoryId);
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void WithDirectoryIdAndDirectoryAttribute_OpensSuccessfully()
         {
             // Arrange
@@ -241,7 +241,7 @@ public sealed partial class FileIOTests
             Assert.False(result.IsInvalid);
         }
 
-        [WindowsOnlyFact(Skip = "test")]
+        [WindowsOnlySkipInCIFact]
         public void DirectoryHandle_OwnsResource()
         {
             // Arrange
@@ -261,8 +261,8 @@ public sealed partial class FileIOTests
             result.Dispose();
             Assert.True(result.IsClosed);
         }
- 
-        [WindowsOnlyFact(Skip = "test")]
+
+        [WindowsOnlySkipInCIFact]
         public void WithRandomDirectoryId_ThrowsFileNotFoundException()
         {
             // Arrange - Get a valid volume serial number but use random file IDs
