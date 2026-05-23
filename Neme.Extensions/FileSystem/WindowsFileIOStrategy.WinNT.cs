@@ -88,7 +88,7 @@ internal sealed partial class WindowsFileIOStrategy
         {
             if (rootDirectory is null)
             {
-                var status1 = WinNTPInvoke.RtlDosPathNameToNtPathName_U_WithStatus(path, out UNICODE_STRING unicodeString);
+                var status1 = WinNTPInvoke.RtlDosPathNameToNtPathName_U_WithStatus(path, out unicodeString);
                 if (status1.SeverityCode != NTSTATUS.Severity.Success)
                     throw WinNtMarshal.GetExceptionForNtStatus(status1);
             }
