@@ -90,7 +90,7 @@ internal sealed partial class WindowsFileIOStrategy
             {
                 var status1 = WinNTPInvoke.RtlDosPathNameToNtPathName_U_WithStatus(path, out unicodeString);
                 if (status1.SeverityCode != NTSTATUS.Severity.Success)
-                    throw WinNtMarshal.GetExceptionForNtStatus(status1);
+                    throw WinNtMarshal.GetExceptionForNtStatus(status1, path);
             }
             else
             {
