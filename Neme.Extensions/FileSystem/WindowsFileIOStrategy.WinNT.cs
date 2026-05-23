@@ -69,7 +69,7 @@ internal sealed partial class WindowsFileIOStrategy
         FileIOEventSource.Log.FileOpenedById(fileId.VolumeSerialNumber, fileId.FileIdLow, fileId.FileIdHigh);
 
         return new SafeFileHandle(handle, ownsHandle: true);
-    }
+    }//
 
     [return: OwnershipTransfer]
     public override unsafe SafeFileHandle OpenHandleBy([Borrow] SafeFileHandle? rootDirectory, string? path, FsFileOptions options)
