@@ -21,23 +21,16 @@ public sealed partial class FileIOTests
 
         public OpenHandleById()
         {
-            try
-            {
-                _tempFilePath = Path.GetTempFileName();
-                _tempDirectoryPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-                Directory.CreateDirectory(_tempDirectoryPath);
+            _tempFilePath = Path.GetTempFileName();
+            _tempDirectoryPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(_tempDirectoryPath);
 #if NET6_0_OR_GREATER
-                _tempFileHandle = File.OpenHandle(_tempFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            _tempFileHandle = File.OpenHandle(_tempFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
 #else
             var fileStream = new FileStream(_tempFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 4096);
             _tempDisposable = fileStream;
             _tempFileHandle = fileStream.SafeFileHandle;
 #endif
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Exception during constructor: {ex}");
-            }
         }
 
         public void Dispose()
