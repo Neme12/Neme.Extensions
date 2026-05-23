@@ -82,19 +82,15 @@ internal sealed partial class WindowsFileIOStrategy
         ValidateFileHandle(rootDirectory, optional: true);
         ValidatePath(path, optional: true);
 
-        UNICODE_STRING unicodeString = default;
+        var status1 = WinNTPInvoke.RtlDosPathNameToNtPathName_U_WithStatus(path, out UNICODE_STRING unicodeString);
+        if (status1.SeverityCode  != NTSTATUS.Severity.Success)
+            throw WinNtMarshal.GetExceptionForNtStatus(status1);
 
-        if (path is not null && rootDirectory is null)
-            path = @"\??\" + Path.GetFullPath(path);
-
-        NTSTATUS status;
+        NTSTATUS status2;
         HANDLE handle;
 
-        fixed (char* pathPtr = path)
+        try
         {
-            if (path is not null)
-                Win32PInvoke.RtlInitUnicodeString(&unicodeString, (PCWSTR)pathPtr);
-
             using var rootDirectoryHandle = rootDirectory?.CreateScope();
 
             var objectAttributes = new OBJECT_ATTRIBUTES
@@ -107,7 +103,7 @@ internal sealed partial class WindowsFileIOStrategy
                 Attributes = OBJECT_ATTRIBUTE_FLAGS.OBJ_CASE_INSENSITIVE,
             };
 
-            status = WinNTPInvoke.NtCreateFile(
+            status2 = WinNTPInvoke.NtCreateFile(
                 out handle,
                 options.Access.ToWin32(),
                 in objectAttributes,
@@ -120,8 +116,13 @@ internal sealed partial class WindowsFileIOStrategy
                 []);
         }
 
-        if (status.SeverityCode != NTSTATUS.Severity.Success)
-            throw WinNtMarshal.GetExceptionForNtStatus(status, path);
+        finally
+        {
+            Win32PInvoke.RtlFreeUnicodeString(ref unicodeString);
+        }
+
+        if (status2.SeverityCode != NTSTATUS.Severity.Success)
+            throw WinNtMarshal.GetExceptionForNtStatus(status2, path);
 
         return new SafeFileHandle(handle, ownsHandle: true);
     }

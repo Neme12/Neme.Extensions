@@ -8,8 +8,9 @@ FindFirstVolume
 FindNextVolume
 GetVolumeInformation
 NtCreateFile
-RtlInitUnicodeString
 RtlNtStatusToDosError
+RtlDosPathNameToNtPathName_U_WithStatus
+RtlFreeUnicodeString
 FILE_RENAME_INFO
 FILE_DISPOSITION_INFO
 FILE_ID_INFO
