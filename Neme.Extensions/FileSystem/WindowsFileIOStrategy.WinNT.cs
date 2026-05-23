@@ -226,36 +226,39 @@ internal sealed partial class WindowsFileIOStrategy
             return false;
         }
 
-        using var handleScope = volumeHandle.Value.CreateScope();
+        handle = volumeHandle.Move();
+        return true;
 
-        // Get full 64-bit volume serial number to verify
-        FILE_ID_INFO fileIdInfo = default;
-        if (Win32PInvoke.GetFileInformationByHandleEx(
-            new HANDLE(handleScope.Handle),
-            FILE_INFO_BY_HANDLE_CLASS.FileIdInfo,
-            &fileIdInfo,
-            (uint)sizeof(FILE_ID_INFO)))
-        {
-            // Compare the full 64-bit serial number
-            if (fileIdInfo.VolumeSerialNumber == targetSerial)
-            {
-                // Full match confirmed
-                FileIOEventSource.Log.VolumeVerified(targetSerial);
-                handle = volumeHandle.Move();
-                return true;
-            }
-            else
-            {
-                // Serial number mismatch
-                FileIOEventSource.Log.VolumeSerialMismatch(targetSerial, fileIdInfo.VolumeSerialNumber);
-            }
-        }
-        else
-        {
-            // Failed to get file information
-            var error = new Win32Exception();
-            FileIOEventSource.Log.GetFileInformationFailed(volumePath, error.NativeErrorCode, error.Message);
-        }
+        //using var handleScope = volumeHandle.Value.CreateScope();
+
+        //// Get full 64-bit volume serial number to verify
+        //FILE_ID_INFO fileIdInfo = default;
+        //if (Win32PInvoke.GetFileInformationByHandleEx(
+        //    new HANDLE(handleScope.Handle),
+        //    FILE_INFO_BY_HANDLE_CLASS.FileIdInfo,
+        //    &fileIdInfo,
+        //    (uint)sizeof(FILE_ID_INFO)))
+        //{
+        //    // Compare the full 64-bit serial number
+        //    if (fileIdInfo.VolumeSerialNumber == targetSerial)
+        //    {
+        //        // Full match confirmed
+        //        FileIOEventSource.Log.VolumeVerified(targetSerial);
+        //        handle = volumeHandle.Move();
+        //        return true;
+        //    }
+        //    else
+        //    {
+        //        // Serial number mismatch
+        //        FileIOEventSource.Log.VolumeSerialMismatch(targetSerial, fileIdInfo.VolumeSerialNumber);
+        //    }
+        //}
+        //else
+        //{
+        //    // Failed to get file information
+        //    var error = new Win32Exception();
+        //    FileIOEventSource.Log.GetFileInformationFailed(volumePath, error.NativeErrorCode, error.Message);
+        //}
 
         // Not a match or couldn't get info - close handle and return false
         handle = null;
