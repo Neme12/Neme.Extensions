@@ -209,7 +209,7 @@ internal sealed partial class WindowsFileIOStrategy
         ulong targetSerial,
         [NotNullWhen(true)] out SafeFileHandle? handle)
     {
-        var volumeHandle = OwnedOrBorrowed.CreateOwned(Win32PInvoke.CreateFile(
+        using var volumeHandle = OwnedOrBorrowed.CreateOwned(Win32PInvoke.CreateFile(
             volumePath,
             0, // No specific access needed, just need the handle
             FILE_SHARE_MODE.FILE_SHARE_READ | FILE_SHARE_MODE.FILE_SHARE_WRITE,
