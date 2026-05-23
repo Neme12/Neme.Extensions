@@ -82,9 +82,21 @@ internal sealed partial class WindowsFileIOStrategy
         ValidateFileHandle(rootDirectory, optional: true);
         ValidatePath(path, optional: true);
 
-        var status1 = WinNTPInvoke.RtlDosPathNameToNtPathName_U_WithStatus(path, out UNICODE_STRING unicodeString);
-        if (status1.SeverityCode  != NTSTATUS.Severity.Success)
-            throw WinNtMarshal.GetExceptionForNtStatus(status1);
+        UNICODE_STRING unicodeString = default;
+
+        if (path is not null)
+        {
+            if (rootDirectory is null)
+            {
+                var status1 = WinNTPInvoke.RtlDosPathNameToNtPathName_U_WithStatus(path, out UNICODE_STRING unicodeString);
+                if (status1.SeverityCode != NTSTATUS.Severity.Success)
+                    throw WinNtMarshal.GetExceptionForNtStatus(status1);
+            }
+            else
+            {
+                Win32PInvoke.RtlInitUnicodeString(ref unicodeString, path);
+            }
+        }
 
         NTSTATUS status2;
         HANDLE handle;
@@ -118,7 +130,8 @@ internal sealed partial class WindowsFileIOStrategy
 
         finally
         {
-            Win32PInvoke.RtlFreeUnicodeString(ref unicodeString);
+            if (path is not null && rootDirectory is null)
+                Win32PInvoke.RtlFreeUnicodeString(ref unicodeString);
         }
 
         if (status2.SeverityCode != NTSTATUS.Severity.Success)
