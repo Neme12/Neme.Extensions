@@ -6,7 +6,6 @@ DuplicateHandle
 GetFinalPathNameByHandle
 FindFirstVolume
 FindNextVolume
-FindVolumeClose
 GetVolumeInformation
 NtCreateFile
 RtlInitUnicodeString
