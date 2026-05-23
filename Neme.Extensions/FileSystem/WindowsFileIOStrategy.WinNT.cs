@@ -20,7 +20,7 @@ internal sealed partial class WindowsFileIOStrategy
     private static readonly ConcurrentDictionary<ulong, SafeFileHandle> s_volumeHandleCache = new();
 
     [return: OwnershipTransfer]
-    public override unsafe SafeFileHandle OpenHandle(FsFileId fileId, FsFileOptions options)
+    public override unsafe CustomSafeFileHandle OpenHandle(FsFileId fileId, FsFileOptions options)
     {
         ValidateFileId(fileId);
 
@@ -68,11 +68,11 @@ internal sealed partial class WindowsFileIOStrategy
 
         FileIOEventSource.Log.FileOpenedById(fileId.VolumeSerialNumber, fileId.FileIdLow, fileId.FileIdHigh);
 
-        return new SafeFileHandle(handle, ownsHandle: true);
+        return new CustomSafeFileHandle(handle, ownsHandle: true);
     }
 
     [return: OwnershipTransfer]
-    public override unsafe SafeFileHandle OpenHandleBy([Borrow] SafeFileHandle? rootDirectory, string? path, FsFileOptions options)
+    public override unsafe CustomSafeFileHandle OpenHandleBy([Borrow] SafeFileHandle? rootDirectory, string? path, FsFileOptions options)
 #pragma warning disable RS0042
     {
         if (rootDirectory is null && path is null)
@@ -125,7 +125,7 @@ internal sealed partial class WindowsFileIOStrategy
         if (status.SeverityCode != NTSTATUS.Severity.Success)
             throw WinNtMarshal.GetExceptionForNtStatus(status, path);
 
-        return new SafeFileHandle(handle, ownsHandle: true);
+        return new CustomSafeFileHandle(handle, ownsHandle: true);
     }
 #pragma warning restore RS0042
 

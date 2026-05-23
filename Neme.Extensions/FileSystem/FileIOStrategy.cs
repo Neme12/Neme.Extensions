@@ -2,6 +2,7 @@
 using Neme.Extensions.Ownership;
 using Neme.Utilities.Contracts;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Neme.Extensions.FileSystem;
 
@@ -11,10 +12,10 @@ internal abstract class FileIOStrategy
     public abstract SafeFileHandle OpenHandle(string path, FsFileOptions options);
 
     [return: OwnershipTransfer]
-    public abstract SafeFileHandle OpenHandle(FsFileId fileId, FsFileOptions options);
+    public abstract CustomSafeFileHandle OpenHandle(FsFileId fileId, FsFileOptions options);
 
     [return: OwnershipTransfer]
-    public abstract SafeFileHandle OpenHandleBy(
+    public abstract CustomSafeFileHandle OpenHandleBy(
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
         FsFileOptions options);
@@ -36,7 +37,7 @@ internal abstract class FileIOStrategy
 
     public abstract FsFileInfo GetFileInfo([Borrow] SafeFileHandle file);
 
-    public abstract FsFileId GetFileId([Borrow] SafeFileHandle file);
+    public abstract FsFileId GetFileId([Borrow] SafeHandle file);
 
     protected internal static void ValidateFileHandle([Borrow] SafeFileHandle? file, bool optional = false, [CallerArgumentExpression(nameof(file))] string? paramName = null)
     {
