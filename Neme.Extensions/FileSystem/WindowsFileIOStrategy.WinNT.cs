@@ -146,59 +146,54 @@ internal sealed partial class WindowsFileIOStrategy
         char* volumeNameBuffer = stackalloc char[50]; // Volume GUID paths are typically 49 chars
         Span<char> volumeName = new(volumeNameBuffer, 50);
 
-        var findHandle = Win32PInvoke.FindFirstVolume(volumeName);
+        using var findHandle = Win32PInvoke.FindFirstVolume(volumeName);
         if (findHandle.IsInvalid)
             throw Win32Marshal.GetExceptionForLastWin32Error();
 
-        try
+        using var findHandleScope = findHandle.CreateScope();
+
+        do
         {
-            do
+            // Remove trailing backslash for GetVolumeInformation
+            var volumePathLength = volumeName.IndexOf('\0');
+            if (volumePathLength > 0 && volumeName[volumePathLength - 1] == '\\')
+                volumePathLength--;
+
+            var volumePath = volumeName[..volumePathLength];
+
+            // Get volume information to check serial number (lower 32 bits only)
+            fixed (char* pVolumePath = volumePath)
             {
-                // Remove trailing backslash for GetVolumeInformation
-                var volumePathLength = volumeName.IndexOf('\0');
-                if (volumePathLength > 0 && volumeName[volumePathLength - 1] == '\\')
-                    volumePathLength--;
+                uint serialNumberLower32 = default;
 
-                var volumePath = volumeName[..volumePathLength];
-
-                // Get volume information to check serial number (lower 32 bits only)
-                fixed (char* pVolumePath = volumePath)
+                if (Win32PInvoke.GetVolumeInformation(
+                    new PCWSTR(pVolumePath),
+                    null,
+                    0,
+                    &serialNumberLower32,
+                    null,
+                    null,
+                    null,
+                    0))
                 {
-                    uint serialNumberLower32 = default;
-
-                    if (Win32PInvoke.GetVolumeInformation(
-                        new PCWSTR(pVolumePath),
-                        null,
-                        0,
-                        &serialNumberLower32,
-                        null,
-                        null,
-                        null,
-                        0))
+                    // Lower 32 bits match - try to open and verify full 64-bit serial
+                    if (serialNumberLower32 == (uint)targetSerial)
                     {
-                        // Lower 32 bits match - try to open and verify full 64-bit serial
-                        if (serialNumberLower32 == (uint)targetSerial)
-                        {
-                            FileIOEventSource.Log.VolumePartialMatch(serialNumberLower32);
-                            var volumePathWithSlash = volumeName[..(volumePathLength + 1)].ToString();
-                            if (TryOpenAndVerifyVolume(volumePathWithSlash, targetSerial, out var handle))
-                                return handle;
-                        }
-                    }
-                    else
-                    {
-                        // GetVolumeInformation failed - volume might not be accessible
-                        var error = new Win32Exception();
-                        FileIOEventSource.Log.VolumeInformationFailed(volumePath.ToString(), error.NativeErrorCode, error.Message);
+                        FileIOEventSource.Log.VolumePartialMatch(serialNumberLower32);
+                        var volumePathWithSlash = volumeName[..(volumePathLength + 1)].ToString();
+                        if (TryOpenAndVerifyVolume(volumePathWithSlash, targetSerial, out var handle))
+                            return handle;
                     }
                 }
+                else
+                {
+                    // GetVolumeInformation failed - volume might not be accessible
+                    var error = new Win32Exception();
+                    FileIOEventSource.Log.VolumeInformationFailed(volumePath.ToString(), error.NativeErrorCode, error.Message);
+                }
             }
-            while (Win32PInvoke.FindNextVolume((HANDLE)findHandle.DangerousGetHandle(), volumeName));
         }
-        finally
-        {
-            Win32PInvoke.FindVolumeClose(findHandle);
-        }
+        while (Win32PInvoke.FindNextVolume((HANDLE)findHandleScope.Handle, volumeName));
 
         FileIOEventSource.Log.VolumeNotFound(targetSerial);
         throw new DirectoryNotFoundException($"No volume found with serial number 0x{targetSerial:X8}");
