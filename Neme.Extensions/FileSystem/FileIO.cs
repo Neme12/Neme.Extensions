@@ -14,7 +14,7 @@ public static partial class FileIO
     private static FileIOStrategy Strategy => LazyInitializer.EnsureInitialized(ref _strategyLazy, () =>
         RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
             ? new WindowsFileIOStrategy()
-            : throw new PlatformNotSupportedException("FileIO is only supported on Windows."))!;
+            : new UnixFileIOStrategy())!;
 #pragma warning restore RS0042
 #pragma warning restore CA1416
 
