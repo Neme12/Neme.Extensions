@@ -83,19 +83,16 @@ internal sealed partial class WindowsFileIOStrategy
 
         UNICODE_STRING unicodeString = default;
 
-        if (path is not null)
-        {
-            if (rootDirectory is null)
-                path = @"\??\" + Path.GetFullPath(path);
-        }
+        if (path is not null && rootDirectory is null)
+            path = @"\??\" + Path.GetFullPath(path);
 
         NTSTATUS status;
         HANDLE handle;
 
-        fixed (char* pathRef = path)
+        fixed (char* pathPtr = path)
         {
             if (path is not null)
-                Win32PInvoke.RtlInitUnicodeString(&unicodeString, (PCWSTR)pathRef);
+                Win32PInvoke.RtlInitUnicodeString(&unicodeString, (PCWSTR)pathPtr);
 
             using var rootDirectoryHandle = rootDirectory?.CreateScope();
 
