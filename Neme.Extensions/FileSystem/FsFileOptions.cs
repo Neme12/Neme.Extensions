@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using Neme.Extensions.Contracts;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
 namespace Neme.Extensions.FileSystem;
@@ -7,6 +8,7 @@ namespace Neme.Extensions.FileSystem;
 public readonly record struct FsFileOptions
 {
     private readonly AllOptions _allOptions;
+    private readonly long _preallocationSize;
 
     public FsFileOptions(FileMode mode, FsFileAccess access, FileShare share)
     {
@@ -60,6 +62,17 @@ public readonly record struct FsFileOptions
                 throw new PlatformNotSupportedException(Strings.PlatformNotSupported_UnixFileMode);
 
             _allOptions = ToAllOptions(Mode, Access, Share, Options, Attributes, value);
+        }
+    }
+
+    public long PreallocationSize
+    {
+        get => _preallocationSize;
+        init
+        {
+            Require.ArgumentNotNegative(value);
+
+            _preallocationSize = value;
         }
     }
 
