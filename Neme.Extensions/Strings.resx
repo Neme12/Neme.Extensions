@@ -150,6 +150,9 @@
   <data name="IO_SharingViolation_NoFileName" xml:space="preserve">
     <value>The process cannot access the file because it is being used by another process.</value>
   </data>
+  <data name="PlatformNotSupported_UnixFileMode" xml:space="preserve">
+    <value>Unix file modes are not supported on this platform.</value>
+  </data>
   <data name="UnauthorizedAccess_IODenied_NoPathName" xml:space="preserve">
     <value>Access to the path is denied.</value>
   </data>

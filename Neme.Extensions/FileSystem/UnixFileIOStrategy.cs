@@ -34,7 +34,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             options.Access,
             options.Share,
             options.Options,
-            DefaultCreateMode);
+            options.UnixCreateMode ?? DefaultCreateMode);
     }
 
     [return: OwnershipTransfer]

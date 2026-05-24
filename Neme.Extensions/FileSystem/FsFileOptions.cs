@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace Neme.Extensions.FileSystem;
 
@@ -10,6 +11,7 @@ public readonly record struct FsFileOptions
     private readonly byte _access;
     private readonly byte _share;
     private readonly byte _options;
+    private readonly ushort _unixCreateMode;
 
     public FsFileOptions(FileMode mode, FsFileAccess access, FileShare share)
     {
@@ -55,6 +57,23 @@ public readonly record struct FsFileOptions
     {
         get => _attributes;
         init => _attributes = value;
+    }
+
+    public UnixFileMode? UnixCreateMode
+    {
+        get => _unixCreateMode != 0
+            ? (UnixFileMode?)(_unixCreateMode - 1)
+            : null;
+        [UnsupportedOSPlatform("windows")]
+        init
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                throw new PlatformNotSupportedException(Strings.PlatformNotSupported_UnixFileMode);
+
+            _unixCreateMode = value.HasValue
+                ? (ushort)(value.Value + 1)
+                : (ushort)0;
+        }
     }
 
 #if NET6_0_OR_GREATER

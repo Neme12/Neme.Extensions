@@ -160,6 +160,15 @@ namespace Neme.Extensions {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unix file modes are not supported on this platform..
+        /// </summary>
+        internal static string PlatformNotSupported_UnixFileMode {
+            get {
+                return ResourceManager.GetString("PlatformNotSupported_UnixFileMode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Access to the path is denied..
         /// </summary>
         internal static string UnauthorizedAccess_IODenied_NoPathName {
