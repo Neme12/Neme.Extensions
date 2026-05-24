@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ArgumentOutOfRange_FileLengthTooBig" xml:space="preserve">
+    <value>Specified file length was too large for the file system.</value>
+  </data>
   <data name="IO_AlreadyExists_Name" xml:space="preserve">
     <value>Cannot create '{0}' because a file or directory with the same name already exists.</value>
   </data>

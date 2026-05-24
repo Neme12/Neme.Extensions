@@ -1,7 +1,6 @@
-﻿using System.Runtime.InteropServices;
-using System.Text;
+﻿using System.Text;
 
-namespace Neme.Polyfills.System.Runtime.InteropServices;
+namespace System.Runtime.InteropServices;
 
 
 public static class MarshalPolyfill

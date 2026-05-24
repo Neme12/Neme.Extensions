@@ -1,4 +1,5 @@
-﻿using Windows.Win32.Storage.FileSystem;
+﻿using Neme.Extensions.Internal.Interop;
+using Windows.Win32.Storage.FileSystem;
 
 namespace Neme.Extensions.FileSystem;
 
@@ -43,6 +44,19 @@ internal static class FsFileAccessExtensions
 
 
             return desiredAccess;
+        }
+
+        public Interop.Libc.OpenFlags ToUnix()
+        {
+            var rawAccess = access & (FsFileAccess.Read | FsFileAccess.Write);
+
+            return rawAccess switch
+            {
+                FsFileAccess.Read => Interop.Libc.OpenFlags.O_RDONLY,
+                FsFileAccess.ReadWrite => Interop.Libc.OpenFlags.O_RDWR,
+                FsFileAccess.Write => Interop.Libc.OpenFlags.O_WRONLY,
+                _ => default,
+            };
         }
     }
 }

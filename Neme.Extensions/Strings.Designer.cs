@@ -61,6 +61,15 @@ namespace Neme.Extensions {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Specified file length was too large for the file system..
+        /// </summary>
+        internal static string ArgumentOutOfRange_FileLengthTooBig {
+            get {
+                return ResourceManager.GetString("ArgumentOutOfRange_FileLengthTooBig", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot create &apos;{0}&apos; because a file or directory with the same name already exists..
         /// </summary>
         internal static string IO_AlreadyExists_Name {

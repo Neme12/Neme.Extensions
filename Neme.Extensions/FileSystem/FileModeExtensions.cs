@@ -1,4 +1,5 @@
-﻿using Windows.Wdk.Storage.FileSystem;
+﻿using Neme.Extensions.Internal.Interop;
+using Windows.Wdk.Storage.FileSystem;
 using Windows.Win32.Storage.FileSystem;
 
 namespace Neme.Extensions.FileSystem;
@@ -35,5 +36,18 @@ internal static class FileModeExtensions
             };
         }
 
+        public Interop.Libc.OpenFlags ToUnix()
+        {
+            return mode switch
+            {
+                FileMode.CreateNew => Interop.Libc.OpenFlags.O_CREAT | Interop.Libc.OpenFlags.O_EXCL,
+                FileMode.Create => Interop.Libc.OpenFlags.O_CREAT | Interop.Libc.OpenFlags.O_TRUNC,
+                FileMode.Open => default,
+                FileMode.OpenOrCreate => Interop.Libc.OpenFlags.O_CREAT,
+                FileMode.Truncate => Interop.Libc.OpenFlags.O_TRUNC,
+                FileMode.Append => Interop.Libc.OpenFlags.O_CREAT,
+                _ => throw new ArgumentOutOfRangeException(nameof(mode), "Invalid FileMode value."),
+            };
+        }
     }
 }

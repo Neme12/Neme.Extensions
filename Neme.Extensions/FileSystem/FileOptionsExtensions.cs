@@ -1,4 +1,5 @@
-﻿using Windows.Wdk.Storage.FileSystem;
+﻿using Neme.Extensions.Internal.Interop;
+using Windows.Wdk.Storage.FileSystem;
 using Windows.Win32.Storage.FileSystem;
 
 namespace Neme.Extensions.FileSystem;
@@ -51,6 +52,18 @@ internal static class FileOptionsExtensions
             }
 
             return ntOptions;
+        }
+
+        public Interop.Libc.OpenFlags ToUnix()
+        {
+            // Translate some FileOptions; some just aren't supported, and others will be handled after calling open.
+            // - Asynchronous: Unix does not support O_NONBLOCK for regular files, only for pipes and sockets.
+            // - DeleteOnClose: Doesn't have a Unix equivalent, but we approximate it in Dispose
+            // - Encrypted: No equivalent on Unix and is ignored
+            // - RandomAccess: Implemented after open if posix_fadvise is available
+            // - SequentialScan: Implemented after open if posix_fadvise is available
+            // - WriteThrough: Handled here
+            return (options & FileOptions.WriteThrough) != 0 ? Interop.Libc.OpenFlags.O_SYNC : default;
         }
     }
 }

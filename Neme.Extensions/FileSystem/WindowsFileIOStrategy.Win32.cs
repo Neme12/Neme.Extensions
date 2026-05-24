@@ -2,7 +2,6 @@
 using Neme.Extensions.Buffers;
 using Neme.Extensions.InteropServices;
 using Neme.Extensions.Ownership;
-using Neme.Utilities.Contracts;
 using NodaTime;
 using System.Buffers;
 using System.ComponentModel;
@@ -19,8 +18,8 @@ namespace Neme.Extensions.FileSystem;
 [SupportedOSPlatform("windows6.0.6000")]
 internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
 {
-    private const int MaxWindowsFileNameLength = 255;
-    private const int MaxWindowsPathLength = short.MaxValue - 4; // 4 for the \\?\ prefix.
+    protected override int MaxFileNameLength => 255;
+    protected override int MaxPathLength => short.MaxValue - 4; // 4 for the \\?\ prefix.
 
     [return: OwnershipTransfer]
     public override SafeFileHandle OpenHandle(string path, FsFileOptions options)
@@ -104,8 +103,8 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
         ValidateFileHandle(sourceFile);
         ValidateFileName(destFileName);
 
-        if (destFileName.Length > MaxWindowsFileNameLength)
-            throw new ArgumentException($"Destination file name cannot exceed {MaxWindowsFileNameLength}.", nameof(destFileName));
+        if (destFileName.Length > MaxFileNameLength)
+            throw new ArgumentException($"Destination file name cannot exceed {MaxFileNameLength}.", nameof(destFileName));
 
         ref var fileInfo = ref AllocateFileInfo<FILE_RENAME_INFO>(
             stackalloc byte[FILE_RENAME_INFO.SizeOf(destFileName.Length + 1)],
@@ -230,27 +229,5 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
 #else
         return ref Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(buffer));
 #endif
-    }
-
-    private static void ValidateFileName(string? fileName, bool optional = false, [CallerArgumentExpression(nameof(fileName))] string? paramName = null)
-    {
-        if (optional && fileName is null)
-            return;
-
-        ArgumentException.ThrowIfNullOrEmpty(fileName, paramName);
-
-        if (fileName.Length > MaxWindowsFileNameLength)
-            Throw.ArgumentException(fileName, $"File name cannot exceed {MaxWindowsFileNameLength} characters.", paramName);
-    }
-
-    private static void ValidatePath(string? path, bool optional = false, [CallerArgumentExpression(nameof(path))] string? paramName = null)
-    {
-        if (optional && path is null)
-            return;
-
-        ArgumentException.ThrowIfNullOrEmpty(path, paramName);
-
-        if (path.Length > MaxWindowsPathLength)
-            Throw.ArgumentException(path, $"Path cannot exceed {MaxWindowsPathLength} characters.", paramName);
     }
 }
