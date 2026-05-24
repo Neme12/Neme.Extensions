@@ -5,6 +5,7 @@ using Neme.Extensions.Ownership;
 using NodaTime;
 using System.Buffers;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -24,7 +25,7 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
     [return: OwnershipTransfer]
     public override SafeFileHandle OpenHandle(string path, FsFileOptions options)
     {
-        ValidatePath(path);
+        Debug.Assert(IsValidPath(path));
 
         var handle = PInvoke.CreateFile(
             path,
@@ -44,7 +45,7 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
     [return: OwnershipTransfer]
     public override SafeFileHandle DuplicateHandle([Borrow] SafeFileHandle file, FsFileAccess? access)
     {
-        ValidateFileHandle(file);
+        Debug.Assert(IsValidFileHandle(file));
 
         var currentProcess = new SafeProcessHandle((nint)(-1), ownsHandle: false); // Pseudo-handle for the current process
 
@@ -65,7 +66,7 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
 
     public override string GetPath([Borrow] SafeFileHandle file)
     {
-        ValidateFileHandle(file);
+        Debug.Assert(IsValidFileHandle(file));
 
         using var bufferLease = ArrayPool<char>.Shared.RentLeaseOrStackalloc(
             256, stackalloc char[256]);
@@ -91,20 +92,10 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
             : bufferLease.Buffer[..(int)charsWritten].ToString();
     }
 
-    public override string GetPath(FsFileId fileId)
-    {
-        var options = new FsFileOptions(FileMode.Open, FsFileAccess.ReadAttributes, FileShare.ReadWrite | FileShare.Delete);
-        using var handle = OpenHandle(fileId, options);
-        return GetPath(handle);
-    }
-
     public override unsafe void Move([Borrow] SafeFileHandle sourceFile, string destFileName, bool overwrite)
     {
-        ValidateFileHandle(sourceFile);
-        ValidateFileName(destFileName);
-
-        if (destFileName.Length > MaxFileNameLength)
-            throw new ArgumentException($"Destination file name cannot exceed {MaxFileNameLength}.", nameof(destFileName));
+        Debug.Assert(IsValidFileHandle(sourceFile));
+        Debug.Assert(IsValidPath(destFileName));
 
         ref var fileInfo = ref AllocateFileInfo<FILE_RENAME_INFO>(
             stackalloc byte[FILE_RENAME_INFO.SizeOf(destFileName.Length + 1)],
@@ -131,7 +122,7 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
 
     public override unsafe void Delete([Borrow] SafeFileHandle file)
     {
-        ValidateFileHandle(file);
+        Debug.Assert(IsValidFileHandle(file));
 
         ref var fileInfo = ref AllocateFileInfo<FILE_DISPOSITION_INFO>(
             stackalloc byte[sizeof(FILE_DISPOSITION_INFO)],
@@ -145,7 +136,7 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
 
     public override unsafe void SetFileAttributes([Borrow] SafeFileHandle file, FileAttributes attributes)
     {
-        ValidateFileHandle(file);
+        Debug.Assert(IsValidFileHandle(file));
 
         ref var fileInfo = ref AllocateFileInfo<FILE_BASIC_INFO>(
             stackalloc byte[sizeof(FILE_BASIC_INFO)],
@@ -159,7 +150,7 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
 
     public override FileAttributes GetFileAttributes([Borrow] SafeFileHandle file)
     {
-        ValidateFileHandle(file);
+        Debug.Assert(IsValidFileHandle(file));
 
         if (!PInvoke.GetFileInformationByHandle(file, out var fileInformation))
             throw Win32Marshal.GetExceptionForLastWin32Error();
@@ -170,7 +161,7 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
 
     public override FsFileInfo GetFileInfo([Borrow] SafeFileHandle file)
     {
-        ValidateFileHandle(file);
+        Debug.Assert(IsValidFileHandle(file));
 
         if (!PInvoke.GetFileInformationByHandle(file, out var fileInformation))
             throw Win32Marshal.GetExceptionForLastWin32Error();
@@ -187,7 +178,7 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
 
     public override unsafe FsFileId GetFileId([Borrow] SafeFileHandle file)
     {
-        ValidateFileHandle(file);
+        Debug.Assert(IsValidFileHandle(file));
 
         ref var fileInfo = ref AllocateFileInfo<FILE_ID_INFO>(
             stackalloc byte[sizeof(FILE_ID_INFO)],
@@ -219,8 +210,7 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
 
     private static unsafe ref T AllocateFileInfo<T>(Span<byte> buffer, out Span<byte> fileInfoBuffer) where T : unmanaged
     {
-        if (buffer.Length < sizeof(T))
-            throw new ArgumentException($"Buffer must be at least {sizeof(T)} bytes long.", nameof(buffer));
+        Debug.Assert(buffer.Length >= sizeof(T));
 
         fileInfoBuffer = buffer;
 

@@ -26,7 +26,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     [return: OwnershipTransfer]
     public override SafeFileHandle OpenHandle(string path, FsFileOptions options)
     {
-        ValidatePath(path);
+        Debug.Assert(IsValidPath(path));
 
         return Open(
             Path.GetFullPath(path),
@@ -56,11 +56,6 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     }
 
     public override string GetPath([Borrow] SafeFileHandle file)
-    {
-        throw new NotImplementedException();
-    }
-
-    public override string GetPath(FsFileId fileId)
     {
         throw new NotImplementedException();
     }

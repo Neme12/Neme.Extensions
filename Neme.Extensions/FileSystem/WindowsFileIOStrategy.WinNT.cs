@@ -3,6 +3,7 @@ using Neme.Extensions.InteropServices;
 using Neme.Extensions.Ownership;
 using System.Collections.Concurrent;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using Windows.Wdk.Foundation;
@@ -22,7 +23,7 @@ internal sealed partial class WindowsFileIOStrategy
     [return: OwnershipTransfer]
     public override unsafe SafeFileHandle OpenHandle(FsFileId fileId, FsFileOptions options)
     {
-        ValidateFileId(fileId);
+        Debug.Assert(IsValidFileId(fileId));
 
         FileIOEventSource.Log.OpeningFileById(fileId.VolumeSerialNumber, fileId.FileIdLow, fileId.FileIdHigh);
 
@@ -76,11 +77,9 @@ internal sealed partial class WindowsFileIOStrategy
     public override unsafe SafeFileHandle OpenHandleBy([Borrow] SafeFileHandle? rootDirectory, string? path, FsFileOptions options)
 #pragma warning disable RS0042
     {
-        if (rootDirectory is null && path is null)
-            throw new ArgumentException($"Either {nameof(rootDirectory)} or {nameof(path)} must be provided.");
-
-        ValidateFileHandle(rootDirectory, optional: true);
-        ValidatePath(path, optional: true);
+        Debug.Assert(rootDirectory is not null || path is not null);
+        Debug.Assert(rootDirectory is null || IsValidFileHandle(rootDirectory));
+        Debug.Assert(path is null || IsValidPath(path));
 
         UNICODE_STRING unicodeString = default;
 

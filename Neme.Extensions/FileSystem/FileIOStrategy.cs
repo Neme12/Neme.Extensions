@@ -27,8 +27,6 @@ internal abstract class FileIOStrategy
 
     public abstract string GetPath([Borrow] SafeFileHandle file);
 
-    public abstract string GetPath(FsFileId fileId);
-
     public abstract void Move([Borrow] SafeFileHandle sourceFile, string destFileName, bool overwrite);
 
     public abstract void Delete([Borrow] SafeFileHandle file);
@@ -41,42 +39,54 @@ internal abstract class FileIOStrategy
 
     public abstract FsFileId GetFileId([Borrow] SafeFileHandle file);
 
-    protected void ValidateFileName(string? fileName, bool optional = false, [CallerArgumentExpression(nameof(fileName))] string? paramName = null)
+    internal void ValidateFileName(string? fileName, bool optional = false, [CallerArgumentExpression(nameof(fileName))] string? paramName = null)
     {
         if (optional && fileName is null)
             return;
 
         ArgumentException.ThrowIfNullOrEmpty(fileName, paramName);
 
-        if (fileName.Length > MaxFileNameLength)
+        if (!IsValidFileName(fileName))
             Throw.ArgumentException(fileName, $"File name cannot exceed {MaxFileNameLength} characters.", paramName);
     }
 
-    protected void ValidatePath(string? path, bool optional = false, [CallerArgumentExpression(nameof(path))] string? paramName = null)
+    internal void ValidatePath(string? path, bool optional = false, [CallerArgumentExpression(nameof(path))] string? paramName = null)
     {
         if (optional && path is null)
             return;
 
         ArgumentException.ThrowIfNullOrEmpty(path, paramName);
 
-        if (path.Length > MaxPathLength)
+        if (!IsValidPath(path))
             Throw.ArgumentException(path, $"Path cannot exceed {MaxPathLength} characters.", paramName);
     }
 
-    protected internal static void ValidateFileHandle([Borrow] SafeFileHandle? file, bool optional = false, [CallerArgumentExpression(nameof(file))] string? paramName = null)
+    internal void ValidateFileHandle([Borrow] SafeFileHandle? file, bool optional = false, [CallerArgumentExpression(nameof(file))] string? paramName = null)
     {
         if (optional && file is null)
             return;
 
         ArgumentNullException.ThrowIfNull(file, paramName);
 
-        if (file.IsClosed || file.IsInvalid)
+        if (!IsValidFileHandle(file))
             Throw.ArgumentException(file, "File handle must be valid and open.", paramName);
     }
 
-    protected static void ValidateFileId(FsFileId fileId, [CallerArgumentExpression(nameof(fileId))] string? paramName = null)
+    internal void ValidateFileId(FsFileId fileId, [CallerArgumentExpression(nameof(fileId))] string? paramName = null)
     {
-        if (fileId == default)
+        if (!IsValidFileId(fileId))
             Throw.ArgumentException(fileId, "File ID must be valid.", paramName);
     }
+
+    protected bool IsValidFileName(string? fileName) =>
+        fileName is not null && fileName.Length <= MaxFileNameLength;
+
+    protected bool IsValidPath(string? path) =>
+        path is not null && path.Length <= MaxPathLength;
+
+    protected static bool IsValidFileHandle(SafeFileHandle file) =>
+        !file.IsClosed && !file.IsInvalid;
+
+    protected static bool IsValidFileId(FsFileId fileId) =>
+        fileId != default;
 }

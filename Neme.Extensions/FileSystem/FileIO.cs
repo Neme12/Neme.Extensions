@@ -19,8 +19,12 @@ public static partial class FileIO
 #pragma warning restore CA1416
 
     [return: OwnershipTransfer]
-    public static SafeFileHandle OpenHandle(string path, FsFileOptions options) =>
-        Strategy.OpenHandle(path, options);
+    public static SafeFileHandle OpenHandle(string path, FsFileOptions options)
+    {
+        Strategy.ValidatePath(path);
+
+        return Strategy.OpenHandle(path, options);
+    }
 
     [return: OwnershipTransfer]
     public static FsFile Open(string path, FsFileOptions options) =>
@@ -68,6 +72,8 @@ public static partial class FileIO
         FsFileId fileId,
         FsFileOptions options)
     {
+        Strategy.ValidateFileId(fileId);
+
         return Strategy.OpenHandle(fileId, options);
     }
 
@@ -121,6 +127,12 @@ public static partial class FileIO
         string? path,
         FsFileOptions options)
     {
+        if (rootDirectory is null && path is null)
+            throw new ArgumentException($"Either {nameof(rootDirectory)} or {nameof(path)} must be provided.");
+
+        Strategy.ValidateFileHandle(rootDirectory, optional: true);
+        Strategy.ValidatePath(path, optional: true);
+
         return Strategy.OpenHandleBy(rootDirectory, path, options);
     }
 
@@ -174,50 +186,85 @@ public static partial class FileIO
     [return: OwnershipTransfer]
     public static SafeFileHandle ReopenHandle([Borrow] SafeFileHandle file, FsFileOptions options)
     {
-        FileIOStrategy.ValidateFileHandle(file);
+        Strategy.ValidateFileHandle(file);
 
-        return OpenHandleBy(file, null, options);
+        return Strategy.OpenHandleBy(file, null, options);
     }
 
     [return: OwnershipTransfer]
-    public static FsFile Reopen([Borrow] FsFile file, FsFileOptions? options = null)
+    public static FsFile Reopen([Borrow] FsFile file, FsFileOptions? options = null) =>
+        new(OpenHandleBy(file.Handle, null, file.Options), options ?? file.Options);
+
+    [return: OwnershipTransfer]
+    public static SafeFileHandle DuplicateHandle([Borrow] SafeFileHandle file, FsFileAccess? access)
     {
-        FileIOStrategy.ValidateFileHandle(file.Handle);
+        Strategy.ValidateFileHandle(file);
 
-        return new(OpenHandleBy(file.Handle, null, file.Options), options ?? file.Options);
+        return Strategy.DuplicateHandle(file, access);
     }
-
-    [return: OwnershipTransfer]
-    public static SafeFileHandle DuplicateHandle([Borrow] SafeFileHandle file, FsFileAccess? access) =>
-        Strategy.DuplicateHandle(file, access);
 
     [return: OwnershipTransfer]
     public static FsFile Duplicate([Borrow] FsFile file) =>
         new(DuplicateHandle(file.Handle, file.Options.Access), file.Options);
 
-    public static string GetPath([Borrow] SafeFileHandle file) =>
-        Strategy.GetPath(file);
+    public static string GetPath([Borrow] SafeFileHandle file)
+    {
+        Strategy.ValidateFileHandle(file);
 
-    public static string GetPath(FsFileId fileId) =>
-        Strategy.GetPath(fileId);
+        return Strategy.GetPath(file);
+    }
 
-    public static void Move([Borrow] SafeFileHandle sourceFile, string destFileName, bool overwrite = false) =>
+    public static string GetPath(FsFileId fileId)
+    {
+        Strategy.ValidateFileId(fileId);
+
+        var options = new FsFileOptions(FileMode.Open, FsFileAccess.ReadAttributes, FileShare.ReadWrite | FileShare.Delete);
+        using (var handle = Strategy.OpenHandle(fileId, options))
+            return Strategy.GetPath(handle);
+    }
+
+    public static void Move([Borrow] SafeFileHandle sourceFile, string destFileName, bool overwrite = false)
+    {
+        Strategy.ValidateFileHandle(sourceFile);
+        Strategy.ValidatePath(destFileName);
+
         Strategy.Move(sourceFile, destFileName, overwrite);
+    }
 
-    public static void Delete([Borrow] SafeFileHandle file) =>
+    public static void Delete([Borrow] SafeFileHandle file)
+    {
+        Strategy.ValidateFileHandle(file);
+
         Strategy.Delete(file);
+    }
 
-    public static void SetFileAttributes([Borrow] SafeFileHandle file, FileAttributes attributes) =>
+    public static void SetFileAttributes([Borrow] SafeFileHandle file, FileAttributes attributes)
+    {
+        Strategy.ValidateFileHandle(file);
+
         Strategy.SetFileAttributes(file, attributes);
+    }
 
-    public static FileAttributes GetFileAttributes([Borrow] SafeFileHandle file) =>
-        Strategy.GetFileAttributes(file);
+    public static FileAttributes GetFileAttributes([Borrow] SafeFileHandle file)
+    {
+        Strategy.ValidateFileHandle(file);
 
-    public static FsFileInfo GetFileInfo([Borrow] SafeFileHandle file) =>
-        Strategy.GetFileInfo(file);
+        return Strategy.GetFileAttributes(file);
+    }
 
-    public static FsFileId GetFileId([Borrow] SafeFileHandle file) =>
-        Strategy.GetFileId(file);
+    public static FsFileInfo GetFileInfo([Borrow] SafeFileHandle file)
+    {
+        Strategy.ValidateFileHandle(file);
+
+        return Strategy.GetFileInfo(file);
+    }
+
+    public static FsFileId GetFileId([Borrow] SafeFileHandle file)
+    {
+        Strategy.ValidateFileHandle(file);
+
+        return Strategy.GetFileId(file);
+    }
 
     [return: OwnershipTransfer]
     public static CheckedFileStream CreateFileStream(
@@ -226,7 +273,7 @@ public static partial class FileIO
         bool leaveOpen = false,
         int bufferSize = 4096)
     {
-        FileIOStrategy.ValidateFileHandle(file);
+        Strategy.ValidateFileHandle(file);
 
         using var handle = OwnedOrBorrowed.Create(leaveOpen
             ? new SafeFileHandle(file.DangerousGetHandle(), ownsHandle: false)
