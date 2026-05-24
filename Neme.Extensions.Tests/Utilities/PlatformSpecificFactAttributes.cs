@@ -72,8 +72,7 @@ internal sealed class UnixOnlyFactAttribute : FactAttribute
 {
     public UnixOnlyFactAttribute()
     {
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
-            && !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             Skip = "This test only runs on Unix-like systems (Linux or macOS).";
         }
@@ -84,8 +83,7 @@ internal sealed class UnixOnlyTheoryAttribute : TheoryAttribute
 {
     public UnixOnlyTheoryAttribute()
     {
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
-            && !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             Skip = "This test only runs on Unix-like systems (Linux or macOS).";
         }

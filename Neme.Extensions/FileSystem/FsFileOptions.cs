@@ -79,13 +79,31 @@ public readonly record struct FsFileOptions
 #if NET6_0_OR_GREATER
     public static FsFileOptions FromFileStreamOptions(FileStreamOptions options)
     {
-        return new FsFileOptions
+#if NET7_0_OR_GREATER
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+#endif
         {
-            Mode = options.Mode,
-            Access = FsFileAccess.FromFileAccess(options.Access),
-            Share = options.Share,
-            Options = options.Options,
-        };
+            return new FsFileOptions
+            {
+                Mode = options.Mode,
+                Access = FsFileAccess.FromFileAccess(options.Access),
+                Share = options.Share,
+                Options = options.Options,
+            };
+        }
+#if NET7_0_OR_GREATER
+        else
+        {
+            return new FsFileOptions
+            {
+                Mode = options.Mode,
+                Access = FsFileAccess.FromFileAccess(options.Access),
+                Share = options.Share,
+                Options = options.Options,
+                UnixCreateMode = options.UnixCreateMode,
+            };
+        }
+#endif
     }
 
     public static implicit operator FsFileOptions(FileStreamOptions options) =>
