@@ -3,6 +3,14 @@
 ## Neme.Extensions
 These packages contain my custom extensions and utilities for .NET that I have needed as some point or another and in my opinion should be part of .NET.
 
+### Neme.Extensions.FileSystem
+The goal of the types in this namespace (specifically FileIO) is to provide race-free file operations. Because the file system is inherently concurrent, performing operations by path alone is fundamentally subject to race conditions. These projects aim to:
+
+1. Provide file operations on a file handle instead of a path.
+2. Provide file operations by a file ID, which does not change when the file is moved.
+3. Add the ability to open files/directories via a handle to a root directory and subpath.
+4. Add the ability to open files/directories via a file ID, which does not change when the file is moved.
+
 ## Neme.Polyfills
 This package contains what it says - polyfills for .NET APIs on previous target frameworks.
 
