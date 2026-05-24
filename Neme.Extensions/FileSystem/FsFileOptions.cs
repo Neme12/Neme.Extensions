@@ -10,7 +10,7 @@ public readonly record struct FsFileOptions
     private readonly byte _mode;
     private readonly byte _access;
     private readonly byte _share;
-    private readonly byte _options;
+    private readonly ByteOptions _options;
     private readonly ushort _unixCreateMode;
 
     public FsFileOptions(FileMode mode, FsFileAccess access, FileShare share)
@@ -110,53 +110,63 @@ public readonly record struct FsFileOptions
         FromFileStreamOptions(options);
 #endif
 
-    private static byte FileOptionsToByte(FileOptions options)
+    private static ByteOptions FileOptionsToByte(FileOptions options)
     {
-        byte value = 0;
+        ByteOptions value = 0;
 
         if ((options & FileOptions.Encrypted) != 0)
-            value |= 1 << 0;
+            value |= ByteOptions.Encrypted;
 
         if ((options & FileOptions.DeleteOnClose) != 0)
-            value |= 1 << 1;
+            value |= ByteOptions.DeleteOnClose;
 
         if ((options & FileOptions.SequentialScan) != 0)
-            value |= 1 << 2;
+            value |= ByteOptions.SequentialScan;
 
         if ((options & FileOptions.RandomAccess) != 0)
-            value |= 1 << 3;
+            value |= ByteOptions.RandomAccess;
 
         if ((options & FileOptions.Asynchronous) != 0)
-            value |= 1 << 4;
+            value |= ByteOptions.Asynchronous;
 
         if ((options & FileOptions.WriteThrough) != 0)
-            value |= 1 << 5;
+            value |= ByteOptions.WriteThrough;
 
         return value;
     }
 
-    private static FileOptions FileOptionsFromByte(byte value)
+    private static FileOptions FileOptionsFromByte(ByteOptions value)
     {
         FileOptions options = 0;
 
-        if ((value & (1 << 0)) != 0)
+        if ((value & ByteOptions.Encrypted) != 0)
             options |= FileOptions.Encrypted;
 
-        if ((value & (1 << 1)) != 0)
+        if ((value & ByteOptions.DeleteOnClose) != 0)
             options |= FileOptions.DeleteOnClose;
 
-        if ((value & (1 << 2)) != 0)
+        if ((value & ByteOptions.SequentialScan) != 0)
             options |= FileOptions.SequentialScan;
 
-        if ((value & (1 << 3)) != 0)
+        if ((value & ByteOptions.RandomAccess) != 0)
             options |= FileOptions.RandomAccess;
 
-        if ((value & (1 << 4)) != 0)
+        if ((value & ByteOptions.Asynchronous) != 0)
             options |= FileOptions.Asynchronous;
 
-        if ((value & (1 << 5)) != 0)
+        if ((value & ByteOptions.WriteThrough) != 0)
             options |= FileOptions.WriteThrough;
 
         return options;
+    }
+
+    private enum ByteOptions :  byte
+    {
+        Encrypted = 1 << 0,
+        DeleteOnClose = 1 << 1,
+        SequentialScan = 1 << 2,
+        RandomAccess = 1 << 3,
+        Asynchronous = 1 << 4,
+        WriteThrough = 1 << 5,
     }
 }
