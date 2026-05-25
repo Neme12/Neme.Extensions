@@ -34,7 +34,9 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             options.Access,
             options.Share,
             options.Options,
-            options.UnixCreateMode ?? DefaultCreateMode);
+            options.Attributes,
+            options.UnixCreateMode ?? DefaultCreateMode,
+            options.PreallocationSize);
     }
 
     [return: OwnershipTransfer]
@@ -96,7 +98,9 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         FsFileAccess access,
         FileShare share,
         FileOptions options,
-        UnixFileMode openPermissions)
+        FileAttributes attributes,
+        UnixFileMode openPermissions,
+        long preallocationSize)
     {
         Debug.Assert(fullPath != null);
 
@@ -119,6 +123,53 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             throw UnixMarshal.GetExceptionForUnixError(new Win32Exception((int)error), fullPath);
         }
 
+        InitHandle(handle.Value, fullPath!, mode, access, share, options, attributes, preallocationSize);
         return handle.Move();
+    }
+
+    private static void InitHandle(
+        SafeFileHandle handle,
+        string path,
+        FileMode mode,
+        FsFileAccess access,
+        FileShare share,
+        FileOptions options,
+        FileAttributes attributes,
+        long preallocationSize)
+    {
+        Interop.Libc.FileStatus status = default;
+        bool statusHasValue = false;
+
+        // Check whether our handle is a directory.
+        // We can omit the check when write access is requested. open will have failed with EISDIR.
+        if ((access & (FsFileAccess)RawFsFileAccess.Write) == 0)
+        {
+            FStatCheckIO(handle, path, ref status, ref statusHasValue);
+
+            var stMode = (status.st_mode & Interop.Libc.FileStatusMode.S_IFMT);
+            var shouldBeDirectory = (attributes & FileAttributes.Directory) != 0;
+
+            if (shouldBeDirectory && stMode != Interop.Libc.FileStatusMode.S_IFDIR ||
+                !shouldBeDirectory && stMode == Interop.Libc.FileStatusMode.S_IFDIR)
+            {
+                var exception = new Win32Exception((int)UnixErrorCode.Error_EACCES);
+                throw UnixMarshal.GetExceptionForUnixError(exception, path);
+            }
+        }
+    }
+
+    private static void FStatCheckIO(
+        SafeFileHandle handle,
+        string path,
+        ref Interop.Libc.FileStatus status,
+        ref bool statusHasValue)
+    {
+        if (!statusHasValue)
+        {
+            if (Interop.Libc.FStat(handle, out status) != 0)
+                throw UnixMarshal.GetExceptionForLastUnixError(path);
+
+            statusHasValue = true;
+        }
     }
 }
