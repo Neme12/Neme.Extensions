@@ -24,17 +24,6 @@ public struct OwnedOrBorrowed<T>(T value, bool ownsValue = true) : IDisposable
         }
     }
 
-    public void SetValue(T newValue, bool ownsNewValue = true)
-    {
-        ObjectDisposedException.ThrowIf(_state == State.Disposed, this);
-
-        if (_state == State.Owned)
-            _value?.Dispose();
-
-        _value = newValue;
-        _state = ownsNewValue ? State.Owned : State.Borrowed;
-    }
-
     public T Move()
     {
         ObjectDisposedException.ThrowIf(_state == State.Disposed, this);
