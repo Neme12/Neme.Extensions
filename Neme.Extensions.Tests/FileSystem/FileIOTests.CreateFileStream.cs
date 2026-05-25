@@ -104,7 +104,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void InvalidHandle_ThrowsArgumentException()
         {
             // Arrange
