@@ -7,7 +7,7 @@ public sealed partial class FileIOTests
     [Collection(nameof(FileIOTestCollection))]
     public sealed class CreateFileStream
     {
-        [Fact]
+        [WindowsOnlyFact]
         public void LeaveOpenFalse_CreatesReadWriteAsyncStreamAndClosesHandle()
         {
             // Arrange
@@ -42,7 +42,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void LeaveOpenTrue_LeavesOriginalHandleOpen()
         {
             // Arrange
