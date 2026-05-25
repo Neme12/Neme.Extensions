@@ -281,10 +281,10 @@ public static partial class FileIO
 
         FileAccess access = 0;
 
-        if ((options.Access & FsFileAccess.Read) != 0)
+        if ((options.Access & (FsFileAccess)RawFsFileAccess.Read) != 0)
             access |= FileAccess.Read;
 
-        if ((options.Access & FsFileAccess.Write) != 0)
+        if ((options.Access & (FsFileAccess)RawFsFileAccess.Write) != 0)
             access |= FileAccess.Write;
 
         return new CheckedFileStream(handle.Move(), access, bufferSize, isAsync: (options.Options & FileOptions.Asynchronous) != 0);
