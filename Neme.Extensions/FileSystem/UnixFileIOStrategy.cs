@@ -146,7 +146,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         {
             FStatCheckIO(handle, path, ref status, ref statusHasValue);
 
-            var stMode = (status.st_mode & Interop.Libc.FileStatusMode.S_IFMT);
+            var stMode = status.st_mode & Interop.Libc.FileStatusMode.S_IFMT;
             var shouldBeDirectory = (attributes & FileAttributes.Directory) != 0;
 
             if (shouldBeDirectory && stMode != Interop.Libc.FileStatusMode.S_IFDIR ||
