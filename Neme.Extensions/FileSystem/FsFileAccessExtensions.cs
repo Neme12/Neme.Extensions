@@ -7,19 +7,6 @@ internal static class FsFileAccessExtensions
 {
     extension(FsFileAccess access)
     {
-        public static FsFileAccess FromFileAccess(FileAccess fileAccess)
-        {
-            FsFileAccess result = default;
-
-            if ((fileAccess & FileAccess.Read) != 0)
-                result |= FsFileAccess.Read;
-
-            if ((fileAccess & FileAccess.Write) != 0)
-                result |= FsFileAccess.Write;
-
-            return result;
-        }
-
         public FILE_ACCESS_RIGHTS ToWin32()
         {
             FILE_ACCESS_RIGHTS desiredAccess = 0;

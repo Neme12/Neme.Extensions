@@ -279,14 +279,10 @@ public static partial class FileIO
             ? new SafeFileHandle(file.DangerousGetHandle(), ownsHandle: false)
             : file);
 
-        FileAccess access = 0;
-
-        if ((options.Access & (FsFileAccess)RawFsFileAccess.Read) != 0)
-            access |= FileAccess.Read;
-
-        if ((options.Access & (FsFileAccess)RawFsFileAccess.Write) != 0)
-            access |= FileAccess.Write;
-
-        return new CheckedFileStream(handle.Move(), access, bufferSize, isAsync: (options.Options & FileOptions.Asynchronous) != 0);
+        return new CheckedFileStream(
+            handle.Move(),
+            options.Access.ToFileAccess(),
+            bufferSize,
+            isAsync: (options.Options & FileOptions.Asynchronous) != 0);
     }
 }
