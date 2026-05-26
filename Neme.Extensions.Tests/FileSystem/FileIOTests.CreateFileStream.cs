@@ -1,4 +1,5 @@
-﻿using Neme.Extensions.Tests.Utilities;
+﻿using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.Tests.Utilities;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
@@ -104,11 +105,11 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact]
+        [Fact]
         public void InvalidHandle_ThrowsArgumentException()
         {
             // Arrange
-            var handle = new Microsoft.Win32.SafeHandles.SafeFileHandle(IntPtr.Zero, ownsHandle: false);
+            var handle = new SafeFileHandle((nint)(-1), ownsHandle: false);
             var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read);
 
             // Act & Assert
