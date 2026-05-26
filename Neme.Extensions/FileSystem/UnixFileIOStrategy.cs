@@ -1,6 +1,5 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using Neme.Extensions.Contracts;
-using Neme.Extensions.Internal.Interop;
 using Neme.Extensions.InteropServices;
 using Neme.Extensions.Ownership;
 using System.ComponentModel;
@@ -113,8 +112,9 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             access.ToUnix() |
             share.ToUnix() |
             options.ToUnix();
-
-        using var handle = OwnedOrBorrowed.Create(Interop.Libc.Open(fullPath!, openFlags, (int)openPermissions));
+        
+        var rawHandle = Syscall.open(fullPath!, openFlags, (FilePermissions)openPermissions);
+        using var handle = OwnedOrBorrowed.Create(new SafeFileHandle((nint)rawHandle, ownsHandle: true));
 
         if (handle.Value.IsInvalid)
         {

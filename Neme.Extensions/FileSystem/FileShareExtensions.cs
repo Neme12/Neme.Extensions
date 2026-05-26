@@ -1,4 +1,4 @@
-﻿using Neme.Extensions.Internal.Interop;
+﻿using Mono.Unix.Native;
 using Windows.Win32.Storage.FileSystem;
 
 namespace Neme.Extensions.FileSystem;
@@ -13,9 +13,10 @@ internal static class FileShareExtensions
             return (FILE_SHARE_MODE)share;
         }
 
-        public Interop.Libc.OpenFlags ToUnix()
+        public OpenFlags ToUnix()
         {
             // Handle Inheritable, other FileShare flags are handled by Init
-            return (share & FileShare.Inheritable) == 0 ? Interop.Libc.OpenFlags.O_CLOEXEC : default;        }
+            return (share & FileShare.Inheritable) == 0 ? OpenFlags.O_CLOEXEC : default;
+        }
     }
 }

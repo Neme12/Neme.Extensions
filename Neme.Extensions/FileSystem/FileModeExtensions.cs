@@ -1,4 +1,4 @@
-﻿using Neme.Extensions.Internal.Interop;
+﻿using Mono.Unix.Native;
 using Windows.Wdk.Storage.FileSystem;
 using Windows.Win32.Storage.FileSystem;
 
@@ -36,16 +36,16 @@ internal static class FileModeExtensions
             };
         }
 
-        public Interop.Libc.OpenFlags ToUnix()
+        public OpenFlags ToUnix()
         {
             return mode switch
             {
-                FileMode.CreateNew => Interop.Libc.OpenFlags.O_CREAT | Interop.Libc.OpenFlags.O_EXCL,
-                FileMode.Create => Interop.Libc.OpenFlags.O_CREAT | Interop.Libc.OpenFlags.O_TRUNC,
+                FileMode.CreateNew => OpenFlags.O_CREAT | OpenFlags.O_EXCL,
+                FileMode.Create => OpenFlags.O_CREAT | OpenFlags.O_TRUNC,
                 FileMode.Open => default,
-                FileMode.OpenOrCreate => Interop.Libc.OpenFlags.O_CREAT,
-                FileMode.Truncate => Interop.Libc.OpenFlags.O_TRUNC,
-                FileMode.Append => Interop.Libc.OpenFlags.O_CREAT,
+                FileMode.OpenOrCreate => OpenFlags.O_CREAT,
+                FileMode.Truncate => OpenFlags.O_TRUNC,
+                FileMode.Append => OpenFlags.O_CREAT,
                 _ => throw new ArgumentOutOfRangeException(nameof(mode), "Invalid FileMode value."),
             };
         }
