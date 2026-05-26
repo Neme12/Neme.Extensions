@@ -6,7 +6,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Mono.Unix.Native;
 
@@ -120,11 +119,11 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         {
             handle.Dispose();
 
-            var error = (UnixErrorCode)Marshal.GetLastPInvokeError();
-            if (error == UnixErrorCode.Error_EISDIR)
-                error = UnixErrorCode.Error_EACCES;
+            var error = Stdlib.GetLastError();
+            if (error == Errno.EISDIR)
+                error = Errno.EACCES;
 
-            throw UnixMarshal.GetExceptionForUnixError(new Win32Exception((int)error), fullPath);
+            throw UnixMarshal.GetExceptionForUnixError(error, fullPath);
         }
 
         InitHandle(handle.Value, fullPath!, mode, access, share, options, attributes, preallocationSize);
@@ -156,8 +155,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             if (shouldBeDirectory && stMode != FilePermissions.S_IFDIR ||
                 !shouldBeDirectory && stMode == FilePermissions.S_IFDIR)
             {
-                var exception = new Win32Exception((int)UnixErrorCode.Error_EACCES);
-                throw UnixMarshal.GetExceptionForUnixError(exception, path);
+                throw UnixMarshal.GetExceptionForUnixError(Errno.EACCES, path);
             }
         }
 
