@@ -1,11 +1,15 @@
 ﻿using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.Contracts;
 using Neme.Extensions.Internal.Interop;
 using Neme.Extensions.InteropServices;
 using Neme.Extensions.Ownership;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using Mono.Unix.Native;
 
 namespace Neme.Extensions.FileSystem;
 
@@ -137,7 +141,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         FileAttributes attributes,
         long preallocationSize)
     {
-        Interop.Libc.FileStatus status = default;
+        Stat status = default;
         bool statusHasValue = false;
 
         // Check whether our handle is a directory.
@@ -146,30 +150,63 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         {
             FStatCheckIO(handle, path, ref status, ref statusHasValue);
 
-            var stMode = status.st_mode & Interop.Libc.FileStatusMode.S_IFMT;
+            var stMode = status.st_mode & FilePermissions.S_IFMT;
             var shouldBeDirectory = (attributes & FileAttributes.Directory) != 0;
 
-            if (shouldBeDirectory && stMode != Interop.Libc.FileStatusMode.S_IFDIR ||
-                !shouldBeDirectory && stMode == Interop.Libc.FileStatusMode.S_IFDIR)
+            if (shouldBeDirectory && stMode != FilePermissions.S_IFDIR ||
+                !shouldBeDirectory && stMode == FilePermissions.S_IFDIR)
             {
                 var exception = new Win32Exception((int)UnixErrorCode.Error_EACCES);
                 throw UnixMarshal.GetExceptionForUnixError(exception, path);
             }
         }
+
+#if NET6_0_OR_GREATER && !NET11_0_OR_GREATER
+        if ((options & FileOptions.Asynchronous) != 0)
+        {
+            SafeFileHandleAccessors.SetIsAsync(handle, true);
+        }
+#endif
     }
 
     private static void FStatCheckIO(
         SafeFileHandle handle,
         string path,
-        ref Interop.Libc.FileStatus status,
+        ref Stat status,
         ref bool statusHasValue)
     {
         if (!statusHasValue)
         {
-            if (Interop.Libc.FStat(handle, out status) != 0)
+            int result;
+
+            using (var handleScope = handle.CreateScope())
+                result = Syscall.fstat((int)handleScope.Handle, out status);
+
+            if (result != 0)
                 throw UnixMarshal.GetExceptionForLastUnixError(path);
 
             statusHasValue = true;
         }
+    }
+
+    private static class SafeFileHandleAccessors
+    {
+#if NET8_0_OR_GREATER
+        [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_IsAsync")]
+        public static extern void SetIsAsync(SafeFileHandle handle, bool value);
+#elif NET6_0_OR_GREATER
+        private static readonly MethodInfo s_setIsAsyncMethod =
+            typeof(SafeFileHandle).GetMethod(
+                "set_IsAsync",
+                genericParameterCount: 0,
+                BindingFlags.NonPublic | BindingFlags.Instance,
+                [typeof(bool)])
+            .NotNull();
+
+        public static readonly SetIsAsyncDelegate SetIsAsync =
+            (SetIsAsyncDelegate)s_setIsAsyncMethod.CreateDelegate(typeof(SetIsAsyncDelegate));
+
+        public delegate void SetIsAsyncDelegate(SafeFileHandle handle, bool value);
+#endif
     }
 }
