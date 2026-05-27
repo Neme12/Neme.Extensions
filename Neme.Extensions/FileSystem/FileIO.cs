@@ -270,9 +270,9 @@ public static partial class FileIO
         return Strategy.GetFileId(file);
     }
 
-    [return: OwnershipTransfer(Unless = nameof(leaveOpen))]
+    [return: OwnershipTransferUnless(nameof(leaveOpen))]
     public static CheckedFileStream CreateFileStream(
-        [OwnershipTransfer] SafeFileHandle file,
+        [OwnershipTransferUnless(nameof(leaveOpen))] SafeFileHandle file,
         FsFileOptions options,
         bool leaveOpen = false,
         int bufferSize = 4096)

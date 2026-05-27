@@ -43,7 +43,7 @@ public sealed class FsFile : IDisposable
         }
     }
 
-    [return: OwnershipTransfer(Unless = nameof(leaveOpen))]
+    [return: OwnershipTransferUnless(nameof(leaveOpen))]
     public CheckedFileStream CreateFileStream(bool leaveOpen = false, int bufferSize = FileStreamExtensions.DefaultBufferSize)
     {
         // If the disposal will be left to the file stream, we don't need to assert disposal.
