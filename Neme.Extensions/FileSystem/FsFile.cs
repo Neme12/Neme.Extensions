@@ -55,7 +55,7 @@ public sealed class FsFile : IDisposable
     }
 
     [return: OwnershipTransfer]
-    public SafeFileHandle TakeHandle()
+    public SafeFileHandle DetachHandle()
     {
         ObjectDisposedException.ThrowIf(_handle is null, this);
 
