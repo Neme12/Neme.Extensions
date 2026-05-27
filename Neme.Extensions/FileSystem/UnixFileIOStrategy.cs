@@ -430,6 +430,16 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
                     // Delete the file we've created.
                     Debug.Assert(mode is FileMode.Create or FileMode.CreateNew);
 
+                    if (rootHandle is not null)
+                    {
+                        using (var rootScope = rootHandle.CreateScope())
+                            result = Syscall.unlinkat((int)rootScope.Handle, path!, 0);
+                    }
+                    else
+                    {
+                        result = Syscall.unlink(path.NotNull());
+                    }
+
                     using (var handleScope = handle.CreateScope())
                         Syscall.unlinkat((int)handleScope.Handle, null!, AtFlags.AT_EMPTY_PATH);
 
