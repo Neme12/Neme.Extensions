@@ -262,6 +262,20 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             }
         }
 
+        // Enable DeleteOnClose when we've successfully locked the file.
+        // On Windows, the locking happens atomically as part of opening the file.
+        if ((options & FileOptions.DeleteOnClose) != 0)
+        {
+            // On previous .NET versions, there is no _deleteOnClose field and
+            // DeleteOnClose isn't supported. It only happens there as part of
+            // FileStream disposal.
+#if NET8_0_OR_GREATER
+            SafeFileHandleAccessors.DeleteOnClose(handle) = true;
+#elif NET6_0_OR_GREATER
+            SafeFileHandleAccessors.DeleteOnCloseField.SetValue(handle, true);
+#endif
+        }
+
         return true;
     }
 
@@ -308,10 +322,19 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 #if NET8_0_OR_GREATER
         [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_isLocked")]
         public static extern ref bool IsLocked(SafeFileHandle handle);
+
+        [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_deleteOnClose")]
+        public static extern ref bool DeleteOnClose(SafeFileHandle handle);
 #elif NET6_0_OR_GREATER
         public static readonly FieldInfo IsLockedField =
             typeof(SafeFileHandle).GetField(
                 "_isLocked",
+                BindingFlags.NonPublic | BindingFlags.Instance)
+            .NotNull();
+
+        public static readonly FieldInfo DeleteOnCloseField =
+            typeof(SafeFileHandle).GetField(
+                "_deleteOnClose",
                 BindingFlags.NonPublic | BindingFlags.Instance)
             .NotNull();
 #endif
