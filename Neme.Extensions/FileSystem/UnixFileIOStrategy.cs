@@ -276,6 +276,26 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 #endif
         }
 
+        // These provide hints around how the file will be accessed.  Specifying both RandomAccess
+        // and Sequential together doesn't make sense as they are two competing options on the same spectrum,
+        // so if both are specified, we prefer RandomAccess (behavior on Windows is unspecified if both are provided).
+
+        PosixFadviseAdvice fadv =
+            (options & FileOptions.RandomAccess) != 0 ? PosixFadviseAdvice.POSIX_FADV_RANDOM :
+            (options & FileOptions.SequentialScan) != 0 ? PosixFadviseAdvice.POSIX_FADV_SEQUENTIAL :
+            0;
+        if (fadv != 0)
+        {
+            int result;
+
+            using (var handleScope = handle.CreateScope())
+                result = Syscall.posix_fadvise((int)handleScope.Handle, 0, 0, fadv);
+
+            Errno error;
+            if (result < 0 && (error = Stdlib.GetLastError()) != Errno.ENOSYS) // just a hint.
+                throw UnixMarshal.GetExceptionForUnixError((Errno)result, path);
+        }
+
         return true;
     }
 
