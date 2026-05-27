@@ -212,7 +212,9 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             else
             {
                 rootHandle = null;
-                path = Invariant($"/proc/self/fd/{rootScope!.Value.Handle}");
+                path = RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
+                    ? Invariant($"/dev/fd/{rootScope!.Value.Handle}")
+                    : Invariant($"/proc/self/fd/{rootScope!.Value.Handle}");
                 rawHandle = Syscall.open(path, openFlags, (FilePermissions)openPermissions);
             }
 
