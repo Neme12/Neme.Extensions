@@ -6,7 +6,7 @@ namespace Neme.Extensions.FileSystem.Tests;
 public sealed partial class FileIOTests
 {
     [Collection(nameof(FileIOTestCollection))]
-    public sealed class OpenHandleBy
+    public sealed class OpenHandleAt
     {
         [WindowsOnlyFact]
         public void BothParametersNull_ThrowsArgumentException()
@@ -18,7 +18,7 @@ public sealed partial class FileIOTests
 
             // Act & Assert
             var ex = Assert.Throws<ArgumentException>(() =>
-                FileIO.OpenHandleBy(rootDirectory, path, options));
+                FileIO.OpenHandleAt(rootDirectory, path, options));
             Assert.Contains("rootDirectory", ex.Message);
             Assert.Contains("path", ex.Message);
         }
@@ -34,7 +34,7 @@ public sealed partial class FileIOTests
                 var options = new FsFileOptions(FileMode.Open, FsFileAccess.ReadAttributes);
 
                 // Act
-                using var handle = FileIO.OpenHandleBy(rootDirectory, tempFile, options);
+                using var handle = FileIO.OpenHandleAt(rootDirectory, tempFile, options);
 
                 // Assert
                 Assert.NotNull(handle);
@@ -62,7 +62,7 @@ public sealed partial class FileIOTests
                 };
 
                 // Act
-                using var handle = FileIO.OpenHandleBy(rootDirectory, tempDir, options);
+                using var handle = FileIO.OpenHandleAt(rootDirectory, tempDir, options);
 
                 // Assert
                 Assert.NotNull(handle);
@@ -95,7 +95,7 @@ public sealed partial class FileIOTests
                     var options = new FsFileOptions(FileMode.Open, FsFileAccess.ReadAttributes);
 
                     // Act
-                    using var handle = FileIO.OpenHandleBy(rootDirectory, fileName, options);
+                    using var handle = FileIO.OpenHandleAt(rootDirectory, fileName, options);
 
                     // Assert
                     Assert.NotNull(handle);
@@ -136,7 +136,7 @@ public sealed partial class FileIOTests
                     };
 
                     // Act
-                    using var handle = FileIO.OpenHandleBy(rootDirectory, dirName, options);
+                    using var handle = FileIO.OpenHandleAt(rootDirectory, dirName, options);
 
                     // Assert
                     Assert.NotNull(handle);
@@ -176,7 +176,7 @@ public sealed partial class FileIOTests
                 var fileOptions = new FsFileOptions(FileMode.Open, FsFileAccess.ReadAttributes);
 
                 // Act
-                using var handle = FileIO.OpenHandleBy(rootDirectory, fileName, fileOptions);
+                using var handle = FileIO.OpenHandleAt(rootDirectory, fileName, fileOptions);
 
                 // Assert
                 Assert.NotNull(handle);
@@ -210,7 +210,7 @@ public sealed partial class FileIOTests
                 var subDirName = Path.GetFileName(subDir);
 
                 // Act
-                using var handle = FileIO.OpenHandleBy(rootDirectory, subDirName, dirOptions);
+                using var handle = FileIO.OpenHandleAt(rootDirectory, subDirName, dirOptions);
 
                 // Assert
                 Assert.NotNull(handle);
@@ -241,7 +241,7 @@ public sealed partial class FileIOTests
                 string? path = null;
 
                 // Act
-                using var handle = FileIO.OpenHandleBy(rootDirectory, path, dirOptions);
+                using var handle = FileIO.OpenHandleAt(rootDirectory, path, dirOptions);
 
                 // Assert
                 Assert.NotNull(handle);
@@ -268,7 +268,7 @@ public sealed partial class FileIOTests
                 string? path = null;
 
                 // Act
-                using var handle = FileIO.OpenHandleBy(rootDirectory, path, options);
+                using var handle = FileIO.OpenHandleAt(rootDirectory, path, options);
 
                 // Assert
                 Assert.NotNull(handle);
@@ -291,7 +291,7 @@ public sealed partial class FileIOTests
 
             // Act & Assert
             Assert.ThrowsAny<Exception>(() =>
-                FileIO.OpenHandleBy(rootDirectory, path, options));
+                FileIO.OpenHandleAt(rootDirectory, path, options));
         }
 
         [WindowsOnlyFact]
@@ -305,7 +305,7 @@ public sealed partial class FileIOTests
                 var options = new FsFileOptions(FileMode.Create, FsFileAccess.Write);
 
                 // Act
-                using var handle = FileIO.OpenHandleBy(rootDirectory, tempFile, options);
+                using var handle = FileIO.OpenHandleAt(rootDirectory, tempFile, options);
 
                 // Assert
                 Assert.NotNull(handle);
@@ -331,7 +331,7 @@ public sealed partial class FileIOTests
                 var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read);
 
                 // Act
-                using var handle = FileIO.OpenHandleBy(rootDirectory, tempFile, options);
+                using var handle = FileIO.OpenHandleAt(rootDirectory, tempFile, options);
 
                 // Assert
                 Assert.NotNull(handle);
@@ -355,7 +355,7 @@ public sealed partial class FileIOTests
                 var options = new FsFileOptions(FileMode.Open, FsFileAccess.ReadAttributes, FileShare.None);
 
                 // Act
-                using var handle = FileIO.OpenHandleBy(rootDirectory, tempFile, options);
+                using var handle = FileIO.OpenHandleAt(rootDirectory, tempFile, options);
 
                 // Assert
                 Assert.NotNull(handle);
@@ -380,7 +380,7 @@ public sealed partial class FileIOTests
 
                 // Act & Assert
                 Assert.ThrowsAny<Exception>(() =>
-                    FileIO.OpenHandleBy(rootDirectory, "test.txt", options));
+                    FileIO.OpenHandleAt(rootDirectory, "test.txt", options));
             }
             finally
             {
@@ -399,7 +399,7 @@ public sealed partial class FileIOTests
                 var options = new FsFileOptions(FileMode.OpenOrCreate, FsFileAccess.Write);
 
                 // Act
-                using var handle = FileIO.OpenHandleBy(rootDirectory, tempFile, options);
+                using var handle = FileIO.OpenHandleAt(rootDirectory, tempFile, options);
 
                 // Assert
                 Assert.NotNull(handle);
@@ -424,7 +424,7 @@ public sealed partial class FileIOTests
                 var options = new FsFileOptions(FileMode.OpenOrCreate, FsFileAccess.Write);
 
                 // Act
-                using var handle = FileIO.OpenHandleBy(rootDirectory, tempFile, options);
+                using var handle = FileIO.OpenHandleAt(rootDirectory, tempFile, options);
 
                 // Assert
                 Assert.NotNull(handle);
@@ -448,7 +448,7 @@ public sealed partial class FileIOTests
                 var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read | FsFileAccess.Write);
 
                 // Act
-                using var handle = FileIO.OpenHandleBy(rootDirectory, tempFile, options);
+                using var handle = FileIO.OpenHandleAt(rootDirectory, tempFile, options);
 
                 // Assert
                 Assert.NotNull(handle);
@@ -472,7 +472,7 @@ public sealed partial class FileIOTests
                 var options = new FsFileOptions(FileMode.Open, FsFileAccess.ReadAttributes, FileShare.ReadWrite);
 
                 // Act
-                using var handle = FileIO.OpenHandleBy(rootDirectory, tempFile, options);
+                using var handle = FileIO.OpenHandleAt(rootDirectory, tempFile, options);
 
                 // Assert
                 Assert.NotNull(handle);
@@ -507,7 +507,7 @@ public sealed partial class FileIOTests
                 var fileOptions = new FsFileOptions(FileMode.Open, FsFileAccess.ReadAttributes);
 
                 // Act
-                using var handle = FileIO.OpenHandleBy(rootDirectory, relativePath, fileOptions);
+                using var handle = FileIO.OpenHandleAt(rootDirectory, relativePath, fileOptions);
 
                 // Assert
                 Assert.NotNull(handle);
@@ -532,7 +532,7 @@ public sealed partial class FileIOTests
                 var options = new FsFileOptions(FileMode.CreateNew, FsFileAccess.Write);
 
                 // Act
-                using var handle = FileIO.OpenHandleBy(rootDirectory, tempFile, options);
+                using var handle = FileIO.OpenHandleAt(rootDirectory, tempFile, options);
 
                 // Assert
                 Assert.NotNull(handle);
@@ -557,7 +557,7 @@ public sealed partial class FileIOTests
                 var options = new FsFileOptions(FileMode.Append, FsFileAccess.Write);
 
                 // Act
-                using var handle = FileIO.OpenHandleBy(rootDirectory, tempFile, options);
+                using var handle = FileIO.OpenHandleAt(rootDirectory, tempFile, options);
 
                 // Assert
                 Assert.NotNull(handle);
@@ -582,7 +582,7 @@ public sealed partial class FileIOTests
                 var options = new FsFileOptions(FileMode.Truncate, FsFileAccess.Write);
 
                 // Act
-                using var handle = FileIO.OpenHandleBy(rootDirectory, tempFile, options);
+                using var handle = FileIO.OpenHandleAt(rootDirectory, tempFile, options);
 
                 // Assert
                 Assert.NotNull(handle);

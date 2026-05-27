@@ -17,7 +17,7 @@ internal abstract class FileIOStrategy
     public abstract SafeFileHandle OpenHandle(FsFileId fileId, FsFileOptions options);
 
     [return: OwnershipTransfer]
-    public abstract SafeFileHandle OpenHandleBy(
+    public abstract SafeFileHandle OpenHandleAt(
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
         FsFileOptions options);

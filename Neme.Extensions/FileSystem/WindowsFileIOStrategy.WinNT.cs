@@ -74,7 +74,7 @@ internal sealed partial class WindowsFileIOStrategy
     }
 
     [return: OwnershipTransfer]
-    public override unsafe SafeFileHandle OpenHandleBy([Borrow] SafeFileHandle? rootDirectory, string? path, FsFileOptions options)
+    public override unsafe SafeFileHandle OpenHandleAt([Borrow] SafeFileHandle? rootDirectory, string? path, FsFileOptions options)
 #pragma warning disable RS0042
     {
         Debug.Assert(rootDirectory is not null || path is not null);

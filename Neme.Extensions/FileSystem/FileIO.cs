@@ -126,7 +126,7 @@ public static partial class FileIO
     }
 
     [return: OwnershipTransfer]
-    public static SafeFileHandle OpenHandleBy(
+    public static SafeFileHandle OpenHandleAt(
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
         FsFileOptions options)
@@ -137,19 +137,19 @@ public static partial class FileIO
         Strategy.ValidateFileHandle(rootDirectory, optional: true);
         Strategy.ValidatePath(path, optional: true);
 
-        return Strategy.OpenHandleBy(rootDirectory, path, options);
+        return Strategy.OpenHandleAt(rootDirectory, path, options);
     }
 
     [return: OwnershipTransfer]
-    public static FsFile OpenBy(
+    public static FsFile OpenAt(
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
         FsFileOptions options)
     {
-        return new(OpenHandleBy(rootDirectory, path, options), options);
+        return new(OpenHandleAt(rootDirectory, path, options), options);
     }
 
-    public static bool TryOpenHandleBy(
+    public static bool TryOpenHandleAt(
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
         FsFileOptions options,
@@ -158,7 +158,7 @@ public static partial class FileIO
     {
         try
         {
-            file = OpenHandleBy(rootDirectory, path, options);
+            file = OpenHandleAt(rootDirectory, path, options);
             return true;
         }
         catch (Exception e) when (e is FileNotFoundException || !requireDirectory && e is DirectoryNotFoundException)
@@ -168,7 +168,7 @@ public static partial class FileIO
         }
     }
 
-    public static bool TryOpenBy(
+    public static bool TryOpenAt(
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
         FsFileOptions options,
@@ -177,7 +177,7 @@ public static partial class FileIO
     {
         try
         {
-            file = OpenBy(rootDirectory, path, options);
+            file = OpenAt(rootDirectory, path, options);
             return true;
         }
         catch (Exception e) when (e is FileNotFoundException || !requireDirectory && e is DirectoryNotFoundException)
@@ -192,12 +192,12 @@ public static partial class FileIO
     {
         Strategy.ValidateFileHandle(file);
 
-        return Strategy.OpenHandleBy(file, null, options);
+        return Strategy.OpenHandleAt(file, null, options);
     }
 
     [return: OwnershipTransfer]
     public static FsFile Reopen([Borrow] FsFile file, FsFileOptions? options = null) =>
-        new(OpenHandleBy(file.Handle, null, file.Options), options ?? file.Options);
+        new(OpenHandleAt(file.Handle, null, file.Options), options ?? file.Options);
 
     [return: OwnershipTransfer]
     public static SafeFileHandle DuplicateHandle([Borrow] SafeFileHandle file, FsFileAccess? access)

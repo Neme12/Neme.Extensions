@@ -66,7 +66,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     }
 
     [return: OwnershipTransfer]
-    public override SafeFileHandle OpenHandleBy([Borrow] SafeFileHandle? rootDirectory, string? path, FsFileOptions options)
+    public override SafeFileHandle OpenHandleAt([Borrow] SafeFileHandle? rootDirectory, string? path, FsFileOptions options)
     {
         throw new NotImplementedException();
     }
