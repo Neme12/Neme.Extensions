@@ -1,5 +1,7 @@
 ﻿#if !NETFRAMEWORK
 using Mono.Unix.Native;
+using System.Runtime.Versioning;
+
 #endif
 using Windows.Wdk.Storage.FileSystem;
 using Windows.Win32.Storage.FileSystem;
@@ -39,15 +41,18 @@ internal static class FileModeExtensions
         }
 
 #if !NETFRAMEWORK
+        [UnsupportedOSPlatform("windows")]
         public OpenFlags ToUnix()
         {
             return mode switch
             {
+                // if we don't lock the file, we can truncate it when opening
+                // otherwise we truncate the file after getting the lock
                 FileMode.CreateNew => OpenFlags.O_CREAT | OpenFlags.O_EXCL,
-                FileMode.Create => OpenFlags.O_CREAT | OpenFlags.O_TRUNC,
+                FileMode.Create => OpenFlags.O_CREAT | (UnixFileIOStrategy.DisableFileLocking ? OpenFlags.O_TRUNC : 0),
                 FileMode.Open => default,
                 FileMode.OpenOrCreate => OpenFlags.O_CREAT,
-                FileMode.Truncate => OpenFlags.O_TRUNC,
+                FileMode.Truncate => UnixFileIOStrategy.DisableFileLocking ? OpenFlags.O_TRUNC : 0,
                 FileMode.Append => OpenFlags.O_CREAT,
                 _ => throw new ArgumentOutOfRangeException(nameof(mode), "Invalid FileMode value."),
             };

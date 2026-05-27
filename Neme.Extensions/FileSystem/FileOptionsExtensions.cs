@@ -1,5 +1,7 @@
 ﻿#if !NETFRAMEWORK
 using Mono.Unix.Native;
+using System.Runtime.Versioning;
+
 #endif
 using Windows.Wdk.Storage.FileSystem;
 using Windows.Win32.Storage.FileSystem;
@@ -57,6 +59,7 @@ internal static class FileOptionsExtensions
         }
 
 #if !NETFRAMEWORK
+        [UnsupportedOSPlatform("windows")]
         public OpenFlags ToUnix()
         {
             // Translate some FileOptions; some just aren't supported, and others will be handled after calling open.

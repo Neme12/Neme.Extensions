@@ -1,5 +1,7 @@
 ﻿#if !NETFRAMEWORK
 using Mono.Unix.Native;
+using System.Runtime.Versioning;
+
 #endif
 using Windows.Win32.Storage.FileSystem;
 
@@ -36,15 +38,16 @@ internal static class FsFileAccessExtensions
         }
 
 #if !NETFRAMEWORK
+        [UnsupportedOSPlatform("windows")]
         public OpenFlags ToUnix()
         {
-            var rawAccess = access & (FsFileAccess.Read | FsFileAccess.Write);
+            var rawAccess = (RawFsFileAccess)access & (RawFsFileAccess.Read | RawFsFileAccess.Write);
 
             return rawAccess switch
             {
-                FsFileAccess.Read => OpenFlags.O_RDONLY,
-                FsFileAccess.ReadWrite => OpenFlags.O_RDWR,
-                FsFileAccess.Write => OpenFlags.O_WRONLY,
+                RawFsFileAccess.Read => OpenFlags.O_RDONLY,
+                RawFsFileAccess.Read | RawFsFileAccess.Write => OpenFlags.O_RDWR,
+                RawFsFileAccess.Write => OpenFlags.O_WRONLY,
                 _ => default,
             };
         }

@@ -1,5 +1,7 @@
 ﻿#if !NETFRAMEWORK
 using Mono.Unix.Native;
+using System.Runtime.Versioning;
+
 #endif
 using Windows.Win32.Storage.FileSystem;
 
@@ -16,6 +18,7 @@ internal static class FileShareExtensions
         }
 
 #if !NETFRAMEWORK
+        [UnsupportedOSPlatform("windows")]
         public OpenFlags ToUnix()
         {
             // Handle Inheritable, other FileShare flags are handled by Init

@@ -242,7 +242,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
             Stat pathStatus;
 
-            if (Syscall.stat(path, out pathStatus) < 0)
+            if (Syscall.stat(path, out pathStatus) != 0)
             {
                 // If the file was removed, re-open.
                 // Otherwise throw the error 'stat' gave us (assuming this is the
@@ -291,8 +291,60 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             using (var handleScope = handle.CreateScope())
                 result = Syscall.posix_fadvise((int)handleScope.Handle, 0, 0, fadv);
 
-            if (result < 0 && Stdlib.GetLastError() is var error and not Errno.ENOSYS) // just a hint.
+            if (result != 0 && Stdlib.GetLastError() is var error and not Errno.ENOSYS) // just a hint.
                 throw UnixMarshal.GetExceptionForUnixError(error, path);
+        }
+
+        if (mode is FileMode.Create or FileMode.Truncate && !DisableFileLocking)
+        {
+            // Truncate the file now if the file mode requires it. This ensures that the file only will be truncated
+            // if opened successfully.
+
+            int truncateResult;
+
+            using (var scope = handle.CreateScope())
+                truncateResult = Syscall.ftruncate((int)scope.Handle, 0);
+
+            if (truncateResult != 0)
+            {
+                var error = Stdlib.GetLastError();
+                if (error is not (Errno.EBADF or Errno.EINVAL))
+                {
+                    // We know the file descriptor is valid and we know the size argument to FTruncate is correct,
+                    // so if EBADF or EINVAL is returned, it means we're dealing with a special file that can't be
+                    // truncated.  Ignore the error in such cases; in all others, throw.
+                    throw UnixMarshal.GetExceptionForUnixError(error, path);
+                }
+            }
+        }
+
+        if (preallocationSize > 0)
+        {
+            int result;
+
+            using (var scope = handle.CreateScope())
+                result = Syscall.posix_fallocate((int)scope.Handle, 0, (ulong)preallocationSize);
+
+            if (result != 0)
+            {
+                var error = Stdlib.GetLastError();
+
+                // Only throw for errors that indicate there is not enough space.
+                if (error is Errno.EFBIG or Errno.ENOSPC)
+                {
+                    handle.Dispose();
+
+                    // Delete the file we've created.
+                    Debug.Assert(mode is FileMode.Create or FileMode.CreateNew);
+                    Syscall.unlink(path);
+
+                    throw new IOException(
+                        string.Format(error == Errno.EFBIG
+                                ? Strings.IO_FileTooLarge_Path_AllocationSize
+                                : Strings.IO_DiskFull_Path_AllocationSize,
+                            path, preallocationSize));
+                }
+            }
         }
 
         return true;
