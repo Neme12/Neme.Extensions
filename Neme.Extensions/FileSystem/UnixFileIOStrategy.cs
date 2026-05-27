@@ -430,10 +430,8 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
                     // Delete the file we've created.
                     Debug.Assert(mode is FileMode.Create or FileMode.CreateNew);
 
-#pragma warning disable RS0042
-                    using (var handleScope = handle?.CreateScope())
-                        Syscall.unlinkat((int?)handleScope?.Handle ?? 0, null!, AtFlags.AT_EMPTY_PATH);
-#pragma warning restore RS0042
+                    using (var handleScope = handle.CreateScope())
+                        Syscall.unlinkat((int)handleScope.Handle, null!, AtFlags.AT_EMPTY_PATH);
 
                     throw new IOException(
                         string.Format(error == Errno.EFBIG
