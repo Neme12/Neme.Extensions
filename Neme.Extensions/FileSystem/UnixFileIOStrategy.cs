@@ -1,14 +1,22 @@
-﻿#if !NETFRAMEWORK
+﻿// Portions of this file are derived from the .NET runtime:
+//   Licensed to the .NET Foundation under one or more agreements.
+//   The .NET Foundation licenses this file to you under the MIT license.
+// Source: https://github.com/dotnet/runtime/blob/v10.0.8/src/libraries/System.Private.CoreLib/src/Microsoft/Win32/SafeHandles/SafeFileHandle.Unix.cs
+
+#if !NETFRAMEWORK
 using Microsoft.Win32.SafeHandles;
+using Mono.Unix.Native;
 using Neme.Extensions.Contracts;
+using Neme.Extensions.Internal;
+using Neme.Extensions.Internal.Interop;
 using Neme.Extensions.InteropServices;
 using Neme.Extensions.Ownership;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-using Mono.Unix.Native;
 
 namespace Neme.Extensions.FileSystem;
 
@@ -25,6 +33,15 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         UnixFileMode.GroupWrite |
         UnixFileMode.OtherRead |
         UnixFileMode.OtherWrite;
+
+    internal static bool DisableFileLocking { get; } =
+#if NET5_0_OR_GREATER
+        OperatingSystem.IsBrowser() ||
+#endif
+#if NET8_0_OR_GREATER
+        OperatingSystem.IsWasi() || // #40065: Emscripten does not support file locking
+#endif
+        AppContextConfigHelper.GetBooleanConfig("System.IO.DisableFileLocking", "DOTNET_SYSTEM_IO_DISABLEFILELOCKING", defaultValue: false);
 
     [return: OwnershipTransfer]
     public override SafeFileHandle OpenHandle(string path, FsFileOptions options)
@@ -160,12 +177,43 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             }
         }
 
+// On previous .NET versions, there is no IsAsync property.
+// On .NET 11+, IsAsync is set to false as it reflects the actual state
+// of the file descriptor.
 #if NET6_0_OR_GREATER && !NET11_0_OR_GREATER
         if ((options & FileOptions.Asynchronous) != 0)
         {
             SafeFileHandleAccessors.SetIsAsync(handle, true);
         }
 #endif
+
+        var isLocked = false;
+
+        // Lock the file if requested via FileShare.  This is only advisory locking. FileShare.None implies an exclusive
+        // lock on the file and all other modes use a shared lock.  While this is not as granular as Windows, not mandatory,
+        // and not atomic with file opening, it's better than nothing.
+        Interop.Libc.LockOperations lockOperation = (share == FileShare.None) ? Interop.Libc.LockOperations.LOCK_EX : Interop.Libc.LockOperations.LOCK_SH;
+        if (!DisableFileLocking && !(isLocked = Interop.Libc.FLock(handle, lockOperation | Interop.Libc.LockOperations.LOCK_NB) >= 0))
+        {
+            // The only error we care about is EWOULDBLOCK, which indicates that the file is currently locked by someone
+            // else and we would block trying to access it.  Other errors, such as ENOTSUP (locking isn't supported) or
+            // EACCES (the file system doesn't allow us to lock), will only hamper FileStream's usage without providing value,
+            // given again that this is only advisory / best-effort.
+            var error = (Errno)Marshal.GetLastPInvokeError();
+            if (error == Errno.EWOULDBLOCK)
+                throw UnixMarshal.GetExceptionForUnixError(error, path);
+        }
+
+        if (isLocked)
+        {
+            // On previous .NET versions, there is no _isLocked field and
+            // SafeFileHandle disposal unlocks the file unconditionally.
+#if NET8_0_OR_GREATER
+            SafeFileHandleAccessors.IsLocked(handle) = true;
+#elif NET6_0_OR_GREATER
+            SafeFileHandleAccessors.IsLockedField.SetValue(handle, true);
+#endif
+        }
     }
 
     private static void FStatCheckIO(
@@ -193,7 +241,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 #if NET8_0_OR_GREATER && !NET11_0_OR_GREATER
         [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_IsAsync")]
         public static extern void SetIsAsync(SafeFileHandle handle, bool value);
-#elif NET6_0_OR_GREATER
+#elif NET6_0_OR_GREATER && !NET11_0_OR_GREATER
         private static readonly MethodInfo s_setIsAsyncMethod =
             typeof(SafeFileHandle).GetMethod(
                 "set_IsAsync",
@@ -206,6 +254,17 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             (SetIsAsyncDelegate)s_setIsAsyncMethod.CreateDelegate(typeof(SetIsAsyncDelegate));
 
         public delegate void SetIsAsyncDelegate(SafeFileHandle handle, bool value);
+#endif
+
+#if NET8_0_OR_GREATER
+        [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_isLocked")]
+        public static extern ref bool IsLocked(SafeFileHandle handle);
+#elif NET6_0_OR_GREATER
+        public static readonly FieldInfo IsLockedField =
+            typeof(SafeFileHandle).GetField(
+                "_isLocked",
+                BindingFlags.NonPublic | BindingFlags.Instance)
+            .NotNull();
 #endif
     }
 }
