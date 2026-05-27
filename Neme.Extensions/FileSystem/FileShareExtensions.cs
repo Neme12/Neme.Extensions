@@ -1,4 +1,6 @@
-﻿using Mono.Unix.Native;
+﻿#if !NETFRAMEWORK
+using Mono.Unix.Native;
+#endif
 using Windows.Win32.Storage.FileSystem;
 
 namespace Neme.Extensions.FileSystem;
@@ -13,10 +15,12 @@ internal static class FileShareExtensions
             return (FILE_SHARE_MODE)share;
         }
 
+#if !NETFRAMEWORK
         public OpenFlags ToUnix()
         {
             // Handle Inheritable, other FileShare flags are handled by Init
             return (share & FileShare.Inheritable) == 0 ? OpenFlags.O_CLOEXEC : default;
         }
+#endif
     }
 }

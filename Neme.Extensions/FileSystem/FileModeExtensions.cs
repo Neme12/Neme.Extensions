@@ -1,4 +1,6 @@
-﻿using Mono.Unix.Native;
+﻿#if !NETFRAMEWORK
+using Mono.Unix.Native;
+#endif
 using Windows.Wdk.Storage.FileSystem;
 using Windows.Win32.Storage.FileSystem;
 
@@ -36,6 +38,7 @@ internal static class FileModeExtensions
             };
         }
 
+#if !NETFRAMEWORK
         public OpenFlags ToUnix()
         {
             return mode switch
@@ -49,5 +52,6 @@ internal static class FileModeExtensions
                 _ => throw new ArgumentOutOfRangeException(nameof(mode), "Invalid FileMode value."),
             };
         }
+#endif
     }
 }

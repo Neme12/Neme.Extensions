@@ -1,4 +1,5 @@
-﻿using Mono.Unix.Native;
+﻿#if !NETFRAMEWORK
+using Mono.Unix.Native;
 using System.ComponentModel;
 using System.Runtime.Versioning;
 
@@ -83,3 +84,4 @@ internal static class UnixMarshal
         }
     }
 }
+#endif

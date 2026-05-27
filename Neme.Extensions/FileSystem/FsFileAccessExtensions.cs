@@ -1,4 +1,6 @@
-﻿using Mono.Unix.Native;
+﻿#if !NETFRAMEWORK
+using Mono.Unix.Native;
+#endif
 using Windows.Win32.Storage.FileSystem;
 
 namespace Neme.Extensions.FileSystem;
@@ -33,6 +35,7 @@ internal static class FsFileAccessExtensions
             return desiredAccess;
         }
 
+#if !NETFRAMEWORK
         public OpenFlags ToUnix()
         {
             var rawAccess = access & (FsFileAccess.Read | FsFileAccess.Write);
@@ -45,5 +48,6 @@ internal static class FsFileAccessExtensions
                 _ => default,
             };
         }
+#endif
     }
 }

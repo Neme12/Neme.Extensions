@@ -1,4 +1,6 @@
-﻿using Mono.Unix.Native;
+﻿#if !NETFRAMEWORK
+using Mono.Unix.Native;
+#endif
 using Windows.Wdk.Storage.FileSystem;
 using Windows.Win32.Storage.FileSystem;
 
@@ -54,6 +56,7 @@ internal static class FileOptionsExtensions
             return ntOptions;
         }
 
+#if !NETFRAMEWORK
         public OpenFlags ToUnix()
         {
             // Translate some FileOptions; some just aren't supported, and others will be handled after calling open.
@@ -65,5 +68,6 @@ internal static class FileOptionsExtensions
             // - WriteThrough: Handled here
             return (options & FileOptions.WriteThrough) != 0 ? OpenFlags.O_SYNC : default;
         }
+#endif
     }
 }

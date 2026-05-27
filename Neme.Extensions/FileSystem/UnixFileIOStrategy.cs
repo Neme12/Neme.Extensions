@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32.SafeHandles;
+﻿#if !NETFRAMEWORK
+using Microsoft.Win32.SafeHandles;
 using Neme.Extensions.Contracts;
 using Neme.Extensions.InteropServices;
 using Neme.Extensions.Ownership;
@@ -208,3 +209,5 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 #endif
     }
 }
+
+#endif

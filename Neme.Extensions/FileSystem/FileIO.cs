@@ -12,9 +12,13 @@ public static partial class FileIO
 #pragma warning disable CA1416 // Old Windows versions are not supported
 #pragma warning disable RS0042
     private static FileIOStrategy Strategy => LazyInitializer.EnsureInitialized(ref _strategyLazy, () =>
+#if NETFRAMEWORK
+        new WindowsFileIOStrategy())!;
+#else
         RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
             ? new WindowsFileIOStrategy()
             : new UnixFileIOStrategy())!;
+#endif
 #pragma warning restore RS0042
 #pragma warning restore CA1416
 
