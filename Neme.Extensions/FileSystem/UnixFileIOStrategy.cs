@@ -130,17 +130,17 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             share.ToUnix() |
             options.ToUnix();
 
-        using MutableDisposable<OwnedOrBorrowed<SafeFileHandle?>> mutableHandle =
-            MutableDisposable.Create(OwnedOrBorrowed.Create<SafeFileHandle?>(null));
+        using OwnedOrBorrowed<SafeFileHandle?> handle =
+            OwnedOrBorrowed.Create<SafeFileHandle?>(null);
 
         while (true)
         {
             var rawHandle = Syscall.open(fullPath!, openFlags, (FilePermissions)openPermissions);
-            mutableHandle.SetValue(OwnedOrBorrowed.Create<SafeFileHandle?>(new SafeFileHandle((nint)rawHandle, ownsHandle: true)));
+            handle.SetValue(new SafeFileHandle((nint)rawHandle, ownsHandle: true));
 
-            if (mutableHandle.Value.Value!.IsInvalid)
+            if (handle.Value!.IsInvalid)
             {
-                mutableHandle.Value.Dispose();
+                handle.Dispose();
 
                 var error = Stdlib.GetLastError();
                 if (error == Errno.EISDIR)
@@ -149,13 +149,13 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
                 throw UnixMarshal.GetExceptionForUnixError(error, fullPath);
             }
 
-            if (InitHandle(mutableHandle.Value.Value!, fullPath!, mode, access, share, options, attributes, preallocationSize))
+            if (InitHandle(handle.Value!, fullPath!, mode, access, share, options, attributes, preallocationSize))
             {
-                return mutableHandle.Value.Move()!;
+                return handle.Move()!;
             }
             else
             {
-                mutableHandle.Value.Dispose();
+                handle.Dispose();
             }
         }
     }
