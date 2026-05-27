@@ -26,6 +26,7 @@
   <ItemGroup>
 	<Using Include="Windows.Win32.PInvoke" Alias="Win32PInvoke" />
 	<Using Include="Windows.Wdk.PInvoke" Alias="WinNTPInvoke" />
+	<Using Include="Neme.Extensions.InterpolatedString" Static="true" />
   </ItemGroup>
 
   <ItemGroup>

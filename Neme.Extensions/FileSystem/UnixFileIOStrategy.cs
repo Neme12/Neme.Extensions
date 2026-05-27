@@ -68,7 +68,20 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     [return: OwnershipTransfer]
     public override SafeFileHandle OpenHandleAt([Borrow] SafeFileHandle? rootDirectory, string? path, FsFileOptions options)
     {
-        throw new NotImplementedException();
+        Debug.Assert(rootDirectory is not null || path is not null);
+        Debug.Assert(rootDirectory is null || IsValidFileHandle(rootDirectory));
+        Debug.Assert(path is null || IsValidPath(path));
+
+        return OpenAt(
+            rootDirectory,
+            path,
+            options.Mode,
+            options.Access,
+            options.Share,
+            options.Options,
+            options.Attributes,
+            options.UnixCreateMode ?? DefaultCreateMode,
+            options.PreallocationSize);
     }
 
     [return: OwnershipTransfer]
@@ -149,7 +162,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
                 throw UnixMarshal.GetExceptionForUnixError(error, fullPath);
             }
 
-            if (InitHandle(handle.Value!, fullPath!, mode, access, share, options, attributes, preallocationSize))
+            if (InitHandle(null, handle.Value!, fullPath, mode, access, share, options, attributes, preallocationSize))
             {
                 return handle.Move()!;
             }
@@ -160,9 +173,78 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         }
     }
 
+    private static SafeFileHandle OpenAt(
+        SafeFileHandle? rootHandle,
+        string? path,
+        FileMode mode,
+        FsFileAccess access,
+        FileShare share,
+        FileOptions options,
+        FileAttributes attributes,
+        UnixFileMode openPermissions,
+        long preallocationSize)
+#pragma warning disable RS0042
+    {
+        Debug.Assert(rootHandle is not null || path is not null);
+
+        if (rootHandle is null)
+            path = Path.GetFullPath(path!);
+
+        var openFlags =
+            mode.ToUnix() |
+            access.ToUnix() |
+            share.ToUnix() |
+            options.ToUnix();
+
+        using OwnedOrBorrowed<SafeFileHandle?> handle =
+            OwnedOrBorrowed.Create<SafeFileHandle?>(null);
+
+        using var rootScope = rootHandle?.CreateScope();
+
+        while (true)
+        {
+            int rawHandle;
+
+            if (path is not null)
+            {
+                rawHandle = Syscall.openat((int?)rootScope?.Handle ?? 0, path ?? "", openFlags, (FilePermissions)openPermissions);
+            }
+            else
+            {
+                rootHandle = null;
+                path = Invariant($"/proc/self/fd/{rootScope!.Value.Handle}");
+                rawHandle = Syscall.open(path, openFlags, (FilePermissions)openPermissions);
+            }
+
+            handle.SetValue(new SafeFileHandle((nint)rawHandle, ownsHandle: true));
+
+            if (handle.Value!.IsInvalid)
+            {
+                handle.Dispose();
+
+                var error = Stdlib.GetLastError();
+                if (error == Errno.EISDIR)
+                    error = Errno.EACCES;
+
+                throw UnixMarshal.GetExceptionForUnixError(error, path);
+            }
+
+            if (InitHandle(rootHandle, handle.Value!, path, mode, access, share, options, attributes, preallocationSize))
+            {
+                return handle.Move()!;
+            }
+            else
+            {
+                handle.Dispose();
+            }
+        }
+    }
+#pragma warning restore RS0042
+
     private static bool InitHandle(
+        SafeFileHandle? rootHandle,
         SafeFileHandle handle,
-        string path,
+        string? path,
         FileMode mode,
         FsFileAccess access,
         FileShare share,
@@ -241,8 +323,19 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             FStatCheckIO(handle, path, ref status, ref statusHasValue);
 
             Stat pathStatus;
+            int result;
 
-            if (Syscall.stat(path, out pathStatus) != 0)
+            if (rootHandle is not null)
+            {
+                using (var rootScope = rootHandle.CreateScope())
+                    result = Syscall.fstatat((int)rootScope.Handle, path!, out pathStatus, 0);
+            }
+            else
+            {
+                result = Syscall.stat(path.NotNull(), out pathStatus);
+            }
+
+            if (result != 0)
             {
                 // If the file was removed, re-open.
                 // Otherwise throw the error 'stat' gave us (assuming this is the
@@ -336,7 +429,11 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
                     // Delete the file we've created.
                     Debug.Assert(mode is FileMode.Create or FileMode.CreateNew);
-                    Syscall.unlink(path);
+
+#pragma warning disable RS0042
+                    using (var handleScope = handle?.CreateScope())
+                        Syscall.unlinkat((int?)handleScope?.Handle ?? 0, null!, AtFlags.AT_EMPTY_PATH);
+#pragma warning restore RS0042
 
                     throw new IOException(
                         string.Format(error == Errno.EFBIG
@@ -352,7 +449,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
     private static void FStatCheckIO(
         SafeFileHandle handle,
-        string path,
+        string? path,
         ref Stat status,
         ref bool statusHasValue)
     {
