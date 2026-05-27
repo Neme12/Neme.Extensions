@@ -129,26 +129,38 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             access.ToUnix() |
             share.ToUnix() |
             options.ToUnix();
-        
-        var rawHandle = Syscall.open(fullPath!, openFlags, (FilePermissions)openPermissions);
-        using var handle = OwnedOrBorrowed.Create(new SafeFileHandle((nint)rawHandle, ownsHandle: true));
 
-        if (handle.Value.IsInvalid)
+        using MutableDisposable<OwnedOrBorrowed<SafeFileHandle?>> mutableHandle =
+            MutableDisposable.Create(OwnedOrBorrowed.Create<SafeFileHandle?>(null));
+
+        while (true)
         {
-            handle.Dispose();
+            var rawHandle = Syscall.open(fullPath!, openFlags, (FilePermissions)openPermissions);
+            mutableHandle.SetValue(OwnedOrBorrowed.Create<SafeFileHandle?>(new SafeFileHandle((nint)rawHandle, ownsHandle: true)));
 
-            var error = Stdlib.GetLastError();
-            if (error == Errno.EISDIR)
-                error = Errno.EACCES;
+            if (mutableHandle.Value.Value!.IsInvalid)
+            {
+                mutableHandle.Value.Dispose();
 
-            throw UnixMarshal.GetExceptionForUnixError(error, fullPath);
+                var error = Stdlib.GetLastError();
+                if (error == Errno.EISDIR)
+                    error = Errno.EACCES;
+
+                throw UnixMarshal.GetExceptionForUnixError(error, fullPath);
+            }
+
+            if (InitHandle(mutableHandle.Value.Value!, fullPath!, mode, access, share, options, attributes, preallocationSize))
+            {
+                return mutableHandle.Value.Move()!;
+            }
+            else
+            {
+                mutableHandle.Value.Dispose();
+            }
         }
-
-        InitHandle(handle.Value, fullPath!, mode, access, share, options, attributes, preallocationSize);
-        return handle.Move();
     }
 
-    private static void InitHandle(
+    private static bool InitHandle(
         SafeFileHandle handle,
         string path,
         FileMode mode,
@@ -214,6 +226,43 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             SafeFileHandleAccessors.IsLockedField.SetValue(handle, true);
 #endif
         }
+
+        // On Windows, DeleteOnClose happens when all kernel handles to the file are closed.
+        // Unix kernels don't have this feature, and .NET deletes the file when the Handle gets disposed.
+        // When the file is opened with an exclusive lock, we can use it to check the file at the path
+        // still matches the file we've opened.
+        // When the delete is performed by another .NET Handle, it holds the lock during the delete.
+        // Since we've just obtained the lock, the file will already be removed/replaced.
+        // We limit performing this check to cases where our file was opened with DeleteOnClose with
+        // a mode of OpenOrCreate.
+        if (isLocked && (options & FileOptions.DeleteOnClose) != 0 &&
+            share == FileShare.None && mode == FileMode.OpenOrCreate)
+        {
+            FStatCheckIO(handle, path, ref status, ref statusHasValue);
+
+            Stat pathStatus;
+
+            if (Syscall.stat(path, out pathStatus) < 0)
+            {
+                // If the file was removed, re-open.
+                // Otherwise throw the error 'stat' gave us (assuming this is the
+                // error 'open' will give us if we'd call it now).
+                var error = Stdlib.GetLastError();
+                if (error == Errno.ENOENT)
+                    return false;
+
+                throw UnixMarshal.GetExceptionForUnixError(error, path);
+            }
+
+            if (pathStatus.st_ino != status.st_ino ||
+                pathStatus.st_dev != status.st_dev)
+            {
+                // The file was replaced, re-open
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static void FStatCheckIO(
