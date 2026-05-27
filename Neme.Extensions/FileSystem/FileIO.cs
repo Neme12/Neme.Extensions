@@ -270,7 +270,7 @@ public static partial class FileIO
         return Strategy.GetFileId(file);
     }
 
-    [return: OwnershipTransfer]
+    [return: OwnershipTransfer(Unless = nameof(leaveOpen))]
     public static CheckedFileStream CreateFileStream(
         [OwnershipTransfer] SafeFileHandle file,
         FsFileOptions options,

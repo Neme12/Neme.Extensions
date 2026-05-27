@@ -190,7 +190,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
     private static class SafeFileHandleAccessors
     {
-#if NET8_0_OR_GREATER
+#if NET8_0_OR_GREATER && !NET11_0_OR_GREATER
         [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_IsAsync")]
         public static extern void SetIsAsync(SafeFileHandle handle, bool value);
 #elif NET6_0_OR_GREATER
