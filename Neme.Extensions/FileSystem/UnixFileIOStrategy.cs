@@ -291,9 +291,8 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             using (var handleScope = handle.CreateScope())
                 result = Syscall.posix_fadvise((int)handleScope.Handle, 0, 0, fadv);
 
-            Errno error;
-            if (result < 0 && (error = Stdlib.GetLastError()) != Errno.ENOSYS) // just a hint.
-                throw UnixMarshal.GetExceptionForUnixError((Errno)result, path);
+            if (result < 0 && Stdlib.GetLastError() is var error and not Errno.ENOSYS) // just a hint.
+                throw UnixMarshal.GetExceptionForUnixError(error, path);
         }
 
         return true;
