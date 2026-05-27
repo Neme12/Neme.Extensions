@@ -24,6 +24,17 @@ public struct AsyncOwnedOrBorrowed<T>(T value, bool ownsValue = true) : IAsyncDi
         }
     }
 
+    public async ValueTask SetValueAsync(T newValue, bool ownsNewValue = true)
+    {
+        ObjectDisposedException.ThrowIf(_state == State.Disposed, this);
+
+        if (_state == State.Owned && _value is { } value)
+            await value.DisposeAsync();
+
+        _value = newValue;
+        _state = ownsNewValue ? State.Owned : State.Borrowed;
+    }
+
     public T Move()
     {
         ObjectDisposedException.ThrowIf(_state == State.Disposed, this);
