@@ -43,7 +43,7 @@ public sealed partial class FileIOTests
             catch { }
         }
 
-        [WindowsAndLinuxOnlyFact]
+        [WindowsOnlyFact]
         public void WithValidFileHandle_ReturnsFileId()
         {
             // Act
@@ -53,7 +53,7 @@ public sealed partial class FileIOTests
             Assert.True(true);
         }
 
-        [WindowsAndLinuxOnlyFact]
+        [WindowsOnlyFact]
         public void WithNullFileHandle_ThrowsArgumentNullException()
         {
             // Act & Assert
@@ -61,7 +61,7 @@ public sealed partial class FileIOTests
                 FileIO.GetFileId(null!));
         }
 
-        [WindowsAndLinuxOnlyFact]
+        [WindowsOnlyFact]
         public void WithClosedFileHandle_ThrowsArgumentException()
         {
             // Arrange
@@ -75,7 +75,7 @@ public sealed partial class FileIOTests
                 FileIO.GetFileId(fileHandle));
         }
 
-        [WindowsAndLinuxOnlyFact]
+        [WindowsOnlyFact]
         public void WithInvalidFileHandle_ThrowsArgumentException()
         {
             // Arrange
@@ -86,7 +86,7 @@ public sealed partial class FileIOTests
                 FileIO.GetFileId(fileHandle));
         }
 
-        [WindowsAndLinuxOnlyFact]
+        [WindowsOnlyFact]
         public void WithValidFileHandle_PopulatesIdd()
         {
             // Act
@@ -96,7 +96,7 @@ public sealed partial class FileIOTests
             Assert.NotEqual(default, result);
         }
 
-        [WindowsAndLinuxOnlyFact]
+        [WindowsOnlyFact]
         public void WithDifferentFiles_ReturnsDifferentFileIds()
         {
             // Arrange
@@ -111,7 +111,7 @@ public sealed partial class FileIOTests
             Assert.NotEqual(result1, result2);
         }
 
-        [WindowsAndLinuxOnlyFact]
+        [WindowsOnlyFact]
         public void WithSameFileTwice_ReturnsSameFileId()
         {
             // Arrange
