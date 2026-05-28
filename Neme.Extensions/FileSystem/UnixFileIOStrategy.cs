@@ -133,7 +133,9 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             var fileHeader = AllocateFileInfo<Interop.Libc.FileHandleHeader>(stackalloc byte[sizeof(Interop.Libc.FileHandleHeader) + 128], out var fileInfoBuffer);
             fileHeader.handle_bytes = 128;
 
-            var result = Interop.Libc.NameToHandleAt((int)fileScope.Handle, "", &fileHeader, out var mountId, Interop.Libc.NameToHandleAtFlags.AT_EMPTY_PATH);
+            var path = LinuxFdPathPrefix + fileScope.Handle.ToStringInvariant();
+
+            var result = Interop.Libc.NameToHandleAt(0, path, &fileHeader, out var mountId, Interop.Libc.NameToHandleAtFlags.None);
             if (result != 0)
             {
                 var error = (Errno)Marshal.GetLastPInvokeError();
