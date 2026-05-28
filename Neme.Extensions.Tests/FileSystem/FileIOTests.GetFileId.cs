@@ -43,7 +43,7 @@ public sealed partial class FileIOTests
             catch { }
         }
 
-        [WindowsOnlyFact]
+        [WindowsAndLinuxOnlyFact]
         public void WithValidFileHandle_ReturnsFileId()
         {
             // Act
@@ -53,7 +53,7 @@ public sealed partial class FileIOTests
             Assert.True(true);
         }
 
-        [WindowsOnlyFact]
+        [WindowsAndLinuxOnlyFact]
         public void WithNullFileHandle_ThrowsArgumentNullException()
         {
             // Act & Assert
@@ -61,7 +61,7 @@ public sealed partial class FileIOTests
                 FileIO.GetFileId(null!));
         }
 
-        [WindowsOnlyFact]
+        [WindowsAndLinuxOnlyFact]
         public void WithClosedFileHandle_ThrowsArgumentException()
         {
             // Arrange
@@ -75,7 +75,7 @@ public sealed partial class FileIOTests
                 FileIO.GetFileId(fileHandle));
         }
 
-        [WindowsOnlyFact]
+        [WindowsAndLinuxOnlyFact]
         public void WithInvalidFileHandle_ThrowsArgumentException()
         {
             // Arrange
@@ -86,37 +86,17 @@ public sealed partial class FileIOTests
                 FileIO.GetFileId(fileHandle));
         }
 
-        [WindowsOnlyFact]
-        public void WithValidFileHandle_PopulatesVolumeSerialNumber()
+        [WindowsAndLinuxOnlyFact]
+        public void WithValidFileHandle_PopulatesIdd()
         {
             // Act
             var result = FileIO.GetFileId(_tempFileHandle);
 
             // Assert
-            Assert.NotEqual(0UL, result.VolumeSerialNumber);
+            Assert.NotEqual(default, result);
         }
 
-        [WindowsOnlyFact]
-        public void WithValidFileHandle_PopulatesFileIdLow()
-        {
-            // Act
-            var result = FileIO.GetFileId(_tempFileHandle);
-
-            // Assert - FileIdLow should be set (may be 0 but the field should be populated)
-            Assert.True(result.FileIdLow >= 0);
-        }
-
-        [WindowsOnlyFact]
-        public void WithValidFileHandle_PopulatesFileIdHigh()
-        {
-            // Act
-            var result = FileIO.GetFileId(_tempFileHandle);
-
-            // Assert - FileIdHigh should be set (may be 0 but the field should be populated)
-            Assert.True(result.FileIdHigh >= 0);
-        }
-
-        [WindowsOnlyFact]
+        [WindowsAndLinuxOnlyFact]
         public void WithDifferentFiles_ReturnsDifferentFileIds()
         {
             // Arrange
@@ -131,7 +111,7 @@ public sealed partial class FileIOTests
             Assert.NotEqual(result1, result2);
         }
 
-        [WindowsOnlyFact]
+        [WindowsAndLinuxOnlyFact]
         public void WithSameFileTwice_ReturnsSameFileId()
         {
             // Arrange

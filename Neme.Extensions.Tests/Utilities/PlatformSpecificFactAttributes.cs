@@ -24,6 +24,30 @@ internal sealed class WindowsOnlyTheoryAttribute : TheoryAttribute
     }
 }
 
+internal sealed class WindowsAndLinuxOnlyFactAttribute : FactAttribute
+{
+    public WindowsAndLinuxOnlyFactAttribute()
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && 
+            !RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            Skip = "This test only runs on Windows or Linux.";
+        }
+    }
+}
+
+internal sealed class WindowsAndLinuxOnlyTheoryAttribute : TheoryAttribute
+{
+    public WindowsAndLinuxOnlyTheoryAttribute()
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && 
+            !RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            Skip = "This test only runs on Windows or Linux.";
+        }
+    }
+}
+
 internal sealed class LinuxOnlyFactAttribute : FactAttribute
 {
     public LinuxOnlyFactAttribute()

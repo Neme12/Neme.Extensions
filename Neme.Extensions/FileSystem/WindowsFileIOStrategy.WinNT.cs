@@ -25,15 +25,17 @@ internal sealed partial class WindowsFileIOStrategy
     {
         Debug.Assert(IsValidFileId(fileId));
 
-        FileIOEventSource.Log.OpeningFileById(fileId.VolumeSerialNumber, fileId.FileIdLow, fileId.FileIdHigh);
+        var windowsFileId = fileId.WindowsFileId;
+
+        FileIOEventSource.Log.OpeningFileById(windowsFileId.VolumeSerialNumber, windowsFileId.FileIdLow, windowsFileId.FileIdHigh);
 
         // Find and open the volume with the matching serial number
         // Do not dispose of the volume handle itself as it's from a cache
-        using var volumeHandle = FindAndOpenVolumeBySerialNumber(fileId.VolumeSerialNumber).CreateScope();
+        using var volumeHandle = FindAndOpenVolumeBySerialNumber(windowsFileId.VolumeSerialNumber).CreateScope();
 
         var fileIdBuffer = stackalloc ulong[2];
-        fileIdBuffer[0] = fileId.FileIdLow;
-        fileIdBuffer[1] = fileId.FileIdHigh;
+        fileIdBuffer[0] = windowsFileId.FileIdLow;
+        fileIdBuffer[1] = windowsFileId.FileIdHigh;
 
         UNICODE_STRING unicodeString = new()
         {
@@ -68,7 +70,7 @@ internal sealed partial class WindowsFileIOStrategy
         if (status.SeverityCode != NTSTATUS.Severity.Success)
             throw WinNtMarshal.GetExceptionForNtStatus(status);
 
-        FileIOEventSource.Log.FileOpenedById(fileId.VolumeSerialNumber, fileId.FileIdLow, fileId.FileIdHigh);
+        FileIOEventSource.Log.FileOpenedById(windowsFileId.VolumeSerialNumber, windowsFileId.FileIdLow, windowsFileId.FileIdHigh);
 
         return new SafeFileHandle(handle, ownsHandle: true);
     }

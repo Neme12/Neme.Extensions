@@ -17,6 +17,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using Windows.Win32;
 
 namespace Neme.Extensions.FileSystem;
 
@@ -42,6 +43,9 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         OperatingSystem.IsWasi() || // #40065: Emscripten does not support file locking
 #endif
         AppContextConfigHelper.GetBooleanConfig("System.IO.DisableFileLocking", "DOTNET_SYSTEM_IO_DISABLEFILELOCKING", defaultValue: false);
+
+    private const string LinuxFdPathPrefix = "/proc/self/fd/";
+    private const string MacFdPathPrefix = "/dev/fd/";
 
     [return: OwnershipTransfer]
     public override SafeFileHandle OpenHandle(string path, FsFileOptions options)
@@ -120,9 +124,52 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         throw new NotImplementedException();
     }
 
-    public override FsFileId GetFileId([Borrow] SafeFileHandle file)
+    public override unsafe FsFileId GetFileId([Borrow] SafeFileHandle file)
     {
-        throw new NotImplementedException();
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            using var fileScope = file.CreateScope();
+
+            var fileHeader = AllocateFileInfo<Interop.Libc.FileHandleHeader>(stackalloc byte[sizeof(Interop.Libc.FileHandleHeader) + 128], out var fileInfoBuffer);
+            fileHeader.handle_bytes = 128;
+
+            var result = Interop.Libc.NameToHandleAt((int)fileScope.Handle, "", &fileHeader, out var mountId, Interop.Libc.NameToHandleAtFlags.AT_EMPTY_PATH);
+            if (result != 0)
+            {
+                var error = (Errno)Marshal.GetLastPInvokeError();
+                throw UnixMarshal.GetExceptionForUnixError(error);
+            }
+
+            var fileIdBytes = fileInfoBuffer.Slice(sizeof(Interop.Libc.FileHandleHeader), (int)fileHeader.handle_bytes);
+
+            FsFileId.InlineByteArray array = default;
+
+#if NET8_0_OR_GREATER
+            fileIdBytes.CopyTo(MemoryMarshal.CreateSpan(ref array.byte0, fileIdBytes.Length));
+#else
+            fileIdBytes.CopyTo(new Span<byte>(array.bytes, fileIdBytes.Length));
+#endif
+
+            var linuxFileId = new FsFileId.LinuxId(mountId, fileHeader.handle_type, array, (byte)fileHeader.handle_bytes);
+            return FsFileId.FromLinuxId(linuxFileId);
+        }
+        else
+        {
+            throw new PlatformNotSupportedException();
+        }
+    }
+
+    private static unsafe ref T AllocateFileInfo<T>(Span<byte> buffer, out Span<byte> fileInfoBuffer) where T : unmanaged
+    {
+        Debug.Assert(buffer.Length >= sizeof(T));
+
+        fileInfoBuffer = buffer;
+
+#if NETCOREAPP3_0_OR_GREATER
+        return ref MemoryMarshal.AsRef<T>(buffer);
+#else
+        return ref Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(buffer));
+#endif
     }
 
     private static SafeFileHandle Open(
@@ -213,8 +260,8 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             {
                 rootHandle = null;
                 path = RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
-                    ? Invariant($"/dev/fd/{rootScope!.Value.Handle}")
-                    : Invariant($"/proc/self/fd/{rootScope!.Value.Handle}");
+                    ? MacFdPathPrefix + rootScope!.Value.Handle.ToStringInvariant()
+                    : LinuxFdPathPrefix + rootScope!.Value.Handle.ToStringInvariant();
                 rawHandle = Syscall.open(path, openFlags, (FilePermissions)openPermissions);
             }
 

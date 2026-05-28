@@ -196,7 +196,8 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
             fileIdLow = Unsafe.AsRef<ulong>(idBuffer);
         }
 
-        return new FsFileId(fileInfo.VolumeSerialNumber, fileIdHigh, fileIdLow);
+        var windowsFileId = new FsFileId.WindowsId(fileInfo.VolumeSerialNumber, fileIdHigh, fileIdLow);
+        return FsFileId.FromWindowsId(windowsFileId);
     }
 
     private static Instant InstantFromFileTime(FILETIME fileTime)

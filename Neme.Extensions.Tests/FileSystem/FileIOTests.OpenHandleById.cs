@@ -157,10 +157,10 @@ public sealed partial class FileIOTests
         {
             // Arrange - Get a valid volume serial number but use random file IDs
             var validFileId = FileIO.GetFileId(_tempFileHandle);
-            var randomFileId = new FsFileId(
-                volumeSerialNumber: validFileId.VolumeSerialNumber,
+            var randomFileId = FsFileId.FromWindowsId(new FsFileId.WindowsId(
+                volumeSerialNumber: validFileId.WindowsFileId.VolumeSerialNumber,
                 fileIdHigh: 0xDEADBEEFDEADBEEF,
-                fileIdLow: 0xCAFEBABECAFEBABE);
+                fileIdLow: 0xCAFEBABECAFEBABE));
             var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read);
 
             // Act & Assert
@@ -172,10 +172,10 @@ public sealed partial class FileIOTests
         public void WithNonExistentVolumeSerial_ThrowsDirectoryNotFoundException()
         {
             // Arrange - Use a completely invalid volume serial number and random file IDs
-            var randomFileId = new FsFileId(
+            var randomFileId = FsFileId.FromWindowsId(new FsFileId.WindowsId(
                 volumeSerialNumber: 0xFFFFFFFFFFFFFFFF,
                 fileIdHigh: 0xDEADBEEFDEADBEEF,
-                fileIdLow: 0xCAFEBABECAFEBABE);
+                fileIdLow: 0xCAFEBABECAFEBABE));
             var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read);
 
             // Act & Assert
@@ -268,10 +268,10 @@ public sealed partial class FileIOTests
             // Arrange - Get a valid volume serial number but use random file IDs
             using var tempDirHandle = OpenDirectoryHandle();
             var validDirectoryId = FileIO.GetFileId(tempDirHandle);
-            var randomDirectoryId = new FsFileId(
-                volumeSerialNumber: validDirectoryId.VolumeSerialNumber,
+            var randomDirectoryId = FsFileId.FromWindowsId(new FsFileId.WindowsId(
+                volumeSerialNumber: validDirectoryId.WindowsFileId.VolumeSerialNumber,
                 fileIdHigh: 0xDEADBEEFDEADBEEF,
-                fileIdLow: 0xCAFEBABECAFEBABE);
+                fileIdLow: 0xCAFEBABECAFEBABE));
             var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read)
             {
                 Attributes = FileAttributes.Directory
