@@ -43,7 +43,7 @@ public sealed partial class FileIOTests
             catch { }
         }
 
-        [WindowsOnlyFact]
+        [WindowsAndLinuxOnlyFact]
         public void WithValidFileHandle_ReturnsFileId()
         {
             // Act
@@ -53,7 +53,7 @@ public sealed partial class FileIOTests
             Assert.True(true);
         }
 
-        [WindowsOnlyFact]
+        [WindowsAndLinuxOnlyFact]
         public void WithNullFileHandle_ThrowsArgumentNullException()
         {
             // Act & Assert
@@ -61,7 +61,7 @@ public sealed partial class FileIOTests
                 FileIO.GetFileId(null!));
         }
 
-        [WindowsOnlyFact]
+        [WindowsAndLinuxOnlyFact]
         public void WithClosedFileHandle_ThrowsArgumentException()
         {
             // Arrange
@@ -75,19 +75,19 @@ public sealed partial class FileIOTests
                 FileIO.GetFileId(fileHandle));
         }
 
-        [WindowsOnlyFact]
+        [WindowsAndLinuxOnlyFact]
         public void WithInvalidFileHandle_ThrowsArgumentException()
         {
             // Arrange
-            var fileHandle = new SafeFileHandle(IntPtr.Zero, false);
+            var fileHandle = new SafeFileHandle((nint)(-1), false);
 
             // Act & Assert
             Assert.Throws<ArgumentException>(() =>
                 FileIO.GetFileId(fileHandle));
         }
 
-        [WindowsOnlyFact]
-        public void WithValidFileHandle_PopulatesIdd()
+        [WindowsAndLinuxOnlyFact]
+        public void WithValidFileHandle_PopulatesId()
         {
             // Act
             var result = FileIO.GetFileId(_tempFileHandle);
@@ -96,7 +96,7 @@ public sealed partial class FileIOTests
             Assert.NotEqual(default, result);
         }
 
-        [WindowsOnlyFact]
+        [WindowsAndLinuxOnlyFact]
         public void WithDifferentFiles_ReturnsDifferentFileIds()
         {
             // Arrange
@@ -111,7 +111,7 @@ public sealed partial class FileIOTests
             Assert.NotEqual(result1, result2);
         }
 
-        [WindowsOnlyFact]
+        [WindowsAndLinuxOnlyFact]
         public void WithSameFileTwice_ReturnsSameFileId()
         {
             // Arrange

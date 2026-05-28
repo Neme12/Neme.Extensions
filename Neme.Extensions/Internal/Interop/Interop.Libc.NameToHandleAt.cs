@@ -25,10 +25,10 @@ internal static partial class Interop
 
 #if NET7_0_OR_GREATER
         [LibraryImport(Libraries.libc, EntryPoint = "name_to_handle_at", StringMarshalling = StringMarshalling.Utf8, SetLastError = true)]
-        internal static unsafe partial int NameToHandleAt(int dirfd, string pathname, FileHandleHeader* handle, out int mount_id, NameToHandleAtFlags flags);
+        internal static unsafe partial int NameToHandleAt(int dirfd, string pathname, ref FileHandleHeader handle, out int mount_id, NameToHandleAtFlags flags);
 #else
         [DllImport(Libraries.libc, EntryPoint = "name_to_handle_at", SetLastError = true)]
-        internal static unsafe extern int NameToHandleAt(int dirfd, [MarshalAs(UnmanagedTypePolyfill.LPUTF8Str)] string pathname, FileHandleHeader* handle, out int mount_id, NameToHandleAtFlags flags);
+        internal static unsafe extern int NameToHandleAt(int dirfd, [MarshalAs(UnmanagedTypePolyfill.LPUTF8Str)] string pathname, ref FileHandleHeader handle, out int mount_id, NameToHandleAtFlags flags);
 #endif
     }
 }

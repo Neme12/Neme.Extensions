@@ -11,6 +11,7 @@ using Neme.Extensions.Internal;
 using Neme.Extensions.Internal.Interop;
 using Neme.Extensions.InteropServices;
 using Neme.Extensions.Ownership;
+using Neme.Extensions.Win32.InteropServices;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
@@ -130,12 +131,12 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         {
             using var fileScope = file.CreateScope();
 
-            var fileHeader = AllocateFileInfo<Interop.Libc.FileHandleHeader>(stackalloc byte[sizeof(Interop.Libc.FileHandleHeader) + 128], out var fileInfoBuffer);
+            ref var fileHeader = ref AllocateFileInfo<Interop.Libc.FileHandleHeader>(stackalloc byte[sizeof(Interop.Libc.FileHandleHeader) + 128], out var fileInfoBuffer);
             fileHeader.handle_bytes = 128;
 
             var path = LinuxFdPathPrefix + fileScope.Handle.ToStringInvariant();
 
-            var result = Interop.Libc.NameToHandleAt(0, path, &fileHeader, out var mountId, Interop.Libc.NameToHandleAtFlags.None);
+            var result = Interop.Libc.NameToHandleAt(0, path, ref fileHeader, out var mountId, Interop.Libc.NameToHandleAtFlags.None);
             if (result != 0)
             {
                 var error = (Errno)Marshal.GetLastPInvokeError();
