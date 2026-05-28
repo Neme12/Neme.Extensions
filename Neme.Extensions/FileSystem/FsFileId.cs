@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Neme.Extensions.FileSystem;
 
@@ -99,6 +100,14 @@ public readonly record struct FsFileId : IEquatable<FsFileId>
         return hashCode.ToHashCode();
     }
 
+    public override string ToString() =>
+        _fileIdKind switch
+        {
+            FileIdKind.Windows => _windowsFileId.ToString(),
+            FileIdKind.Linux => _linuxFileId.ToString(),
+            _ => throw new UnreachableException(),
+        };
+
     [StructLayout(LayoutKind.Sequential)]
     internal readonly record struct WindowsId
     {
@@ -112,6 +121,9 @@ public readonly record struct FsFileId : IEquatable<FsFileId>
             FileIdHigh = fileIdHigh;
             FileIdLow = fileIdLow;
         }
+
+        public override string ToString() =>
+            $"v1:w:{VolumeSerialNumber:x16}:{FileIdHigh:x16}:{FileIdLow:x16}";
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -132,6 +144,20 @@ public readonly record struct FsFileId : IEquatable<FsFileId>
             FileType = fileType;
             Buffer = buffer;
             BufferLength = bufferLength;
+        }
+
+        public override string ToString()
+        {
+            var builder = new StringBuilder($"v1:l:{(uint)MountId:x8}:{(uint)FileType:x8}:");
+            builder.EnsureCapacity(builder.Length + (BufferLength * 2));
+
+            Buffer.WithSpan(static (span, state) =>
+            {
+                for (int i = 0; i < state.Length; i++)
+                    state.Builder.Append($"{span[i]:x2}");
+            }, (Builder: builder, Length: (int)BufferLength));
+
+            return builder.ToString();
         }
     }
 
