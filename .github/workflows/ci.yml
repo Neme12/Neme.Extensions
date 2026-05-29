@@ -53,29 +53,35 @@ jobs:
     - name: Build
       run: dotnet build --configuration ${{ matrix.configuration }}
 
-    - name: Test .NET 10 (Linux)
-      if: runner.os == 'Linux'
-      run: sudo -E dotnet test --framework net10.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net10.trx"
-
     - name: Test .NET 10
-      if: runner.os != 'Linux'
-      run: dotnet test --framework net10.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net10.trx"
-
-    - name: Test .NET 8 (Linux)
-      if: runner.os == 'Linux'
-      run: sudo -E dotnet test --framework net8.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net8.trx"
+      shell: pwsh
+      run: |
+        if ($env:RUNNER_OS -eq 'Linux') {
+          sudo -E dotnet test --framework net10.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net10.trx"
+        }
+        else {
+          dotnet test --framework net10.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net10.trx"
+        }
 
     - name: Test .NET 8
-      if: runner.os != 'Linux'
-      run: dotnet test --framework net8.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net8.trx"
-
-    - name: Test .NET 6 (Linux)
-      if: runner.os == 'Linux'
-      run: sudo -E dotnet test --framework net6.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net6.trx"
+      shell: pwsh
+      run: |
+        if ($env:RUNNER_OS -eq 'Linux') {
+          sudo -E dotnet test --framework net8.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net8.trx"
+        }
+        else {
+          dotnet test --framework net8.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net8.trx"
+        }
 
     - name: Test .NET 6
-      if: runner.os != 'Linux'
-      run: dotnet test --framework net6.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net6.trx"
+      shell: pwsh
+      run: |
+        if ($env:RUNNER_OS -eq 'Linux') {
+          sudo -E dotnet test --framework net6.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net6.trx"
+        }
+        else {
+          dotnet test --framework net6.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net6.trx"
+        }
 
     - name: Test .NET Framework 4.8
       if: runner.os == 'Windows'
