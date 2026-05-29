@@ -8,7 +8,7 @@ public sealed partial class FileIOTests
     [Collection(nameof(FileIOTestCollection))]
     public sealed class GetPath_SafeFileHandle
     {
-        [WindowsOnlyFact]
+        [Fact]
         public void GetPath_WithValidFileHandle_ReturnsPath()
         {
             // Arrange
@@ -32,14 +32,14 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact]
+        [Fact]
         public void GetPath_WithNullHandle_ThrowsArgumentNullException()
         {
             // Arrange, Act & Assert
             Assert.Throws<ArgumentNullException>(() => FileIO.GetPath((SafeFileHandle)null!));
         }
 
-        [WindowsOnlyFact]
+        [Fact]
         public void GetPath_WithClosedHandle_ThrowsArgumentException()
         {
             // Arrange
@@ -61,17 +61,17 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact]
+        [Fact]
         public void GetPath_WithInvalidHandle_ThrowsArgumentException()
         {
             // Arrange
-            var handle = new SafeFileHandle(IntPtr.Zero, false);
+            var handle = new SafeFileHandle((nint)(-1), false);
 
             // Act & Assert
             Assert.Throws<ArgumentException>(() => FileIO.GetPath(handle));
         }
 
-        [WindowsOnlyFact]
+        [Fact]
         public void GetPath_ReturnsPathWithoutPrefix()
         {
             // Arrange
@@ -94,7 +94,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [WindowsOnlyFact]
+        [Fact]
         public void GetPath_WithLongPath_ReturnsFullPath()
         {
             // Arrange
