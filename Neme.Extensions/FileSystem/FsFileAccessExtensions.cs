@@ -41,15 +41,25 @@ internal static class FsFileAccessExtensions
         [UnsupportedOSPlatform("windows")]
         public OpenFlags ToUnix()
         {
-            var rawAccess = (RawFsFileAccess)access & (RawFsFileAccess.Read | RawFsFileAccess.Write);
+            var rawAccess = (RawFsFileAccess)access;
+            var readWriteAccess = rawAccess & (RawFsFileAccess.Read | RawFsFileAccess.Write);
 
-            return rawAccess switch
+            if (readWriteAccess != 0)
             {
-                RawFsFileAccess.Read => OpenFlags.O_RDONLY,
-                RawFsFileAccess.Read | RawFsFileAccess.Write => OpenFlags.O_RDWR,
-                RawFsFileAccess.Write => OpenFlags.O_WRONLY,
-                _ => default,
-            };
+                return readWriteAccess switch
+                {
+                    RawFsFileAccess.Read => OpenFlags.O_RDONLY,
+                    RawFsFileAccess.Read | RawFsFileAccess.Write => OpenFlags.O_RDWR,
+                    RawFsFileAccess.Write => OpenFlags.O_WRONLY,
+                    _ => default,
+                };
+            }
+            else
+            {
+                return ((rawAccess & RawFsFileAccess.WriteAttributes) != 0)
+                    ? OpenFlags.O_RDONLY
+                    : OpenFlags.O_PATH;
+            }
         }
 #endif
     }
