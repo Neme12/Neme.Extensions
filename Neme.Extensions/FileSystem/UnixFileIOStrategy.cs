@@ -106,11 +106,11 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
             if (handle.Value!.IsInvalid)
             {
-                handle.Dispose();
-
                 var error = (Errno)Marshal.GetLastPInvokeError();
-                if (error == Errno.EISDIR)
-                    error = Errno.EACCES;
+                //if (error == Errno.EISDIR)
+                //    error = Errno.EACCES;
+
+                handle.Dispose();
 
                 throw UnixMarshal.GetExceptionForUnixError(error);
             }
