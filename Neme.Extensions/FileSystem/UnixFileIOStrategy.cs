@@ -112,7 +112,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
                 if (error == Errno.EISDIR)
                     error = Errno.EACCES;
 
-                throw UnixMarshal.GetExceptionForUnixError(error, mountPath);
+                throw UnixMarshal.GetExceptionForUnixError(error);
             }
 
             if (InitHandle(null, handle.Value!, null, options.Mode, options.Access, options.Share, options.Options, options.Attributes, options.PreallocationSize))
