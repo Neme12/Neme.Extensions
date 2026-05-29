@@ -154,9 +154,33 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         throw new NotImplementedException();
     }
 
-    public override string GetPath([Borrow] SafeFileHandle file)
+    public override unsafe string GetPath([Borrow] SafeFileHandle file)
     {
-        throw new NotImplementedException();
+        using var fileScope = file.CreateScope();
+
+        var path = RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
+            ? $"{MacFdPathPrefix}{fileScope.Handle}"
+            : $"{LinuxFdPathPrefix}{fileScope.Handle}";
+
+        Span<byte> buffer = stackalloc byte[MaxPathLength];
+
+        nint result;
+
+        fixed (byte* bufferPointer = buffer)
+        {
+            result = Interop.Libc.ReadLink(path, bufferPointer, (nuint)buffer.Length);
+        }
+
+        if (result < 0)
+            throw UnixMarshal.GetExceptionForLastUnixError();
+
+        buffer = buffer[..(int)result];
+
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+        return Encoding.UTF8.GetString(buffer);
+#else
+        return Encoding.UTF8.GetString(buffer.ToArray());
+#endif
     }
 
     public override void Move([Borrow] SafeFileHandle sourceFile, string destFileName, bool overwrite)
