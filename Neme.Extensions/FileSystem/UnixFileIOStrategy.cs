@@ -83,6 +83,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         var openFlags = GetOpenByHandleFlags(options.Mode, options.Access, options.Share, options.Options);
 
         using var mountHandle = OpenMountHandle(mountPath);
+        using var mountScope = mountHandle.CreateScope();
         using OwnedOrBorrowed<SafeFileHandle?> handle = OwnedOrBorrowed.Create<SafeFileHandle?>(null);
 
         var fileHeaderSize = sizeof(Interop.Libc.FileHandleHeader);
@@ -101,7 +102,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
         while (true)
         {
-            var rawHandle = Interop.Libc.OpenByHandleAt(mountHandle, ref fileHeader, openFlags);
+            var rawHandle = Interop.Libc.OpenByHandleAt((int)mountScope.Handle, ref fileHeader, openFlags);
             handle.SetValue(new SafeFileHandle((nint)rawHandle, ownsHandle: true));
 
             if (handle.Value!.IsInvalid)
