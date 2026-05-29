@@ -14,10 +14,12 @@ using Neme.Extensions.Ownership;
 using Neme.Extensions.Win32.InteropServices;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Text;
 using Windows.Win32;
 
 namespace Neme.Extensions.FileSystem;
@@ -46,6 +48,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         AppContextConfigHelper.GetBooleanConfig("System.IO.DisableFileLocking", "DOTNET_SYSTEM_IO_DISABLEFILELOCKING", defaultValue: false);
 
     private const string LinuxFdPathPrefix = "/proc/self/fd/";
+    private const string LinuxMountInfoPath = "/proc/self/mountinfo";
     private const string MacFdPathPrefix = "/dev/fd/";
 
     [return: OwnershipTransfer]
@@ -65,9 +68,58 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     }
 
     [return: OwnershipTransfer]
-    public override SafeFileHandle OpenHandle(FsFileId fileId, FsFileOptions options)
+    public override unsafe SafeFileHandle OpenHandle(FsFileId fileId, FsFileOptions options)
     {
-        throw new NotImplementedException();
+        Debug.Assert(IsValidFileId(fileId));
+
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            throw new PlatformNotSupportedException();
+
+        if (options.Mode is FileMode.CreateNew or FileMode.OpenOrCreate)
+            throw new NotSupportedException($"{options.Mode} is not supported when opening a file by ID on Unix.");
+
+        var linuxFileId = fileId.LinuxFileId;
+        var mountPath = GetMountPathById(linuxFileId.MountId);
+        var openFlags = GetOpenByHandleFlags(options.Mode, options.Access, options.Share, options.Options);
+
+        using var mountHandle = OpenMountHandle(mountPath);
+        using OwnedOrBorrowed<SafeFileHandle?> handle = OwnedOrBorrowed.Create<SafeFileHandle?>(null);
+
+        var fileHeaderSize = sizeof(Interop.Libc.FileHandleHeader);
+        ref var fileHeader = ref AllocateFileInfo<Interop.Libc.FileHandleHeader>(stackalloc byte[fileHeaderSize + 128], out var fileInfoBuffer);
+        fileHeader.handle_bytes = linuxFileId.BufferLength;
+        fileHeader.handle_type = linuxFileId.FileType;
+
+        var destination = fileInfoBuffer.Slice(fileHeaderSize, (int)linuxFileId.BufferLength);
+        fixed (byte* destinationPointer = destination)
+        {
+            linuxFileId.Buffer.WithSpan(static (source, state) =>
+            {
+                source[..state.Length].CopyTo(new Span<byte>((void*)state.Pointer, state.Length));
+            }, (Length: (int)linuxFileId.BufferLength, Pointer: (nint)destinationPointer));
+        }
+
+        while (true)
+        {
+            var rawHandle = Interop.Libc.OpenByHandleAt(mountHandle, ref fileHeader, openFlags);
+            handle.SetValue(new SafeFileHandle((nint)rawHandle, ownsHandle: true));
+
+            if (handle.Value!.IsInvalid)
+            {
+                handle.Dispose();
+
+                var error = (Errno)Marshal.GetLastPInvokeError();
+                if (error == Errno.EISDIR)
+                    error = Errno.EACCES;
+
+                throw UnixMarshal.GetExceptionForUnixError(error, mountPath);
+            }
+
+            if (InitHandle(null, handle.Value!, null, options.Mode, options.Access, options.Share, options.Options, options.Attributes, options.PreallocationSize))
+                return handle.Move()!;
+
+            handle.Dispose();
+        }
     }
 
     [return: OwnershipTransfer]
@@ -172,6 +224,88 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         return ref Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(buffer));
 #endif
     }
+
+    private static OpenFlags GetOpenByHandleFlags(FileMode mode, FsFileAccess access, FileShare share, FileOptions options)
+    {
+        var openFlags =
+            access.ToUnix() |
+            share.ToUnix() |
+            options.ToUnix();
+
+        if (DisableFileLocking && mode is FileMode.Create or FileMode.Truncate)
+            openFlags |= OpenFlags.O_TRUNC;
+
+        return openFlags;
+    }
+
+    private static string GetMountPathById(int mountId)
+    {
+        foreach (var line in File.ReadLines(LinuxMountInfoPath))
+        {
+            var separatorIndex = line.IndexOf(" - ", StringComparison.Ordinal);
+            var mountInfo = separatorIndex >= 0 ? line.Substring(0, separatorIndex) : line;
+            var fields = mountInfo.Split(' ');
+
+            if (fields.Length < 5)
+                throw new IOException($"Unexpected format in '{LinuxMountInfoPath}'.");
+
+            if (int.TryParse(fields[0], NumberStyles.None, CultureInfo.InvariantCulture, out var currentMountId) &&
+                currentMountId == mountId)
+            {
+                return UnescapeMountInfoPath(fields[4]);
+            }
+        }
+
+        throw new IOException($"Could not find mount point for mount ID {mountId.ToString(CultureInfo.InvariantCulture)}.");
+    }
+
+    private static SafeFileHandle OpenMountHandle(string mountPath)
+    {
+        var rawHandle = Syscall.open(mountPath, OpenFlags.O_RDONLY | OpenFlags.O_CLOEXEC);
+        var handle = new SafeFileHandle((nint)rawHandle, ownsHandle: true);
+
+        if (handle.IsInvalid)
+        {
+            handle.Dispose();
+            throw UnixMarshal.GetExceptionForLastUnixError(mountPath);
+        }
+
+        return handle;
+    }
+
+    private static string UnescapeMountInfoPath(string mountPath)
+    {
+        if (mountPath.IndexOf('\\') < 0)
+            return mountPath;
+
+        var builder = new StringBuilder(mountPath.Length);
+
+        for (int i = 0; i < mountPath.Length; i++)
+        {
+            if (mountPath[i] == '\\' &&
+                i + 3 < mountPath.Length &&
+                IsOctalDigit(mountPath[i + 1]) &&
+                IsOctalDigit(mountPath[i + 2]) &&
+                IsOctalDigit(mountPath[i + 3]))
+            {
+                int value = ((mountPath[i + 1] - '0') << 6) |
+                            ((mountPath[i + 2] - '0') << 3) |
+                            (mountPath[i + 3] - '0');
+
+                builder.Append((char)value);
+                i += 3;
+            }
+            else
+            {
+                builder.Append(mountPath[i]);
+            }
+        }
+
+        return builder.ToString();
+    }
+
+    private static bool IsOctalDigit(char c) =>
+        c is >= '0' and <= '7';
 
     private static SafeFileHandle Open(
         string fullPath,
