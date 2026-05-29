@@ -1,5 +1,6 @@
 using Microsoft.Win32.SafeHandles;
 using Neme.Extensions.Tests.Utilities;
+using System.Runtime.InteropServices;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
@@ -157,10 +158,13 @@ public sealed partial class FileIOTests
         {
             // Arrange - Get a valid volume serial number but use random file IDs
             var validFileId = FileIO.GetFileId(_tempFileHandle);
-            var randomFileId = FsFileId.FromWindowsId(new FsFileId.WindowsId(
-                volumeSerialNumber: validFileId.WindowsFileId.VolumeSerialNumber,
-                fileIdHigh: 0xDEADBEEFDEADBEEF,
-                fileIdLow: 0xCAFEBABECAFEBABE));
+            var randomFileId = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? FsFileId.FromWindowsId(new FsFileId.WindowsId(
+                    volumeSerialNumber: validFileId.WindowsFileId.VolumeSerialNumber,
+                    fileIdHigh: 0xDEADBEEFDEADBEEF,
+                    fileIdLow: 0xCAFEBABECAFEBABE))
+                : FsFileId.FromLinuxId(new FsFileId.LinuxId(validFileId.LinuxFileId.MountId, validFileId.LinuxFileId.FileType, new FsFileId.InlineByteArray(), 0));
+
             var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read);
 
             // Act & Assert
@@ -172,10 +176,12 @@ public sealed partial class FileIOTests
         public void WithNonExistentVolumeSerial_ThrowsDirectoryNotFoundException()
         {
             // Arrange - Use a completely invalid volume serial number and random file IDs
-            var randomFileId = FsFileId.FromWindowsId(new FsFileId.WindowsId(
-                volumeSerialNumber: 0xFFFFFFFFFFFFFFFF,
-                fileIdHigh: 0xDEADBEEFDEADBEEF,
-                fileIdLow: 0xCAFEBABECAFEBABE));
+            var randomFileId = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? FsFileId.FromWindowsId(new FsFileId.WindowsId(
+                    volumeSerialNumber: 0xFFFFFFFFFFFFFFFF,
+                    fileIdHigh: 0xDEADBEEFDEADBEEF,
+                    fileIdLow: 0xCAFEBABECAFEBABE))
+                : FsFileId.FromLinuxId(new FsFileId.LinuxId(unchecked((int)0xffffffff), 0, new FsFileId.InlineByteArray(), 0));
             var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read);
 
             // Act & Assert
@@ -268,10 +274,12 @@ public sealed partial class FileIOTests
             // Arrange - Get a valid volume serial number but use random file IDs
             using var tempDirHandle = OpenDirectoryHandle();
             var validDirectoryId = FileIO.GetFileId(tempDirHandle);
-            var randomDirectoryId = FsFileId.FromWindowsId(new FsFileId.WindowsId(
-                volumeSerialNumber: validDirectoryId.WindowsFileId.VolumeSerialNumber,
-                fileIdHigh: 0xDEADBEEFDEADBEEF,
-                fileIdLow: 0xCAFEBABECAFEBABE));
+            var randomDirectoryId = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? FsFileId.FromWindowsId(new FsFileId.WindowsId(
+                    volumeSerialNumber: validDirectoryId.WindowsFileId.VolumeSerialNumber,
+                    fileIdHigh: 0xDEADBEEFDEADBEEF,
+                    fileIdLow: 0xCAFEBABECAFEBABE))
+                : FsFileId.FromLinuxId(new FsFileId.LinuxId(validDirectoryId.LinuxFileId.MountId, validDirectoryId.LinuxFileId.FileType, new FsFileId.InlineByteArray(), 0));
             var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read)
             {
                 Attributes = FileAttributes.Directory

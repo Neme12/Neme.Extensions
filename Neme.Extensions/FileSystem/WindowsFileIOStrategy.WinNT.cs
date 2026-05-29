@@ -211,7 +211,7 @@ internal sealed partial class WindowsFileIOStrategy
         while (Win32PInvoke.FindNextVolume((HANDLE)findHandleScope.Handle, volumeName));
 
         FileIOEventSource.Log.VolumeNotFound(targetSerial);
-        throw new DirectoryNotFoundException($"No volume found with serial number 0x{targetSerial:X8}");
+        throw new DirectoryNotFoundException(Invariant($"No volume found with serial number 0x{targetSerial:X8}"));
     }
 
     private static unsafe bool TryOpenAndVerifyVolume(

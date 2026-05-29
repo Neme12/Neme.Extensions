@@ -108,12 +108,18 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             if (handle.Value!.IsInvalid)
             {
                 var error = (Errno)Marshal.GetLastPInvokeError();
-                //if (error == Errno.EISDIR)
-                //    error = Errno.EACCES;
+
+                // If the file ID is invalid, the returned error code is EINVAL,
+                // but we want to throw a FileNotFoundException in that case.
+                if (error is Errno.EINVAL or Errno.ESTALE)
+                    error = Errno.ENOENT;
+
+                if (error == Errno.EISDIR)
+                    error = Errno.EACCES;
 
                 handle.Dispose();
 
-                throw UnixMarshal.GetExceptionForUnixError(error);
+                throw UnixMarshal.GetExceptionForUnixError(error, path: null);
             }
 
             if (InitHandle(null, handle.Value!, null, options.Mode, options.Access, options.Share, options.Options, options.Attributes, options.PreallocationSize))
@@ -257,7 +263,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             }
         }
 
-        throw new IOException($"Could not find mount point for mount ID {mountId.ToString(CultureInfo.InvariantCulture)}.");
+        throw new DirectoryNotFoundException(Invariant($"Could not find mount point for mount ID {mountId}."));
     }
 
     private static SafeFileHandle OpenMountHandle(string mountPath)
