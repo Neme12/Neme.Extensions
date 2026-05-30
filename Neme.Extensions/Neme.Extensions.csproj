@@ -3,6 +3,10 @@
   <PropertyGroup>
     <TargetFrameworks>$(LibraryTargetFrameworks)</TargetFrameworks>
 	<DefineConstants>$(DefineConstants);NEME_EXTENSIONS</DefineConstants>
+    <MacOSShimBuildScript>$(MSBuildProjectDirectory)/../native/macos/build.sh</MacOSShimBuildScript>
+    <MacOSShimSource>$(MSBuildProjectDirectory)/../native/macos/libneme_macos_shim.c</MacOSShimSource>
+    <MacOSShimX64Output>$(MSBuildProjectDirectory)/../runtimes/osx-x64/native/libneme_macos_shim.dylib</MacOSShimX64Output>
+    <MacOSShimArm64Output>$(MSBuildProjectDirectory)/../runtimes/osx-arm64/native/libneme_macos_shim.dylib</MacOSShimArm64Output>
   </PropertyGroup>
 
   <ItemGroup>
@@ -78,6 +82,14 @@
     <Compile Remove="Embedded\**\*.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\runtimes\osx-*\native\libneme_macos_shim.dylib"
+          Pack="true"
+          PackagePath="runtimes/%(RecursiveDir)%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest"
+          Link="runtimes\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
   <!-- In DEBUG: Include as None so they're visible but not compiled -->
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">
     <None Include="Embedded\**\*.cs" />
@@ -90,5 +102,13 @@
     <!-- Pack the .props file into build and buildTransitive folders -->
     <None Include="build\Neme.Extensions.props" Pack="true" PackagePath="build;buildTransitive" />
   </ItemGroup>
+
+  <Target Name="BuildMacOSShim"
+          BeforeTargets="Build;Pack"
+          Condition="$([MSBuild]::IsOSPlatform('OSX'))"
+          Inputs="$(MacOSShimBuildScript);$(MacOSShimSource)"
+          Outputs="$(MacOSShimX64Output);$(MacOSShimArm64Output)">
+    <Exec Command="bash &quot;$(MacOSShimBuildScript)&quot;" />
+  </Target>
 
 </Project>
