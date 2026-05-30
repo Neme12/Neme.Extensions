@@ -10,10 +10,10 @@ internal static partial class Interop
 
 #if NET7_0_OR_GREATER
         [LibraryImport(Libraries.neme_macos_shim, EntryPoint = "neme_fcntl_getpath", SetLastError = true)]
-        internal static partial int FcntlGetPath(int fd, Span<byte> path);
+        internal static unsafe partial int FcntlGetPath(int fd, byte* path);
 #else
         [DllImport(Libraries.neme_macos_shim, EntryPoint = "neme_fcntl_getpath", SetLastError = true)]
-        internal static extern int FcntlGetPath(int fd, Span<byte> path);
+        internal static unsafe extern int FcntlGetPath(int fd, byte* path);
 #endif
     }
 }

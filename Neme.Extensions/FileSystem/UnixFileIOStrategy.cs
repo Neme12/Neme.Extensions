@@ -164,7 +164,11 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         {
             using var bufferLease = ArrayPool<byte>.Shared.RentLease(Interop.MacOS.MAXPATHLEN);
 
-            var result = Interop.MacOS.FcntlGetPath((int)fileScope.Handle, bufferLease.Array);
+            int result;
+
+            fixed (byte* bufferPointer = bufferLease.Buffer)
+                result = Interop.MacOS.FcntlGetPath((int)fileScope.Handle, bufferPointer);
+
             if (result != 0)
                 throw UnixMarshal.GetExceptionForLastUnixError();
 
@@ -191,7 +195,9 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
             while (true)
             {
-                bytesWritten = Interop.Libc.ReadLink(path, bufferLease.Buffer, (nuint)bufferLease.Length);
+                fixed (byte* bufferPointer = bufferLease.Buffer)
+                    bytesWritten = Interop.Libc.ReadLink(path, bufferPointer, (nuint)bufferLease.Length);
+
                 if (bytesWritten < 0)
                     throw UnixMarshal.GetExceptionForLastUnixError();
 
