@@ -13,6 +13,7 @@ HOST_ARCH="$(uname -m)"
 X64_OUTPUT="${OUTPUT_ROOT}/osx-x64/native/${LIB_NAME}"
 ARM64_OUTPUT="${OUTPUT_ROOT}/osx-arm64/native/${LIB_NAME}"
 UNIVERSAL_OUTPUT="${UNIVERSAL_OUTPUT_DIR}/${LIB_NAME}"
+UNIVERSAL_BARE_OUTPUT="${UNIVERSAL_OUTPUT_DIR}/libneme_macos_shim"
 
 mkdir -p "${UNIVERSAL_OUTPUT_DIR}" "${OUTPUT_ROOT}/osx-x64/native" "${OUTPUT_ROOT}/osx-arm64/native"
 
@@ -32,6 +33,9 @@ case "${HOST_ARCH}" in
 	;;
 esac
 
+cp "${UNIVERSAL_OUTPUT}" "${UNIVERSAL_BARE_OUTPUT}"
+
 echo "Built ${UNIVERSAL_OUTPUT}"
+echo "Built ${UNIVERSAL_BARE_OUTPUT}"
 echo "Built ${X64_OUTPUT}"
 echo "Built ${ARM64_OUTPUT}"
