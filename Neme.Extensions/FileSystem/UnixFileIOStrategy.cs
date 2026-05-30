@@ -164,12 +164,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
         Span<byte> buffer = stackalloc byte[MaxPathLength];
 
-        nint result;
-
-        fixed (byte* bufferPointer = buffer)
-        {
-            result = Interop.Libc.ReadLink(path, bufferPointer, (nuint)buffer.Length);
-        }
+        nint result = Interop.Libc.ReadLink(path, buffer, (nuint)buffer.Length);
 
         if (result < 0)
             throw UnixMarshal.GetExceptionForLastUnixError();
