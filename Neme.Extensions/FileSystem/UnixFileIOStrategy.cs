@@ -158,36 +158,57 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
     public override unsafe string GetPath([Borrow] SafeFileHandle file)
     {
-        using var fileScope = file.CreateScope();
-
-        var path = RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
-            ? $"{MacFdPathPrefix}{fileScope.Handle}"
-            : $"{LinuxFdPathPrefix}{fileScope.Handle}";
-
-        var initialBuffeerSize = Stackalloc.MaxLength<byte>();
-        using var bufferLease = ArrayPool<byte>.Shared.RentLeaseOrStackalloc(
-            initialBuffeerSize, stackalloc byte[initialBuffeerSize]);
-        nint bytesWritten;
-
-        while (true)
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            bytesWritten = Interop.Libc.ReadLink(path, bufferLease.Buffer, (nuint)bufferLease.Length);
-            if (bytesWritten < 0)
+            using var bufferLease = ArrayPool<byte>.Shared.RentLease(Interop.MacOS.MAXPATHLEN);
+            
+            var result = Interop.Libc.FcntlGetPath(file, Interop.Libc.F_GETPATH, bufferLease.Buffer);
+            if (result != 0)
                 throw UnixMarshal.GetExceptionForLastUnixError();
 
-            if (bytesWritten != bufferLease.Length)
-                break;
+            var indexOfNulLTerminator = bufferLease.Buffer.IndexOf((byte)0); // F_GETPATH returns a null-terminated string
+            if (indexOfNulLTerminator == -1)
+                throw new IOException("Unexpected result from fcntl F_GETPATH: no null terminator found.");
 
-            bufferLease.RentMore();
-        }
-
-        var buffer = bufferLease.Buffer[..(int)bytesWritten];
+            var buffer = bufferLease.Buffer.Slice(0, indexOfNulLTerminator);
 
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-        return Encoding.UTF8.GetString(buffer);
+            return Encoding.UTF8.GetString(buffer);
 #else
-        return Encoding.UTF8.GetString(buffer.ToArray());
+            return Encoding.UTF8.GetString(buffer.ToArray());
 #endif
+        }
+        else
+        {
+            using var fileScope = file.CreateScope();
+
+            var path = $"{LinuxFdPathPrefix}{fileScope.Handle}";
+
+            var initialBufferSize = Stackalloc.MaxLength<byte>();
+            using var bufferLease = ArrayPool<byte>.Shared.RentLeaseOrStackalloc(
+                initialBufferSize, stackalloc byte[initialBufferSize]);
+            nint bytesWritten;
+
+            while (true)
+            {
+                bytesWritten = Interop.Libc.ReadLink(path, bufferLease.Buffer, (nuint)bufferLease.Length);
+                if (bytesWritten < 0)
+                    throw UnixMarshal.GetExceptionForLastUnixError();
+
+                if (bytesWritten != bufferLease.Length)
+                    break;
+
+                bufferLease.RentMore();
+            }
+
+            var buffer = bufferLease.Buffer[..(int)bytesWritten];
+
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            return Encoding.UTF8.GetString(buffer);
+#else
+            return Encoding.UTF8.GetString(buffer.ToArray());
+#endif
+        }
     }
 
     public override void Move([Borrow] SafeFileHandle sourceFile, string destFileName, bool overwrite)
