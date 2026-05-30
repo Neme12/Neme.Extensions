@@ -116,4 +116,20 @@
 			  SkipUnchangedFiles="true" />
 	</Target>
 
+	<Target Name="AddMacOSShimToCopyToOutputItems"
+			BeforeTargets="GetCopyToOutputDirectoryItems"
+			DependsOnTargets="BuildMacOSShim"
+			Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+		<ItemGroup>
+			<ContentWithTargetPath Include="$(MacOSShimUniversalOutput)">
+				<TargetPath>libneme_macos_shim.dylib</TargetPath>
+				<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			</ContentWithTargetPath>
+			<ContentWithTargetPath Include="$(MacOSShimUniversalBareOutput)">
+				<TargetPath>libneme_macos_shim</TargetPath>
+				<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			</ContentWithTargetPath>
+		</ItemGroup>
+	</Target>
+
 </Project>
