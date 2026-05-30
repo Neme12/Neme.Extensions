@@ -161,8 +161,12 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             using var bufferLease = ArrayPool<byte>.Shared.RentLease(Interop.MacOS.MAXPATHLEN);
-            
-            var result = Interop.MacOS.FcntlGetPath(file, Interop.MacOS.F_GETPATH, bufferLease.Buffer);
+
+            int result;
+
+            using (var fileScope = file.CreateScope())
+                result = Interop.MacOS.FcntlGetPath((int)fileScope.Handle, Interop.MacOS.F_GETPATH, bufferLease.Buffer);
+
             if (result != 0)
                 throw UnixMarshal.GetExceptionForLastUnixError();
 

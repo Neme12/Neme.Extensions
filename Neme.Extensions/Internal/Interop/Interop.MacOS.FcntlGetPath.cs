@@ -1,9 +1,4 @@
-using Microsoft.Win32.SafeHandles;
 using System.Runtime.InteropServices;
-#if NET7_0_OR_GREATER
-using Neme.Extensions.InteropServices.Marshalling;
-using System.Runtime.InteropServices.Marshalling;
-#endif
 
 namespace Neme.Extensions.Internal.Interop;
 
@@ -16,10 +11,10 @@ internal static partial class Interop
 
 #if NET7_0_OR_GREATER
         [LibraryImport(Libraries.libc, EntryPoint = "fcntl", SetLastError = true)]
-        internal static unsafe partial int FcntlGetPath([MarshalUsing(typeof(SafeHandleInt32Marshaller<SafeFileHandle>))] SafeFileHandle fd, int cmd, Span<byte> path);
+        internal static partial int FcntlGetPath(int fd, int cmd, Span<byte> path);
 #else
         [DllImport(Libraries.libc, EntryPoint = "fcntl", SetLastError = true)]
-        internal static unsafe extern int FcntlGetPath([MarshalAs(UnmanagedType.I4)] SafeFileHandle fd, int cmd, Span<byte> path);
+        internal static extern int FcntlGetPath(int fd, int cmd, Span<byte> path);
 #endif
     }
 }
