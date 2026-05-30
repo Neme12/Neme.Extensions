@@ -5,8 +5,9 @@ namespace Neme.Extensions.Internal.Interop;
 
 internal static partial class Interop
 {
-    internal static partial class Libc
+    internal static partial class MacOS
     {
+        internal const int MAXPATHLEN = 1024;
         internal const int F_GETPATH = 50;
 
 #if NET7_0_OR_GREATER

@@ -6,7 +6,7 @@ namespace Neme.Extensions.Internal.Interop;
 
 internal static partial class Interop
 {
-    internal static partial class Libc
+    internal static partial class Linux
     {
 #if NET7_0_OR_GREATER
         [LibraryImport(Libraries.libc, EntryPoint = "open_by_handle_at", SetLastError = true)]

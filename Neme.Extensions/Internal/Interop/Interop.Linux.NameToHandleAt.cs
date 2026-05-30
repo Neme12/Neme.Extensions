@@ -4,7 +4,7 @@ namespace Neme.Extensions.Internal.Interop;
 
 internal static partial class Interop
 {
-    internal static partial class Libc
+    internal static partial class Linux
     {
         [Flags]
         internal enum NameToHandleAtFlags : int

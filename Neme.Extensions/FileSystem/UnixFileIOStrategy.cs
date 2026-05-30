@@ -88,8 +88,8 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         using var mountScope = mountHandle.CreateScope();
         using OwnedOrBorrowed<SafeFileHandle?> handle = OwnedOrBorrowed.Create<SafeFileHandle?>(null);
 
-        var fileHeaderSize = sizeof(Interop.Libc.FileHandleHeader);
-        ref var fileHeader = ref AllocateFileInfo<Interop.Libc.FileHandleHeader>(stackalloc byte[fileHeaderSize + 128], out var fileInfoBuffer);
+        var fileHeaderSize = sizeof(Interop.Linux.FileHandleHeader);
+        ref var fileHeader = ref AllocateFileInfo<Interop.Linux.FileHandleHeader>(stackalloc byte[fileHeaderSize + 128], out var fileInfoBuffer);
         fileHeader.handle_bytes = linuxFileId.BufferLength;
         fileHeader.handle_type = linuxFileId.FileType;
 
@@ -104,7 +104,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
         while (true)
         {
-            var rawHandle = Interop.Libc.OpenByHandleAt((int)mountScope.Handle, ref fileHeader, openFlags);
+            var rawHandle = Interop.Linux.OpenByHandleAt((int)mountScope.Handle, ref fileHeader, openFlags);
             handle.SetValue(new SafeFileHandle((nint)rawHandle, ownsHandle: true));
 
             if (handle.Value!.IsInvalid)
@@ -162,7 +162,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         {
             using var bufferLease = ArrayPool<byte>.Shared.RentLease(Interop.MacOS.MAXPATHLEN);
             
-            var result = Interop.Libc.FcntlGetPath(file, Interop.Libc.F_GETPATH, bufferLease.Buffer);
+            var result = Interop.MacOS.FcntlGetPath(file, Interop.MacOS.F_GETPATH, bufferLease.Buffer);
             if (result != 0)
                 throw UnixMarshal.GetExceptionForLastUnixError();
 
@@ -242,17 +242,17 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         {
             using var fileScope = file.CreateScope();
 
-            ref var fileHeader = ref AllocateFileInfo<Interop.Libc.FileHandleHeader>(stackalloc byte[sizeof(Interop.Libc.FileHandleHeader) + 128], out var fileInfoBuffer);
+            ref var fileHeader = ref AllocateFileInfo<Interop.Linux.FileHandleHeader>(stackalloc byte[sizeof(Interop.Linux.FileHandleHeader) + 128], out var fileInfoBuffer);
             fileHeader.handle_bytes = 128;
 
-            var result = Interop.Libc.NameToHandleAt((int)fileScope.Handle, "", ref fileHeader, out var mountId, Interop.Libc.NameToHandleAtFlags.AT_EMPTY_PATH);
+            var result = Interop.Linux.NameToHandleAt((int)fileScope.Handle, "", ref fileHeader, out var mountId, Interop.Linux.NameToHandleAtFlags.AT_EMPTY_PATH);
             if (result != 0)
             {
                 var error = (Errno)Marshal.GetLastPInvokeError();
                 throw UnixMarshal.GetExceptionForUnixError(error);
             }
 
-            var fileIdBytes = fileInfoBuffer.Slice(sizeof(Interop.Libc.FileHandleHeader), (int)fileHeader.handle_bytes);
+            var fileIdBytes = fileInfoBuffer.Slice(sizeof(Interop.Linux.FileHandleHeader), (int)fileHeader.handle_bytes);
 
             FsFileId.InlineByteArray array = default;
 
