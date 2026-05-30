@@ -164,8 +164,11 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
             int result;
 
-            using (var fileScope = file.CreateScope())
-                result = Interop.MacOS.FcntlGetPath((int)fileScope.Handle, Interop.MacOS.F_GETPATH, bufferLease.Buffer);
+            fixed (byte* bufferPointer = bufferLease.Buffer)
+            {
+                using (var fileScope = file.CreateScope())
+                    result = Syscall.fcntl((int)fileScope.Handle, (FcntlCommand)Interop.MacOS.F_GETPATH, (nint)bufferPointer);
+            }
 
             if (result != 0)
                 throw UnixMarshal.GetExceptionForLastUnixError();
