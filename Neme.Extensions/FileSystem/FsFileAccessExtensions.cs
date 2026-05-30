@@ -1,5 +1,6 @@
 ﻿#if !NETFRAMEWORK
 using Mono.Unix.Native;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
 #endif
@@ -58,7 +59,9 @@ internal static class FsFileAccessExtensions
             {
                 return ((rawAccess & RawFsFileAccess.WriteAttributes) != 0)
                     ? OpenFlags.O_RDONLY
-                    : OpenFlags.O_PATH;
+                    : RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
+                        ? default
+                        : OpenFlags.O_PATH;
             }
         }
 #endif
