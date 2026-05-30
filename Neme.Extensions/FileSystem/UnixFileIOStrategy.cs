@@ -6,12 +6,14 @@
 #if !NETFRAMEWORK
 using Microsoft.Win32.SafeHandles;
 using Mono.Unix.Native;
+using Neme.Extensions.Buffers;
 using Neme.Extensions.Contracts;
 using Neme.Extensions.Internal;
 using Neme.Extensions.Internal.Interop;
 using Neme.Extensions.InteropServices;
 using Neme.Extensions.Ownership;
 using Neme.Extensions.Win32.InteropServices;
+using System.Buffers;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -162,14 +164,24 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             ? $"{MacFdPathPrefix}{fileScope.Handle}"
             : $"{LinuxFdPathPrefix}{fileScope.Handle}";
 
-        Span<byte> buffer = stackalloc byte[MaxPathLength];
+        var initialBuffeerSize = Stackalloc.MaxLength<byte>();
+        using var bufferLease = ArrayPool<byte>.Shared.RentLeaseOrStackalloc(
+            initialBuffeerSize, stackalloc byte[initialBuffeerSize]);
+        nint bytesWritten;
 
-        nint result = Interop.Libc.ReadLink(path, buffer, (nuint)buffer.Length);
+        while (true)
+        {
+            bytesWritten = Interop.Libc.ReadLink(path, bufferLease.Buffer, (nuint)bufferLease.Length);
+            if (bytesWritten < 0)
+                throw UnixMarshal.GetExceptionForLastUnixError();
 
-        if (result < 0)
-            throw UnixMarshal.GetExceptionForLastUnixError();
+            if (bytesWritten != bufferLease.Length)
+                break;
 
-        buffer = buffer[..(int)result];
+            bufferLease.RentMore();
+        }
+
+        var buffer = bufferLease.Buffer[..(int)bytesWritten];
 
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
         return Encoding.UTF8.GetString(buffer);

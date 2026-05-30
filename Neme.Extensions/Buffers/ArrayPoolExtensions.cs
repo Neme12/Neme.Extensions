@@ -23,7 +23,7 @@ public static partial class ArrayPoolExtensions
             Require.ArgumentNotNegative(minimumLength);
 
             return buffer != default
-                ? new(buffer, clearArray)
+                ? new(arrayPool, buffer, clearArray)
                 : new(arrayPool, minimumLength, clearArray);
         }
     }

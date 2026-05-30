@@ -12,7 +12,7 @@ public static partial class ArrayPoolExtensions
     [NonCopyable]
     public ref struct LeaseOrBuffer<T> : IDisposable
     {
-        private ArrayPool<T>? _arrayPool;
+        private ArrayPool<T> _arrayPool;
         private T[]? _array;
         private Span<T> _buffer;
         private readonly bool _clearBuffer;
@@ -28,9 +28,9 @@ public static partial class ArrayPoolExtensions
             _clearBuffer = clearArray;
         }
 
-        public LeaseOrBuffer(Span<T> buffer, bool clearBuffer = false)
+        public LeaseOrBuffer(ArrayPool<T> arrayPool, Span<T> buffer, bool clearBuffer = false)
         {
-            _arrayPool = null;
+            _arrayPool = arrayPool;
             _array = null;
             _buffer = buffer;
             _clearBuffer = clearBuffer;
@@ -40,7 +40,6 @@ public static partial class ArrayPoolExtensions
         {
             get
             {
-                Debug.Assert(_array is null == _arrayPool is null);
                 ObjectDisposedException.ThrowIf(_array is null && _buffer == default, typeof(LeaseOrBuffer<T>));
 
                 Debug.Assert(_array is null != (_buffer == default));
@@ -55,7 +54,6 @@ public static partial class ArrayPoolExtensions
         {
             get
             {
-                Debug.Assert(_array is null == _arrayPool is null);
                 ObjectDisposedException.ThrowIf(_array is null && _buffer == default, typeof(LeaseOrBuffer<T>));
 
                 Debug.Assert(_array is null != (_buffer == default));
@@ -68,7 +66,6 @@ public static partial class ArrayPoolExtensions
 
         public void RentMore(int minimumLength = -1)
         {
-            Debug.Assert(_array is null == _arrayPool is null);
             ObjectDisposedException.ThrowIf(_array is null && _buffer == default, typeof(LeaseOrBuffer<T>));
 
             Debug.Assert(_array is null != (_buffer == default));
@@ -93,8 +90,6 @@ public static partial class ArrayPoolExtensions
 
         public void Dispose()
         {
-            Debug.Assert(_array is null == _arrayPool is null);
-
             if (_array is not null || _buffer != default)
             {
                 Debug.Assert(_array is null != (_buffer == default));
@@ -104,7 +99,7 @@ public static partial class ArrayPoolExtensions
                 else if (_clearBuffer)
                     _buffer.Clear();
 
-                _arrayPool = null;
+                _arrayPool = null!;
                 _array = null;
                 _buffer = default;
             }
