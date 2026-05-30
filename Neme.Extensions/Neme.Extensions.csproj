@@ -1,121 +1,118 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>$(LibraryTargetFrameworks)</TargetFrameworks>
-	<DefineConstants>$(DefineConstants);NEME_EXTENSIONS</DefineConstants>
-    <MacOSShimBuildScript>$(MSBuildProjectDirectory)/../native/macos/build.sh</MacOSShimBuildScript>
-    <MacOSShimSource>$(MSBuildProjectDirectory)/../native/macos/libneme_macos_shim.c</MacOSShimSource>
-    <MacOSShimUniversalOutput>$(MSBuildProjectDirectory)/../runtimes/osx/native/libneme_macos_shim.dylib</MacOSShimUniversalOutput>
-    <MacOSShimX64Output>$(MSBuildProjectDirectory)/../runtimes/osx-x64/native/libneme_macos_shim.dylib</MacOSShimX64Output>
-    <MacOSShimArm64Output>$(MSBuildProjectDirectory)/../runtimes/osx-arm64/native/libneme_macos_shim.dylib</MacOSShimArm64Output>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>$(LibraryTargetFrameworks)</TargetFrameworks>
+		<DefineConstants>$(DefineConstants);NEME_EXTENSIONS</DefineConstants>
+		<MacOSShimBuildScript>$(MSBuildProjectDirectory)/../native/macos/build.sh</MacOSShimBuildScript>
+		<MacOSShimSource>$(MSBuildProjectDirectory)/../native/macos/libneme_macos_shim.c</MacOSShimSource>
+		<MacOSShimUniversalOutput>$(MSBuildProjectDirectory)/../runtimes/osx/native/libneme_macos_shim.dylib</MacOSShimUniversalOutput>
+		<MacOSShimX64Output>$(MSBuildProjectDirectory)/../runtimes/osx-x64/native/libneme_macos_shim.dylib</MacOSShimX64Output>
+		<MacOSShimArm64Output>$(MSBuildProjectDirectory)/../runtimes/osx-arm64/native/libneme_macos_shim.dylib</MacOSShimArm64Output>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="..\Neme.Polyfills\System\Globalization\CharUnicodeInfoPolyfill.cs" Link="Text\Polyfills\CharUnicodeInfoPolyfill.cs" />
-    <Compile Include="..\Neme.Polyfills\System\Globalization\CharUnicodeInfoPolyfillData.cs" Link="Text\Polyfills\CharUnicodeInfoPolyfillData.cs" />
-    <Compile Include="..\Neme.Polyfills\System\Text\UnicodeDebug.cs" Link="Text\Polyfills\UnicodeDebug.cs" />
-    <Compile Include="..\Neme.Polyfills\System\Text\UnicodeUtility.cs" Link="Text\Polyfills\UnicodeUtility.cs" />
-    <Compile Include="..\Neme.Polyfills\System\Text\Unicode\GraphemeClusterBreakType.cs" Link="Text\Polyfills\GraphemeClusterBreakType.cs" />
-    <Compile Include="..\Neme.Polyfills\System\Text\Unicode\TextSegmentationUtility.cs" Link="Text\Polyfills\TextSegmentationUtility.cs" />
-    
-	<Compile Include="..\Neme.Extensions.Win32\CompilerServices\HResultConstantAttribute.cs" Link="CompilerServices\HResultConstantAttribute.cs" />
-	<Compile Include="..\Neme.Extensions.Win32\InteropServices\Facility.cs" Link="InteropServices\Facility.cs" />
-	<Compile Include="..\Neme.Extensions.Win32\InteropServices\HResult.cs" Link="InteropServices\HResult.cs" />
-	<Compile Include="..\Neme.Extensions.Win32\InteropServices\HResult.Constants.cs" Link="InteropServices\HResult.Constants.cs" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Include="..\Neme.Polyfills\System\Globalization\CharUnicodeInfoPolyfill.cs" Link="Text\Polyfills\CharUnicodeInfoPolyfill.cs" />
+		<Compile Include="..\Neme.Polyfills\System\Globalization\CharUnicodeInfoPolyfillData.cs" Link="Text\Polyfills\CharUnicodeInfoPolyfillData.cs" />
+		<Compile Include="..\Neme.Polyfills\System\Text\UnicodeDebug.cs" Link="Text\Polyfills\UnicodeDebug.cs" />
+		<Compile Include="..\Neme.Polyfills\System\Text\UnicodeUtility.cs" Link="Text\Polyfills\UnicodeUtility.cs" />
+		<Compile Include="..\Neme.Polyfills\System\Text\Unicode\GraphemeClusterBreakType.cs" Link="Text\Polyfills\GraphemeClusterBreakType.cs" />
+		<Compile Include="..\Neme.Polyfills\System\Text\Unicode\TextSegmentationUtility.cs" Link="Text\Polyfills\TextSegmentationUtility.cs" />
 
-  <ItemGroup>
-    <InternalsVisibleTo Include="Neme.Extensions.Tests" />
-  </ItemGroup>
+		<Compile Include="..\Neme.Extensions.Win32\CompilerServices\HResultConstantAttribute.cs" Link="CompilerServices\HResultConstantAttribute.cs" />
+		<Compile Include="..\Neme.Extensions.Win32\InteropServices\Facility.cs" Link="InteropServices\Facility.cs" />
+		<Compile Include="..\Neme.Extensions.Win32\InteropServices\HResult.cs" Link="InteropServices\HResult.cs" />
+		<Compile Include="..\Neme.Extensions.Win32\InteropServices\HResult.Constants.cs" Link="InteropServices\HResult.Constants.cs" />
+	</ItemGroup>
 
-  <ItemGroup>
-	<Using Include="Windows.Win32.PInvoke" Alias="Win32PInvoke" />
-	<Using Include="Windows.Wdk.PInvoke" Alias="WinNTPInvoke" />
-	<Using Include="Neme.Extensions.InterpolatedString" Static="true" />
-  </ItemGroup>
+	<ItemGroup>
+		<InternalsVisibleTo Include="Neme.Extensions.Tests" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.275">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="NodaTime" Version="3.3.2" />
-    <PackageReference Include="Roslyn.Diagnostics.Analyzers" Version="3.3.4">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
+	<ItemGroup>
+		<Using Include="Windows.Win32.PInvoke" Alias="Win32PInvoke" />
+		<Using Include="Windows.Wdk.PInvoke" Alias="WinNTPInvoke" />
+		<Using Include="Neme.Extensions.InterpolatedString" Static="true" />
+	</ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' != 'net48'">
-	<PackageReference Include="Openur.Mono.Unix" Version="7.1.0.155" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.275">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="NodaTime" Version="3.3.2" />
+		<PackageReference Include="Roslyn.Diagnostics.Analyzers" Version="3.3.4">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
 
-  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.1'))">
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.7" />
-    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.7.0" />
-  </ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' != 'net48'">
+		<PackageReference Include="Openur.Mono.Unix" Version="7.1.0.155" />
+	</ItemGroup>
 
-  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net9.0'))">
-	<PackageReference Include="System.IO.Pipelines" Version="10.0.7" />
-  </ItemGroup>
+	<ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.1'))">
+		<PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.7" />
+		<PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.7.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Neme.Polyfills\Neme.Polyfills.csproj" />
-  </ItemGroup>
+	<ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net9.0'))">
+		<PackageReference Include="System.IO.Pipelines" Version="10.0.7" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Strings.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Strings.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Neme.Polyfills\Neme.Polyfills.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Update="Strings.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Update="Strings.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Strings.resx</DependentUpon>
+		</Compile>
+	</ItemGroup>
 
-  <!-- Exclude embedded files from auto-inclusion globally -->
-  <ItemGroup>
-    <Compile Remove="Embedded\**\*.cs" />
-  </ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Update="Strings.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>Strings.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\runtimes\osx-*\native\libneme_macos_shim.dylib"
-          Pack="true"
-          PackagePath="runtimes/%(RecursiveDir)%(Filename)%(Extension)"
-          CopyToOutputDirectory="PreserveNewest"
-          Link="runtimes\%(RecursiveDir)%(Filename)%(Extension)" />
-  </ItemGroup>
+	<!-- Exclude embedded files from auto-inclusion globally -->
+	<ItemGroup>
+		<Compile Remove="Embedded\**\*.cs" />
+	</ItemGroup>
 
-  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
-    <Content Include="..\runtimes\osx\native\libneme_macos_shim.dylib"
-             CopyToOutputDirectory="PreserveNewest"
-             Link="libneme_macos_shim.dylib" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="..\runtimes\osx-*\native\libneme_macos_shim.dylib"
+			  Pack="true"
+			  PackagePath="runtimes/%(RecursiveDir)%(Filename)%(Extension)"
+			  CopyToOutputDirectory="PreserveNewest"
+			  Link="runtimes\%(RecursiveDir)%(Filename)%(Extension)" />
+	</ItemGroup>
 
-  <!-- In DEBUG: Include as None so they're visible but not compiled -->
-  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
-    <None Include="Embedded\**\*.cs" />
-  </ItemGroup>
+	<!-- In DEBUG: Include as None so they're visible but not compiled -->
+	<ItemGroup Condition="'$(Configuration)' == 'Debug'">
+		<None Include="Embedded\**\*.cs" />
+	</ItemGroup>
 
-  <!-- In RELEASE: Include as Compile and pack them -->
-  <ItemGroup Condition="'$(Configuration)' == 'Release'">
-    <Compile Include="Embedded\**\*.cs" Pack="true" PackagePath="contentFiles/cs/any/" />
+	<!-- In RELEASE: Include as Compile and pack them -->
+	<ItemGroup Condition="'$(Configuration)' == 'Release'">
+		<Compile Include="Embedded\**\*.cs" Pack="true" PackagePath="contentFiles/cs/any/" />
 
-    <!-- Pack the .props file into build and buildTransitive folders -->
-    <None Include="build\Neme.Extensions.props" Pack="true" PackagePath="build;buildTransitive" />
-  </ItemGroup>
+		<!-- Pack the .props file into build and buildTransitive folders -->
+		<None Include="build\Neme.Extensions.props" Pack="true" PackagePath="build;buildTransitive" />
+	</ItemGroup>
 
-  <Target Name="BuildMacOSShim"
-          BeforeTargets="Build;Pack"
-          Condition="$([MSBuild]::IsOSPlatform('OSX'))"
-          Inputs="$(MacOSShimBuildScript);$(MacOSShimSource)"
-          Outputs="$(MacOSShimUniversalOutput);$(MacOSShimX64Output);$(MacOSShimArm64Output)">
-    <Exec Command="bash &quot;$(MacOSShimBuildScript)&quot;" />
-  </Target>
+	<Target Name="BuildMacOSShim"
+			BeforeTargets="Build;Pack"
+			Condition="$([MSBuild]::IsOSPlatform('OSX'))"
+			Inputs="$(MacOSShimBuildScript);$(MacOSShimSource)"
+			Outputs="$(MacOSShimUniversalOutput);$(MacOSShimX64Output);$(MacOSShimArm64Output)">
+		<Exec Command="bash &quot;$(MacOSShimBuildScript)&quot;" />
+		<Copy SourceFiles="$(MacOSShimUniversalOutput)"
+			  DestinationFolder="$(OutDir)"
+			  SkipUnchangedFiles="true" />
+	</Target>
 
 </Project>
