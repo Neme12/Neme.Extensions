@@ -83,7 +83,7 @@
 		<Compile Remove="Embedded\**\*.cs" />
 	</ItemGroup>
 
-	<ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' != 'net48'">
 		<None Include="..\runtimes\osx-*\native\libneme_macos_shim.dylib"
 			  Pack="true"
 			  PackagePath="runtimes/%(RecursiveDir)%(Filename)%(Extension)"
@@ -106,7 +106,7 @@
 
 	<Target Name="BuildMacOSShim"
 			BeforeTargets="Build;Pack"
-			Condition="$([MSBuild]::IsOSPlatform('OSX'))"
+			Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$(TargetFramework)' != 'net48'"
 			Inputs="$(MacOSShimBuildScript);$(MacOSShimSource)"
 			Outputs="$(MacOSShimUniversalOutput);$(MacOSShimX64Output);$(MacOSShimArm64Output)">
 		<Exec Command="bash &quot;$(MacOSShimBuildScript)&quot;" />
@@ -118,7 +118,7 @@
 	<Target Name="AddMacOSShimToCopyToOutputItems"
 			BeforeTargets="GetCopyToOutputDirectoryItems"
 			DependsOnTargets="BuildMacOSShim"
-			Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+			Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$(TargetFramework)' != 'net48'">
 		<ItemGroup>
 			<ContentWithTargetPath Include="$(MacOSShimUniversalOutput)">
 				<TargetPath>libneme_macos_shim.dylib</TargetPath>
