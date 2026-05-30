@@ -91,12 +91,6 @@
           Link="runtimes\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
-  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
-    <Content Include="..\runtimes\osx\native\libneme_macos_shim.dylib"
-             CopyToOutputDirectory="PreserveNewest"
-             Link="libneme_macos_shim.dylib" />
-  </ItemGroup>
-
   <!-- In DEBUG: Include as None so they're visible but not compiled -->
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">
     <None Include="Embedded\**\*.cs" />
@@ -116,6 +110,9 @@
           Inputs="$(MacOSShimBuildScript);$(MacOSShimSource)"
           Outputs="$(MacOSShimUniversalOutput);$(MacOSShimX64Output);$(MacOSShimArm64Output)">
     <Exec Command="bash &quot;$(MacOSShimBuildScript)&quot;" />
+    <Copy SourceFiles="$(MacOSShimUniversalOutput)"
+          DestinationFolder="$(OutDir)"
+          SkipUnchangedFiles="true" />
   </Target>
 
 </Project>
