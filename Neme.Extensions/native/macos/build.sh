@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd -- "${SCRIPT_DIR}/../.." && pwd)"
+REPO_ROOT="$(cd -- "${SCRIPT_DIR}/../../.." && pwd)"
 OUTPUT_ROOT="${REPO_ROOT}/runtimes"
 SOURCE_FILE="${SCRIPT_DIR}/libneme_macos_shim.c"
 LIB_NAME="libneme_macos_shim.dylib"
