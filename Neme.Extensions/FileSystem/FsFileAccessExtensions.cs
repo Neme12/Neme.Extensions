@@ -59,9 +59,9 @@ internal static class FsFileAccessExtensions
             {
                 return ((rawAccess & RawFsFileAccess.WriteAttributes) != 0)
                     ? OpenFlags.O_RDONLY
-                    : RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
-                        ? default
-                        : OpenFlags.O_PATH;
+                    : RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+                        ? OpenFlags.O_PATH
+                        : default;
             }
         }
 #endif
