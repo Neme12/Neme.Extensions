@@ -64,7 +64,7 @@ public sealed class FsFileOptionsTests
         Assert.Null(sut.UnixCreateMode);
     }
 
-    [UnixOnlyFact]
+    [PlatformOnlyFact(Platform.Unix)]
     public void UnixCreateMode_OnUnix_RoundTripsValue()
     {
         var expected = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead;
@@ -79,7 +79,7 @@ public sealed class FsFileOptionsTests
         Assert.Equal(expected, sut.UnixCreateMode);
     }
 
-    [UnixOnlyFact]
+    [PlatformOnlyFact(Platform.Unix)]
     public void UnixCreateMode_OnUnix_CanBeSetToNull()
     {
         var sut = new FsFileOptions
@@ -92,7 +92,7 @@ public sealed class FsFileOptionsTests
         Assert.Null(sut.UnixCreateMode);
     }
 
-    [WindowsOnlyFact]
+    [PlatformOnlyFact(Platform.Windows)]
     public void UnixCreateMode_OnWindows_ThrowsPlatformNotSupportedException()
     {
         Assert.Throws<PlatformNotSupportedException>(() => new FsFileOptions
@@ -145,7 +145,7 @@ public sealed class FsFileOptionsTests
 
 #if NET7_0_OR_GREATER
     [UnsupportedOSPlatform("windows")]
-    [UnixOnlyFact]
+    [PlatformOnlyFact(Platform.Unix)]
     public void FromFileStreamOptions_MapsSupportedProperties_WithUnixCreateMode()
     {
         var options = new FileStreamOptions

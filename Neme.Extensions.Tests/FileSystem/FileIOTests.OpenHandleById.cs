@@ -63,7 +63,7 @@ public sealed partial class FileIOTests
             return FileIO.OpenHandle(_tempDirectoryPath, options);
         }
 
-        [WindowsAndLinuxOnlyFact]
+        [PlatformOnlyFact(Platform.Windows, Platform.Linux)]
         public void WithValidFileId_ReturnsFileHandle()
         {
             // Arrange - Get file ID from an existing file
@@ -79,7 +79,7 @@ public sealed partial class FileIOTests
             Assert.False(result.IsClosed);
         }
 
-        [WindowsAndLinuxOnlyFact]
+        [PlatformOnlyFact(Platform.Windows, Platform.Linux)]
         public void WithDefaultFileId_ThrowsArgumentException()
         {
             // Arrange
@@ -91,7 +91,7 @@ public sealed partial class FileIOTests
                 FileIO.OpenHandle(fileId, options));
         }
 
-        [WindowsAndLinuxOnlyFact]
+        [PlatformOnlyFact(Platform.Windows, Platform.Linux)]
         public void WithValidOptions_OpensFileSuccessfully()
         {
             // Arrange
@@ -106,7 +106,7 @@ public sealed partial class FileIOTests
             Assert.False(result.IsInvalid);
         }
 
-        [WindowsAndLinuxOnlyFact]
+        [PlatformOnlyFact(Platform.Windows, Platform.Linux)]
         public void OpenedHandleCanBeUsed_ToGetSameFileId()
         {
             // Arrange
@@ -121,7 +121,7 @@ public sealed partial class FileIOTests
             Assert.Equal(originalFileId, reopenedFileId);
         }
 
-        [WindowsAndLinuxOnlyFact]
+        [PlatformOnlyFact(Platform.Windows, Platform.Linux)]
         public void WithDifferentShareModes_RespectsShareSettings()
         {
             // Arrange
@@ -136,7 +136,7 @@ public sealed partial class FileIOTests
             Assert.False(result.IsInvalid);
         }
 
-        [WindowsAndLinuxOnlyFact]
+        [PlatformOnlyFact(Platform.Windows, Platform.Linux)]
         public void ReturnsHandleThatOwnsResource()
         {
             // Arrange
@@ -153,7 +153,7 @@ public sealed partial class FileIOTests
             Assert.True(result.IsClosed);
         }
 
-        [WindowsAndLinuxOnlyFact]
+        [PlatformOnlyFact(Platform.Windows, Platform.Linux)]
         public void WithRandomFileId_ThrowsFileNotFoundException()
         {
             // Arrange - Get a valid volume serial number but use random file IDs
@@ -172,7 +172,7 @@ public sealed partial class FileIOTests
                 FileIO.OpenHandle(randomFileId, options));
         }
 
-        [WindowsAndLinuxOnlyFact]
+        [PlatformOnlyFact(Platform.Windows, Platform.Linux)]
         public void WithNonExistentVolumeSerial_ThrowsDirectoryNotFoundException()
         {
             // Arrange - Use a completely invalid volume serial number and random file IDs
@@ -189,7 +189,7 @@ public sealed partial class FileIOTests
                 FileIO.OpenHandle(randomFileId, options));
         }
 
-        [WindowsAndLinuxOnlyFact]
+        [PlatformOnlyFact(Platform.Windows, Platform.Linux)]
         public void WithValidDirectoryId_ReturnsDirectoryHandle()
         {
             // Arrange - Get directory ID from an existing directory
@@ -209,7 +209,7 @@ public sealed partial class FileIOTests
             Assert.False(result.IsClosed);
         }
 
-        [WindowsAndLinuxOnlyFact]
+        [PlatformOnlyFact(Platform.Windows, Platform.Linux)]
         public void OpenedDirectoryHandle_CanBeUsedToGetSameDirectoryId()
         {
             // Arrange
@@ -228,7 +228,7 @@ public sealed partial class FileIOTests
             Assert.Equal(originalDirectoryId, reopenedDirectoryId);
         }
 
-        [WindowsAndLinuxOnlyFact]
+        [PlatformOnlyFact(Platform.Windows, Platform.Linux)]
         public void WithDirectoryIdAndDirectoryAttribute_OpensSuccessfully()
         {
             // Arrange
@@ -247,7 +247,7 @@ public sealed partial class FileIOTests
             Assert.False(result.IsInvalid);
         }
 
-        [WindowsAndLinuxOnlyFact]
+        [PlatformOnlyFact(Platform.Windows, Platform.Linux)]
         public void DirectoryHandle_OwnsResource()
         {
             // Arrange
@@ -268,7 +268,7 @@ public sealed partial class FileIOTests
             Assert.True(result.IsClosed);
         }
 
-        [WindowsAndLinuxOnlyFact]
+        [PlatformOnlyFact(Platform.Windows, Platform.Linux)]
         public void WithRandomDirectoryId_ThrowsFileNotFoundException()
         {
             // Arrange - Get a valid volume serial number but use random file IDs
