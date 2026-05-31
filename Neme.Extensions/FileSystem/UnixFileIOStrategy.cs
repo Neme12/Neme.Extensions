@@ -224,7 +224,18 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
     public override void Delete([Borrow] SafeFileHandle file)
     {
-        throw new NotImplementedException();
+        Debug.Assert(IsValidFileHandle(file));
+
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            throw new PlatformNotSupportedException();
+
+        int result;
+
+        using (var fileScope = file.CreateScope())
+            result = Syscall.unlinkat((int)fileScope.Handle, string.Empty, AtFlags.AT_EMPTY_PATH);
+
+        if (result != 0)
+            throw UnixMarshal.GetExceptionForUnixError(Stdlib.GetLastError());
     }
 
     public override void SetFileAttributes([Borrow] SafeFileHandle file, FileAttributes attributes)
