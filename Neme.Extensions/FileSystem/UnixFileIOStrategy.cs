@@ -232,7 +232,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         int result;
 
         using (var fileScope = file.CreateScope())
-            result = Syscall.unlinkat((int)fileScope.Handle, string.Empty, AtFlags.AT_EMPTY_PATH);
+            result = Syscall.unlinkat((int)fileScope.Handle, null!, AtFlags.AT_EMPTY_PATH);
 
         if (result != 0)
             throw UnixMarshal.GetExceptionForUnixError(Stdlib.GetLastError());
