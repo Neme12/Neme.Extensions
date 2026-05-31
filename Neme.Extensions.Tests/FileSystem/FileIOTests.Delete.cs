@@ -14,11 +14,13 @@ public sealed partial class FileIOTests
             var tempFile = Path.GetTempFileName();
             try
             {
-                var options = new FsFileOptions(FileMode.Open, FsFileAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
-                using var handle = FileIO.OpenHandle(tempFile, options);
+                var options = new FsFileOptions(FileMode.Open, FsFileAccess.ReadWrite | FsFileAccess.Delete, FileShare.ReadWrite | FileShare.Delete);
 
-                // Act
-                FileIO.Delete(handle);
+                using (var handle = FileIO.OpenHandle(tempFile, options))
+                {
+                    // Act
+                    FileIO.Delete(handle);
+                }
 
                 // Assert
                 Assert.False(File.Exists(tempFile));
@@ -39,7 +41,7 @@ public sealed partial class FileIOTests
             var tempFile = Path.GetTempFileName();
             try
             {
-                var options = new FsFileOptions(FileMode.Open, FsFileAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+                var options = new FsFileOptions(FileMode.Open, FsFileAccess.ReadWrite | FsFileAccess.Delete, FileShare.ReadWrite | FileShare.Delete);
                 using var handle = FileIO.OpenHandle(tempFile, options);
 
                 // Act
