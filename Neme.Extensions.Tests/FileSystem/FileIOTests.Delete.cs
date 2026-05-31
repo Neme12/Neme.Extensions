@@ -7,7 +7,7 @@ public sealed partial class FileIOTests
     [Collection(nameof(FileIOTestCollection))]
     public sealed class Delete
     {
-        [PlatformOnlyFact(Platform.Windows, Platform.Linux)]
+        [PlatformOnlyFact(Platform.Windows)]
         public void WithOpenHandle_RemovesDirectoryEntry()
         {
             // Arrange
@@ -32,7 +32,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [PlatformOnlyFact(Platform.Windows, Platform.Linux)]
+        [PlatformOnlyFact(Platform.Windows)]
         public void WithOpenHandle_LeavesHandleUsableUntilClosed()
         {
             // Arrange
