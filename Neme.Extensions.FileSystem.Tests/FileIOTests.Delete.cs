@@ -1,4 +1,4 @@
-using Neme.Extensions.Tests.Utilities;
+﻿using Neme.Extensions.Tests.Utilities;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
@@ -7,7 +7,7 @@ public sealed partial class FileIOTests
     [Collection(nameof(FileIOTestCollection))]
     public sealed class Delete
     {
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void WithOpenHandle_RemovesDirectoryEntry()
         {
             // Arrange
@@ -34,7 +34,7 @@ public sealed partial class FileIOTests
             }
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void WithOpenHandle_LeavesHandleUsableUntilClosed()
         {
             // Arrange
