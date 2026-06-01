@@ -229,16 +229,22 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         // so we'll at least guarantee that the parent directory access is race-free. But first we'll try to delete by handle
         // with AT_EMPTY_PATH anyway in case it does work on this system.
 
-        int result;
+        try
+        {
+            int result = -1;
 
-        using (var fileScope = file.CreateScope())
-            result = Syscall.unlinkat((int)fileScope.Handle, "", AtFlags.AT_EMPTY_PATH);
+            using (var fileScope = file.CreateScope())
+                result = Syscall.unlinkat((int)fileScope.Handle, "", AtFlags.AT_EMPTY_PATH);
 
-        if ((Errno)result is not (Errno.EINVAL or Errno.ENOSYS))
-            throw UnixMarshal.GetExceptionForUnixError((int)Stdlib.GetLastError());
+            if (result == 0)
+                return;
 
-        if (result == 0)
-            return;
+            if (Stdlib.GetLastError() is not (Errno.EINVAL or Errno.ENOSYS))
+                throw UnixMarshal.GetExceptionForUnixError((int)Stdlib.GetLastError());
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+        }
 
         using var parentDirectoryHandle = OwnedOrBorrowed.Create<SafeFileHandle?>(null);
         string fileName;
