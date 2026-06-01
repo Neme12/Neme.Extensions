@@ -225,7 +225,63 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
     public override void Delete([Borrow] SafeFileHandle file)
     {
-        throw new NotImplementedException();
+        // On Unix, there is no method to delete a file directly by a handle,
+        // so we'll at least guarantee that the parent directory access is race-free,
+        // but first we'll try to delete by handle anyway in case it does work on this system.
+
+        int result;
+
+        using (var fileScope = file.CreateScope())
+            result = Syscall.unlinkat((int)fileScope.Handle, "", AtFlags.AT_EMPTY_PATH);
+
+        if ((Errno)result is not (Errno.EINVAL or Errno.ENOSYS))
+            throw UnixMarshal.GetExceptionForUnixError((int)Stdlib.GetLastError());
+
+        if (result == 0)
+            return;
+
+        using var parentDirectoryHandle = OwnedOrBorrowed.Create<SafeFileHandle?>(null);
+        string fileName;
+
+        while (true)
+        {
+            var path = GetPath(file);
+
+            var parentPath = Path.GetDirectoryName(path);
+            if (parentPath.IsNullOrEmpty())
+                throw new IOException($"Could not get parent directory of path '{path}'.");
+
+            fileName = Path.GetFileName(path);
+
+            var rawParentHandle = Syscall.open(
+                parentPath,
+                (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+                    ? OpenFlags.O_PATH
+                    : OpenFlags.O_RDONLY) | OpenFlags.O_CLOEXEC);
+
+            if (rawParentHandle < 0)
+                throw UnixMarshal.GetExceptionForUnixError((int)Stdlib.GetLastError(), parentPath);
+
+            using var parentHandle = OwnedOrBorrowed.Create(new SafeFileHandle((nint)rawParentHandle, ownsHandle: true));
+
+            if (GetPath(parentHandle.Value) != parentPath)
+            {
+                continue; // The file was moved, retry with the new path.
+            }
+            else
+            {
+                parentDirectoryHandle.SetValue(parentHandle.Move());
+                break;
+            }
+        }
+
+        int result2;
+
+        using (var parentDirectoryScope = parentDirectoryHandle.Value!.CreateScope())
+            result2 = Syscall.unlinkat((int)parentDirectoryScope.Handle, fileName, 0);
+
+        if (result2 != 0)
+            throw UnixMarshal.GetExceptionForUnixError((int)Stdlib.GetLastError());
     }
 
     public override void SetFileAttributes([Borrow] SafeFileHandle file, FileAttributes attributes)
