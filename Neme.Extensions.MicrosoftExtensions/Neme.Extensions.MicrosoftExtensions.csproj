@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Neme.Extensions\Neme.Extensions.csproj" />
+    <ProjectReference Include="..\Neme.Extensions.FileSystem\Neme.Extensions.FileSystem.csproj" />
   </ItemGroup>
 
 </Project>

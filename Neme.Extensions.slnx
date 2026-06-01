@@ -10,6 +10,8 @@
   <Project Path="Neme.Extensions.AspNetCore/Neme.Extensions.AspNetCore.csproj" />
   <Project Path="Neme.Extensions.EntityFrameworkCore.Tests/Neme.Extensions.EntityFrameworkCore.Tests.csproj" />
   <Project Path="Neme.Extensions.EntityFrameworkCore/Neme.Extensions.EntityFrameworkCore.csproj" />
+  <Project Path="Neme.Extensions.FileSystem.Tests/Neme.Extensions.FileSystem.Tests.csproj" />
+  <Project Path="Neme.Extensions.FileSystem/Neme.Extensions.FileSystem.csproj" />
   <Project Path="Neme.Extensions.MicrosoftExtensions.Tests/Neme.Extensions.MicrosoftExtensions.Tests.csproj" />
   <Project Path="Neme.Extensions.MicrosoftExtensions/Neme.Extensions.MicrosoftExtensions.csproj" />
   <Project Path="Neme.Extensions.Tests/Neme.Extensions.Tests.csproj" />

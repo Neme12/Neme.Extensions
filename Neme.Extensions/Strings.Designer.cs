@@ -79,15 +79,6 @@ namespace Neme.Extensions {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to create &apos;{0}&apos; with allocation size &apos;{1}&apos; because the disk was full..
-        /// </summary>
-        internal static string IO_DiskFull_Path_AllocationSize {
-            get {
-                return ResourceManager.GetString("IO_DiskFull_Path_AllocationSize", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The file &apos;{0}&apos; already exists..
         /// </summary>
         internal static string IO_FileExists_Name {
@@ -111,15 +102,6 @@ namespace Neme.Extensions {
         internal static string IO_FileNotFound_FileName {
             get {
                 return ResourceManager.GetString("IO_FileNotFound_FileName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Failed to create &apos;{0}&apos; with allocation size &apos;{1}&apos; because the file was too large..
-        /// </summary>
-        internal static string IO_FileTooLarge_Path_AllocationSize {
-            get {
-                return ResourceManager.GetString("IO_FileTooLarge_Path_AllocationSize", resourceCulture);
             }
         }
         
@@ -174,15 +156,6 @@ namespace Neme.Extensions {
         internal static string IO_SharingViolation_NoFileName {
             get {
                 return ResourceManager.GetString("IO_SharingViolation_NoFileName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unix file modes are not supported on this platform..
-        /// </summary>
-        internal static string PlatformNotSupported_UnixFileMode {
-            get {
-                return ResourceManager.GetString("PlatformNotSupported_UnixFileMode", resourceCulture);
             }
         }
         

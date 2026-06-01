@@ -1,5 +1,4 @@
 ﻿using Neme.Extensions.Internal;
-using System.Runtime.CompilerServices;
 
 namespace Neme.Extensions;
 
@@ -7,7 +6,6 @@ public static class EnumExtensions
 {
     extension<T>(T enumValue) where T : struct, Enum
     {
-        [OverloadResolutionPriority(1)]
         public bool HasFlag(T flag)
         {
             return enumValue.HasFlag(flag);

@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>$(TestTargetFrameworks)</TargetFrameworks>
+		<IsTestProject>true</IsTestProject>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Include="..\Neme.Extensions.Tests\Utilities\PlatformSpecificFactAttributes.cs" Link="TestUtilities\PlatformSpecificFactAttributes.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Neme.Extensions.FileSystem\Neme.Extensions.FileSystem.csproj" />
+	</ItemGroup>
+
+</Project>

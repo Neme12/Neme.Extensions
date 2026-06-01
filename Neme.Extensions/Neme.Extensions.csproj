@@ -29,8 +29,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Using Include="Windows.Win32.PInvoke" Alias="Win32PInvoke" />
-		<Using Include="Windows.Wdk.PInvoke" Alias="WinNTPInvoke" />
 		<Using Include="Neme.Extensions.InterpolatedString" Static="true" />
 	</ItemGroup>
 
@@ -46,9 +44,6 @@
 		</PackageReference>
 	</ItemGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' != 'net48'">
-		<PackageReference Include="Openur.Mono.Unix" Version="7.1.0.155" />
-	</ItemGroup>
 
 	<ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.1'))">
 		<PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.7" />
@@ -83,14 +78,6 @@
 		<Compile Remove="Embedded\**\*.cs" />
 	</ItemGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' != 'net48'">
-		<None Include="..\runtimes\osx-*\native\libneme_macos_shim.dylib"
-			  Pack="true"
-			  PackagePath="runtimes/%(RecursiveDir)%(Filename)%(Extension)"
-			  CopyToOutputDirectory="PreserveNewest"
-			  Link="runtimes\%(RecursiveDir)%(Filename)%(Extension)" />
-	</ItemGroup>
-
 	<!-- In DEBUG: Include as None so they're visible but not compiled -->
 	<ItemGroup Condition="'$(Configuration)' == 'Debug'">
 		<None Include="Embedded\**\*.cs" />
@@ -103,28 +90,5 @@
 		<!-- Pack the .props file into build and buildTransitive folders -->
 		<None Include="build\Neme.Extensions.props" Pack="true" PackagePath="build;buildTransitive" />
 	</ItemGroup>
-
-	<Target Name="BuildMacOSShim"
-			BeforeTargets="Build;Pack"
-			Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$(TargetFramework)' != 'net48'"
-			Inputs="$(MacOSShimBuildScript);$(MacOSShimSource)"
-			Outputs="$(MacOSShimUniversalOutput);$(MacOSShimX64Output);$(MacOSShimArm64Output)">
-		<Exec Command="bash &quot;$(MacOSShimBuildScript)&quot;" />
-		<Copy SourceFiles="$(MacOSShimUniversalOutput)"
-			  DestinationFolder="$(OutDir)"
-			  SkipUnchangedFiles="true" />
-	</Target>
-
-	<Target Name="AddMacOSShimToCopyToOutputItems"
-			BeforeTargets="GetCopyToOutputDirectoryItems"
-			DependsOnTargets="BuildMacOSShim"
-			Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$(TargetFramework)' != 'net48'">
-		<ItemGroup>
-			<ContentWithTargetPath Include="$(MacOSShimUniversalOutput)">
-				<TargetPath>libneme_macos_shim.dylib</TargetPath>
-				<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			</ContentWithTargetPath>
-		</ItemGroup>
-	</Target>
 
 </Project>

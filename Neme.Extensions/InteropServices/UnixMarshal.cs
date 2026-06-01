@@ -1,27 +1,26 @@
 ﻿#if !NETFRAMEWORK
-using Mono.Unix.Native;
 using System.ComponentModel;
 using System.Runtime.Versioning;
 
 namespace Neme.Extensions.InteropServices;
 
 [UnsupportedOSPlatform("windows")]
-internal static class UnixMarshal
+public static class UnixMarshal
 {
     public static Exception GetExceptionForLastUnixError(string? path = "", bool isDirError = false) =>
-        GetExceptionForUnixError(new Win32Exception((int)Stdlib.GetLastError()), path, isDirError);
+        GetExceptionForUnixError(new Win32Exception(), path, isDirError);
 
-    public static Exception GetExceptionForUnixError(Errno errorCode, string? path = "", bool isDirError = false) =>
-        GetExceptionForUnixError(new Win32Exception((int)errorCode), path, isDirError);
+    public static Exception GetExceptionForUnixError(int errorCode, string? path = "", bool isDirError = false) =>
+        GetExceptionForUnixError(new Win32Exception(errorCode), path, isDirError);
 
     public static Exception GetExceptionForUnixError(
         Win32Exception exception, string? path = "", bool isDirError = false)
     {
-        var errorCode = (Errno)exception.NativeErrorCode;
+        var errorCode = (UnixErrno)exception.NativeErrorCode;
 
         switch (errorCode)
         {
-            case Errno.ENOENT:
+            case UnixErrno.ENOENT:
                 // For Windows compatibility, throw DirectoryNotFoundException instead of FileNotFoundException
                 // when the parent folder does not exist.
                 if (!isDirError && (path is null || ParentDirectoryExists(path)))
@@ -30,9 +29,9 @@ internal static class UnixMarshal
                         new FileNotFoundException(string.Format(Strings.IO_FileNotFound_FileName, path), path, exception) :
                         new FileNotFoundException(Strings.IO_FileNotFound, exception);
                 }
-                goto case Errno.ENOTDIR;
+                goto case UnixErrno.ENOTDIR;
 
-            case Errno.ENOTDIR:
+            case UnixErrno.ENOTDIR:
                 return !string.IsNullOrEmpty(path) ?
 #if NET11_0_OR_GREATER
                     new DirectoryNotFoundException(string.Format(Strings.IO_PathNotFound_Path, path), path, exception) :
@@ -41,31 +40,31 @@ internal static class UnixMarshal
 #endif
                     new DirectoryNotFoundException(Strings.IO_PathNotFound_NoPathName, exception);
 
-            case Errno.EACCES:
-            case Errno.EBADF:
-            case Errno.EPERM:
+            case UnixErrno.EACCES:
+            case UnixErrno.EBADF:
+            case UnixErrno.EPERM:
                 Exception inner = new IOException(exception.Message, exception);
                 return !string.IsNullOrEmpty(path) ?
                     new UnauthorizedAccessException(string.Format(Strings.UnauthorizedAccess_IODenied_Path, path), inner) :
                     new UnauthorizedAccessException(Strings.UnauthorizedAccess_IODenied_NoPathName, inner);
 
-            case Errno.ENAMETOOLONG:
+            case UnixErrno.ENAMETOOLONG:
                 return !string.IsNullOrEmpty(path) ?
                     new PathTooLongException(string.Format(Strings.IO_PathTooLong_Path, path), exception) :
                     new PathTooLongException(Strings.IO_PathTooLong, exception);
 
-            case Errno.EWOULDBLOCK:
+            case UnixErrno.EWOULDBLOCK:
                 return !string.IsNullOrEmpty(path) ?
                     new IOException(string.Format(Strings.IO_SharingViolation_File, path), exception) :
                     new IOException(Strings.IO_SharingViolation_NoFileName, exception);
 
-            case Errno.ECANCELED:
+            case UnixErrno.ECANCELED:
                 return new OperationCanceledException(null, exception);
 
-            case Errno.EFBIG:
+            case UnixErrno.EFBIG:
                 return new ArgumentOutOfRangeException("value", Strings.ArgumentOutOfRange_FileLengthTooBig);
 
-            case Errno.EEXIST:
+            case UnixErrno.EEXIST:
                 if (!string.IsNullOrEmpty(path))
                 {
                     return new IOException(string.Format(Strings.IO_FileExists_Name, path), exception);

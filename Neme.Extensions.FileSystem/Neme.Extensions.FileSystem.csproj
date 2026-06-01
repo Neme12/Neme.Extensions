@@ -1,0 +1,75 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(LibraryTargetFrameworks)</TargetFrameworks>
+    <MacOSShimBuildScript>$(MSBuildProjectDirectory)/native/macos/build.sh</MacOSShimBuildScript>
+    <MacOSShimSource>$(MSBuildProjectDirectory)/native/macos/libneme_macos_shim.c</MacOSShimSource>
+    <MacOSShimUniversalOutput>$(MSBuildProjectDirectory)/../runtimes/osx/native/libneme_macos_shim.dylib</MacOSShimUniversalOutput>
+    <MacOSShimX64Output>$(MSBuildProjectDirectory)/../runtimes/osx-x64/native/libneme_macos_shim.dylib</MacOSShimX64Output>
+    <MacOSShimArm64Output>$(MSBuildProjectDirectory)/../runtimes/osx-arm64/native/libneme_macos_shim.dylib</MacOSShimArm64Output>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="Neme.Extensions.FileSystem.Tests" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Using Include="Neme.Extensions.InterpolatedString" Static="true" />
+		<Using Include="Windows.Win32.PInvoke" Alias="Win32PInvoke" />
+		<Using Include="Windows.Wdk.PInvoke" Alias="WinNTPInvoke" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.275">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' != 'net48'">
+		<PackageReference Include="Openur.Mono.Unix" Version="7.1.0.155" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Neme.Extensions\Neme.Extensions.csproj" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' != 'net48'">
+		<None Include="..\runtimes\osx-*\native\libneme_macos_shim.dylib" Pack="true" PackagePath="runtimes/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" Link="runtimes\%(RecursiveDir)%(Filename)%(Extension)" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="Strings.Designer.cs">
+	    <DependentUpon>Strings.resx</DependentUpon>
+	    <DesignTime>True</DesignTime>
+	    <AutoGen>True</AutoGen>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Update="Strings.resx">
+	    <SubType>Designer</SubType>
+	    <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+	    <Generator>ResXFileCodeGenerator</Generator>
+	  </EmbeddedResource>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="InteropServices\" />
+	</ItemGroup>
+
+	<Target Name="BuildMacOSShim" BeforeTargets="Build;Pack" Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$(TargetFramework)' != 'net48'" Inputs="$(MacOSShimBuildScript);$(MacOSShimSource)" Outputs="$(MacOSShimUniversalOutput);$(MacOSShimX64Output);$(MacOSShimArm64Output)">
+		<Exec Command="bash &quot;$(MacOSShimBuildScript)&quot;" />
+		<Copy SourceFiles="$(MacOSShimUniversalOutput)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+	</Target>
+
+	<Target Name="AddMacOSShimToCopyToOutputItems" BeforeTargets="GetCopyToOutputDirectoryItems" DependsOnTargets="BuildMacOSShim" Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$(TargetFramework)' != 'net48'">
+		<ItemGroup>
+			<ContentWithTargetPath Include="$(MacOSShimUniversalOutput)">
+				<TargetPath>libneme_macos_shim.dylib</TargetPath>
+				<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			</ContentWithTargetPath>
+		</ItemGroup>
+	</Target>
+
+</Project>
