@@ -10,6 +10,28 @@ public static class DirectoryExtensions
 
     extension(Directory)
     {
+        public static void DeleteIfExists(string path)
+        {
+            try
+            {
+                Directory.Delete(path);
+            }
+            catch (DirectoryNotFoundException)
+            {
+            }
+        }
+
+        public static void DeleteIfExists(string path, bool recursive)
+        {
+            try
+            {
+                Directory.Delete(path, recursive);
+            }
+            catch (DirectoryNotFoundException)
+            {
+            }
+        }
+
         public static void DeleteIfEmpty(string path)
         {
             try

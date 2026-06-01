@@ -6,6 +6,19 @@ public static class FileExtensions
 {
     extension(File)
     {
+        public static void DeleteIfExists(
+            string path,
+            bool allowMissingDirectory = false)
+        {
+            try
+            {
+                File.Delete(path);
+            }
+            catch (Exception e) when (e is FileNotFoundException || allowMissingDirectory && e is DirectoryNotFoundException)
+            {
+            }
+        }
+
 #if NETCOREAPP3_0_OR_GREATER
         public static void MoveIfExists(
             string sourceFileName,
