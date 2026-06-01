@@ -54,10 +54,6 @@
 	  </EmbeddedResource>
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="InteropServices\" />
-	</ItemGroup>
-
 	<Target Name="BuildMacOSShim" BeforeTargets="Build;Pack" Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$(TargetFramework)' != 'net48'" Inputs="$(MacOSShimBuildScript);$(MacOSShimSource)" Outputs="$(MacOSShimUniversalOutput);$(MacOSShimX64Output);$(MacOSShimArm64Output)">
 		<Exec Command="bash &quot;$(MacOSShimBuildScript)&quot;" />
 		<Copy SourceFiles="$(MacOSShimUniversalOutput)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
