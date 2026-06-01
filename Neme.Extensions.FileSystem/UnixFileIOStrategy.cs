@@ -225,9 +225,9 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
     public override void Delete([Borrow] SafeFileHandle file)
     {
-        // On Unix, there is no method to delete a file directly by a handle,
-        // so we'll at least guarantee that the parent directory access is race-free,
-        // but first we'll try to delete by handle anyway in case it does work on this system.
+        // On Unix, there is no method to delete a file directly by a handle (the AT_EMPTY_PATH flag doesn't work for unlinkat),
+        // so we'll at least guarantee that the parent directory access is race-free. But first we'll try to delete by handle
+        // with AT_EMPTY_PATH anyway in case it does work on this system.
 
         int result;
 
