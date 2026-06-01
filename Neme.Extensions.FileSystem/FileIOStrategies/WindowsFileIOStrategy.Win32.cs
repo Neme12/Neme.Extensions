@@ -14,7 +14,7 @@ using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
 using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 
-namespace Neme.Extensions.FileSystem;
+namespace Neme.Extensions.FileSystem.FileIOStrategies;
 
 [SupportedOSPlatform("windows6.0.6000")]
 internal sealed partial class WindowsFileIOStrategy : FileIOStrategy

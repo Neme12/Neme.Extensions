@@ -3,7 +3,7 @@ using Neme.Extensions.Ownership;
 using Neme.Utilities.Contracts;
 using System.Runtime.CompilerServices;
 
-namespace Neme.Extensions.FileSystem;
+namespace Neme.Extensions.FileSystem.FileIOStrategies;
 
 internal abstract class FileIOStrategy
 {

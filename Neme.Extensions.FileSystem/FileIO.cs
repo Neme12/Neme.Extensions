@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.FileSystem.FileIOStrategies;
 using Neme.Extensions.Ownership;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;

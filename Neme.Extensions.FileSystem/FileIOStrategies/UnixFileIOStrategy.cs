@@ -25,7 +25,7 @@ using System.Runtime.Versioning;
 using System.Text;
 using Windows.Win32;
 
-namespace Neme.Extensions.FileSystem;
+namespace Neme.Extensions.FileSystem.FileIOStrategies;
 
 [UnsupportedOSPlatform("windows")]
 internal sealed class UnixFileIOStrategy : FileIOStrategy

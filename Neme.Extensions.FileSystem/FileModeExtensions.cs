@@ -1,5 +1,6 @@
 ﻿#if !NETFRAMEWORK
 using Mono.Unix.Native;
+using Neme.Extensions.FileSystem.FileIOStrategies;
 using System.Runtime.Versioning;
 
 #endif
