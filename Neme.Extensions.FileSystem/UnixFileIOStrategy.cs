@@ -239,8 +239,9 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             if (result == 0)
                 return;
 
-            if (Stdlib.GetLastError() is not (Errno.EINVAL or Errno.ENOSYS))
-                throw UnixMarshal.GetExceptionForUnixError((int)Stdlib.GetLastError());
+            var error = Stdlib.GetLastError();
+            if (error is not (Errno.EINVAL or Errno.ENOSYS))
+                throw UnixMarshal.GetExceptionForUnixError((int)error);
         }
         catch (ArgumentOutOfRangeException)
         {
