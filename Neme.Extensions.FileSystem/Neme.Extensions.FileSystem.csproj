@@ -72,4 +72,8 @@
 		</ItemGroup>
 	</Target>
 
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+    <Compile Include="..\Neme.Extensions\Embedded\**\*.cs" />
+  </ItemGroup>
+
 </Project>
