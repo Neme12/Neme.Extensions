@@ -231,9 +231,6 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
     public override void Move([Borrow] SafeFileHandle sourceFile, string destFileName, bool overwrite)
     {
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            throw new PlatformNotSupportedException("Moving a file by handle is only supported on Linux.");
-
         var (parentDirectory, fileName) = GetParentDirectoryAndFileName(sourceFile);
         using var parentDirectoryHandle = parentDirectory;
 
@@ -241,12 +238,24 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
         using (var parentDirectoryScope = parentDirectoryHandle.CreateScope())
         {
-            result = Interop.Linux.RenameAt2(
-                (int)parentDirectoryScope.Handle,
-                fileName,
-                Interop.Libc.AT_FDCWD,
-                destFileName,
-                overwrite ? Interop.Linux.RenameAt2Flags.None : Interop.Linux.RenameAt2Flags.RENAME_NOREPLACE);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                result = Interop.MacOS.RenameAtXNp(
+                    (int)parentDirectoryScope.Handle,
+                    fileName,
+                    Interop.Libc.AT_FDCWD,
+                    destFileName,
+                    overwrite ? Interop.MacOS.RenameAtXNpFlags.None : Interop.MacOS.RenameAtXNpFlags.RENAME_EXCL);
+            }
+            else
+            {
+                result = Interop.Linux.RenameAt2(
+                    (int)parentDirectoryScope.Handle,
+                    fileName,
+                    Interop.Libc.AT_FDCWD,
+                    destFileName,
+                    overwrite ? Interop.Linux.RenameAt2Flags.None : Interop.Linux.RenameAt2Flags.RENAME_NOREPLACE);
+            }
         }
 
         if (result != 0)
