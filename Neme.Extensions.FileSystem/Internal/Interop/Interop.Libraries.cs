@@ -7,4 +7,9 @@ internal static partial class Interop
         internal const string libc = "libc";
         internal const string neme_macos_shim = "neme_macos_shim";
     }
+
+    internal static partial class Libc
+    {
+        internal const int AT_FDCWD = -100;
+    }
 }

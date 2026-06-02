@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace Neme.Extensions.Internal.Interop;
 
@@ -20,8 +20,6 @@ internal static partial class Interop
             internal uint handle_bytes;
             internal int handle_type;
         }
-
-        internal const int AT_FDCWD = -100;
 
 #if NET7_0_OR_GREATER
         [LibraryImport(Libraries.libc, EntryPoint = "name_to_handle_at", StringMarshalling = StringMarshalling.Utf8, SetLastError = true)]

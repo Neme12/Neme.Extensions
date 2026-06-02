@@ -231,7 +231,26 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
     public override void Move([Borrow] SafeFileHandle sourceFile, string destFileName, bool overwrite)
     {
-        throw new NotImplementedException();
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            throw new PlatformNotSupportedException("Moving a file by handle is only supported on Linux.");
+
+        var (parentDirectory, fileName) = GetParentDirectoryAndFileName(sourceFile);
+        using var parentDirectoryHandle = parentDirectory;
+
+        int result;
+
+        using (var parentDirectoryScope = parentDirectoryHandle.CreateScope())
+        {
+            result = Interop.Linux.RenameAt2(
+                (int)parentDirectoryScope.Handle,
+                fileName,
+                Interop.Libc.AT_FDCWD,
+                destFileName,
+                overwrite ? Interop.Linux.RenameAt2Flags.None : Interop.Linux.RenameAt2Flags.RENAME_NOREPLACE);
+        }
+
+        if (result != 0)
+            throw UnixMarshal.GetExceptionForUnixError((int)Stdlib.GetLastError(), destFileName);
     }
 
     public override void Delete([Borrow] SafeFileHandle file)
@@ -258,6 +277,20 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         {
         }
 
+        var (parentDirectory, fileName) = GetParentDirectoryAndFileName(file);
+        using var parentDirectoryHandle = parentDirectory;
+
+        int result2;
+
+        using (var parentDirectoryScope = parentDirectoryHandle.CreateScope())
+            result2 = Syscall.unlinkat((int)parentDirectoryScope.Handle, fileName, 0);
+
+        if (result2 != 0)
+            throw UnixMarshal.GetExceptionForUnixError((int)Stdlib.GetLastError());
+    }
+
+    private (SafeFileHandle directory, string fileName) GetParentDirectoryAndFileName(SafeFileHandle file)
+    {
         using var parentDirectoryHandle = OwnedOrBorrowed.Create<SafeFileHandle?>(null);
         string fileName;
 
@@ -293,13 +326,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             }
         }
 
-        int result2;
-
-        using (var parentDirectoryScope = parentDirectoryHandle.Value!.CreateScope())
-            result2 = Syscall.unlinkat((int)parentDirectoryScope.Handle, fileName, 0);
-
-        if (result2 != 0)
-            throw UnixMarshal.GetExceptionForUnixError((int)Stdlib.GetLastError());
+        return (parentDirectoryHandle.Move()!, fileName);
     }
 
     public override void SetFileAttributes([Borrow] SafeFileHandle file, FileAttributes attributes)
