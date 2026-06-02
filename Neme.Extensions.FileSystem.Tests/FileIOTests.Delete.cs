@@ -14,7 +14,7 @@ public sealed partial class FileIOTests
             var tempFile = Path.GetTempFileName();
             try
             {
-                var options = new FsFileOptions(FileMode.Open, FsFileAccess.ReadWrite | FsFileAccess.Delete, FileShare.ReadWrite | FileShare.Delete);
+                var options = new FsFileOptions(FileMode.Open, FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.ReadWrite | FileShare.Delete);
 
                 using (var handle = FileIO.OpenHandle(tempFile, options))
                 {
@@ -41,7 +41,7 @@ public sealed partial class FileIOTests
             var tempFile = Path.GetTempFileName();
             try
             {
-                var options = new FsFileOptions(FileMode.Open, FsFileAccess.ReadWrite | FsFileAccess.Delete, FileShare.ReadWrite | FileShare.Delete);
+                var options = new FsFileOptions(FileMode.Open, FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.ReadWrite | FileShare.Delete);
                 using var handle = FileIO.OpenHandle(tempFile, options);
 
                 // Act

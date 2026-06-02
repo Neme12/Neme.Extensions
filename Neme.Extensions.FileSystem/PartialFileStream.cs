@@ -64,7 +64,7 @@ public sealed class PartialFileStream :
     {
         ArgumentException.ThrowIfNullOrEmpty(finalPath);
 
-        if ((options.Access & FsFileAccess.Delete) == 0)
+        if ((options.Access & FileSystemAccess.Delete) == 0)
             throw new ArgumentException("Options must include delete access.", nameof(options));
 
         var partialPath = finalPath + ".part";

@@ -8,10 +8,10 @@ public sealed class FsFileOptionsTests
     [Fact]
     public void Constructor_WithExplicitShare_SetsModeAccessAndShare()
     {
-        var sut = new FsFileOptions(FileMode.CreateNew, FsFileAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+        var sut = new FsFileOptions(FileMode.CreateNew, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
 
         Assert.Equal(FileMode.CreateNew, sut.Mode);
-        Assert.Equal(FsFileAccess.ReadWrite, sut.Access);
+        Assert.Equal(FileSystemAccess.ReadWrite, sut.Access);
         Assert.Equal(FileShare.ReadWrite | FileShare.Delete, sut.Share);
         Assert.Equal(FileOptions.None, sut.Options);
         Assert.Equal(default, sut.Attributes);
@@ -19,13 +19,13 @@ public sealed class FsFileOptionsTests
     }
 
     [Theory]
-    [InlineData(FsFileAccess.None, FileShare.Read)]
-    [InlineData(FsFileAccess.Read, FileShare.Read)]
-    [InlineData(FsFileAccess.Execute, FileShare.Read)]
-    [InlineData(FsFileAccess.Write, FileShare.None)]
-    [InlineData(FsFileAccess.Delete, FileShare.None)]
-    [InlineData(FsFileAccess.ReadWrite, FileShare.None)]
-    public void Constructor_WithImplicitShare_ComputesExpectedShare(FsFileAccess access, FileShare expectedShare)
+    [InlineData(FileSystemAccess.None, FileShare.Read)]
+    [InlineData(FileSystemAccess.Read, FileShare.Read)]
+    [InlineData(FileSystemAccess.Execute, FileShare.Read)]
+    [InlineData(FileSystemAccess.Write, FileShare.None)]
+    [InlineData(FileSystemAccess.Delete, FileShare.None)]
+    [InlineData(FileSystemAccess.ReadWrite, FileShare.None)]
+    public void Constructor_WithImplicitShare_ComputesExpectedShare(FileSystemAccess access, FileShare expectedShare)
     {
         var sut = new FsFileOptions(FileMode.Open, access);
 
@@ -50,14 +50,14 @@ public sealed class FsFileOptionsTests
         var sut = new FsFileOptions
         {
             Mode = FileMode.Append,
-            Access = FsFileAccess.Delete | FsFileAccess.Write,
+            Access = FileSystemAccess.Delete | FileSystemAccess.Write,
             Share = FileShare.ReadWrite | FileShare.Delete,
             Options = expectedOptions,
             Attributes = expectedAttributes,
         };
 
         Assert.Equal(FileMode.Append, sut.Mode);
-        Assert.Equal(FsFileAccess.Delete | FsFileAccess.Write, sut.Access);
+        Assert.Equal(FileSystemAccess.Delete | FileSystemAccess.Write, sut.Access);
         Assert.Equal(FileShare.ReadWrite | FileShare.Delete, sut.Share);
         Assert.Equal(expectedOptions, sut.Options);
         Assert.Equal(expectedAttributes, sut.Attributes);
@@ -118,7 +118,7 @@ public sealed class FsFileOptionsTests
         var sut = FsFileOptions.FromFileStreamOptions(options);
 
         Assert.Equal(FileMode.Truncate, sut.Mode);
-        Assert.Equal(FsFileAccess.ReadWrite, sut.Access);
+        Assert.Equal(FileSystemAccess.ReadWrite, sut.Access);
         Assert.Equal(FileShare.Read, sut.Share);
         Assert.Equal(FileOptions.Asynchronous | FileOptions.WriteThrough | FileOptions.RandomAccess, sut.Options);
         Assert.Equal(default, sut.Attributes);
@@ -160,7 +160,7 @@ public sealed class FsFileOptionsTests
         var sut = FsFileOptions.FromFileStreamOptions(options);
 
         Assert.Equal(FileMode.Truncate, sut.Mode);
-        Assert.Equal(FsFileAccess.ReadWrite, sut.Access);
+        Assert.Equal(FileSystemAccess.ReadWrite, sut.Access);
         Assert.Equal(FileShare.Read, sut.Share);
         Assert.Equal(FileOptions.Asynchronous | FileOptions.WriteThrough | FileOptions.RandomAccess, sut.Options);
         Assert.Equal(default, sut.Attributes);

@@ -166,7 +166,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     }
 
     [return: OwnershipTransfer]
-    public override SafeFileHandle DuplicateHandle([Borrow] SafeFileHandle file, FsFileAccess? access)
+    public override SafeFileHandle DuplicateHandle([Borrow] SafeFileHandle file, FileSystemAccess? access)
     {
         throw new NotImplementedException();
     }
@@ -402,7 +402,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 #endif
     }
 
-    private static OpenFlags GetOpenByHandleFlags(FileMode mode, FsFileAccess access, FileShare share, FileOptions options)
+    private static OpenFlags GetOpenByHandleFlags(FileMode mode, FileSystemAccess access, FileShare share, FileOptions options)
     {
         var openFlags =
             access.ToUnix() |
@@ -487,7 +487,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     private static SafeFileHandle Open(
         string fullPath,
         FileMode mode,
-        FsFileAccess access,
+        FileSystemAccess access,
         FileShare share,
         FileOptions options,
         FileAttributes attributes,
@@ -536,7 +536,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         SafeFileHandle? rootHandle,
         string? path,
         FileMode mode,
-        FsFileAccess access,
+        FileSystemAccess access,
         FileShare share,
         FileOptions options,
         FileAttributes attributes,
@@ -605,7 +605,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         SafeFileHandle handle,
         string? path,
         FileMode mode,
-        FsFileAccess access,
+        FileSystemAccess access,
         FileShare share,
         FileOptions options,
         FileAttributes attributes,
@@ -616,7 +616,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
         // Check whether our handle is a directory.
         // We can omit the check when write access is requested. open will have failed with EISDIR.
-        if ((access & (FsFileAccess)RawFsFileAccess.Write) == 0)
+        if ((access & (FileSystemAccess)RawFileSystemAccess.Write) == 0)
         {
             FStatCheckIO(handle, path, ref status, ref statusHasValue);
 

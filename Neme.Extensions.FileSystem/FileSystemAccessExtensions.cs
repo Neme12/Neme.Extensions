@@ -8,30 +8,30 @@ using Windows.Win32.Storage.FileSystem;
 
 namespace Neme.Extensions.FileSystem;
 
-internal static class FsFileAccessExtensions
+internal static class FileSystemAccessExtensions
 {
-    extension(FsFileAccess access)
+    extension(FileSystemAccess access)
     {
         public FILE_ACCESS_RIGHTS ToWin32()
         {
             FILE_ACCESS_RIGHTS desiredAccess = 0;
 
-            if ((access & FsFileAccess.ReadAttributes) != 0)
+            if ((access & FileSystemAccess.ReadAttributes) != 0)
                 desiredAccess |= FILE_ACCESS_RIGHTS.FILE_READ_ATTRIBUTES;
 
-            if ((access & FsFileAccess.WriteAttributes) != 0)
+            if ((access & FileSystemAccess.WriteAttributes) != 0)
                 desiredAccess |= FILE_ACCESS_RIGHTS.FILE_WRITE_ATTRIBUTES;
 
-            if ((access & FsFileAccess.Read) != 0)
+            if ((access & FileSystemAccess.Read) != 0)
                 desiredAccess |= FILE_ACCESS_RIGHTS.FILE_GENERIC_READ;
 
-            if ((access & FsFileAccess.Write) != 0)
+            if ((access & FileSystemAccess.Write) != 0)
                 desiredAccess |= FILE_ACCESS_RIGHTS.FILE_GENERIC_WRITE;
 
-            if ((access & FsFileAccess.Delete) != 0)
+            if ((access & FileSystemAccess.Delete) != 0)
                 desiredAccess |= FILE_ACCESS_RIGHTS.DELETE;
 
-            if ((access & FsFileAccess.Execute) != 0)
+            if ((access & FileSystemAccess.Execute) != 0)
                 desiredAccess |= FILE_ACCESS_RIGHTS.FILE_GENERIC_EXECUTE;
 
 
@@ -42,22 +42,22 @@ internal static class FsFileAccessExtensions
         [UnsupportedOSPlatform("windows")]
         public OpenFlags ToUnix()
         {
-            var rawAccess = (RawFsFileAccess)access;
-            var readWriteAccess = rawAccess & (RawFsFileAccess.Read | RawFsFileAccess.Write);
+            var rawAccess = (RawFileSystemAccess)access;
+            var readWriteAccess = rawAccess & (RawFileSystemAccess.Read | RawFileSystemAccess.Write);
 
             if (readWriteAccess != 0)
             {
                 return readWriteAccess switch
                 {
-                    RawFsFileAccess.Read => OpenFlags.O_RDONLY,
-                    RawFsFileAccess.Read | RawFsFileAccess.Write => OpenFlags.O_RDWR,
-                    RawFsFileAccess.Write => OpenFlags.O_WRONLY,
+                    RawFileSystemAccess.Read => OpenFlags.O_RDONLY,
+                    RawFileSystemAccess.Read | RawFileSystemAccess.Write => OpenFlags.O_RDWR,
+                    RawFileSystemAccess.Write => OpenFlags.O_WRONLY,
                     _ => default,
                 };
             }
             else
             {
-                return ((rawAccess & RawFsFileAccess.WriteAttributes) != 0)
+                return ((rawAccess & RawFileSystemAccess.WriteAttributes) != 0)
                     ? OpenFlags.O_RDONLY
                     : RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
                         ? OpenFlags.O_PATH

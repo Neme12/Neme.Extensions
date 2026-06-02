@@ -10,14 +10,14 @@ public readonly record struct FsFileOptions
     private readonly AllOptions _allOptions;
     private readonly long _preallocationSize;
 
-    public FsFileOptions(FileMode mode, FsFileAccess access, FileShare share)
+    public FsFileOptions(FileMode mode, FileSystemAccess access, FileShare share)
     {
         _allOptions = ToAllOptions(mode, access, share, 0, 0, null);
     }
 
-    public FsFileOptions(FileMode mode, FsFileAccess access)
+    public FsFileOptions(FileMode mode, FileSystemAccess access)
     {
-        _allOptions = ToAllOptions(mode, access, (access & FsFileAccess.Write) != 0 || (access & FsFileAccess.Delete) != 0
+        _allOptions = ToAllOptions(mode, access, (access & FileSystemAccess.Write) != 0 || (access & FileSystemAccess.Delete) != 0
             ? FileShare.None
             : FileShare.Read, 0, 0, null);
     }
@@ -28,7 +28,7 @@ public readonly record struct FsFileOptions
         init => _allOptions = ToAllOptions(value, Access, Share, Options, Attributes, UnixCreateMode);
     }
 
-    public FsFileAccess Access
+    public FileSystemAccess Access
     {
         get => AllOptionsToFsFileAccess(_allOptions);
         init => _allOptions = ToAllOptions(Mode, value, Share, Options, Attributes, UnixCreateMode);
@@ -86,7 +86,7 @@ public readonly record struct FsFileOptions
             return new FsFileOptions
             {
                 Mode = options.Mode,
-                Access = FsFileAccess.FromFileAccess(options.Access),
+                Access = FileSystemAccess.FromFileAccess(options.Access),
                 Share = options.Share,
                 Options = options.Options,
             };
@@ -97,7 +97,7 @@ public readonly record struct FsFileOptions
             return new FsFileOptions
             {
                 Mode = options.Mode,
-                Access = FsFileAccess.FromFileAccess(options.Access),
+                Access = FileSystemAccess.FromFileAccess(options.Access),
                 Share = options.Share,
                 Options = options.Options,
                 UnixCreateMode = options.UnixCreateMode,
@@ -112,7 +112,7 @@ public readonly record struct FsFileOptions
 
     private static AllOptions ToAllOptions(
         FileMode mode,
-        FsFileAccess access,
+        FileSystemAccess access,
         FileShare share,
         FileOptions options,
         FileAttributes attributes,
@@ -136,56 +136,56 @@ public readonly record struct FsFileOptions
         return (FileMode)((ulong)options & ModeMask);
     }
 
-    private static AllOptions FsFileAccessToAllOptions(FsFileAccess access)
+    private static AllOptions FsFileAccessToAllOptions(FileSystemAccess access)
     {
         AllOptions value = 0;
 
-        var rawAccess = (RawFsFileAccess)access;
+        var rawAccess = (RawFileSystemAccess)access;
 
-        if ((rawAccess & RawFsFileAccess.ReadAttributes) != 0)
+        if ((rawAccess & RawFileSystemAccess.ReadAttributes) != 0)
             value |= AllOptions.Access_ReadAttributes;
 
-        if ((rawAccess & RawFsFileAccess.WriteAttributes) != 0)
+        if ((rawAccess & RawFileSystemAccess.WriteAttributes) != 0)
             value |= AllOptions.Access_WriteAttributes;
 
-        if ((rawAccess & RawFsFileAccess.Read) != 0)
+        if ((rawAccess & RawFileSystemAccess.Read) != 0)
             value |= AllOptions.Access_Read;
 
-        if ((rawAccess & RawFsFileAccess.Write) != 0)
+        if ((rawAccess & RawFileSystemAccess.Write) != 0)
             value |= AllOptions.Access_Write;
 
-        if ((rawAccess & RawFsFileAccess.Delete) != 0)
+        if ((rawAccess & RawFileSystemAccess.Delete) != 0)
             value |= AllOptions.Access_Delete;
 
-        if ((rawAccess & RawFsFileAccess.Execute) != 0)
+        if ((rawAccess & RawFileSystemAccess.Execute) != 0)
             value |= AllOptions.Access_Execute;
 
         return value;
     }
 
-    private static FsFileAccess AllOptionsToFsFileAccess(AllOptions options)
+    private static FileSystemAccess AllOptionsToFsFileAccess(AllOptions options)
     {
-        RawFsFileAccess value = 0;
+        RawFileSystemAccess value = 0;
 
         if ((options & AllOptions.Access_ReadAttributes) != 0)
-            value |= RawFsFileAccess.ReadAttributes;
+            value |= RawFileSystemAccess.ReadAttributes;
 
         if ((options & AllOptions.Access_WriteAttributes) != 0)
-            value |= RawFsFileAccess.WriteAttributes;
+            value |= RawFileSystemAccess.WriteAttributes;
 
         if ((options & AllOptions.Access_Read) != 0)
-            value |= RawFsFileAccess.Read;
+            value |= RawFileSystemAccess.Read;
 
         if ((options & AllOptions.Access_Write) != 0)
-            value |= RawFsFileAccess.Write;
+            value |= RawFileSystemAccess.Write;
 
         if ((options & AllOptions.Access_Delete) != 0)
-            value |= RawFsFileAccess.Delete;
+            value |= RawFileSystemAccess.Delete;
 
         if ((options & AllOptions.Access_Execute) != 0)
-            value |= RawFsFileAccess.Execute;
+            value |= RawFileSystemAccess.Execute;
 
-        return (FsFileAccess)value;
+        return (FileSystemAccess)value;
     }
 
     private static AllOptions FileShareToAllOptions(FileShare share)

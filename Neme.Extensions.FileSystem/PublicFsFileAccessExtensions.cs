@@ -2,17 +2,17 @@
 
 public static class PublicFsFileAccessExtensions
 {
-    extension(FsFileAccess access)
+    extension(FileSystemAccess access)
     {
-        public static FsFileAccess FromFileAccess(FileAccess fileAccess)
+        public static FileSystemAccess FromFileAccess(FileAccess fileAccess)
         {
-            FsFileAccess result = default;
+            FileSystemAccess result = default;
 
             if ((fileAccess & FileAccess.Read) != 0)
-                result |= FsFileAccess.Read;
+                result |= FileSystemAccess.Read;
 
             if ((fileAccess & FileAccess.Write) != 0)
-                result |= FsFileAccess.Write;
+                result |= FileSystemAccess.Write;
 
             return result;
         }
@@ -21,10 +21,10 @@ public static class PublicFsFileAccessExtensions
         {
             FileAccess result = default;
 
-            if ((access & (FsFileAccess)RawFsFileAccess.Read) != 0)
+            if ((access & (FileSystemAccess)RawFileSystemAccess.Read) != 0)
                 result |= FileAccess.Read;
 
-            if ((access & (FsFileAccess)RawFsFileAccess.Write) != 0)
+            if ((access & (FileSystemAccess)RawFileSystemAccess.Write) != 0)
                 result |= FileAccess.Write;
 
             return result;

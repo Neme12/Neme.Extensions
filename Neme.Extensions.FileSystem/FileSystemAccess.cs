@@ -1,7 +1,7 @@
 ﻿namespace Neme.Extensions.FileSystem;
 
 [Flags]
-public enum FsFileAccess
+public enum FileSystemAccess
 {
     None = 0,
     ReadAttributes = 1 << 0,

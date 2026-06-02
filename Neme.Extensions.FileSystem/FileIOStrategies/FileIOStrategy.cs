@@ -23,7 +23,7 @@ internal abstract class FileIOStrategy
         FsFileOptions options);
 
     [return: OwnershipTransfer]
-    public abstract SafeFileHandle DuplicateHandle([Borrow] SafeFileHandle file, FsFileAccess? access);
+    public abstract SafeFileHandle DuplicateHandle([Borrow] SafeFileHandle file, FileSystemAccess? access);
 
     public abstract string GetPath([Borrow] SafeFileHandle file);
 

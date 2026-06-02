@@ -43,7 +43,7 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
     }
 
     [return: OwnershipTransfer]
-    public override SafeFileHandle DuplicateHandle([Borrow] SafeFileHandle file, FsFileAccess? access)
+    public override SafeFileHandle DuplicateHandle([Borrow] SafeFileHandle file, FileSystemAccess? access)
     {
         Debug.Assert(IsValidFileHandle(file));
 

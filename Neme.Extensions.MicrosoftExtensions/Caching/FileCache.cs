@@ -49,7 +49,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
     private static readonly FsFileOptions s_fileReadOptions = new()
     {
         Mode = FileMode.Open,
-        Access = FsFileAccess.Read,
+        Access = FileSystemAccess.Read,
         Share = FileShare.Read,
         Options = FileOptions.Asynchronous | FileOptions.SequentialScan,
     };
@@ -57,7 +57,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
     private static readonly FsFileOptions s_fileWriteOptions = new()
     {
         Mode = FileMode.Create,
-        Access = FsFileAccess.ReadWrite | FsFileAccess.Delete,
+        Access = FileSystemAccess.ReadWrite | FileSystemAccess.Delete,
         Share = FileShare.ReadWrite | FileShare.Delete,
         Options = FileOptions.Asynchronous | FileOptions.SequentialScan,
     };

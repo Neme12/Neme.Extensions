@@ -201,7 +201,7 @@ public static partial class FileIO
         new(OpenHandleAt(file.Handle, null, file.Options), options ?? file.Options);
 
     [return: OwnershipTransfer]
-    public static SafeFileHandle DuplicateHandle([Borrow] SafeFileHandle file, FsFileAccess? access)
+    public static SafeFileHandle DuplicateHandle([Borrow] SafeFileHandle file, FileSystemAccess? access)
     {
         Strategy.ValidateFileHandle(file);
 
@@ -223,7 +223,7 @@ public static partial class FileIO
     {
         Strategy.ValidateFileId(fileId);
 
-        var options = new FsFileOptions(FileMode.Open, FsFileAccess.ReadAttributes, FileShare.ReadWrite | FileShare.Delete);
+        var options = new FsFileOptions(FileMode.Open, FileSystemAccess.ReadAttributes, FileShare.ReadWrite | FileShare.Delete);
         using (var handle = Strategy.OpenHandle(fileId, options))
             return Strategy.GetPath(handle);
     }

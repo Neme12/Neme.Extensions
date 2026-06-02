@@ -1,4 +1,4 @@
-using Microsoft.Win32.SafeHandles;
+﻿using Microsoft.Win32.SafeHandles;
 using Neme.Extensions.Tests.Utilities;
 using System.Runtime.InteropServices;
 
@@ -56,7 +56,7 @@ public sealed partial class FileIOTests
 
         private SafeFileHandle OpenDirectoryHandle()
         {
-            var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read)
+            var options = new FsFileOptions(FileMode.Open, FileSystemAccess.Read)
             {
                 Attributes = FileAttributes.Directory
             };
@@ -68,7 +68,7 @@ public sealed partial class FileIOTests
         {
             // Arrange - Get file ID from an existing file
             var fileId = FileIO.GetFileId(_tempFileHandle);
-            var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read);
+            var options = new FsFileOptions(FileMode.Open, FileSystemAccess.Read);
 
             // Act
             using var result = FileIO.OpenHandle(fileId, options);
@@ -84,7 +84,7 @@ public sealed partial class FileIOTests
         {
             // Arrange
             var fileId = default(FsFileId);
-            var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read);
+            var options = new FsFileOptions(FileMode.Open, FileSystemAccess.Read);
 
             // Act & Assert
             Assert.Throws<ArgumentException>(() =>
@@ -96,7 +96,7 @@ public sealed partial class FileIOTests
         {
             // Arrange
             var fileId = FileIO.GetFileId(_tempFileHandle);
-            var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read, FileShare.ReadWrite);
+            var options = new FsFileOptions(FileMode.Open, FileSystemAccess.Read, FileShare.ReadWrite);
 
             // Act
             using var result = FileIO.OpenHandle(fileId, options);
@@ -111,7 +111,7 @@ public sealed partial class FileIOTests
         {
             // Arrange
             var originalFileId = FileIO.GetFileId(_tempFileHandle);
-            var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read);
+            var options = new FsFileOptions(FileMode.Open, FileSystemAccess.Read);
 
             // Act
             using var reopenedHandle = FileIO.OpenHandle(originalFileId, options);
@@ -126,7 +126,7 @@ public sealed partial class FileIOTests
         {
             // Arrange
             var fileId = FileIO.GetFileId(_tempFileHandle);
-            var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read, FileShare.Read);
+            var options = new FsFileOptions(FileMode.Open, FileSystemAccess.Read, FileShare.Read);
 
             // Act
             using var result = FileIO.OpenHandle(fileId, options);
@@ -141,7 +141,7 @@ public sealed partial class FileIOTests
         {
             // Arrange
             var fileId = FileIO.GetFileId(_tempFileHandle);
-            var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read);
+            var options = new FsFileOptions(FileMode.Open, FileSystemAccess.Read);
 
             // Act
             var result = FileIO.OpenHandle(fileId, options);
@@ -165,7 +165,7 @@ public sealed partial class FileIOTests
                     fileIdLow: 0xCAFEBABECAFEBABE))
                 : FsFileId.FromLinuxId(new FsFileId.LinuxId(validFileId.LinuxFileId.MountId, validFileId.LinuxFileId.FileType, new FsFileId.InlineByteArray(), 0));
 
-            var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read);
+            var options = new FsFileOptions(FileMode.Open, FileSystemAccess.Read);
 
             // Act & Assert
             Assert.Throws<FileNotFoundException>(() =>
@@ -182,7 +182,7 @@ public sealed partial class FileIOTests
                     fileIdHigh: 0xDEADBEEFDEADBEEF,
                     fileIdLow: 0xCAFEBABECAFEBABE))
                 : FsFileId.FromLinuxId(new FsFileId.LinuxId(unchecked((int)0xffffffff), 0, new FsFileId.InlineByteArray(), 0));
-            var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read);
+            var options = new FsFileOptions(FileMode.Open, FileSystemAccess.Read);
 
             // Act & Assert
             Assert.Throws<DirectoryNotFoundException>(() =>
@@ -195,7 +195,7 @@ public sealed partial class FileIOTests
             // Arrange - Get directory ID from an existing directory
             using var tempDirHandle = OpenDirectoryHandle();
             var directoryId = FileIO.GetFileId(tempDirHandle);
-            var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read)
+            var options = new FsFileOptions(FileMode.Open, FileSystemAccess.Read)
             {
                 Attributes = FileAttributes.Directory
             };
@@ -215,7 +215,7 @@ public sealed partial class FileIOTests
             // Arrange
             using var tempDirHandle = OpenDirectoryHandle();
             var originalDirectoryId = FileIO.GetFileId(tempDirHandle);
-            var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read)
+            var options = new FsFileOptions(FileMode.Open, FileSystemAccess.Read)
             {
                 Attributes = FileAttributes.Directory
             };
@@ -234,7 +234,7 @@ public sealed partial class FileIOTests
             // Arrange
             using var tempDirHandle = OpenDirectoryHandle();
             var directoryId = FileIO.GetFileId(tempDirHandle);
-            var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read, FileShare.ReadWrite)
+            var options = new FsFileOptions(FileMode.Open, FileSystemAccess.Read, FileShare.ReadWrite)
             {
                 Attributes = FileAttributes.Directory
             };
@@ -253,7 +253,7 @@ public sealed partial class FileIOTests
             // Arrange
             using var tempDirHandle = OpenDirectoryHandle();
             var directoryId = FileIO.GetFileId(tempDirHandle);
-            var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read)
+            var options = new FsFileOptions(FileMode.Open, FileSystemAccess.Read)
             {
                 Attributes = FileAttributes.Directory
             };
@@ -280,7 +280,7 @@ public sealed partial class FileIOTests
                     fileIdHigh: 0xDEADBEEFDEADBEEF,
                     fileIdLow: 0xCAFEBABECAFEBABE))
                 : FsFileId.FromLinuxId(new FsFileId.LinuxId(validDirectoryId.LinuxFileId.MountId, validDirectoryId.LinuxFileId.FileType, new FsFileId.InlineByteArray(), 0));
-            var options = new FsFileOptions(FileMode.Open, FsFileAccess.Read)
+            var options = new FsFileOptions(FileMode.Open, FileSystemAccess.Read)
             {
                 Attributes = FileAttributes.Directory
             };
