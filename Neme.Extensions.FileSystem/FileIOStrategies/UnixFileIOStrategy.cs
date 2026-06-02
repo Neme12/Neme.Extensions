@@ -53,6 +53,17 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     private const string LinuxFdPathPrefix = "/proc/self/fd/";
     private const string LinuxMountInfoPath = "/proc/self/mountinfo";
     private const string MacFdPathPrefix = "/dev/fd/";
+    private const string BsdFdPathPrefix = "/dev/fd/";
+
+    private static string GetFdLinkPath(SafeHandleExtensions.Scope<SafeFileHandle> fileScope)
+    {
+        var prefix =
+            RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? LinuxFdPathPrefix :
+            RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? MacFdPathPrefix :
+            BsdFdPathPrefix;
+
+        return Invariant($"{prefix}{fileScope.Handle}");
+    }
 
     [return: OwnershipTransfer]
     public override SafeFileHandle OpenHandle(string path, FsFileOptions options)
@@ -187,7 +198,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         }
         else
         {
-            var path = $"{LinuxFdPathPrefix}{fileScope.Handle}";
+            var path = GetFdLinkPath(fileScope);
 
             var initialBufferSize = Stackalloc.MaxLength<byte>();
             using var bufferLease = ArrayPool<byte>.Shared.RentLeaseOrStackalloc(
@@ -523,9 +534,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             else
             {
                 rootHandle = null;
-                path = RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
-                    ? MacFdPathPrefix + rootScope!.Value.Handle.ToStringInvariant()
-                    : LinuxFdPathPrefix + rootScope!.Value.Handle.ToStringInvariant();
+                path = GetFdLinkPath(rootScope!.Value);
                 rawHandle = Syscall.open(path, openFlags, (FilePermissions)openPermissions);
             }
 
