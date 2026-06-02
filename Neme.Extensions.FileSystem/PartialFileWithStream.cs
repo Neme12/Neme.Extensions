@@ -5,7 +5,7 @@ using System.Runtime.Versioning;
 namespace Neme.Extensions.FileSystem;
 
 [SupportedOSPlatform("windows6.0.6000")]
-public sealed class PartialFileStream :
+public sealed class PartialFileWithStream :
     IDisposable
 #if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
     , IAsyncDisposable
@@ -13,10 +13,10 @@ public sealed class PartialFileStream :
 {
     private CheckedFileStream? _fileStream;
     private readonly string _finalPath;
-    private readonly FsFileOptions _options;
+    private readonly FileOpenOptions _options;
     private State _state;
 
-    private PartialFileStream(CheckedFileStream partialFileStream, string finalPath, FsFileOptions options)
+    private PartialFileWithStream(CheckedFileStream partialFileStream, string finalPath, FileOpenOptions options)
     {
         _fileStream = partialFileStream;
         _finalPath = finalPath;
@@ -60,7 +60,7 @@ public sealed class PartialFileStream :
         }
     }
 
-    public static PartialFileStream Create(string finalPath, FsFileOptions options, bool createDirectory = false)
+    public static PartialFileWithStream Create(string finalPath, FileOpenOptions options, bool createDirectory = false)
     {
         ArgumentException.ThrowIfNullOrEmpty(finalPath);
 
@@ -73,7 +73,7 @@ public sealed class PartialFileStream :
             Directory.CreateDirectory(Path.GetDirectoryName(finalPath)!);
 
         var fileStream = FileIO.Open(partialPath, options).CreateFileStream();
-        return new PartialFileStream(fileStream, finalPath, options);
+        return new PartialFileWithStream(fileStream, finalPath, options);
     }
 
     public void Reopen()

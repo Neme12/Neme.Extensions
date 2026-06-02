@@ -14,7 +14,7 @@ public sealed partial class FileIOTests
             // Arrange
             SafeFileHandle? rootDirectory = null;
             string? path = null;
-            var options = new FsFileOptions(FileMode.Open, FileSystemAccess.ReadAttributes);
+            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadAttributes);
 
             // Act & Assert
             var ex = Assert.Throws<ArgumentException>(() =>
@@ -31,7 +31,7 @@ public sealed partial class FileIOTests
             try
             {
                 SafeFileHandle? rootDirectory = null;
-                var options = new FsFileOptions(FileMode.Open, FileSystemAccess.ReadAttributes);
+                var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadAttributes);
 
                 // Act
                 using var handle = FileIO.OpenHandleAt(rootDirectory, tempFile, options);
@@ -56,7 +56,7 @@ public sealed partial class FileIOTests
             try
             {
                 SafeFileHandle? rootDirectory = null;
-                var options = new FsFileOptions(FileMode.Open, FileSystemAccess.ReadAttributes)
+                var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadAttributes)
                 {
                     Attributes = FileAttributes.Directory
                 };
@@ -92,7 +92,7 @@ public sealed partial class FileIOTests
                 {
                     Directory.SetCurrentDirectory(tempDir);
                     SafeFileHandle? rootDirectory = null;
-                    var options = new FsFileOptions(FileMode.Open, FileSystemAccess.ReadAttributes);
+                    var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadAttributes);
 
                     // Act
                     using var handle = FileIO.OpenHandleAt(rootDirectory, fileName, options);
@@ -130,7 +130,7 @@ public sealed partial class FileIOTests
                 {
                     Directory.SetCurrentDirectory(tempDir);
                     SafeFileHandle? rootDirectory = null;
-                    var options = new FsFileOptions(FileMode.Open, FileSystemAccess.ReadAttributes)
+                    var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadAttributes)
                     {
                         Attributes = FileAttributes.Directory
                     };
@@ -166,14 +166,14 @@ public sealed partial class FileIOTests
                 var tempFile = Path.Combine(tempDir, "testfile.txt");
                 File.WriteAllText(tempFile, "test");
 
-                var dirOptions = new FsFileOptions(FileMode.Open, FileSystemAccess.ReadAttributes)
+                var dirOptions = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadAttributes)
                 {
                     Attributes = FileAttributes.Directory
                 };
                 using var rootDirectory = FileIO.OpenHandle(tempDir, dirOptions);
 
                 var fileName = Path.GetFileName(tempFile);
-                var fileOptions = new FsFileOptions(FileMode.Open, FileSystemAccess.ReadAttributes);
+                var fileOptions = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadAttributes);
 
                 // Act
                 using var handle = FileIO.OpenHandleAt(rootDirectory, fileName, fileOptions);
@@ -201,7 +201,7 @@ public sealed partial class FileIOTests
                 var subDir = Path.Combine(tempDir, "subdir");
                 Directory.CreateDirectory(subDir);
 
-                var dirOptions = new FsFileOptions(FileMode.Open, FileSystemAccess.ReadAttributes)
+                var dirOptions = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadAttributes)
                 {
                     Attributes = FileAttributes.Directory
                 };
@@ -232,7 +232,7 @@ public sealed partial class FileIOTests
             Directory.CreateDirectory(tempDir);
             try
             {
-                var dirOptions = new FsFileOptions(FileMode.Open, FileSystemAccess.ReadAttributes)
+                var dirOptions = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadAttributes)
                 {
                     Attributes = FileAttributes.Directory
                 };
@@ -262,7 +262,7 @@ public sealed partial class FileIOTests
             var tempFile = Path.GetTempFileName();
             try
             {
-                var options = new FsFileOptions(FileMode.Open, FileSystemAccess.ReadAttributes);
+                var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadAttributes);
                 using var rootDirectory = FileIO.OpenHandle(tempFile, options);
 
                 string? path = null;
@@ -287,7 +287,7 @@ public sealed partial class FileIOTests
             // Arrange
             SafeFileHandle? rootDirectory = null;
             var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            var options = new FsFileOptions(FileMode.Open, FileSystemAccess.ReadAttributes);
+            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadAttributes);
 
             // Act & Assert
             Assert.ThrowsAny<Exception>(() =>
@@ -302,7 +302,7 @@ public sealed partial class FileIOTests
             try
             {
                 SafeFileHandle? rootDirectory = null;
-                var options = new FsFileOptions(FileMode.Create, FileSystemAccess.Write);
+                var options = new FileOpenOptions(FileMode.Create, FileSystemAccess.Write);
 
                 // Act
                 using var handle = FileIO.OpenHandleAt(rootDirectory, tempFile, options);
@@ -328,7 +328,7 @@ public sealed partial class FileIOTests
             try
             {
                 SafeFileHandle? rootDirectory = null;
-                var options = new FsFileOptions(FileMode.Open, FileSystemAccess.Read);
+                var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read);
 
                 // Act
                 using var handle = FileIO.OpenHandleAt(rootDirectory, tempFile, options);
@@ -352,7 +352,7 @@ public sealed partial class FileIOTests
             try
             {
                 SafeFileHandle? rootDirectory = null;
-                var options = new FsFileOptions(FileMode.Open, FileSystemAccess.ReadAttributes, FileShare.None);
+                var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadAttributes, FileShare.None);
 
                 // Act
                 using var handle = FileIO.OpenHandleAt(rootDirectory, tempFile, options);
@@ -376,7 +376,7 @@ public sealed partial class FileIOTests
             try
             {
                 var rootDirectory = new SafeFileHandle(IntPtr.Zero, ownsHandle: false);
-                var options = new FsFileOptions(FileMode.Open, FileSystemAccess.ReadAttributes);
+                var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadAttributes);
 
                 // Act & Assert
                 Assert.ThrowsAny<Exception>(() =>
@@ -396,7 +396,7 @@ public sealed partial class FileIOTests
             try
             {
                 SafeFileHandle? rootDirectory = null;
-                var options = new FsFileOptions(FileMode.OpenOrCreate, FileSystemAccess.Write);
+                var options = new FileOpenOptions(FileMode.OpenOrCreate, FileSystemAccess.Write);
 
                 // Act
                 using var handle = FileIO.OpenHandleAt(rootDirectory, tempFile, options);
@@ -421,7 +421,7 @@ public sealed partial class FileIOTests
             try
             {
                 SafeFileHandle? rootDirectory = null;
-                var options = new FsFileOptions(FileMode.OpenOrCreate, FileSystemAccess.Write);
+                var options = new FileOpenOptions(FileMode.OpenOrCreate, FileSystemAccess.Write);
 
                 // Act
                 using var handle = FileIO.OpenHandleAt(rootDirectory, tempFile, options);
@@ -445,7 +445,7 @@ public sealed partial class FileIOTests
             try
             {
                 SafeFileHandle? rootDirectory = null;
-                var options = new FsFileOptions(FileMode.Open, FileSystemAccess.Read | FileSystemAccess.Write);
+                var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read | FileSystemAccess.Write);
 
                 // Act
                 using var handle = FileIO.OpenHandleAt(rootDirectory, tempFile, options);
@@ -469,7 +469,7 @@ public sealed partial class FileIOTests
             try
             {
                 SafeFileHandle? rootDirectory = null;
-                var options = new FsFileOptions(FileMode.Open, FileSystemAccess.ReadAttributes, FileShare.ReadWrite);
+                var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadAttributes, FileShare.ReadWrite);
 
                 // Act
                 using var handle = FileIO.OpenHandleAt(rootDirectory, tempFile, options);
@@ -497,14 +497,14 @@ public sealed partial class FileIOTests
                 var tempFile = Path.Combine(subDir, "testfile.txt");
                 File.WriteAllText(tempFile, "test");
 
-                var dirOptions = new FsFileOptions(FileMode.Open, FileSystemAccess.ReadAttributes)
+                var dirOptions = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadAttributes)
                 {
                     Attributes = FileAttributes.Directory
                 };
                 using var rootDirectory = FileIO.OpenHandle(tempDir, dirOptions);
 
                 var relativePath = Path.Combine("subdir", "testfile.txt");
-                var fileOptions = new FsFileOptions(FileMode.Open, FileSystemAccess.ReadAttributes);
+                var fileOptions = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadAttributes);
 
                 // Act
                 using var handle = FileIO.OpenHandleAt(rootDirectory, relativePath, fileOptions);
@@ -529,7 +529,7 @@ public sealed partial class FileIOTests
             try
             {
                 SafeFileHandle? rootDirectory = null;
-                var options = new FsFileOptions(FileMode.CreateNew, FileSystemAccess.Write);
+                var options = new FileOpenOptions(FileMode.CreateNew, FileSystemAccess.Write);
 
                 // Act
                 using var handle = FileIO.OpenHandleAt(rootDirectory, tempFile, options);
@@ -554,7 +554,7 @@ public sealed partial class FileIOTests
             try
             {
                 SafeFileHandle? rootDirectory = null;
-                var options = new FsFileOptions(FileMode.Append, FileSystemAccess.Write);
+                var options = new FileOpenOptions(FileMode.Append, FileSystemAccess.Write);
 
                 // Act
                 using var handle = FileIO.OpenHandleAt(rootDirectory, tempFile, options);
@@ -579,7 +579,7 @@ public sealed partial class FileIOTests
             {
                 File.WriteAllText(tempFile, "existing content");
                 SafeFileHandle? rootDirectory = null;
-                var options = new FsFileOptions(FileMode.Truncate, FileSystemAccess.Write);
+                var options = new FileOpenOptions(FileMode.Truncate, FileSystemAccess.Write);
 
                 // Act
                 using var handle = FileIO.OpenHandleAt(rootDirectory, tempFile, options);

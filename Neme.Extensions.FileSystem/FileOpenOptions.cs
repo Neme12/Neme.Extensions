@@ -5,17 +5,17 @@ using System.Runtime.Versioning;
 namespace Neme.Extensions.FileSystem;
 
 [StructLayout(LayoutKind.Auto)]
-public readonly record struct FsFileOptions
+public readonly record struct FileOpenOptions
 {
     private readonly AllOptions _allOptions;
     private readonly long _preallocationSize;
 
-    public FsFileOptions(FileMode mode, FileSystemAccess access, FileShare share)
+    public FileOpenOptions(FileMode mode, FileSystemAccess access, FileShare share)
     {
         _allOptions = ToAllOptions(mode, access, share, 0, 0, null);
     }
 
-    public FsFileOptions(FileMode mode, FileSystemAccess access)
+    public FileOpenOptions(FileMode mode, FileSystemAccess access)
     {
         _allOptions = ToAllOptions(mode, access, (access & FileSystemAccess.Write) != 0 || (access & FileSystemAccess.Delete) != 0
             ? FileShare.None
@@ -77,13 +77,13 @@ public readonly record struct FsFileOptions
     }
 
 #if NET6_0_OR_GREATER
-    public static FsFileOptions FromFileStreamOptions(FileStreamOptions options)
+    public static FileOpenOptions FromFileStreamOptions(FileStreamOptions options)
     {
 #if NET7_0_OR_GREATER
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 #endif
         {
-            return new FsFileOptions
+            return new FileOpenOptions
             {
                 Mode = options.Mode,
                 Access = FileSystemAccess.FromFileAccess(options.Access),
@@ -94,7 +94,7 @@ public readonly record struct FsFileOptions
 #if NET7_0_OR_GREATER
         else
         {
-            return new FsFileOptions
+            return new FileOpenOptions
             {
                 Mode = options.Mode,
                 Access = FileSystemAccess.FromFileAccess(options.Access),
@@ -106,7 +106,7 @@ public readonly record struct FsFileOptions
 #endif
     }
 
-    public static implicit operator FsFileOptions(FileStreamOptions options) =>
+    public static implicit operator FileOpenOptions(FileStreamOptions options) =>
         FromFileStreamOptions(options);
 #endif
 

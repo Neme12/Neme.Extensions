@@ -8,7 +8,7 @@ public sealed class FsFileOptionsTests
     [Fact]
     public void Constructor_WithExplicitShare_SetsModeAccessAndShare()
     {
-        var sut = new FsFileOptions(FileMode.CreateNew, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+        var sut = new FileOpenOptions(FileMode.CreateNew, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
 
         Assert.Equal(FileMode.CreateNew, sut.Mode);
         Assert.Equal(FileSystemAccess.ReadWrite, sut.Access);
@@ -27,7 +27,7 @@ public sealed class FsFileOptionsTests
     [InlineData(FileSystemAccess.ReadWrite, FileShare.None)]
     public void Constructor_WithImplicitShare_ComputesExpectedShare(FileSystemAccess access, FileShare expectedShare)
     {
-        var sut = new FsFileOptions(FileMode.Open, access);
+        var sut = new FileOpenOptions(FileMode.Open, access);
 
         Assert.Equal(FileMode.Open, sut.Mode);
         Assert.Equal(access, sut.Access);
@@ -47,7 +47,7 @@ public sealed class FsFileOptionsTests
 
         var expectedAttributes = FileAttributes.Hidden | FileAttributes.ReadOnly | FileAttributes.Archive;
 
-        var sut = new FsFileOptions
+        var sut = new FileOpenOptions
         {
             Mode = FileMode.Append,
             Access = FileSystemAccess.Delete | FileSystemAccess.Write,
@@ -69,7 +69,7 @@ public sealed class FsFileOptionsTests
     {
         var expected = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead;
 
-        var sut = new FsFileOptions
+        var sut = new FileOpenOptions
         {
 #pragma warning disable CA1416
             UnixCreateMode = expected,
@@ -82,7 +82,7 @@ public sealed class FsFileOptionsTests
     [PlatformOnlyFact(Platform.Unix)]
     public void UnixCreateMode_OnUnix_CanBeSetToNull()
     {
-        var sut = new FsFileOptions
+        var sut = new FileOpenOptions
         {
 #pragma warning disable CA1416
             UnixCreateMode = null,
@@ -95,7 +95,7 @@ public sealed class FsFileOptionsTests
     [PlatformOnlyFact(Platform.Windows)]
     public void UnixCreateMode_OnWindows_ThrowsPlatformNotSupportedException()
     {
-        Assert.Throws<PlatformNotSupportedException>(() => new FsFileOptions
+        Assert.Throws<PlatformNotSupportedException>(() => new FileOpenOptions
         {
 #pragma warning disable CA1416
             UnixCreateMode = UnixFileMode.UserRead,
@@ -115,7 +115,7 @@ public sealed class FsFileOptionsTests
             Options = FileOptions.Asynchronous | FileOptions.WriteThrough | FileOptions.RandomAccess,
         };
 
-        var sut = FsFileOptions.FromFileStreamOptions(options);
+        var sut = FileOpenOptions.FromFileStreamOptions(options);
 
         Assert.Equal(FileMode.Truncate, sut.Mode);
         Assert.Equal(FileSystemAccess.ReadWrite, sut.Access);
@@ -136,8 +136,8 @@ public sealed class FsFileOptionsTests
             Options = FileOptions.DeleteOnClose | FileOptions.SequentialScan,
         };
 
-        FsFileOptions converted = options;
-        var expected = FsFileOptions.FromFileStreamOptions(options);
+        FileOpenOptions converted = options;
+        var expected = FileOpenOptions.FromFileStreamOptions(options);
 
         Assert.Equal(expected, converted);
     }
@@ -157,7 +157,7 @@ public sealed class FsFileOptionsTests
             UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite,
         };
 
-        var sut = FsFileOptions.FromFileStreamOptions(options);
+        var sut = FileOpenOptions.FromFileStreamOptions(options);
 
         Assert.Equal(FileMode.Truncate, sut.Mode);
         Assert.Equal(FileSystemAccess.ReadWrite, sut.Access);

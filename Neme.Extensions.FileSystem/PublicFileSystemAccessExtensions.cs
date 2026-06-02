@@ -1,6 +1,6 @@
 ﻿namespace Neme.Extensions.FileSystem;
 
-public static class PublicFsFileAccessExtensions
+public static class PublicFileSystemAccessExtensions
 {
     extension(FileSystemAccess access)
     {

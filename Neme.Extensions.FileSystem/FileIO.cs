@@ -24,7 +24,7 @@ public static partial class FileIO
 #pragma warning restore CA1416
 
     [return: OwnershipTransfer]
-    public static SafeFileHandle OpenHandle(string path, FsFileOptions options)
+    public static SafeFileHandle OpenHandle(string path, FileOpenOptions options)
     {
         Strategy.ValidatePath(path);
 
@@ -32,12 +32,12 @@ public static partial class FileIO
     }
 
     [return: OwnershipTransfer]
-    public static FsFile Open(string path, FsFileOptions options) =>
+    public static OpenFile Open(string path, FileOpenOptions options) =>
         new(OpenHandle(path, options), options);
 
     public static bool TryOpenHandle(
         string path,
-        FsFileOptions options,
+        FileOpenOptions options,
         [NotNullWhen(true)][OwnershipTransfer] out SafeFileHandle? handle,
         bool requireDirectory = true)
     {
@@ -56,8 +56,8 @@ public static partial class FileIO
 
     public static bool TryOpen(
         string path,
-        FsFileOptions options,
-        [NotNullWhen(true)][OwnershipTransfer] out FsFile? file,
+        FileOpenOptions options,
+        [NotNullWhen(true)][OwnershipTransfer] out OpenFile? file,
         bool requireDirectory = true)
     {
         try
@@ -74,8 +74,8 @@ public static partial class FileIO
 
     [return: OwnershipTransfer]
     public static SafeFileHandle OpenHandle(
-        FsFileId fileId,
-        FsFileOptions options)
+        PersistentFileId fileId,
+        FileOpenOptions options)
     {
         Strategy.ValidateFileId(fileId);
 
@@ -83,16 +83,16 @@ public static partial class FileIO
     }
 
     [return: OwnershipTransfer]
-    public static FsFile Open(
-        FsFileId fileId,
-        FsFileOptions options)
+    public static OpenFile Open(
+        PersistentFileId fileId,
+        FileOpenOptions options)
     {
         return new(OpenHandle(fileId, options), options);
     }
 
     public static bool TryOpenHandle(
-        FsFileId fileId,
-        FsFileOptions options,
+        PersistentFileId fileId,
+        FileOpenOptions options,
         [NotNullWhen(true)][OwnershipTransfer] out SafeFileHandle? handle,
         bool requireDirectory = true)
     {
@@ -109,9 +109,9 @@ public static partial class FileIO
     }
 
     public static bool TryOpen(
-        FsFileId fileId,
-        FsFileOptions options,
-        [NotNullWhen(true)][OwnershipTransfer] out FsFile? file,
+        PersistentFileId fileId,
+        FileOpenOptions options,
+        [NotNullWhen(true)][OwnershipTransfer] out OpenFile? file,
         bool requireDirectory = true)
     {
         try
@@ -130,7 +130,7 @@ public static partial class FileIO
     public static SafeFileHandle OpenHandleAt(
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
-        FsFileOptions options)
+        FileOpenOptions options)
     {
         if (rootDirectory is null && path is null)
             throw new ArgumentException($"Either {nameof(rootDirectory)} or {nameof(path)} must be provided.");
@@ -142,10 +142,10 @@ public static partial class FileIO
     }
 
     [return: OwnershipTransfer]
-    public static FsFile OpenAt(
+    public static OpenFile OpenAt(
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
-        FsFileOptions options)
+        FileOpenOptions options)
     {
         return new(OpenHandleAt(rootDirectory, path, options), options);
     }
@@ -153,7 +153,7 @@ public static partial class FileIO
     public static bool TryOpenHandleAt(
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
-        FsFileOptions options,
+        FileOpenOptions options,
         [NotNullWhen(true)][OwnershipTransfer] out SafeFileHandle? file,
         bool requireDirectory = true)
     {
@@ -172,8 +172,8 @@ public static partial class FileIO
     public static bool TryOpenAt(
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
-        FsFileOptions options,
-        [NotNullWhen(true)][OwnershipTransfer] out FsFile? file,
+        FileOpenOptions options,
+        [NotNullWhen(true)][OwnershipTransfer] out OpenFile? file,
         bool requireDirectory = true)
     {
         try
@@ -189,7 +189,7 @@ public static partial class FileIO
     }
 
     [return: OwnershipTransfer]
-    public static SafeFileHandle ReopenHandle([Borrow] SafeFileHandle file, FsFileOptions options)
+    public static SafeFileHandle ReopenHandle([Borrow] SafeFileHandle file, FileOpenOptions options)
     {
         Strategy.ValidateFileHandle(file);
 
@@ -197,7 +197,7 @@ public static partial class FileIO
     }
 
     [return: OwnershipTransfer]
-    public static FsFile Reopen([Borrow] FsFile file, FsFileOptions? options = null) =>
+    public static OpenFile Reopen([Borrow] OpenFile file, FileOpenOptions? options = null) =>
         new(OpenHandleAt(file.Handle, null, file.Options), options ?? file.Options);
 
     [return: OwnershipTransfer]
@@ -209,7 +209,7 @@ public static partial class FileIO
     }
 
     [return: OwnershipTransfer]
-    public static FsFile Duplicate([Borrow] FsFile file) =>
+    public static OpenFile Duplicate([Borrow] OpenFile file) =>
         new(DuplicateHandle(file.Handle, file.Options.Access), file.Options);
 
     public static string GetPath([Borrow] SafeFileHandle file)
@@ -219,11 +219,11 @@ public static partial class FileIO
         return Strategy.GetPath(file);
     }
 
-    public static string GetPath(FsFileId fileId)
+    public static string GetPath(PersistentFileId fileId)
     {
         Strategy.ValidateFileId(fileId);
 
-        var options = new FsFileOptions(FileMode.Open, FileSystemAccess.ReadAttributes, FileShare.ReadWrite | FileShare.Delete);
+        var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadAttributes, FileShare.ReadWrite | FileShare.Delete);
         using (var handle = Strategy.OpenHandle(fileId, options))
             return Strategy.GetPath(handle);
     }
@@ -257,14 +257,14 @@ public static partial class FileIO
         return Strategy.GetFileAttributes(file);
     }
 
-    public static FsFileInfo GetFileInfo([Borrow] SafeFileHandle file)
+    public static FileBasicInfo GetFileInfo([Borrow] SafeFileHandle file)
     {
         Strategy.ValidateFileHandle(file);
 
         return Strategy.GetFileInfo(file);
     }
 
-    public static FsFileId GetFileId([Borrow] SafeFileHandle file)
+    public static PersistentFileId GetFileId([Borrow] SafeFileHandle file)
     {
         Strategy.ValidateFileHandle(file);
 
@@ -274,7 +274,7 @@ public static partial class FileIO
     [return: OwnershipTransferUnless(nameof(leaveOpen))]
     public static CheckedFileStream CreateFileStream(
         [OwnershipTransferUnless(nameof(leaveOpen))] SafeFileHandle file,
-        FsFileOptions options,
+        FileOpenOptions options,
         bool leaveOpen = false,
         int bufferSize = 4096)
     {

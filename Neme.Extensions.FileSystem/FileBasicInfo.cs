@@ -2,7 +2,7 @@
 
 namespace Neme.Extensions.FileSystem;
 
-public readonly record struct FsFileInfo
+public readonly record struct FileBasicInfo
 {
     public FileAttributes Attributes { get; init; }
 

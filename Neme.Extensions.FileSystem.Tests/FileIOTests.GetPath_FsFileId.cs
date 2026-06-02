@@ -1,4 +1,4 @@
-using Neme.Extensions.Tests.Utilities;
+﻿using Neme.Extensions.Tests.Utilities;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
@@ -14,7 +14,7 @@ public sealed partial class FileIOTests
             var tempFile = Path.GetTempFileName();
             try
             {
-                FsFileId fileId;
+                PersistentFileId fileId;
                 using (var fileStream = File.Open(tempFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
                     fileId = FileIO.GetFileId(fileStream.SafeFileHandle);
@@ -42,7 +42,7 @@ public sealed partial class FileIOTests
             {
                 File.WriteAllText(tempFile, "test content");
 
-                FsFileId fileId;
+                PersistentFileId fileId;
                 using (var fileStream = File.Open(tempFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
                     fileId = FileIO.GetFileId(fileStream.SafeFileHandle);

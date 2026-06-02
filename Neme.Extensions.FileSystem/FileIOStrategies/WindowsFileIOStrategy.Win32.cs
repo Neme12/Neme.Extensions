@@ -23,7 +23,7 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
     protected override int MaxPathLength => short.MaxValue - 4; // 4 for the \\?\ prefix.
 
     [return: OwnershipTransfer]
-    public override SafeFileHandle OpenHandle(string path, FsFileOptions options)
+    public override SafeFileHandle OpenHandle(string path, FileOpenOptions options)
     {
         Debug.Assert(IsValidPath(path));
 
@@ -159,14 +159,14 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
         return FileAttributes.FromWin32((FILE_FLAGS_AND_ATTRIBUTES)fileInformation.dwFileAttributes);
     }
 
-    public override FsFileInfo GetFileInfo([Borrow] SafeFileHandle file)
+    public override FileBasicInfo GetFileInfo([Borrow] SafeFileHandle file)
     {
         Debug.Assert(IsValidFileHandle(file));
 
         if (!PInvoke.GetFileInformationByHandle(file, out var fileInformation))
             throw Win32Marshal.GetExceptionForLastWin32Error();
 
-        return new FsFileInfo
+        return new FileBasicInfo
         {
             Attributes = FileAttributes.FromWin32((FILE_FLAGS_AND_ATTRIBUTES)fileInformation.dwFileAttributes),
             CreationTime = InstantFromFileTime(fileInformation.ftCreationTime),
@@ -176,7 +176,7 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
         };
     }
 
-    public override unsafe FsFileId GetFileId([Borrow] SafeFileHandle file)
+    public override unsafe PersistentFileId GetFileId([Borrow] SafeFileHandle file)
     {
         Debug.Assert(IsValidFileHandle(file));
 
@@ -196,8 +196,8 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
             fileIdLow = Unsafe.AsRef<ulong>(idBuffer);
         }
 
-        var windowsFileId = new FsFileId.WindowsId(fileInfo.VolumeSerialNumber, fileIdHigh, fileIdLow);
-        return FsFileId.FromWindowsId(windowsFileId);
+        var windowsFileId = new PersistentFileId.WindowsId(fileInfo.VolumeSerialNumber, fileIdHigh, fileIdLow);
+        return PersistentFileId.FromWindowsId(windowsFileId);
     }
 
     private static Instant InstantFromFileTime(FILETIME fileTime)

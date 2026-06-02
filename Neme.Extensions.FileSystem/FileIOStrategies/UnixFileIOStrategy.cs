@@ -69,7 +69,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     }
 
     [return: OwnershipTransfer]
-    public override SafeFileHandle OpenHandle(string path, FsFileOptions options)
+    public override SafeFileHandle OpenHandle(string path, FileOpenOptions options)
     {
         Debug.Assert(IsValidPath(path));
 
@@ -85,7 +85,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     }
 
     [return: OwnershipTransfer]
-    public override unsafe SafeFileHandle OpenHandle(FsFileId fileId, FsFileOptions options)
+    public override unsafe SafeFileHandle OpenHandle(PersistentFileId fileId, FileOpenOptions options)
     {
         Debug.Assert(IsValidFileId(fileId));
 
@@ -147,7 +147,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     }
 
     [return: OwnershipTransfer]
-    public override SafeFileHandle OpenHandleAt([Borrow] SafeFileHandle? rootDirectory, string? path, FsFileOptions options)
+    public override SafeFileHandle OpenHandleAt([Borrow] SafeFileHandle? rootDirectory, string? path, FileOpenOptions options)
     {
         Debug.Assert(rootDirectory is not null || path is not null);
         Debug.Assert(rootDirectory is null || IsValidFileHandle(rootDirectory));
@@ -349,12 +349,12 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         throw new NotImplementedException();
     }
 
-    public override FsFileInfo GetFileInfo([Borrow] SafeFileHandle file)
+    public override FileBasicInfo GetFileInfo([Borrow] SafeFileHandle file)
     {
         throw new NotImplementedException();
     }
 
-    public override unsafe FsFileId GetFileId([Borrow] SafeFileHandle file)
+    public override unsafe PersistentFileId GetFileId([Borrow] SafeFileHandle file)
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
@@ -372,7 +372,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
             var fileIdBytes = fileInfoBuffer.Slice(sizeof(Interop.Linux.FileHandleHeader), (int)fileHeader.handle_bytes);
 
-            FsFileId.InlineByteArray array = default;
+            PersistentFileId.InlineByteArray array = default;
 
 #if NET8_0_OR_GREATER
             fileIdBytes.CopyTo(MemoryMarshal.CreateSpan(ref array.byte0, fileIdBytes.Length));
@@ -380,8 +380,8 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             fileIdBytes.CopyTo(new Span<byte>(array.bytes, fileIdBytes.Length));
 #endif
 
-            var linuxFileId = new FsFileId.LinuxId(mountId, fileHeader.handle_type, array, (byte)fileHeader.handle_bytes);
-            return FsFileId.FromLinuxId(linuxFileId);
+            var linuxFileId = new PersistentFileId.LinuxId(mountId, fileHeader.handle_type, array, (byte)fileHeader.handle_bytes);
+            return PersistentFileId.FromLinuxId(linuxFileId);
         }
         else
         {

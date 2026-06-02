@@ -11,16 +11,16 @@ internal abstract class FileIOStrategy
     protected abstract int MaxPathLength { get; }
 
     [return: OwnershipTransfer]
-    public abstract SafeFileHandle OpenHandle(string path, FsFileOptions options);
+    public abstract SafeFileHandle OpenHandle(string path, FileOpenOptions options);
 
     [return: OwnershipTransfer]
-    public abstract SafeFileHandle OpenHandle(FsFileId fileId, FsFileOptions options);
+    public abstract SafeFileHandle OpenHandle(PersistentFileId fileId, FileOpenOptions options);
 
     [return: OwnershipTransfer]
     public abstract SafeFileHandle OpenHandleAt(
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
-        FsFileOptions options);
+        FileOpenOptions options);
 
     [return: OwnershipTransfer]
     public abstract SafeFileHandle DuplicateHandle([Borrow] SafeFileHandle file, FileSystemAccess? access);
@@ -35,9 +35,9 @@ internal abstract class FileIOStrategy
 
     public abstract FileAttributes GetFileAttributes([Borrow] SafeFileHandle file);
 
-    public abstract FsFileInfo GetFileInfo([Borrow] SafeFileHandle file);
+    public abstract FileBasicInfo GetFileInfo([Borrow] SafeFileHandle file);
 
-    public abstract FsFileId GetFileId([Borrow] SafeFileHandle file);
+    public abstract PersistentFileId GetFileId([Borrow] SafeFileHandle file);
 
     internal void ValidateFileName(string? fileName, bool optional = false, [CallerArgumentExpression(nameof(fileName))] string? paramName = null)
     {
@@ -72,7 +72,7 @@ internal abstract class FileIOStrategy
             Throw.ArgumentException(file, "File handle must be valid and open.", paramName);
     }
 
-    internal void ValidateFileId(FsFileId fileId, [CallerArgumentExpression(nameof(fileId))] string? paramName = null)
+    internal void ValidateFileId(PersistentFileId fileId, [CallerArgumentExpression(nameof(fileId))] string? paramName = null)
     {
         if (!IsValidFileId(fileId))
             Throw.ArgumentException(fileId, "File ID must be valid.", paramName);
@@ -87,6 +87,6 @@ internal abstract class FileIOStrategy
     protected static bool IsValidFileHandle(SafeFileHandle file) =>
         !file.IsClosed && !file.IsInvalid;
 
-    protected static bool IsValidFileId(FsFileId fileId) =>
+    protected static bool IsValidFileId(PersistentFileId fileId) =>
         fileId != default;
 }

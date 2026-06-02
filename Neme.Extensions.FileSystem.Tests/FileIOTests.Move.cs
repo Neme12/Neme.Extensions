@@ -23,7 +23,7 @@ public sealed partial class FileIOTests
         {
             // Arrange
             var tempFile = Path.GetTempFileName();
-            var options = new FsFileOptions(FileMode.Open, FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.ReadWrite | FileShare.Delete);
+            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.ReadWrite | FileShare.Delete);
 
             try
             {
@@ -48,7 +48,7 @@ public sealed partial class FileIOTests
             var sourceFile = Path.Combine(tempDir, "source.txt");
             var destinationFile = Path.Combine(tempDir, "destination.txt");
             File.WriteAllText(sourceFile, "content");
-            var options = new FsFileOptions(FileMode.Open, FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.ReadWrite | FileShare.Delete);
+            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.ReadWrite | FileShare.Delete);
 
             try
             {
@@ -80,7 +80,7 @@ public sealed partial class FileIOTests
             var destinationFile = Path.Combine(tempDir, "destination.txt");
             File.WriteAllText(sourceFile, "source content");
             File.WriteAllText(destinationFile, "destination content");
-            var options = new FsFileOptions(FileMode.Open, FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.ReadWrite | FileShare.Delete);
+            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.ReadWrite | FileShare.Delete);
 
             try
             {
@@ -113,7 +113,7 @@ public sealed partial class FileIOTests
             var destinationFile = Path.Combine(tempDir, "destination.txt");
             File.WriteAllText(sourceFile, "source content");
             File.WriteAllText(destinationFile, "destination content");
-            var options = new FsFileOptions(FileMode.Open, FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.ReadWrite | FileShare.Delete);
+            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.ReadWrite | FileShare.Delete);
 
             try
             {

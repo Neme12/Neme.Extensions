@@ -5,13 +5,13 @@ using System.Diagnostics;
 
 namespace Neme.Extensions.FileSystem;
 
-public sealed class FsFile : IDisposable
+public sealed class OpenFile : IDisposable
 {
     [Owned]
     private SafeFileHandle _handle;
-    private readonly FsFileOptions _options;
+    private readonly FileOpenOptions _options;
 
-    public FsFile([OwnershipTransfer] SafeFileHandle handle, FsFileOptions options)
+    public OpenFile([OwnershipTransfer] SafeFileHandle handle, FileOpenOptions options)
     {
         _handle = handle;
         _options = options;
@@ -34,7 +34,7 @@ public sealed class FsFile : IDisposable
         }
     }
 
-    public FsFileOptions Options
+    public FileOpenOptions Options
     {
         get
         {

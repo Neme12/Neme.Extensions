@@ -9,7 +9,7 @@ using System.Text;
 namespace Neme.Extensions.FileSystem;
 
 [StructLayout(LayoutKind.Explicit)]
-public readonly record struct FsFileId : IEquatable<FsFileId>
+public readonly record struct PersistentFileId : IEquatable<PersistentFileId>
 {
     [FieldOffset(0)]
     private readonly FileIdKind _fileIdKind;
@@ -25,23 +25,23 @@ public readonly record struct FsFileId : IEquatable<FsFileId>
         Linux = 1,
     }
 
-    private FsFileId(WindowsId windowsFileId)
+    private PersistentFileId(WindowsId windowsFileId)
     {
         _fileIdKind = FileIdKind.Windows;
         _windowsFileId = windowsFileId;
     }
 
-    private FsFileId(LinuxId linuxFileId)
+    private PersistentFileId(LinuxId linuxFileId)
     {
         _fileIdKind = FileIdKind.Linux;
         _linuxFileId = linuxFileId;
     }
 
-    internal static FsFileId FromWindowsId(WindowsId windowsFileId) =>
-        new FsFileId(windowsFileId);
+    internal static PersistentFileId FromWindowsId(WindowsId windowsFileId) =>
+        new PersistentFileId(windowsFileId);
 
-    internal static FsFileId FromLinuxId(LinuxId linuxFileId) =>
-        new FsFileId(linuxFileId);
+    internal static PersistentFileId FromLinuxId(LinuxId linuxFileId) =>
+        new PersistentFileId(linuxFileId);
 
     internal WindowsId WindowsFileId
     {
@@ -65,7 +65,7 @@ public readonly record struct FsFileId : IEquatable<FsFileId>
         }
     }
 
-    public bool Equals(FsFileId other)
+    public bool Equals(PersistentFileId other)
     {
         if (_fileIdKind != other._fileIdKind)
             return false;
