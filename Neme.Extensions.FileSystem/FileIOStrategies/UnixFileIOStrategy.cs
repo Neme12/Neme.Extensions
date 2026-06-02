@@ -438,7 +438,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
     private static SafeFileHandle OpenMountHandle(string mountPath)
     {
-        var rawHandle = Syscall.open(mountPath, O_PathIfSupported | OpenFlags.O_CLOEXEC);
+        var rawHandle = Syscall.open(mountPath, OpenFlags.O_RDONLY | OpenFlags.O_CLOEXEC);
         var handle = new SafeFileHandle((nint)rawHandle, ownsHandle: true);
 
         if (handle.IsInvalid)
