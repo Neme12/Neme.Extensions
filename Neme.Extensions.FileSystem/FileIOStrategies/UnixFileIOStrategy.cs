@@ -55,6 +55,9 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     private const string MacFdPathPrefix = "/dev/fd/";
     private const string BsdFdPathPrefix = "/dev/fd/";
 
+    private static readonly OpenFlags O_PathIfSupported =
+        RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? OpenFlags.O_PATH : OpenFlags.O_RDONLY;
+
     private static string GetFdLinkPath(SafeHandleExtensions.Scope<SafeFileHandle> fileScope)
     {
         var prefix =
@@ -315,9 +318,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
             var rawParentHandle = Syscall.open(
                 parentPath,
-                (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
-                    ? OpenFlags.O_PATH
-                    : OpenFlags.O_RDONLY) | OpenFlags.O_CLOEXEC);
+                O_PathIfSupported | OpenFlags.O_CLOEXEC);
 
             if (rawParentHandle < 0)
                 throw UnixMarshal.GetExceptionForUnixError((int)Stdlib.GetLastError(), parentPath);
@@ -437,7 +438,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
     private static SafeFileHandle OpenMountHandle(string mountPath)
     {
-        var rawHandle = Syscall.open(mountPath, OpenFlags.O_RDONLY | OpenFlags.O_CLOEXEC);
+        var rawHandle = Syscall.open(mountPath, O_PathIfSupported | OpenFlags.O_CLOEXEC);
         var handle = new SafeFileHandle((nint)rawHandle, ownsHandle: true);
 
         if (handle.IsInvalid)
