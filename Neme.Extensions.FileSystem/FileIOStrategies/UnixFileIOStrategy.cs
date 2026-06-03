@@ -168,7 +168,17 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     [return: OwnershipTransfer]
     public override SafeFileHandle DuplicateHandle([Borrow] SafeFileHandle file, FileSystemAccess? access)
     {
-        throw new NotImplementedException();
+        if (access is not null)
+            throw new PlatformNotSupportedException("Specifying access when duplicating a handle is not supported on Unix.");
+
+        using (var fileScope = file.CreateScope())
+        {
+            var rawHandle = Syscall.dup((int)fileScope.Handle);
+            if (rawHandle < 0)
+                throw UnixMarshal.GetExceptionForUnixError((int)Stdlib.GetLastError());
+
+            return new SafeFileHandle((nint)rawHandle, ownsHandle: true);
+        }
     }
 
     public override unsafe string GetPath([Borrow] SafeFileHandle file)
