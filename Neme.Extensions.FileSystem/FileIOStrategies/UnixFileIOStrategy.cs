@@ -104,18 +104,28 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         using var mountScope = mountHandle.CreateScope();
         using OwnedOrBorrowed<SafeFileHandle?> handle = OwnedOrBorrowed.Create<SafeFileHandle?>(null);
 
+        var bufferLength = (uint?)linuxFileId.Buffer?.Length ?? linuxFileId.InlineBufferLength;
+
         var fileHeaderSize = sizeof(Interop.Linux.FileHandleHeader);
-        ref var fileHeader = ref AllocateFileInfo<Interop.Linux.FileHandleHeader>(stackalloc byte[fileHeaderSize + 128], out var fileInfoBuffer);
-        fileHeader.handle_bytes = linuxFileId.BufferLength;
+        ref var fileHeader = ref AllocateFileInfo<Interop.Linux.FileHandleHeader>(stackalloc byte[fileHeaderSize + (int)bufferLength], out var fileInfoBuffer);
+        fileHeader.handle_bytes = bufferLength;
         fileHeader.handle_type = linuxFileId.FileType;
 
-        var destination = fileInfoBuffer.Slice(fileHeaderSize, (int)linuxFileId.BufferLength);
-        fixed (byte* destinationPointer = destination)
+        var destination = fileInfoBuffer.Slice(fileHeaderSize, (int)bufferLength);
+
+        if (linuxFileId.Buffer is not null)
         {
-            linuxFileId.Buffer.WithSpan(static (source, state) =>
+            linuxFileId.Buffer.CopyTo(destination);
+        }
+        else
+        {
+            fixed (byte* destinationPointer = destination)
             {
-                source[..state.Length].CopyTo(new Span<byte>((void*)state.Pointer, state.Length));
-            }, (Length: (int)linuxFileId.BufferLength, Pointer: (nint)destinationPointer));
+                linuxFileId.InlineBuffer.WithSpan(static (source, state) =>
+                {
+                    source[..state.Length].CopyTo(new Span<byte>((void*)state.Pointer, state.Length));
+                }, (Length: (int)linuxFileId.InlineBufferLength, Pointer: (nint)destinationPointer));
+            }
         }
 
         while (true)
@@ -372,25 +382,47 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         {
             using var fileScope = file.CreateScope();
 
-            ref var fileHeader = ref AllocateFileInfo<Interop.Linux.FileHandleHeader>(stackalloc byte[sizeof(Interop.Linux.FileHandleHeader) + 128], out var fileInfoBuffer);
-            fileHeader.handle_bytes = 128;
+            ref Interop.Linux.FileHandleHeader fileHeader = ref Unsafe.NullRef<Interop.Linux.FileHandleHeader>();
+            Span<byte> fileInfoBuffer;
 
-            var result = Interop.Linux.NameToHandleAt((int)fileScope.Handle, "", ref fileHeader, out var mountId, Interop.Linux.NameToHandleAtFlags.AT_EMPTY_PATH);
-            if (result != 0)
-                throw UnixMarshal.GetExceptionForLastUnixError();
+            int mountId;
+
+            var size = 16;
+
+            while (true)
+            {
+#pragma warning disable CS9081
+#pragma warning disable CS9085
+                fileHeader = ref AllocateFileInfo<Interop.Linux.FileHandleHeader>(stackalloc byte[sizeof(Interop.Linux.FileHandleHeader) + size], out fileInfoBuffer);
+#pragma warning restore CS9085
+#pragma warning restore CS9081
+                fileHeader.handle_bytes = (uint)size;
+
+                var result = Interop.Linux.NameToHandleAt((int)fileScope.Handle, "", ref fileHeader, out mountId, Interop.Linux.NameToHandleAtFlags.AT_EMPTY_PATH);
+                if (result != 0)
+                {
+                    var error = (Errno)Marshal.GetLastPInvokeError();
+                    if (error == Errno.EOVERFLOW)
+                    {
+                        size *= 2;
+                        if (size > 1024) // Arbitrary limit to prevent infinite loop, especially on the stack.
+                            throw UnixMarshal.GetExceptionForUnixError(error);
+
+                        continue;
+                    }
+                    else
+                    {
+                        throw UnixMarshal.GetExceptionForUnixError(error);
+                    }
+                }
+
+                break;
+            }
 
             var fileIdBytes = fileInfoBuffer.Slice(sizeof(Interop.Linux.FileHandleHeader), (int)fileHeader.handle_bytes);
 
-            PersistentFileId.InlineByteArray array = default;
-
-#if NET8_0_OR_GREATER
-            fileIdBytes.CopyTo(MemoryMarshal.CreateSpan(ref array.byte0, fileIdBytes.Length));
-#else
-            fileIdBytes.CopyTo(new Span<byte>(array.bytes, fileIdBytes.Length));
-#endif
-
             var mountPath = GetMountPathById(mountId);
-            var linuxFileId = new PersistentFileId.LinuxId(mountPath, fileHeader.handle_type, array, (byte)fileHeader.handle_bytes);
+            var linuxFileId = new PersistentFileId.LinuxId(mountPath, fileHeader.handle_type, fileIdBytes);
             return PersistentFileId.FromLinuxId(linuxFileId);
         }
         else

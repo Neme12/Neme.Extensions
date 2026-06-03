@@ -18,28 +18,39 @@ public sealed class FsFileIdTests
     [Fact]
     public void FromLinuxId_ReturnsInstanceExposingLinuxFileId()
     {
-        var array = new PersistentFileId.InlineByteArray();
-        array.WithSpan((span, _) =>
-        {
-            span[0] = 3;
-            span[1] = 4;
-        }, default(ValueTuple));
-        var linuxId = new PersistentFileId.LinuxId("/mnt/test", 2, array, 4);
+        var linuxId = new PersistentFileId.LinuxId("/mnt/test", 2, [3, 4, 0, 0]);
 
         var sut = PersistentFileId.FromLinuxId(linuxId);
 
         Assert.Equal(linuxId, sut.LinuxFileId);
         Assert.Equal("/mnt/test", sut.LinuxFileId.MountPath);
         Assert.Equal(2, sut.LinuxFileId.FileType);
-        Assert.Equal(4, sut.LinuxFileId.BufferLength);
+        Assert.Equal(4, sut.LinuxFileId.InlineBufferLength);
+        Assert.Null(sut.LinuxFileId.Buffer);
 
-        sut.LinuxFileId.Buffer.WithSpan((span, _) =>
+        sut.LinuxFileId.InlineBuffer.WithSpan((span, _) =>
         {
             Assert.Equal(3, span[0]);
             Assert.Equal(4, span[1]);
             Assert.Equal(0, span[2]);
             Assert.Equal(0, span[3]);
         }, default(ValueTuple));
+    }
+
+    [Fact]
+    public void FromLinuxId_WithAllocatedBuffer_ReturnsInstanceExposingLinuxFileId()
+    {
+        var range = Enumerable.Range(0, 128).Select(i => (byte)i).ToArray();
+        var linuxId = new PersistentFileId.LinuxId("/mnt/test", 2, range);
+
+        var sut = PersistentFileId.FromLinuxId(linuxId);
+
+        Assert.Equal(linuxId, sut.LinuxFileId);
+        Assert.Equal("/mnt/test", sut.LinuxFileId.MountPath);
+        Assert.Equal(2, sut.LinuxFileId.FileType);
+        Assert.Equal(0, sut.LinuxFileId.InlineBufferLength);
+
+        Assert.Equal(range, sut.LinuxFileId.Buffer);
     }
 
     [Fact]
@@ -56,15 +67,7 @@ public sealed class FsFileIdTests
     [Fact]
     public void FromLinuxId_ToString()
     {
-        var array = new PersistentFileId.InlineByteArray();
-        array.WithSpan((span, _) =>
-        {
-            span[0] = 50;
-            span[1] = 150;
-            span[2] = 250;
-        }, default(ValueTuple));
-
-        var linuxId = new PersistentFileId.LinuxId("/mnt/test", 200, array, 3);
+        var linuxId = new PersistentFileId.LinuxId("/mnt/test", 200, [50, 150, 250]);
 
         var sut = PersistentFileId.FromLinuxId(linuxId);
         var str = sut.ToString();

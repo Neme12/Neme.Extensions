@@ -9,39 +9,41 @@ namespace Neme.Extensions.FileSystem;
 public readonly partial record struct PersistentFileId
 {
 #if NET8_0_OR_GREATER
-    [InlineArray(128)]
+    [InlineArray(16)]
 #endif
     internal unsafe struct InlineByteArray : IEquatable<InlineByteArray>
     {
+        public const int Length = 16;
+
 #if NET8_0_OR_GREATER
         public byte byte0;
 
         public T WithSpan<T, TState>(SpanFunc<byte, TState, T> action, TState state)
         {
-            var span = MemoryMarshal.CreateSpan(ref byte0, 128);
+            var span = MemoryMarshal.CreateSpan(ref byte0, Length);
             return action(span, state);
         }
 
         public void WithSpan<TState>(SpanAction<byte, TState> action, TState state)
         {
-            var span = MemoryMarshal.CreateSpan(ref byte0, 128);
+            var span = MemoryMarshal.CreateSpan(ref byte0, Length);
             action(span, state);
         }
 
         public bool Equals(InlineByteArray other)
         {
-            var span = MemoryMarshal.CreateSpan(ref byte0, 128);
-            var otherSpan = MemoryMarshal.CreateSpan(ref other.byte0, 128);
+            var span = MemoryMarshal.CreateSpan(ref byte0, Length);
+            var otherSpan = MemoryMarshal.CreateSpan(ref other.byte0, Length);
             return span.SequenceEqual(otherSpan);
         }
 #else
-        public fixed byte bytes[128];
+        public fixed byte bytes[16];
 
         public T WithSpan<T, TState>(SpanFunc<byte, TState, T> action, TState state)
         {
             fixed (byte* ptr = bytes)
             {
-                var span = new Span<byte>(ptr, 128);
+                var span = new Span<byte>(ptr, Length);
                 return action(span, state);
             }
         }
@@ -50,7 +52,7 @@ public readonly partial record struct PersistentFileId
         {
             fixed (byte* ptr = bytes)
             {
-                var span = new Span<byte>(ptr, 128);
+                var span = new Span<byte>(ptr, Length);
                 action(span, state);
             }
         }
@@ -59,8 +61,8 @@ public readonly partial record struct PersistentFileId
         {
             fixed (byte* ptr = bytes)
             {
-                var span = new Span<byte>(ptr, 128);
-                var otherSpan = new Span<byte>(other.bytes, 128);
+                var span = new Span<byte>(ptr, Length);
+                var otherSpan = new Span<byte>(other.bytes, Length);
                 return span.SequenceEqual(otherSpan);
             }
         }
