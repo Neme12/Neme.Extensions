@@ -3,33 +3,19 @@ using System.Runtime.InteropServices;
 
 namespace Neme.Extensions.FileSystem;
 
-[StructLayout(LayoutKind.Explicit)]
+[StructLayout(LayoutKind.Auto)]
 public readonly partial record struct PersistentFileId : IEquatable<PersistentFileId>
 {
-    [FieldOffset(0)]
-    private readonly FileIdKind _fileIdKind;
-
-    [FieldOffset(8)]
-    private readonly WindowsId _windowsFileId;
-    [FieldOffset(8)]
-    private readonly LinuxId _linuxFileId;
-
-    private enum FileIdKind : byte
-    {
-        Windows = 0,
-        Linux = 1,
-    }
+    private readonly PlatformId _platformId;
 
     private PersistentFileId(WindowsId windowsFileId)
     {
-        _fileIdKind = FileIdKind.Windows;
-        _windowsFileId = windowsFileId;
+        _platformId = windowsFileId;
     }
 
     private PersistentFileId(LinuxId linuxFileId)
     {
-        _fileIdKind = FileIdKind.Linux;
-        _linuxFileId = linuxFileId;
+        _platformId = linuxFileId;
     }
 
     internal static PersistentFileId FromWindowsId(WindowsId windowsFileId) =>
@@ -42,10 +28,10 @@ public readonly partial record struct PersistentFileId : IEquatable<PersistentFi
     {
         get
         {
-            if (_fileIdKind != FileIdKind.Windows)
+            if (_platformId is not WindowsId windowsId)
                 throw new InvalidOperationException();
 
-            return _windowsFileId;
+            return windowsId;
         }
     }
 
@@ -53,22 +39,23 @@ public readonly partial record struct PersistentFileId : IEquatable<PersistentFi
     {
         get
         {
-            if (_fileIdKind != FileIdKind.Linux)
+            if (_platformId is not LinuxId linuxId)
                 throw new InvalidOperationException();
 
-            return _linuxFileId;
+            return linuxId;
         }
     }
 
     public bool Equals(PersistentFileId other)
     {
-        if (_fileIdKind != other._fileIdKind)
+        if (_platformId?.GetType() != other._platformId?.GetType())
             return false;
 
-        return _fileIdKind switch
+        return _platformId switch
         {
-            FileIdKind.Windows => WindowsFileId.Equals(other.WindowsFileId),
-            FileIdKind.Linux => LinuxFileId.Equals(other.LinuxFileId),
+            WindowsId windowsId => windowsId.Equals(other.WindowsFileId),
+            LinuxId linuxId => linuxId.Equals(other.LinuxFileId),
+            null => other._platformId is null,
             _ => throw new UnreachableException(),
         };
     }
@@ -76,30 +63,34 @@ public readonly partial record struct PersistentFileId : IEquatable<PersistentFi
     public override int GetHashCode()
     {
         var hashCode = new HashCode();
-        hashCode.Add(_fileIdKind);
+        hashCode.Add(_platformId.GetType());
 
-        switch (_fileIdKind)
+        switch (_platformId)
         {
-            case FileIdKind.Windows:
-                hashCode.Add(_windowsFileId);
+            case WindowsId windowsId:
+                hashCode.Add(windowsId);
                 break;
 
-            case FileIdKind.Linux:
-                hashCode.Add(_linuxFileId);
+            case LinuxId linuxId:
+                hashCode.Add(linuxId);
                 break;
 
-            default:
-                throw new UnreachableException();
+            case null:
+                break;
         }
 
         return hashCode.ToHashCode();
     }
 
     public override string ToString() =>
-        _fileIdKind switch
+        _platformId switch
         {
-            FileIdKind.Windows => _windowsFileId.ToString(),
-            FileIdKind.Linux => _linuxFileId.ToString(),
-            _ => throw new UnreachableException(),
+            WindowsId windowsId => windowsId.ToString(),
+            LinuxId linuxId => linuxId.ToString(),
+            _ => throw new InvalidOperationException("File ID is not initialized."),
         };
+
+    internal abstract record class PlatformId
+    {
+    }
 }

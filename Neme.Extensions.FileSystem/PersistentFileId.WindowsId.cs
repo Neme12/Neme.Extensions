@@ -1,11 +1,8 @@
-﻿using System.Runtime.InteropServices;
-
-namespace Neme.Extensions.FileSystem;
+﻿namespace Neme.Extensions.FileSystem;
 
 public readonly partial record struct PersistentFileId
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal readonly record struct WindowsId
+    internal sealed record class WindowsId : PlatformId
     {
         internal readonly ulong VolumeSerialNumber;
         internal readonly ulong FileIdHigh;

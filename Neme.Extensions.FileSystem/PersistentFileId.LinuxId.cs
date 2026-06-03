@@ -1,12 +1,10 @@
-﻿using System.Runtime.InteropServices;
-using System.Text;
+﻿using System.Text;
 
 namespace Neme.Extensions.FileSystem;
 
 public readonly partial record struct PersistentFileId
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal readonly record struct LinuxId
+    internal sealed record class LinuxId : PlatformId
     {
         internal readonly int MountId;
         internal readonly int FileType;
