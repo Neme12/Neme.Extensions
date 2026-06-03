@@ -18,9 +18,9 @@ public sealed class OpenFile : IDisposable
     }
 
 #if DEBUG
-    ~FsFile()
+    ~OpenFile()
     {
-        Debug.Fail($"{nameof(FsFile)} should have been disposed.");
+        Debug.Fail($"{nameof(OpenFile)} should have been disposed.");
     }
 #endif
 
