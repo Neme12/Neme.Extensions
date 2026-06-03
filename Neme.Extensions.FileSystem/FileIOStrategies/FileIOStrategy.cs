@@ -2,6 +2,7 @@
 using Neme.Extensions.Ownership;
 using Neme.Utilities.Contracts;
 using System.Runtime.CompilerServices;
+using System.Runtime.Versioning;
 
 namespace Neme.Extensions.FileSystem.FileIOStrategies;
 
@@ -13,6 +14,8 @@ internal abstract class FileIOStrategy
     [return: OwnershipTransfer]
     public abstract SafeFileHandle OpenHandle(string path, FileOpenOptions options);
 
+    [SupportedOSPlatform("windows")]
+    [SupportedOSPlatform("linux")]
     [return: OwnershipTransfer]
     public abstract SafeFileHandle OpenHandle(PersistentFileId fileId, FileOpenOptions options);
 
@@ -37,6 +40,8 @@ internal abstract class FileIOStrategy
 
     public abstract FileBasicInfo GetFileInfo([Borrow] SafeFileHandle file);
 
+    [SupportedOSPlatform("windows")]
+    [SupportedOSPlatform("linux")]
     public abstract PersistentFileId GetFileId([Borrow] SafeFileHandle file);
 
     internal void ValidateFileName(string? fileName, bool optional = false, [CallerArgumentExpression(nameof(fileName))] string? paramName = null)

@@ -84,6 +84,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             options.PreallocationSize);
     }
 
+    [SupportedOSPlatform("linux")]
     [return: OwnershipTransfer]
     public override unsafe SafeFileHandle OpenHandle(PersistentFileId fileId, FileOpenOptions options)
     {
@@ -364,6 +365,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         throw new NotImplementedException();
     }
 
+    [SupportedOSPlatform("linux")]
     public override unsafe PersistentFileId GetFileId([Borrow] SafeFileHandle file)
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))

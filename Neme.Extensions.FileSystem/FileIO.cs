@@ -3,6 +3,7 @@ using Neme.Extensions.FileSystem.FileIOStrategies;
 using Neme.Extensions.Ownership;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace Neme.Extensions.FileSystem;
 
@@ -72,6 +73,8 @@ public static partial class FileIO
         }
     }
 
+    [SupportedOSPlatform("windows")]
+    [SupportedOSPlatform("linux")]
     [return: OwnershipTransfer]
     public static SafeFileHandle OpenHandle(
         PersistentFileId fileId,
@@ -82,6 +85,8 @@ public static partial class FileIO
         return Strategy.OpenHandle(fileId, options);
     }
 
+    [SupportedOSPlatform("windows")]
+    [SupportedOSPlatform("linux")]
     [return: OwnershipTransfer]
     public static OpenFile Open(
         PersistentFileId fileId,
@@ -90,6 +95,8 @@ public static partial class FileIO
         return new(OpenHandle(fileId, options), options);
     }
 
+    [SupportedOSPlatform("windows")]
+    [SupportedOSPlatform("linux")]
     public static bool TryOpenHandle(
         PersistentFileId fileId,
         FileOpenOptions options,
@@ -108,6 +115,8 @@ public static partial class FileIO
         }
     }
 
+    [SupportedOSPlatform("windows")]
+    [SupportedOSPlatform("linux")]
     public static bool TryOpen(
         PersistentFileId fileId,
         FileOpenOptions options,
@@ -219,6 +228,8 @@ public static partial class FileIO
         return Strategy.GetPath(file);
     }
 
+    [SupportedOSPlatform("windows")]
+    [SupportedOSPlatform("linux")]
     public static string GetPath(PersistentFileId fileId)
     {
         Strategy.ValidateFileId(fileId);
@@ -264,6 +275,8 @@ public static partial class FileIO
         return Strategy.GetFileInfo(file);
     }
 
+    [SupportedOSPlatform("windows")]
+    [SupportedOSPlatform("linux")]
     public static PersistentFileId GetFileId([Borrow] SafeFileHandle file)
     {
         Strategy.ValidateFileHandle(file);
