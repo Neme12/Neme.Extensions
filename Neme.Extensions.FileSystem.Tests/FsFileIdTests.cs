@@ -75,6 +75,13 @@ public sealed class FsFileIdTests
     }
 
     [Fact]
+    public void FromWindowsId_ParseInvalid()
+    {
+        Assert.Throws<FormatException>(() => PersistentFileId.Parse("abc"));
+        Assert.Throws<FormatException>(() => PersistentFileId.Parse("v1:w:abc"));
+    }
+
+    [Fact]
     public void FromLinuxId_ToString()
     {
         var linuxId = new PersistentFileId.LinuxId("/mnt/test", 200, [50, 150, 250]);
@@ -101,5 +108,12 @@ public sealed class FsFileIdTests
             Assert.Equal(150, span[1]);
             Assert.Equal(250, span[2]);
         }, default(ValueTuple));
+    }
+
+    [Fact]
+    public void FromLinuxId_ParseInvalid()
+    {
+        Assert.Throws<FormatException>(() => PersistentFileId.Parse("abc"));
+        Assert.Throws<FormatException>(() => PersistentFileId.Parse("v1:l:abc"));
     }
 }
