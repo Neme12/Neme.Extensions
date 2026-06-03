@@ -137,7 +137,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
                 handle.Dispose();
 
-                throw UnixMarshal.GetExceptionForUnixError((int)error, path: null);
+                throw UnixMarshal.GetExceptionForUnixError(error, path: null);
             }
 
             if (InitHandle(null, handle.Value!, null, options.Mode, options.Access, options.Share, options.Options, options.Attributes, options.PreallocationSize))
@@ -176,7 +176,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         {
             var rawHandle = Syscall.dup((int)fileScope.Handle);
             if (rawHandle < 0)
-                throw UnixMarshal.GetExceptionForUnixError((int)Stdlib.GetLastError());
+                throw UnixMarshal.GetExceptionForLastStdlibError();
 
             return new SafeFileHandle((nint)rawHandle, ownsHandle: true);
         }
@@ -273,7 +273,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         }
 
         if (result != 0)
-            throw UnixMarshal.GetExceptionForUnixError((int)Stdlib.GetLastError(), destFileName);
+            throw UnixMarshal.GetExceptionForLastUnixError(destFileName);
     }
 
     public override void Delete([Borrow] SafeFileHandle file)
@@ -294,7 +294,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
             var error = Stdlib.GetLastError();
             if (error is not (Errno.EINVAL or Errno.ENOSYS))
-                throw UnixMarshal.GetExceptionForUnixError((int)error);
+                throw UnixMarshal.GetExceptionForUnixError(error);
         }
         catch (ArgumentOutOfRangeException)
         {
@@ -309,7 +309,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             result2 = Syscall.unlinkat((int)parentDirectoryScope.Handle, fileName, 0);
 
         if (result2 != 0)
-            throw UnixMarshal.GetExceptionForUnixError((int)Stdlib.GetLastError());
+            throw UnixMarshal.GetExceptionForLastStdlibError();
     }
 
     private (SafeFileHandle directory, string fileName) GetParentDirectoryAndFileName(SafeFileHandle file)
@@ -332,7 +332,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
                 O_PathIfSupported | OpenFlags.O_CLOEXEC);
 
             if (rawParentHandle < 0)
-                throw UnixMarshal.GetExceptionForUnixError((int)Stdlib.GetLastError(), parentPath);
+                throw UnixMarshal.GetExceptionForLastStdlibError(parentPath);
 
             using var parentHandle = OwnedOrBorrowed.Create(new SafeFileHandle((nint)rawParentHandle, ownsHandle: true));
 
@@ -377,10 +377,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
             var result = Interop.Linux.NameToHandleAt((int)fileScope.Handle, "", ref fileHeader, out var mountId, Interop.Linux.NameToHandleAtFlags.AT_EMPTY_PATH);
             if (result != 0)
-            {
-                var error = (Errno)Marshal.GetLastPInvokeError();
-                throw UnixMarshal.GetExceptionForUnixError((int)error);
-            }
+                throw UnixMarshal.GetExceptionForLastUnixError();
 
             var fileIdBytes = fileInfoBuffer.Slice(sizeof(Interop.Linux.FileHandleHeader), (int)fileHeader.handle_bytes);
 
@@ -456,7 +453,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         if (handle.IsInvalid)
         {
             handle.Dispose();
-            throw UnixMarshal.GetExceptionForUnixError((int)Stdlib.GetLastError(), mountPath);
+            throw UnixMarshal.GetExceptionForLastStdlibError(mountPath);
         }
 
         return handle;
@@ -530,7 +527,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
                 if (error == Errno.EISDIR)
                     error = Errno.EACCES;
 
-                throw UnixMarshal.GetExceptionForUnixError((int)error, fullPath);
+                throw UnixMarshal.GetExceptionForUnixError(error, fullPath);
             }
 
             if (InitHandle(null, handle.Value!, fullPath, mode, access, share, options, attributes, preallocationSize))
@@ -597,7 +594,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
                 if (error == Errno.EISDIR)
                     error = Errno.EACCES;
 
-                throw UnixMarshal.GetExceptionForUnixError((int)error, path);
+                throw UnixMarshal.GetExceptionForUnixError(error, path);
             }
 
             if (InitHandle(rootHandle, handle.Value!, path, mode, access, share, options, attributes, preallocationSize))
@@ -638,7 +635,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             if (shouldBeDirectory && stMode != FilePermissions.S_IFDIR ||
                 !shouldBeDirectory && stMode == FilePermissions.S_IFDIR)
             {
-                throw UnixMarshal.GetExceptionForUnixError((int)Errno.EACCES, path);
+                throw UnixMarshal.GetExceptionForUnixError(Errno.EACCES, path);
             }
         }
 
@@ -666,7 +663,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             // given again that this is only advisory / best-effort.
             var error = (Errno)Marshal.GetLastPInvokeError();
             if (error == Errno.EWOULDBLOCK)
-                throw UnixMarshal.GetExceptionForUnixError((int)error, path);
+                throw UnixMarshal.GetExceptionForUnixError(error, path);
         }
 
         if (isLocked)
@@ -715,7 +712,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
                 if (error == Errno.ENOENT)
                     return false;
 
-                throw UnixMarshal.GetExceptionForUnixError((int)error, path);
+                throw UnixMarshal.GetExceptionForUnixError(error, path);
             }
 
             if (pathStatus.st_ino != status.st_ino ||
@@ -756,7 +753,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
                 result = Syscall.posix_fadvise((int)handleScope.Handle, 0, 0, fadv);
 
             if (result != 0 && Stdlib.GetLastError() is var error and not Errno.ENOSYS) // just a hint.
-                throw UnixMarshal.GetExceptionForUnixError((int)error, path);
+                throw UnixMarshal.GetExceptionForUnixError(error, path);
         }
 
         if (mode is FileMode.Create or FileMode.Truncate && !DisableFileLocking)
@@ -777,7 +774,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
                     // We know the file descriptor is valid and we know the size argument to FTruncate is correct,
                     // so if EBADF or EINVAL is returned, it means we're dealing with a special file that can't be
                     // truncated.  Ignore the error in such cases; in all others, throw.
-                    throw UnixMarshal.GetExceptionForUnixError((int)error, path);
+                    throw UnixMarshal.GetExceptionForUnixError(error, path);
                 }
             }
         }
@@ -840,7 +837,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
                 result = Syscall.fstat((int)handleScope.Handle, out status);
 
             if (result != 0)
-                throw UnixMarshal.GetExceptionForUnixError((int)Stdlib.GetLastError(), path);
+                throw UnixMarshal.GetExceptionForLastStdlibError(path);
 
             statusHasValue = true;
         }
