@@ -65,6 +65,16 @@ public sealed class FsFileIdTests
     }
 
     [Fact]
+    public void FromWindowsId_Parse()
+    {
+        var sut = PersistentFileId.Parse("v1:w:0000000000000005:0000000000000096:00000000000000fa");
+
+        Assert.Equal(5ul, sut.WindowsFileId.VolumeSerialNumber);
+        Assert.Equal(150ul, sut.WindowsFileId.FileIdHigh);
+        Assert.Equal(250ul, sut.WindowsFileId.FileIdLow);
+    }
+
+    [Fact]
     public void FromLinuxId_ToString()
     {
         var linuxId = new PersistentFileId.LinuxId("/mnt/test", 200, [50, 150, 250]);
@@ -73,5 +83,23 @@ public sealed class FsFileIdTests
         var str = sut.ToString();
 
         Assert.Equal($"v1:l:2f6d6e742f74657374:000000c8:3296fa", str);
+    }
+
+    [Fact]
+    public void FromLinuxId_Parse()
+    {
+        var sut = PersistentFileId.Parse("v1:l:2f6d6e742f74657374:000000c8:3296fa");
+
+        Assert.Equal("/mnt/test", sut.LinuxFileId.MountPath);
+        Assert.Equal(200, sut.LinuxFileId.FileType);
+        Assert.Equal(3, sut.LinuxFileId.InlineBufferLength);
+        Assert.Null(sut.LinuxFileId.Buffer);
+
+        sut.LinuxFileId.InlineBuffer.WithSpan((span, _) =>
+        {
+            Assert.Equal(50, span[0]);
+            Assert.Equal(150, span[1]);
+            Assert.Equal(250, span[2]);
+        }, default(ValueTuple));
     }
 }

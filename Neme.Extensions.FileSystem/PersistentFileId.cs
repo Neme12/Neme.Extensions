@@ -1,10 +1,14 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 namespace Neme.Extensions.FileSystem;
 
 [StructLayout(LayoutKind.Auto)]
 public readonly partial record struct PersistentFileId : IEquatable<PersistentFileId>
+#if NET7_0_OR_GREATER
+        , IParsable<PersistentFileId>
+#endif
 {
     private readonly PlatformId _platformId;
 
@@ -81,6 +85,55 @@ public readonly partial record struct PersistentFileId : IEquatable<PersistentFi
 
         return hashCode.ToHashCode();
     }
+
+    public static PersistentFileId Parse(string s)
+    {
+        ArgumentNullException.ThrowIfNull(s);
+
+        var parts = s.Split(':');
+        if (parts.Length < 2 ||
+            parts[0] != "v1" ||
+            parts[1].Length != 1)
+        {
+            throw new FormatException("Invalid PersistentFileId format.");
+        }
+
+        return parts[1] switch
+        {
+            "w" => new(WindowsId.Parse(parts)),
+            "l" => new(LinuxId.Parse(parts)),
+            _ => throw new FormatException("Unknown platform identifier in PersistentFileId."),
+        };
+    }
+
+    public static bool TryParse([NotNullWhen(true)] string? s, out PersistentFileId result)
+    {
+        if (s is null)
+        {
+            result = default;
+            return false;
+        }
+
+        try
+        {
+            result = Parse(s!);
+            return true;
+
+        }
+        catch (FormatException)
+        {
+            result = default;
+            return false;
+        }
+    }
+
+#if NET7_0_OR_GREATER
+    static PersistentFileId IParsable<PersistentFileId>.Parse(string s, IFormatProvider? provider) =>
+        Parse(s);
+
+    static bool IParsable<PersistentFileId>.TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out PersistentFileId result) =>
+        TryParse(s, out result);
+#endif
 
     public override string ToString() =>
         _platformId switch

@@ -1,5 +1,6 @@
 ﻿using Neme.Extensions.Buffers;
 using System.Buffers;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -87,6 +88,39 @@ public readonly partial record struct PersistentFileId
             }
 
             return hashCode.ToHashCode();
+        }
+
+        public static LinuxId Parse(string[] parts)
+        {
+            if (parts.Length != 5 ||
+                parts[0] != "v1" ||
+                parts[1] != "l" ||
+                (parts[2].Length % 2) != 0 ||
+                parts[3].Length != 8 ||
+                (parts[4].Length % 2) != 0)
+            {
+                throw new FormatException("Invalid LinuxId format.");
+            }
+
+            var mountPath = Encoding.UTF8.GetString(FromHexString(parts[2]));
+            var fileType = int.Parse(parts[3], NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var buffer = FromHexString(parts[4]);
+
+            return new LinuxId(mountPath, fileType, buffer);
+        }
+
+        private static byte[] FromHexString(string hex)
+        {
+#if NET5_0_OR_GREATER
+            return Convert.FromHexString(hex);
+#else
+            var bytes = new byte[hex.Length / 2];
+
+            for (int i = 0; i < bytes.Length; i++)
+                bytes[i] = byte.Parse(hex.Substring(i * 2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+
+            return bytes;
+#endif
         }
 
         public override string ToString()
