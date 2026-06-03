@@ -97,7 +97,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             throw new NotSupportedException($"{options.Mode} is not supported when opening a file by ID on Unix.");
 
         var linuxFileId = fileId.LinuxFileId;
-        var mountPath = GetMountPathById(linuxFileId.MountId);
+        var mountPath = linuxFileId.MountPath;
         var openFlags = GetOpenByHandleFlags(options.Mode, options.Access, options.Share, options.Options);
 
         using var mountHandle = OpenMountHandle(mountPath);
@@ -389,7 +389,8 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             fileIdBytes.CopyTo(new Span<byte>(array.bytes, fileIdBytes.Length));
 #endif
 
-            var linuxFileId = new PersistentFileId.LinuxId(mountId, fileHeader.handle_type, array, (byte)fileHeader.handle_bytes);
+            var mountPath = GetMountPathById(mountId);
+            var linuxFileId = new PersistentFileId.LinuxId(mountPath, fileHeader.handle_type, array, (byte)fileHeader.handle_bytes);
             return PersistentFileId.FromLinuxId(linuxFileId);
         }
         else

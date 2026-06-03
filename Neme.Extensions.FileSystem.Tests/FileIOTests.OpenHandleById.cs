@@ -163,7 +163,7 @@ public sealed partial class FileIOTests
                     volumeSerialNumber: validFileId.WindowsFileId.VolumeSerialNumber,
                     fileIdHigh: 0xDEADBEEFDEADBEEF,
                     fileIdLow: 0xCAFEBABECAFEBABE))
-                : PersistentFileId.FromLinuxId(new PersistentFileId.LinuxId(validFileId.LinuxFileId.MountId, validFileId.LinuxFileId.FileType, new PersistentFileId.InlineByteArray(), 0));
+                : PersistentFileId.FromLinuxId(new PersistentFileId.LinuxId(validFileId.LinuxFileId.MountPath, validFileId.LinuxFileId.FileType, new PersistentFileId.InlineByteArray(), 0));
 
             var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read);
 
@@ -181,7 +181,7 @@ public sealed partial class FileIOTests
                     volumeSerialNumber: 0xFFFFFFFFFFFFFFFF,
                     fileIdHigh: 0xDEADBEEFDEADBEEF,
                     fileIdLow: 0xCAFEBABECAFEBABE))
-                : PersistentFileId.FromLinuxId(new PersistentFileId.LinuxId(unchecked((int)0xffffffff), 0, new PersistentFileId.InlineByteArray(), 0));
+                : PersistentFileId.FromLinuxId(new PersistentFileId.LinuxId("/path/that/does/not/exist", 0, new PersistentFileId.InlineByteArray(), 0));
             var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read);
 
             // Act & Assert
@@ -279,7 +279,7 @@ public sealed partial class FileIOTests
                     volumeSerialNumber: validDirectoryId.WindowsFileId.VolumeSerialNumber,
                     fileIdHigh: 0xDEADBEEFDEADBEEF,
                     fileIdLow: 0xCAFEBABECAFEBABE))
-                : PersistentFileId.FromLinuxId(new PersistentFileId.LinuxId(validDirectoryId.LinuxFileId.MountId, validDirectoryId.LinuxFileId.FileType, new PersistentFileId.InlineByteArray(), 0));
+                : PersistentFileId.FromLinuxId(new PersistentFileId.LinuxId(validDirectoryId.LinuxFileId.MountPath, validDirectoryId.LinuxFileId.FileType, new PersistentFileId.InlineByteArray(), 0));
             var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read)
             {
                 Attributes = FileAttributes.Directory

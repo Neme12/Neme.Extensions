@@ -1,4 +1,7 @@
-﻿using System.Text;
+﻿using Neme.Extensions.Buffers;
+using System.Buffers;
+using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace Neme.Extensions.FileSystem;
 
@@ -6,18 +9,18 @@ public readonly partial record struct PersistentFileId
 {
     internal sealed record class LinuxId : PlatformId
     {
-        internal readonly int MountId;
+        internal readonly string MountPath;
         internal readonly int FileType;
         internal readonly InlineByteArray Buffer;
         internal readonly byte BufferLength;
 
         public LinuxId(
-            int mountId,
+            string mountPath,
             int fileType,
             InlineByteArray buffer,
             byte bufferLength)
         {
-            MountId = mountId;
+            MountPath = mountPath;
             FileType = fileType;
             Buffer = buffer;
             BufferLength = bufferLength;
@@ -25,16 +28,37 @@ public readonly partial record struct PersistentFileId
 
         public override string ToString()
         {
-            var builder = new StringBuilder($"v1:l:{(uint)MountId:x8}:{(uint)FileType:x8}:");
-            builder.EnsureCapacity(builder.Length + (BufferLength * 2));
-
-            Buffer.WithSpan(static (span, state) =>
+            return Buffer.WithSpan(static (span, fileId) =>
             {
-                for (int i = 0; i < state.Length; i++)
-                    state.Builder.Append($"{span[i]:x2}");
-            }, (Builder: builder, Length: (int)BufferLength));
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+                var mountPathBufferLength = Encoding.UTF8.GetMaxByteCount(fileId.MountPath.Length);
+                using var mountPathBuffer = ArrayPool<byte>.Shared.RentLeaseOrStackalloc(
+                    mountPathBufferLength,
+                    mountPathBufferLength < Stackalloc.MaxLength<byte>() ? stackalloc byte[mountPathBufferLength] : default);
 
-            return builder.ToString();
+                var bytesWritten = Encoding.UTF8.GetBytes(fileId.MountPath.AsSpan(), mountPathBuffer.Buffer);
+                var mountPathBytes = mountPathBuffer.Buffer[0..bytesWritten];
+#else
+                var mountPathBytes = Encoding.UTF8.GetBytes(fileId.MountPath);
+#endif
+
+                var builder = new DefaultInterpolatedStringHandler(literalLength: 5 + mountPathBytes.Length * 2 + 1 + 8 + 1 + fileId.BufferLength * 2, formattedCount: 0);
+                builder.AppendLiteral("v1:l:");
+
+                foreach (var @byte in mountPathBytes)
+                    builder.AppendFormatted(@byte, "x2");
+
+                builder.AppendLiteral(":");
+
+                builder.AppendFormatted((uint)fileId.FileType, "x8");
+
+                builder.AppendLiteral(":");
+
+                for (int i = 0; i < fileId.BufferLength; i++)
+                    builder.AppendFormatted(span[i], "x2");
+
+                return builder.ToStringAndClear();
+            }, this);
         }
     }
 }

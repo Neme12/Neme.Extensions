@@ -24,12 +24,12 @@ public sealed class FsFileIdTests
             span[0] = 3;
             span[1] = 4;
         }, default(ValueTuple));
-        var linuxId = new PersistentFileId.LinuxId(1, 2, array, 4);
+        var linuxId = new PersistentFileId.LinuxId("/mnt/test", 2, array, 4);
 
         var sut = PersistentFileId.FromLinuxId(linuxId);
 
         Assert.Equal(linuxId, sut.LinuxFileId);
-        Assert.Equal(1, sut.LinuxFileId.MountId);
+        Assert.Equal("/mnt/test", sut.LinuxFileId.MountPath);
         Assert.Equal(2, sut.LinuxFileId.FileType);
         Assert.Equal(4, sut.LinuxFileId.BufferLength);
 
@@ -64,11 +64,11 @@ public sealed class FsFileIdTests
             span[2] = 250;
         }, default(ValueTuple));
 
-        var linuxId = new PersistentFileId.LinuxId(100, 200, array, 3);
+        var linuxId = new PersistentFileId.LinuxId("/mnt/test", 200, array, 3);
 
         var sut = PersistentFileId.FromLinuxId(linuxId);
         var str = sut.ToString();
 
-        Assert.Equal($"v1:l:00000064:000000c8:3296fa", str);
+        Assert.Equal($"v1:l:2f6d6e742f74657374:000000c8:3296fa", str);
     }
 }
