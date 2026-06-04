@@ -9,6 +9,7 @@ namespace Neme.Extensions.Buffers;
 
 public static partial class ArrayPoolExtensions
 {
+    [NonDefaultable]
     [NonCopyable]
     public ref struct LeaseOrBuffer<T> : IDisposable
     {

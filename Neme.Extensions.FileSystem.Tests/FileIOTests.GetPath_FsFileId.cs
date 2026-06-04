@@ -1,9 +1,12 @@
 ﻿using Neme.Extensions.Tests.Utilities;
+using System.Runtime.Versioning;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
 public sealed partial class FileIOTests
 {
+    [SupportedOSPlatform("windows")]
+    [SupportedOSPlatform("linux")]
     [Collection(nameof(FileIOTestCollection))]
     public sealed class GetPath_FsFileId
     {
