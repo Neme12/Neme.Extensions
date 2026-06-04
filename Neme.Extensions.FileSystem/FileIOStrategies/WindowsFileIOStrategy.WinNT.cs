@@ -68,7 +68,12 @@ internal sealed partial class WindowsFileIOStrategy
             []);
 
         if (status.SeverityCode != NTSTATUS.Severity.Success)
+        {
+            if (status == NTSTATUS.STATUS_INVALID_PARAMETER)
+                status = NTSTATUS.STATUS_NO_SUCH_FILE;
+
             throw WinNtMarshal.GetExceptionForNtStatus(status);
+        }
 
         FileIOEventSource.Log.FileOpenedById(windowsFileId.VolumeSerialNumber, windowsFileId.FileIdLow, windowsFileId.FileIdHigh);
 

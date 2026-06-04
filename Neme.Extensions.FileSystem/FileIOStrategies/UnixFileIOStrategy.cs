@@ -362,12 +362,197 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
     public override void SetFileAttributes([Borrow] SafeFileHandle file, FileAttributes attributes)
     {
-        throw new NotImplementedException();
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            bool hidden = (attributes & FileAttributes.Hidden) != 0;
+
+            int result;
+            Interop.MacOS.FileFlags flags;
+
+            using (var fileScope = file.CreateScope())
+                result = Interop.MacOS.FStatFlags((int)fileScope.Handle, out flags);
+
+            if (result != 0)
+                throw UnixMarshal.GetExceptionForLastUnixError();
+
+            var hasHiddenFlag = (flags & Interop.MacOS.FileFlags.UF_HIDDEN) != 0;
+            if (hidden != hasHiddenFlag)
+            {
+                var newFlags = hidden
+                    ? flags | Interop.MacOS.FileFlags.UF_HIDDEN
+                    : flags & ~Interop.MacOS.FileFlags.UF_HIDDEN;
+
+                int result2;
+
+                using (var fileScope = file.CreateScope())
+                    result2 = Interop.MacOS.FChFlags((int)fileScope.Handle, newFlags);
+
+                if (result2 != 0)
+                    throw UnixMarshal.GetExceptionForLastUnixError();
+            }
+        }
+
+        int result3;
+        Stat status;
+
+        using (var fileScope = file.CreateScope())
+            result3 = Syscall.fstat((int)fileScope.Handle, out status);
+
+        if (result3 != 0)
+            throw UnixMarshal.GetExceptionForLastStdlibError();
+
+        // The only thing we can reasonably change is whether the file object is readonly by changing permissions.
+
+        var oldMode = (UnixFileMode)(status.st_mode & FilePermissions.ALLPERMS);
+        var newMode = oldMode;
+        if ((attributes & FileAttributes.ReadOnly) != 0)
+        {
+            // Take away all write permissions from user/group/everyone
+            newMode &= ~(UnixFileMode.UserWrite | UnixFileMode.GroupWrite | UnixFileMode.OtherWrite);
+        }
+        else if ((newMode & UnixFileMode.UserRead) != 0)
+        {
+            // Give write permission to the owner if the owner has read permission
+            newMode |= UnixFileMode.UserWrite;
+        }
+
+        // Change the permissions on the file
+        if (newMode != oldMode)
+        {
+            int result4;
+
+            using (var fileScope = file.CreateScope())
+                result4 = Syscall.fchmod((int)fileScope.Handle, (FilePermissions)newMode);
+
+            if (result4 != 0)
+                throw UnixMarshal.GetExceptionForLastStdlibError();
+        }
     }
 
     public override FileAttributes GetFileAttributes([Borrow] SafeFileHandle file)
     {
-        throw new NotImplementedException();
+        int result;
+        Stat status;
+
+        using (var fileScope = file.CreateScope())
+            result = Syscall.fstat((int)fileScope.Handle, out status);
+
+        if (result != 0)
+            throw UnixMarshal.GetExceptionForLastStdlibError();
+
+        Interop.MacOS.FileFlags? flags = null;
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            int result2;
+            Interop.MacOS.FileFlags flagsOut;
+
+            using (var fileScope = file.CreateScope())
+                result2 = Interop.MacOS.FStatFlags((int)fileScope.Handle, out flagsOut);
+
+            if (result2 != 0)
+                throw UnixMarshal.GetExceptionForLastUnixError();
+
+            flags = flagsOut;
+        }
+
+        FileAttributes attributes = default;
+
+        if (IsModeReadOnlyCore(status))
+            attributes |= FileAttributes.ReadOnly;
+
+        if ((status.st_mode & FilePermissions.S_IFMT) == FilePermissions.S_IFLNK)
+            attributes |= FileAttributes.ReparsePoint;
+
+        if ((status.st_mode & FilePermissions.S_IFMT) == FilePermissions.S_IFDIR)
+            attributes |= FileAttributes.Directory;
+
+        var path = GetPath(file);
+        var fileName = Path.GetFileName(path);
+
+        if (fileName.StartsWith('.') || flags is not null && (flags.Value & Interop.MacOS.FileFlags.UF_HIDDEN) != 0)
+            attributes |= FileAttributes.Hidden;
+
+        return attributes != default ? attributes : FileAttributes.Normal;
+    }
+
+    private static bool IsModeReadOnlyCore(Stat stat)
+    {
+        var mode = (UnixFileMode)(stat.st_mode & FilePermissions.ACCESSPERMS);
+
+        bool isUserReadOnly = (mode & UnixFileMode.UserRead) != 0 &&    // has read permission
+                              (mode & UnixFileMode.UserWrite) == 0;     // but not write permission
+        bool isGroupReadOnly = (mode & UnixFileMode.GroupRead) != 0 &&  // has read permission
+                               (mode & UnixFileMode.GroupWrite) == 0;   // but not write permission
+        bool isOtherReadOnly = (mode & UnixFileMode.OtherRead) != 0 &&  // has read permission
+                               (mode & UnixFileMode.OtherWrite) == 0;   // but not write permission
+
+        // If they are all the same, no need to check user/group.
+        if (isUserReadOnly == isGroupReadOnly && isGroupReadOnly == isOtherReadOnly)
+        {
+            return isUserReadOnly;
+        }
+
+        if (stat.st_uid == Syscall.geteuid())
+        {
+            // User owns the file.
+            return isUserReadOnly;
+        }
+
+        // System files often have the same permissions for group and other (umask 022).
+        if (isGroupReadOnly == isUserReadOnly)
+        {
+            return isGroupReadOnly;
+        }
+
+        if (IsMemberOfGroup(stat.st_gid))
+        {
+            // User belongs to group that owns the file.
+            return isGroupReadOnly;
+        }
+        else
+        {
+            // Other permissions.
+            return isOtherReadOnly;
+        }
+
+        static bool IsMemberOfGroup(uint gid)
+        {
+            if (gid == Syscall.getegid())
+            {
+                return true;
+            }
+
+            const int InitialGroupsLength =
+    #if DEBUG
+                1;
+    #else
+                64;
+    #endif
+
+            using var groups = ArrayPool<uint>.Shared.RentLease(InitialGroupsLength);
+
+            do
+            {
+                int rv = Syscall.getgroups(groups.Length, groups.Array);
+
+                if (rv >= 0)
+                {
+                    // success
+                    return groups.Buffer[..rv].IndexOf(gid) != -1;
+                }
+                else if (rv == -1 && (Errno)Marshal.GetLastPInvokeError() == Errno.EINVAL)
+                {
+                    groups.RentMore();
+                }
+                else
+                {
+                    // failure (unexpected)
+                    return false;
+                }
+            }
+            while (true);
+        }
     }
 
     public override FileBasicInfo GetFileInfo([Borrow] SafeFileHandle file)
