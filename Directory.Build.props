@@ -14,6 +14,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' AND '$(Configuration)' == 'DEBUG'">
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(IsTestProject)' == 'false'">
     <AnalysisLevel>10</AnalysisLevel>
     <AnalysisMode>All</AnalysisMode>
