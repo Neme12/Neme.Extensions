@@ -389,13 +389,15 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             bool hidden = (attributes & FileAttributes.Hidden) != 0;
 
             int result;
-            Interop.MacOS.FileFlags flags;
+            Interop.MacOS.StatInfo statInfo;
 
             using (var fileScope = file.CreateScope())
-                result = Interop.MacOS.FStatFlags((int)fileScope.Handle, out flags);
+                result = Interop.MacOS.FStat((int)fileScope.Handle, out statInfo);
 
             if (result != 0)
                 throw UnixMarshal.GetExceptionForLastUnixError();
+
+            var flags = statInfo.Flags;
 
             var hasHiddenFlag = (flags & Interop.MacOS.FileFlags.UF_HIDDEN) != 0;
             if (hidden != hasHiddenFlag)
@@ -462,26 +464,35 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         if (result != 0)
             throw UnixMarshal.GetExceptionForLastStdlibError();
 
-        return GetFileAttributesCore(file, status);
-    }
-
-    private FileAttributes GetFileAttributesCore([Borrow] SafeFileHandle file, Stat status)
-    {
-        Interop.MacOS.FileFlags? flags = null;
+        Interop.MacOS.StatInfo? statInfo;
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             int result2;
-            Interop.MacOS.FileFlags flagsOut;
+            Interop.MacOS.StatInfo statInfoValue;
 
             using (var fileScope = file.CreateScope())
-                result2 = Interop.MacOS.FStatFlags((int)fileScope.Handle, out flagsOut);
+                result2 = Interop.MacOS.FStat((int)fileScope.Handle, out statInfoValue);
 
             if (result2 != 0)
                 throw UnixMarshal.GetExceptionForLastUnixError();
 
-            flags = flagsOut;
+            statInfo = statInfoValue;
         }
+        else
+        {
+            statInfo = null;
+        }
+
+        return GetFileAttributesCore(file, status, statInfo);
+    }
+
+    private FileAttributes GetFileAttributesCore(
+        [Borrow] SafeFileHandle file,
+        Stat status,
+        Interop.MacOS.StatInfo? statInfo)
+    {
+        Interop.MacOS.FileFlags? flags = statInfo?.Flags;
 
         FileAttributes attributes = default;
 
@@ -594,20 +605,25 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             throw UnixMarshal.GetExceptionForLastStdlibError();
 
         Instant? creationTime = null;
+        Interop.MacOS.StatInfo? statInfo;
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             int result2;
-            long seconds;
-            long nanoseconds;
+            Interop.MacOS.StatInfo statInfoValue;
 
             using (var fileScope = file.CreateScope())
-                result2 = Interop.MacOS.FStatBirthTime((int)fileScope.Handle, out seconds, out nanoseconds);
+                result2 = Interop.MacOS.FStat((int)fileScope.Handle, out statInfoValue);
 
             if (result2 != 0)
                 throw UnixMarshal.GetExceptionForLastUnixError();
 
-            creationTime = Instant.FromUnixTimeSeconds(seconds).PlusNanoseconds(nanoseconds);
+            statInfo = statInfoValue;
+            creationTime = Instant.FromUnixTimeSeconds(statInfoValue.BirthTimeSeconds).PlusNanoseconds(statInfoValue.BirthTimeNanoseconds);
+        }
+        else
+        {
+            statInfo = null;
         }
 
         return new FileBasicInfo
@@ -616,7 +632,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             CreationTime = creationTime,
             LastAccessTime = Instant.FromUnixTimeSeconds(status.st_atime).PlusNanoseconds(status.st_atime_nsec),
             LastWriteTime = Instant.FromUnixTimeSeconds(status.st_mtime).PlusNanoseconds(status.st_mtime_nsec),
-            Attributes = GetFileAttributesCore(file, status),
+            Attributes = GetFileAttributesCore(file, status, statInfo),
         };
     }
 
