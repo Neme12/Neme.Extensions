@@ -455,26 +455,17 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
     public override FileAttributes GetFileAttributes([Borrow] SafeFileHandle file)
     {
-        int result;
-        Stat status;
-
-        using (var fileScope = file.CreateScope())
-            result = Syscall.fstat((int)fileScope.Handle, out status);
-
-        if (result != 0)
-            throw UnixMarshal.GetExceptionForLastStdlibError();
-
         Interop.MacOS.StatInfo? statInfo;
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            int result2;
+            int result;
             Interop.MacOS.StatInfo statInfoValue;
 
             using (var fileScope = file.CreateScope())
-                result2 = Interop.MacOS.FStat((int)fileScope.Handle, out statInfoValue);
+                result = Interop.MacOS.FStat((int)fileScope.Handle, out statInfoValue);
 
-            if (result2 != 0)
+            if (result != 0)
                 throw UnixMarshal.GetExceptionForLastUnixError();
 
             statInfo = statInfoValue;
@@ -484,14 +475,22 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             statInfo = null;
         }
 
-        return GetFileAttributesCore(file, status, statInfo);
+        return GetFileAttributesCore(file, statInfo);
     }
 
     private FileAttributes GetFileAttributesCore(
         [Borrow] SafeFileHandle file,
-        Stat status,
         Interop.MacOS.StatInfo? statInfo)
     {
+        int result;
+        Stat status;
+
+        using (var fileScope = file.CreateScope())
+            result = Syscall.fstat((int)fileScope.Handle, out status);
+
+        if (result != 0)
+            throw UnixMarshal.GetExceptionForLastStdlibError();
+
         Interop.MacOS.FileFlags? flags = statInfo?.Flags;
 
         FileAttributes attributes = default;
@@ -595,46 +594,74 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
     public override FileBasicInfo GetFileInfo([Borrow] SafeFileHandle file)
     {
-        int result;
-        Stat status;
-
-        using (var fileScope = file.CreateScope())
-            result = Syscall.fstat((int)fileScope.Handle, out status);
-
-        if (result != 0)
-            throw UnixMarshal.GetExceptionForLastStdlibError();
-
-        Instant? creationTime = null;
-        Interop.MacOS.StatInfo? statInfo;
-
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            int result2;
-            Interop.MacOS.StatInfo statInfoValue;
+            int result;
+            Interop.MacOS.StatInfo statInfo;
 
             using (var fileScope = file.CreateScope())
-                result2 = Interop.MacOS.FStat((int)fileScope.Handle, out statInfoValue);
+                result = Interop.MacOS.FStat((int)fileScope.Handle, out statInfo);
+
+            if (result != 0)
+                throw UnixMarshal.GetExceptionForLastUnixError();
+
+            return new FileBasicInfo
+            {
+                Size = statInfo.Size,
+                CreationTime = Instant.FromUnixTimeSeconds(statInfo.BirthTimeSeconds).PlusNanoseconds(statInfo.BirthTimeNanoseconds),
+                LastAccessTime = Instant.FromUnixTimeSeconds(statInfo.AccessTimeSeconds).PlusNanoseconds(statInfo.AccessTimeNanoseconds),
+                LastWriteTime = Instant.FromUnixTimeSeconds(statInfo.WriteTimeSeconds).PlusNanoseconds(statInfo.WriteTimeNanoseconds),
+                LastChangeTime = Instant.FromUnixTimeSeconds(statInfo.ChangeTimeSeconds).PlusNanoseconds(statInfo.ChangeTimeNanoseconds),
+                Attributes = GetFileAttributesCore(file, statInfo),
+            };
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            int result2;
+            Interop.Linux.StatXInfo statInfo;
+
+            using (var fileScope = file.CreateScope())
+                result2 = Interop.Linux.StatX((int)fileScope.Handle, "", Interop.Linux.StatXFlags.AT_EMPTY_PATH, Interop.Linux.StatXMask.All, out statInfo);
 
             if (result2 != 0)
                 throw UnixMarshal.GetExceptionForLastUnixError();
 
-            statInfo = statInfoValue;
-            creationTime = Instant.FromUnixTimeSeconds(statInfoValue.BirthTimeSeconds).PlusNanoseconds(statInfoValue.BirthTimeNanoseconds);
+            Instant? creationTime =
+                (statInfo.Mask & (uint)Interop.Linux.StatXMask.BTime) != 0
+                ? Instant.FromUnixTimeSeconds(statInfo.CreationTime.Seconds).PlusNanoseconds(statInfo.CreationTime.Nanoseconds)
+                : null;
+
+            return new FileBasicInfo
+            {
+                Size = (long)statInfo.Size,
+                CreationTime = creationTime,
+                LastAccessTime = Instant.FromUnixTimeSeconds(statInfo.AccessTime.Seconds).PlusNanoseconds(statInfo.AccessTime.Nanoseconds),
+                LastWriteTime = Instant.FromUnixTimeSeconds(statInfo.WriteTime.Seconds).PlusNanoseconds(statInfo.WriteTime.Nanoseconds),
+                LastChangeTime = Instant.FromUnixTimeSeconds(statInfo.ChangeTime.Seconds).PlusNanoseconds(statInfo.ChangeTime.Nanoseconds),
+                Attributes = GetFileAttributesCore(file, null),
+            };
         }
         else
         {
-            statInfo = null;
-        }
+            int result3;
+            Stat status;
 
-        return new FileBasicInfo
-        {
-            Size = status.st_size,
-            CreationTime = creationTime,
-            LastAccessTime = Instant.FromUnixTimeSeconds(status.st_atime).PlusNanoseconds(status.st_atime_nsec),
-            LastWriteTime = Instant.FromUnixTimeSeconds(status.st_mtime).PlusNanoseconds(status.st_mtime_nsec),
-            LastChangeTime = Instant.FromUnixTimeSeconds(status.st_ctime).PlusNanoseconds(status.st_ctime_nsec),
-            Attributes = GetFileAttributesCore(file, status, statInfo),
-        };
+            using (var fileScope = file.CreateScope())
+                result3 = Syscall.fstat((int)fileScope.Handle, out status);
+
+            if (result3 != 0)
+                throw UnixMarshal.GetExceptionForLastStdlibError();
+
+            return new FileBasicInfo
+            {
+                Size = status.st_size,
+                CreationTime = null,
+                LastAccessTime = Instant.FromUnixTimeSeconds(status.st_atime).PlusNanoseconds(status.st_atime_nsec),
+                LastWriteTime = Instant.FromUnixTimeSeconds(status.st_mtime).PlusNanoseconds(status.st_mtime_nsec),
+                LastChangeTime = Instant.FromUnixTimeSeconds(status.st_ctime).PlusNanoseconds(status.st_ctime_nsec),
+                Attributes = GetFileAttributesCore(file, null),
+            };
+        }
     }
 
     [SupportedOSPlatform("linux")]

@@ -18,6 +18,8 @@ internal static partial class Interop
             internal long AccessTimeNanoseconds;
             internal long WriteTimeSeconds;
             internal long WriteTimeNanoseconds;
+            internal long ChangeTimeSeconds;
+            internal long ChangeTimeNanoseconds;
             internal long BirthTimeSeconds;
             internal long BirthTimeNanoseconds;
             internal FileFlags Flags;

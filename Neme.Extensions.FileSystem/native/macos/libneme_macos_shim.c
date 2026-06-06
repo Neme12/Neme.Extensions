@@ -12,6 +12,8 @@ struct neme_stat
 	int64_t atime_nanoseconds;
 	int64_t mtime_seconds;
 	int64_t mtime_nanoseconds;
+	int64_t ctime_seconds;
+	int64_t ctime_nanoseconds;
 	int64_t birthtime_seconds;
 	int64_t birthtime_nanoseconds;
 	uint32_t flags;
@@ -36,6 +38,8 @@ int neme_fstat(int fd, struct neme_stat* result)
 		result->atime_nanoseconds = (int64_t)s.st_atimespec.tv_nsec;
 		result->mtime_seconds = (int64_t)s.st_mtimespec.tv_sec;
 		result->mtime_nanoseconds = (int64_t)s.st_mtimespec.tv_nsec;
+		result->ctime_seconds = (int64_t)s.st_ctimespec.tv_sec;
+		result->ctime_nanoseconds = (int64_t)s.st_ctimespec.tv_nsec;
 		result->birthtime_seconds = (int64_t)s.st_birthtimespec.tv_sec;
 		result->birthtime_nanoseconds = (int64_t)s.st_birthtimespec.tv_nsec;
 		result->flags = (uint32_t)s.st_flags;
