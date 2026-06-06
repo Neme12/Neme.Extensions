@@ -2,6 +2,7 @@
 using Neme.Extensions.IO;
 using Neme.Extensions.Ownership;
 using System.Diagnostics;
+using System.Runtime.Versioning;
 
 namespace Neme.Extensions.FileSystem;
 
@@ -63,6 +64,50 @@ public sealed class OpenFile : IDisposable
 
     public bool CanWrite =>
         ((RawFileSystemAccess)_options.Access & RawFileSystemAccess.Write) != 0;
+
+    public string GetPath()
+    {
+        ObjectDisposedException.ThrowIf(_handle is null, this);
+        return FileIO.GetPath(_handle);
+    }
+
+    [SupportedOSPlatform("windows")]
+    [SupportedOSPlatform("linux")]
+    public PersistentFileId GetPersistentId()
+    {
+        ObjectDisposedException.ThrowIf(_handle is null, this);
+        return FileIO.GetFileId(_handle);
+    }
+
+    public FileAttributes GetAttributes()
+    {
+        ObjectDisposedException.ThrowIf(_handle is null, this);
+        return FileIO.GetFileAttributes(_handle);
+    }
+
+    public void SetAttributes(FileAttributes attributes)
+    {
+        ObjectDisposedException.ThrowIf(_handle is null, this);
+        FileIO.SetFileAttributes(_handle, attributes);
+    }
+
+    public FileBasicInfo GetBasicInfo()
+    {
+        ObjectDisposedException.ThrowIf(_handle is null, this);
+        return FileIO.GetFileInfo(_handle);
+    }
+
+    public void Move(string destFileName, bool overwrite = false)
+    {
+        ObjectDisposedException.ThrowIf(_handle is null, this);
+        FileIO.Move(_handle, destFileName, overwrite);
+    }
+
+    public void Delete()
+    {
+        ObjectDisposedException.ThrowIf(_handle is null, this);
+        FileIO.Delete(_handle);
+    }
 
     [return: OwnershipTransferUnless(nameof(leaveOpen))]
     public CheckedFileStream CreateFileStream(bool leaveOpen = false, int bufferSize = FileStreamExtensions.DefaultBufferSize)
