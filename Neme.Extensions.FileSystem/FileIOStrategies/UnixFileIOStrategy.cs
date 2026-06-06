@@ -14,6 +14,7 @@ using Neme.Extensions.Internal.Interop;
 using Neme.Extensions.InteropServices;
 using Neme.Extensions.Ownership;
 using Neme.Extensions.Win32.InteropServices;
+using NodaTime;
 using System.Buffers;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -196,7 +197,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
                 throw UnixMarshal.GetExceptionForLastStdlibError();
 
             using var handle = OwnedOrBorrowed.Create(new SafeFileHandle((nint)rawHandle, ownsHandle: true));
-            
+
             if (_handleMetadataTable.TryGetValue(file, out var metadata))
                 _handleMetadataTable.Add(handle.Value, metadata);
 
@@ -461,6 +462,11 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         if (result != 0)
             throw UnixMarshal.GetExceptionForLastStdlibError();
 
+        return GetFileAttributesCore(file, status);
+    }
+
+    private FileAttributes GetFileAttributesCore([Borrow] SafeFileHandle file, Stat status)
+    {
         Interop.MacOS.FileFlags? flags = null;
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -578,7 +584,40 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
     public override FileBasicInfo GetFileInfo([Borrow] SafeFileHandle file)
     {
-        throw new NotImplementedException();
+        int result;
+        Stat status;
+
+        using (var fileScope = file.CreateScope())
+            result = Syscall.fstat((int)fileScope.Handle, out status);
+
+        if (result != 0)
+            throw UnixMarshal.GetExceptionForLastStdlibError();
+
+        Instant? creationTime = null;
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            int result2;
+            long seconds;
+            long nanoseconds;
+
+            using (var fileScope = file.CreateScope())
+                result2 = Interop.MacOS.FStatBirthTime((int)fileScope.Handle, out seconds, out nanoseconds);
+
+            if (result2 != 0)
+                throw UnixMarshal.GetExceptionForLastUnixError();
+
+            creationTime = Instant.FromUnixTimeSeconds(seconds).PlusNanoseconds(nanoseconds);
+        }
+
+        return new FileBasicInfo
+        {
+            Size = status.st_size,
+            CreationTime = creationTime,
+            LastAccessTime = Instant.FromUnixTimeSeconds(status.st_atime).PlusNanoseconds(status.st_atime_nsec),
+            LastWriteTime = Instant.FromUnixTimeSeconds(status.st_mtime).PlusNanoseconds(status.st_mtime_nsec),
+            Attributes = GetFileAttributesCore(file, status),
+        };
     }
 
     [SupportedOSPlatform("linux")]
