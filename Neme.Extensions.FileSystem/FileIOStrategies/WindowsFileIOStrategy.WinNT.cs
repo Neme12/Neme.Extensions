@@ -197,7 +197,7 @@ internal sealed partial class WindowsFileIOStrategy
                     0))
                 {
                     // Lower 32 bits match - try to open and verify full 64-bit serial
-                    if (serialNumberLower32 == (uint)targetSerial)
+                    if (serialNumberLower32 == unchecked((uint)targetSerial))
                     {
                         FileIOEventSource.Log.VolumePartialMatch(serialNumberLower32);
                         var volumePathWithSlash = volumeName[..(volumePathLength + 1)].ToString();
