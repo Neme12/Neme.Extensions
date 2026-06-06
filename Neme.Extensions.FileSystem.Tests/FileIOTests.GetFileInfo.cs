@@ -27,12 +27,10 @@ public sealed partial class FileIOTests
                 // Assert
                 Assert.Equal(4, result.Size);
                 Assert.False(result.Attributes.HasFlag(FileAttributes.Directory));
+                Assert.InRange(result.CreationTime!.Value, earliestExpectedTime, now);
                 Assert.InRange(result.LastAccessTime, earliestExpectedTime, now);
                 Assert.InRange(result.LastWriteTime, earliestExpectedTime, now);
                 Assert.InRange(result.LastChangeTime, earliestExpectedTime, now);
-
-                if (result.CreationTime is { } creationTime)
-                    Assert.InRange(creationTime, earliestExpectedTime, now);
             }
             finally
             {
@@ -81,12 +79,10 @@ public sealed partial class FileIOTests
 
                 // Assert
                 Assert.True(result.Attributes.HasFlag(FileAttributes.Directory));
+                Assert.InRange(result.CreationTime!.Value, earliestExpectedTime, now);
                 Assert.InRange(result.LastAccessTime, earliestExpectedTime, now);
                 Assert.InRange(result.LastWriteTime, earliestExpectedTime, now);
                 Assert.InRange(result.LastChangeTime, earliestExpectedTime, now);
-
-                if (result.CreationTime is { } creationTime)
-                    Assert.InRange(creationTime, earliestExpectedTime, now);
             }
             finally
             {
