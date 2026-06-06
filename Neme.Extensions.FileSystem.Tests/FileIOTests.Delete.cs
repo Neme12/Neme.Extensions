@@ -62,5 +62,26 @@ public sealed partial class FileIOTests
                     File.Delete(tempFile);
             }
         }
+
+        [Fact]
+        public void WithoutDeleteAccess_ThrowsUnauthorizedAccessException()
+        {
+            // Arrange
+            var tempFile = Path.GetTempFileName();
+            try
+            {
+                var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+                using var handle = FileIO.OpenHandle(tempFile, options);
+
+                // Act & Assert
+                Assert.Throws<UnauthorizedAccessException>(() => FileIO.Delete(handle));
+                Assert.True(File.Exists(tempFile));
+            }
+            finally
+            {
+                if (File.Exists(tempFile))
+                    File.Delete(tempFile);
+            }
+        }
     }
 }

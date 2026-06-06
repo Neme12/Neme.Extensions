@@ -33,6 +33,8 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     protected override int MaxFileNameLength => 255;
     protected override int MaxPathLength => 4096;
 
+    private readonly ConditionalWeakTable<SafeFileHandle, HandleMetadata> _handleMetadataTable = new();
+
     private const UnixFileMode DefaultCreateMode =
         UnixFileMode.UserRead |
         UnixFileMode.UserWrite |
@@ -73,7 +75,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     {
         Debug.Assert(IsValidPath(path));
 
-        return Open(
+        using var handle = OwnedOrBorrowed.Create(Open(
             Path.GetFullPath(path),
             options.Mode,
             options.Access,
@@ -81,7 +83,11 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             options.Options,
             options.Attributes,
             options.UnixCreateMode ?? DefaultCreateMode,
-            options.PreallocationSize);
+            options.PreallocationSize));
+
+        _handleMetadataTable.Add(handle.Value, new HandleMetadata(options.Access));
+
+        return handle.Move();
     }
 
     [SupportedOSPlatform("linux")]
@@ -145,7 +151,10 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             }
 
             if (InitHandle(null, handle.Value!, null, options.Mode, options.Access, options.Share, options.Options, options.Attributes, options.PreallocationSize))
+            {
+                _handleMetadataTable.Add(handle.Value, new HandleMetadata(options.Access));
                 return handle.Move()!;
+            }
 
             handle.Dispose();
         }
@@ -158,7 +167,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         Debug.Assert(rootDirectory is null || IsValidFileHandle(rootDirectory));
         Debug.Assert(path is null || IsValidPath(path));
 
-        return OpenAt(
+        using var handle = OwnedOrBorrowed.Create(OpenAt(
             rootDirectory,
             path,
             options.Mode,
@@ -167,7 +176,11 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             options.Options,
             options.Attributes,
             options.UnixCreateMode ?? DefaultCreateMode,
-            options.PreallocationSize);
+            options.PreallocationSize));
+
+        _handleMetadataTable.Add(handle.Value, new HandleMetadata(options.Access));
+
+        return handle.Move();
     }
 
     [return: OwnershipTransfer]
@@ -182,7 +195,12 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             if (rawHandle < 0)
                 throw UnixMarshal.GetExceptionForLastStdlibError();
 
-            return new SafeFileHandle((nint)rawHandle, ownsHandle: true);
+            using var handle = OwnedOrBorrowed.Create(new SafeFileHandle((nint)rawHandle, ownsHandle: true));
+            
+            if (_handleMetadataTable.TryGetValue(file, out var metadata))
+                _handleMetadataTable.Add(handle.Value, metadata);
+
+            return handle.Move();
         }
     }
 
@@ -285,6 +303,9 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         // On Unix, there is no method to delete a file directly by a handle (the AT_EMPTY_PATH flag doesn't work for unlinkat),
         // so we'll at least guarantee that the parent directory access is race-free. But first we'll try to delete by handle
         // with AT_EMPTY_PATH anyway in case it does work on this system.
+
+        if (_handleMetadataTable.TryGetValue(file, out var metadata) && (metadata.Access & FileSystemAccess.Delete) == 0)
+            throw new UnauthorizedAccessException("The handle does not have delete access.");
 
         try
         {
@@ -518,11 +539,11 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             }
 
             const int InitialGroupsLength =
-    #if DEBUG
+#if DEBUG
                 1;
-    #else
+#else
                 64;
-    #endif
+#endif
 
             using var groups = ArrayPool<uint>.Shared.RentLease(InitialGroupsLength);
 
@@ -851,9 +872,9 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             }
         }
 
-// On previous .NET versions, there is no IsAsync property.
-// On .NET 11+, IsAsync is set to false as it reflects the actual state
-// of the file descriptor.
+        // On previous .NET versions, there is no IsAsync property.
+        // On .NET 11+, IsAsync is set to false as it reflects the actual state
+        // of the file descriptor.
 #if NET6_0_OR_GREATER && !NET11_0_OR_GREATER
         if ((options & FileOptions.Asynchronous) != 0)
         {
@@ -1054,6 +1075,8 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             statusHasValue = true;
         }
     }
+
+    private sealed record HandleMetadata(FileSystemAccess Access);
 
     private static class SafeFileHandleAccessors
     {
