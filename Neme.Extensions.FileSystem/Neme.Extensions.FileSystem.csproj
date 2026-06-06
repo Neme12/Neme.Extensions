@@ -62,7 +62,6 @@
 
 	<Target Name="BuildLinuxShim" BeforeTargets="Build;Pack" Condition="$([MSBuild]::IsOSPlatform('Linux')) and '$(TargetFramework)' != 'net48'" Inputs="$(LinuxShimBuildScript);$(LinuxShimSource)" Outputs="$(LinuxShimUniversalOutput);$(LinuxShimX64Output);$(LinuxShimArm64Output)">
 		<Exec Command="bash &quot;$(LinuxShimBuildScript)&quot;" />
-		<Copy SourceFiles="$(LinuxShimUniversalOutput)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" Condition="'$(OutDir)' != ''" />
 	</Target>
 
 	<Target Name="AddLinuxShimToCopyToOutputItems" BeforeTargets="GetCopyToOutputDirectoryItems" DependsOnTargets="BuildLinuxShim" Condition="$([MSBuild]::IsOSPlatform('Linux')) and '$(TargetFramework)' != 'net48'">
@@ -76,7 +75,6 @@
 
 	<Target Name="BuildMacOSShim" BeforeTargets="Build;Pack" Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$(TargetFramework)' != 'net48'" Inputs="$(MacOSShimBuildScript);$(MacOSShimSource)" Outputs="$(MacOSShimUniversalOutput);$(MacOSShimX64Output);$(MacOSShimArm64Output)">
 		<Exec Command="bash &quot;$(MacOSShimBuildScript)&quot;" />
-		<Copy SourceFiles="$(MacOSShimUniversalOutput)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" Condition="'$(OutDir)' != ''" />
 	</Target>
 
 	<Target Name="AddMacOSShimToCopyToOutputItems" BeforeTargets="GetCopyToOutputDirectoryItems" DependsOnTargets="BuildMacOSShim" Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$(TargetFramework)' != 'net48'">
