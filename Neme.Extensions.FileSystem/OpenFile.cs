@@ -58,6 +58,12 @@ public sealed class OpenFile : IDisposable
     public bool IsClosed =>
         _handle.IsClosed;
 
+    public bool CanRead =>
+        ((RawFileSystemAccess)_options.Access & RawFileSystemAccess.Read) != 0;
+
+    public bool CanWrite =>
+        ((RawFileSystemAccess)_options.Access & RawFileSystemAccess.Write) != 0;
+
     [return: OwnershipTransferUnless(nameof(leaveOpen))]
     public CheckedFileStream CreateFileStream(bool leaveOpen = false, int bufferSize = FileStreamExtensions.DefaultBufferSize)
     {
