@@ -135,5 +135,32 @@ public sealed partial class FileIOTests
                     Directory.Delete(tempDir, recursive: true);
             }
         }
+
+        [Fact]
+        public void WithoutDeleteAccess_ThrowsUnauthorizedAccessException()
+        {
+            // Arrange
+            var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tempDir);
+            var sourceFile = Path.Combine(tempDir, "source.txt");
+            var destinationFile = Path.Combine(tempDir, "destination.txt");
+            File.WriteAllText(sourceFile, "content");
+
+            try
+            {
+                var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+                using var handle = FileIO.OpenHandle(sourceFile, options);
+
+                // Act & Assert
+                Assert.Throws<UnauthorizedAccessException>(() => FileIO.Move(handle, destinationFile));
+                Assert.True(File.Exists(sourceFile));
+                Assert.False(File.Exists(destinationFile));
+            }
+            finally
+            {
+                if (Directory.Exists(tempDir))
+                    Directory.Delete(tempDir, recursive: true);
+            }
+        }
     }
 }

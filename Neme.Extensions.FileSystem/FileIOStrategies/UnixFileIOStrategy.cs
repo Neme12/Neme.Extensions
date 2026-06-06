@@ -267,6 +267,9 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
     public override void Move([Borrow] SafeFileHandle sourceFile, string destFileName, bool overwrite)
     {
+        if (_handleMetadataTable.TryGetValue(sourceFile, out var metadata) && (metadata.Access & FileSystemAccess.Delete) == 0)
+            throw new UnauthorizedAccessException("The handle must have delete access.");
+
         var (parentDirectory, fileName) = GetParentDirectoryAndFileName(sourceFile);
         using var parentDirectoryHandle = parentDirectory;
 
@@ -305,7 +308,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         // with AT_EMPTY_PATH anyway in case it does work on this system.
 
         if (_handleMetadataTable.TryGetValue(file, out var metadata) && (metadata.Access & FileSystemAccess.Delete) == 0)
-            throw new UnauthorizedAccessException("The handle does not have delete access.");
+            throw new UnauthorizedAccessException("The handle must have delete access.");
 
         try
         {
