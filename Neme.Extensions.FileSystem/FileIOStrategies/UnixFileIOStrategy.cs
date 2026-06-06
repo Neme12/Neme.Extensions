@@ -380,6 +380,9 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
     public override void SetFileAttributes([Borrow] SafeFileHandle file, FileAttributes attributes)
     {
+        if (_handleMetadataTable.TryGetValue(file, out var metadata) && (metadata.Access & FileSystemAccess.WriteAttributes) == 0)
+            throw new UnauthorizedAccessException("The handle must have write attributes access.");
+
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             bool hidden = (attributes & FileAttributes.Hidden) != 0;

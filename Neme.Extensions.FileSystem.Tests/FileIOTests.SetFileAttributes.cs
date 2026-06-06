@@ -54,6 +54,25 @@ public sealed partial class FileIOTests
             }
         }
 
+        [Fact]
+        public void WithoutWriteAttributesAccess_ThrowsUnauthorizedAccessException()
+        {
+            // Arrange
+            var tempFile = Path.GetTempFileName();
+            try
+            {
+                var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                using var handle = FileIO.OpenHandle(tempFile, options);
+
+                // Act & Assert
+                Assert.Throws<UnauthorizedAccessException>(() => FileIO.SetFileAttributes(handle, FileAttributes.ReadOnly));
+            }
+            finally
+            {
+                File.Delete(tempFile);
+            }
+        }
+
         [PlatformOnlyFact(Platform.Windows, Platform.MacOS)]
         public void ValidHandle_UpdatesHiddenAttribute()
         {
