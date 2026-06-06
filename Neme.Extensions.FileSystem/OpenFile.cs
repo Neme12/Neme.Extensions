@@ -71,6 +71,13 @@ public sealed class OpenFile : IDisposable
         return FileIO.GetPath(_handle);
     }
 
+    [return: OwnershipTransfer]
+    public OpenFile OpenAt(string path, FileOpenOptions options)
+    {
+        ObjectDisposedException.ThrowIf(_handle is null, this);
+        return FileIO.OpenAt(_handle, path, options);
+    }
+
     [SupportedOSPlatform("windows")]
     [SupportedOSPlatform("linux")]
     public PersistentFileId GetPersistentId()
