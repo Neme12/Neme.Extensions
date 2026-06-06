@@ -2,6 +2,11 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(LibraryTargetFrameworks)</TargetFrameworks>
+		<LinuxShimBuildScript>$(MSBuildProjectDirectory)/native/linux/build.sh</LinuxShimBuildScript>
+		<LinuxShimSource>$(MSBuildProjectDirectory)/native/linux/libneme_linux_shim.c</LinuxShimSource>
+		<LinuxShimUniversalOutput>$(MSBuildProjectDirectory)/../runtimes/linux/native/libneme_linux_shim.so</LinuxShimUniversalOutput>
+		<LinuxShimX64Output>$(MSBuildProjectDirectory)/../runtimes/linux-x64/native/libneme_linux_shim.so</LinuxShimX64Output>
+		<LinuxShimArm64Output>$(MSBuildProjectDirectory)/../runtimes/linux-arm64/native/libneme_linux_shim.so</LinuxShimArm64Output>
     <MacOSShimBuildScript>$(MSBuildProjectDirectory)/native/macos/build.sh</MacOSShimBuildScript>
     <MacOSShimSource>$(MSBuildProjectDirectory)/native/macos/libneme_macos_shim.c</MacOSShimSource>
     <MacOSShimUniversalOutput>$(MSBuildProjectDirectory)/../runtimes/osx/native/libneme_macos_shim.dylib</MacOSShimUniversalOutput>
@@ -35,6 +40,7 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' != 'net48'">
+		<None Include="..\runtimes\linux*\native\libneme_linux_shim.so" Pack="true" PackagePath="runtimes/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" Link="runtimes\%(RecursiveDir)%(Filename)%(Extension)" />
 		<None Include="..\runtimes\osx-*\native\libneme_macos_shim.dylib" Pack="true" PackagePath="runtimes/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" Link="runtimes\%(RecursiveDir)%(Filename)%(Extension)" />
 	</ItemGroup>
 
@@ -53,6 +59,20 @@
 	    <Generator>ResXFileCodeGenerator</Generator>
 	  </EmbeddedResource>
 	</ItemGroup>
+
+	<Target Name="BuildLinuxShim" BeforeTargets="Build;Pack" Condition="$([MSBuild]::IsOSPlatform('Linux')) and '$(TargetFramework)' != 'net48'" Inputs="$(LinuxShimBuildScript);$(LinuxShimSource)" Outputs="$(LinuxShimUniversalOutput);$(LinuxShimX64Output);$(LinuxShimArm64Output)">
+		<Exec Command="bash &quot;$(LinuxShimBuildScript)&quot;" />
+		<Copy SourceFiles="$(LinuxShimUniversalOutput)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+	</Target>
+
+	<Target Name="AddLinuxShimToCopyToOutputItems" BeforeTargets="GetCopyToOutputDirectoryItems" DependsOnTargets="BuildLinuxShim" Condition="$([MSBuild]::IsOSPlatform('Linux')) and '$(TargetFramework)' != 'net48'">
+		<ItemGroup>
+			<ContentWithTargetPath Include="$(LinuxShimUniversalOutput)">
+				<TargetPath>libneme_linux_shim.so</TargetPath>
+				<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			</ContentWithTargetPath>
+		</ItemGroup>
+	</Target>
 
 	<Target Name="BuildMacOSShim" BeforeTargets="Build;Pack" Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$(TargetFramework)' != 'net48'" Inputs="$(MacOSShimBuildScript);$(MacOSShimSource)" Outputs="$(MacOSShimUniversalOutput);$(MacOSShimX64Output);$(MacOSShimArm64Output)">
 		<Exec Command="bash &quot;$(MacOSShimBuildScript)&quot;" />
