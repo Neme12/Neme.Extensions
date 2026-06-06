@@ -28,13 +28,11 @@ public sealed class FsFileIdTests
         Assert.Equal(4, sut.LinuxFileId.InlineBufferLength);
         Assert.Null(sut.LinuxFileId.Buffer);
 
-        sut.LinuxFileId.InlineBuffer.WithSpan((span, _) =>
-        {
-            Assert.Equal(3, span[0]);
-            Assert.Equal(4, span[1]);
-            Assert.Equal(0, span[2]);
-            Assert.Equal(0, span[3]);
-        }, default(ValueTuple));
+        var span = sut.LinuxFileId.InlineBuffer.AsSpan();
+        Assert.Equal(3, span[0]);
+        Assert.Equal(4, span[1]);
+        Assert.Equal(0, span[2]);
+        Assert.Equal(0, span[3]);
     }
 
     [Fact]
@@ -102,12 +100,10 @@ public sealed class FsFileIdTests
         Assert.Equal(3, sut.LinuxFileId.InlineBufferLength);
         Assert.Null(sut.LinuxFileId.Buffer);
 
-        sut.LinuxFileId.InlineBuffer.WithSpan((span, _) =>
-        {
-            Assert.Equal(50, span[0]);
-            Assert.Equal(150, span[1]);
-            Assert.Equal(250, span[2]);
-        }, default(ValueTuple));
+        var span = sut.LinuxFileId.InlineBuffer.AsSpan();
+        Assert.Equal(50, span[0]);
+        Assert.Equal(150, span[1]);
+        Assert.Equal(250, span[2]);
     }
 
     [Fact]

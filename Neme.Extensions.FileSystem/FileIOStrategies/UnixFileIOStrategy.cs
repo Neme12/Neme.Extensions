@@ -119,13 +119,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         }
         else
         {
-            fixed (byte* destinationPointer = destination)
-            {
-                linuxFileId.InlineBuffer.WithSpan(static (source, state) =>
-                {
-                    source[..state.Length].CopyTo(new Span<byte>((void*)state.Pointer, state.Length));
-                }, (Length: (int)linuxFileId.InlineBufferLength, Pointer: (nint)destinationPointer));
-            }
+            linuxFileId.InlineBuffer.AsSpan()[0..(int)bufferLength].CopyTo(destination);
         }
 
         while (true)
