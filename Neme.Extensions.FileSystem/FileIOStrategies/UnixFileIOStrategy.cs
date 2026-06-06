@@ -632,6 +632,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             CreationTime = creationTime,
             LastAccessTime = Instant.FromUnixTimeSeconds(status.st_atime).PlusNanoseconds(status.st_atime_nsec),
             LastWriteTime = Instant.FromUnixTimeSeconds(status.st_mtime).PlusNanoseconds(status.st_mtime_nsec),
+            LastChangeTime = Instant.FromUnixTimeSeconds(status.st_ctime).PlusNanoseconds(status.st_ctime_nsec),
             Attributes = GetFileAttributesCore(file, status, statInfo),
         };
     }

@@ -159,19 +159,27 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
         return FileAttributes.FromWin32((FILE_FLAGS_AND_ATTRIBUTES)fileInformation.dwFileAttributes);
     }
 
-    public override FileBasicInfo GetFileInfo([Borrow] SafeFileHandle file)
+    public override unsafe FileBasicInfo GetFileInfo([Borrow] SafeFileHandle file)
     {
         Debug.Assert(IsValidFileHandle(file));
 
         if (!PInvoke.GetFileInformationByHandle(file, out var fileInformation))
             throw Win32Marshal.GetExceptionForLastWin32Error();
 
+        ref var fileBasicInfo = ref AllocateFileInfo<FILE_BASIC_INFO>(
+            stackalloc byte[sizeof(FILE_BASIC_INFO)],
+            out var fileInfoBuffer);
+
+        if (!PInvoke.GetFileInformationByHandleEx(file, FILE_INFO_BY_HANDLE_CLASS.FileBasicInfo, fileInfoBuffer))
+            throw Win32Marshal.GetExceptionForLastWin32Error();
+
         return new FileBasicInfo
         {
-            Attributes = FileAttributes.FromWin32((FILE_FLAGS_AND_ATTRIBUTES)fileInformation.dwFileAttributes),
-            CreationTime = InstantFromFileTime(fileInformation.ftCreationTime),
-            LastAccessTime = InstantFromFileTime(fileInformation.ftLastAccessTime),
-            LastWriteTime = InstantFromFileTime(fileInformation.ftLastWriteTime),
+            Attributes = FileAttributes.FromWin32((FILE_FLAGS_AND_ATTRIBUTES)fileBasicInfo.FileAttributes),
+            CreationTime = InstantFromFileTime(fileBasicInfo.CreationTime),
+            LastAccessTime = InstantFromFileTime(fileBasicInfo.LastAccessTime),
+            LastWriteTime = InstantFromFileTime(fileBasicInfo.LastWriteTime),
+            LastChangeTime = InstantFromFileTime(fileBasicInfo.ChangeTime),
             Size = (long)(((ulong)fileInformation.nFileSizeHigh << 32) | fileInformation.nFileSizeLow),
         };
     }
@@ -200,13 +208,12 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
         return PersistentFileId.FromWindowsId(windowsFileId);
     }
 
-    private static Instant InstantFromFileTime(FILETIME fileTime)
+    private static Instant InstantFromFileTime(long fileTime)
     {
-        if (fileTime.dwHighDateTime == 0 && fileTime.dwLowDateTime == 0)
+        if (fileTime == 0)
             return Instant.MinValue;
 
-        var ticks = (long)(((ulong)fileTime.dwHighDateTime << 32) | (uint)fileTime.dwLowDateTime);
-        return Instant.FromDateTimeOffset(DateTimeOffset.FromFileTime(ticks));
+        return Instant.FromDateTimeOffset(DateTimeOffset.FromFileTime(fileTime));
     }
 
     private static unsafe ref T AllocateFileInfo<T>(Span<byte> buffer, out Span<byte> fileInfoBuffer) where T : unmanaged

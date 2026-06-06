@@ -12,5 +12,7 @@ public readonly record struct FileBasicInfo
 
     public Instant LastWriteTime { get; init; }
 
+    public Instant LastChangeTime { get; init; }
+
     public long Size { get; init; }
 }
