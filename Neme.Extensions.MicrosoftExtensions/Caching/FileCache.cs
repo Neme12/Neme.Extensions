@@ -239,7 +239,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
                 return Task.CompletedTask;
             };
 
-            SetCoreAsync<IAsyncState.Sync>(key, writeDataFunc, resolvedOptions, getFileId: false, cancellationToken).GetAwaiter().GetResult();
+            SetCoreAsync<IAsyncState.Sync>(key, writeDataFunc, resolvedOptions, cancellationToken).GetAwaiter().GetResult();
         }
     }
 
@@ -275,7 +275,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
         {
             var resolvedOptions = GetResolvedEntryOptions<IAsyncState.Async>(options);
 
-            await SetCoreAsync<IAsyncState.Async>(key, writeData, resolvedOptions, getFileId: false, cancellationToken);
+            await SetCoreAsync<IAsyncState.Async>(key, writeData, resolvedOptions, cancellationToken);
         }
     }
 
@@ -323,8 +323,8 @@ public sealed partial class FileCache : IFileCache, IDisposable
                 return Task.CompletedTask;
             };
 
-            var fileId = SetCoreAsync<IAsyncState.Sync>(key, factoryFunc, resolvedOptions, getFileId: true, cancellationToken).GetAwaiter().GetResult();
-            return FileIO.Open(fileId!.Value, s_fileReadOptions with { Options = resolvedOptions.FileOptions });
+            SetCoreAsync<IAsyncState.Sync>(key, factoryFunc, resolvedOptions, cancellationToken).GetAwaiter().GetResult();
+            return FileIO.Open(GetFilePath(key), s_fileReadOptions with { Options = resolvedOptions.FileOptions });
         }
     }
 
@@ -366,8 +366,8 @@ public sealed partial class FileCache : IFileCache, IDisposable
             if (cached is not null)
                 return cached.Value.FsFile;
 
-            var fileId = await SetCoreAsync<IAsyncState.Async>(key, factory, resolvedOptions, getFileId: true, cancellationToken);
-            return FileIO.Open(fileId!.Value, s_fileReadOptions with { Options = resolvedOptions.FileOptions });
+            await SetCoreAsync<IAsyncState.Async>(key, factory, resolvedOptions, cancellationToken);
+            return FileIO.Open(GetFilePath(key), s_fileReadOptions with { Options = resolvedOptions.FileOptions });
         }
     }
 
@@ -413,7 +413,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
                 return Task.CompletedTask;
             };
 
-            SetCoreAsync<IAsyncState.Sync>(key, factoryFunc, resolvedOptions, getFileId: false, cancellationToken).GetAwaiter().GetResult();
+            SetCoreAsync<IAsyncState.Sync>(key, factoryFunc, resolvedOptions, cancellationToken).GetAwaiter().GetResult();
             return GetFilePath(key);
         }
     }
@@ -454,7 +454,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
             if (cached is not null)
                 return cached.Value.FilePath;
 
-            await SetCoreAsync<IAsyncState.Async>(key, factory, resolvedOptions, getFileId: false, cancellationToken);
+            await SetCoreAsync<IAsyncState.Async>(key, factory, resolvedOptions, cancellationToken);
             return GetFilePath(key);
         }
     }
@@ -607,11 +607,10 @@ public sealed partial class FileCache : IFileCache, IDisposable
     }
 
     [return: OwnershipTransfer]
-    private async Task<PersistentFileId?> SetCoreAsync<TAsync>(
+    private async Task SetCoreAsync<TAsync>(
         string key,
         [Borrow] Func<Stream, CancellationToken, Task> writeData,
         ResolvedEntryOptions options,
-        bool getFileId,
         CancellationToken cancellationToken)
         where TAsync : IAsyncState
     {
@@ -643,10 +642,6 @@ public sealed partial class FileCache : IFileCache, IDisposable
             file.Value.FinalizeFile(overwrite: true);
 
             Log.CachedKey(_logger, key, expiresAt);
-
-            return getFileId
-                ? FileIO.GetFileId(file.Value.FileStream.SafeFileHandle)
-                : null;
         }
     }
 
