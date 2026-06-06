@@ -11,7 +11,7 @@ public sealed class OpenFile : IDisposable
     private SafeFileHandle _handle;
     private readonly FileOpenOptions _options;
 
-    public OpenFile([OwnershipTransfer] SafeFileHandle handle, FileOpenOptions options)
+    internal OpenFile([OwnershipTransfer] SafeFileHandle handle, FileOpenOptions options)
     {
         _handle = handle;
         _options = options;
@@ -42,6 +42,21 @@ public sealed class OpenFile : IDisposable
             return _options;
         }
     }
+
+    public bool IsAsync
+    {
+        get
+        {
+#if NET6_0_OR_GREATER
+            return _handle.IsAsync;
+#else
+            return (_options.Options & FileOptions.Asynchronous) != 0;
+#endif
+        }
+    }
+
+    public bool IsClosed =>
+        _handle.IsClosed;
 
     [return: OwnershipTransferUnless(nameof(leaveOpen))]
     public CheckedFileStream CreateFileStream(bool leaveOpen = false, int bufferSize = FileStreamExtensions.DefaultBufferSize)
