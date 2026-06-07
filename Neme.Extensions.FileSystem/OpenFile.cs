@@ -78,12 +78,18 @@ public sealed class OpenFile : IDisposable
         return FileIO.OpenAt(_handle, path, options);
     }
 
+    public FileId GetId()
+    {
+        ObjectDisposedException.ThrowIf(_handle is null, this);
+        return FileIO.GetId(_handle);
+    }
+
     [SupportedOSPlatform("windows")]
     [SupportedOSPlatform("linux")]
     public PersistentFileId GetPersistentId()
     {
         ObjectDisposedException.ThrowIf(_handle is null, this);
-        return FileIO.GetFileId(_handle);
+        return FileIO.GetPersistentId(_handle);
     }
 
     public FileAttributes GetAttributes()

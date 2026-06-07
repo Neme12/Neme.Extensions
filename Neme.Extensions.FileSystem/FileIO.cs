@@ -275,13 +275,20 @@ public static partial class FileIO
         return Strategy.GetFileInfo(file);
     }
 
-    [SupportedOSPlatform("windows")]
-    [SupportedOSPlatform("linux")]
-    public static PersistentFileId GetFileId([Borrow] SafeFileHandle file)
+    public static FileId GetId([Borrow] SafeFileHandle file)
     {
         Strategy.ValidateFileHandle(file);
 
-        return Strategy.GetFileId(file);
+        return Strategy.GetId(file);
+    }
+
+    [SupportedOSPlatform("windows")]
+    [SupportedOSPlatform("linux")]
+    public static PersistentFileId GetPersistentId([Borrow] SafeFileHandle file)
+    {
+        Strategy.ValidateFileHandle(file);
+
+        return Strategy.GetPersistentId(file);
     }
 
     [return: OwnershipTransferUnless(nameof(leaveOpen))]

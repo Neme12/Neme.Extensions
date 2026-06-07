@@ -184,7 +184,31 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
         };
     }
 
-    public override unsafe PersistentFileId GetFileId([Borrow] SafeFileHandle file)
+    public override unsafe FileId GetId([Borrow] SafeFileHandle file)
+    {
+        Debug.Assert(IsValidFileHandle(file));
+
+        ref var fileInfo = ref AllocateFileInfo<FILE_ID_INFO>(
+            stackalloc byte[sizeof(FILE_ID_INFO)],
+            out var fileInfoBuffer);
+
+        if (!PInvoke.GetFileInformationByHandleEx(file, FILE_INFO_BY_HANDLE_CLASS.FileIdInfo, fileInfoBuffer))
+            throw Win32Marshal.GetExceptionForLastWin32Error();
+
+        ulong fileIdHigh;
+        ulong fileIdLow;
+
+        fixed (byte* idBuffer = fileInfo.FileId.Identifier.Value)
+        {
+            fileIdHigh = Unsafe.AsRef<ulong>(idBuffer + 8);
+            fileIdLow = Unsafe.AsRef<ulong>(idBuffer);
+        }
+
+        var windowsFileId = new FileId.WindowsId(fileInfo.VolumeSerialNumber, fileIdHigh, fileIdLow);
+        return FileId.FromWindowsId(windowsFileId);
+    }
+
+    public override unsafe PersistentFileId GetPersistentId([Borrow] SafeFileHandle file)
     {
         Debug.Assert(IsValidFileHandle(file));
 

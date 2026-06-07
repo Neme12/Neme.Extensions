@@ -70,7 +70,7 @@ public sealed partial class FileIOTests
         public void WithValidFileId_ReturnsFileHandle()
         {
             // Arrange - Get file ID from an existing file
-            var fileId = FileIO.GetFileId(_tempFileHandle);
+            var fileId = FileIO.GetPersistentId(_tempFileHandle);
             var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read);
 
             // Act
@@ -98,7 +98,7 @@ public sealed partial class FileIOTests
         public void WithValidOptions_OpensFileSuccessfully()
         {
             // Arrange
-            var fileId = FileIO.GetFileId(_tempFileHandle);
+            var fileId = FileIO.GetPersistentId(_tempFileHandle);
             var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read, FileShare.ReadWrite);
 
             // Act
@@ -113,12 +113,12 @@ public sealed partial class FileIOTests
         public void OpenedHandleCanBeUsed_ToGetSameFileId()
         {
             // Arrange
-            var originalFileId = FileIO.GetFileId(_tempFileHandle);
+            var originalFileId = FileIO.GetPersistentId(_tempFileHandle);
             var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read);
 
             // Act
             using var reopenedHandle = FileIO.OpenHandle(originalFileId, options);
-            var reopenedFileId = FileIO.GetFileId(reopenedHandle);
+            var reopenedFileId = FileIO.GetPersistentId(reopenedHandle);
 
             // Assert
             Assert.Equal(originalFileId, reopenedFileId);
@@ -128,7 +128,7 @@ public sealed partial class FileIOTests
         public void WithDifferentShareModes_RespectsShareSettings()
         {
             // Arrange
-            var fileId = FileIO.GetFileId(_tempFileHandle);
+            var fileId = FileIO.GetPersistentId(_tempFileHandle);
             var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read, FileShare.Read);
 
             // Act
@@ -143,7 +143,7 @@ public sealed partial class FileIOTests
         public void ReturnsHandleThatOwnsResource()
         {
             // Arrange
-            var fileId = FileIO.GetFileId(_tempFileHandle);
+            var fileId = FileIO.GetPersistentId(_tempFileHandle);
             var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read);
 
             // Act
@@ -160,7 +160,7 @@ public sealed partial class FileIOTests
         public void WithRandomFileId_ThrowsFileNotFoundException()
         {
             // Arrange - Get a valid volume serial number but use random file IDs
-            var validFileId = FileIO.GetFileId(_tempFileHandle);
+            var validFileId = FileIO.GetPersistentId(_tempFileHandle);
             var randomFileId = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 ? PersistentFileId.FromWindowsId(new PersistentFileId.WindowsId(
                     volumeSerialNumber: validFileId.WindowsFileId.VolumeSerialNumber,
@@ -203,7 +203,7 @@ public sealed partial class FileIOTests
         {
             // Arrange - Get directory ID from an existing directory
             using var tempDirHandle = OpenDirectoryHandle();
-            var directoryId = FileIO.GetFileId(tempDirHandle);
+            var directoryId = FileIO.GetPersistentId(tempDirHandle);
             var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read)
             {
                 Attributes = FileAttributes.Directory
@@ -223,7 +223,7 @@ public sealed partial class FileIOTests
         {
             // Arrange
             using var tempDirHandle = OpenDirectoryHandle();
-            var originalDirectoryId = FileIO.GetFileId(tempDirHandle);
+            var originalDirectoryId = FileIO.GetPersistentId(tempDirHandle);
             var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read)
             {
                 Attributes = FileAttributes.Directory
@@ -231,7 +231,7 @@ public sealed partial class FileIOTests
 
             // Act
             using var reopenedHandle = FileIO.OpenHandle(originalDirectoryId, options);
-            var reopenedDirectoryId = FileIO.GetFileId(reopenedHandle);
+            var reopenedDirectoryId = FileIO.GetPersistentId(reopenedHandle);
 
             // Assert
             Assert.Equal(originalDirectoryId, reopenedDirectoryId);
@@ -242,7 +242,7 @@ public sealed partial class FileIOTests
         {
             // Arrange
             using var tempDirHandle = OpenDirectoryHandle();
-            var directoryId = FileIO.GetFileId(tempDirHandle);
+            var directoryId = FileIO.GetPersistentId(tempDirHandle);
             var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read, FileShare.ReadWrite)
             {
                 Attributes = FileAttributes.Directory
@@ -261,7 +261,7 @@ public sealed partial class FileIOTests
         {
             // Arrange
             using var tempDirHandle = OpenDirectoryHandle();
-            var directoryId = FileIO.GetFileId(tempDirHandle);
+            var directoryId = FileIO.GetPersistentId(tempDirHandle);
             var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read)
             {
                 Attributes = FileAttributes.Directory
@@ -282,7 +282,7 @@ public sealed partial class FileIOTests
         {
             // Arrange - Get a valid volume serial number but use random file IDs
             using var tempDirHandle = OpenDirectoryHandle();
-            var validDirectoryId = FileIO.GetFileId(tempDirHandle);
+            var validDirectoryId = FileIO.GetPersistentId(tempDirHandle);
             var randomDirectoryId = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 ? PersistentFileId.FromWindowsId(new PersistentFileId.WindowsId(
                     volumeSerialNumber: validDirectoryId.WindowsFileId.VolumeSerialNumber,

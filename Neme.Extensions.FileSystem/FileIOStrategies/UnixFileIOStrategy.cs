@@ -664,8 +664,23 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         }
     }
 
+    public override FileId GetId([Borrow] SafeFileHandle file)
+    {
+        Stat stat;
+        int result;
+
+        using (var fileScope = file.CreateScope())
+            result = Syscall.fstat((int)fileScope.Handle, out stat);
+
+        if (result != 0)
+            throw UnixMarshal.GetExceptionForLastStdlibError();
+
+        var unixId = new FileId.UnixId(stat.st_dev, stat.st_ino);
+        return FileId.FromUnixId(unixId);
+    }
+
     [SupportedOSPlatform("linux")]
-    public override unsafe PersistentFileId GetFileId([Borrow] SafeFileHandle file)
+    public override unsafe PersistentFileId GetPersistentId([Borrow] SafeFileHandle file)
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {

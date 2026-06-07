@@ -20,7 +20,7 @@ public sealed partial class FileIOTests
                 PersistentFileId fileId;
                 using (var fileStream = File.Open(tempFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
-                    fileId = FileIO.GetFileId(fileStream.SafeFileHandle);
+                    fileId = FileIO.GetPersistentId(fileStream.SafeFileHandle);
                 }
 
                 // Act
@@ -48,7 +48,7 @@ public sealed partial class FileIOTests
                 PersistentFileId fileId;
                 using (var fileStream = File.Open(tempFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
-                    fileId = FileIO.GetFileId(fileStream.SafeFileHandle);
+                    fileId = FileIO.GetPersistentId(fileStream.SafeFileHandle);
                 }
 
                 // Act
