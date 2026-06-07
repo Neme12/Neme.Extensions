@@ -134,7 +134,7 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
             throw Win32Marshal.GetExceptionForLastWin32Error();
     }
 
-    public override unsafe void SetFileAttributes([Borrow] SafeFileHandle file, FileAttributes attributes)
+    public override unsafe void SetAttributes([Borrow] SafeFileHandle file, FileAttributes attributes)
     {
         Debug.Assert(IsValidFileHandle(file));
 
@@ -148,7 +148,7 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
             throw Win32Marshal.GetExceptionForLastWin32Error();
     }
 
-    public override FileAttributes GetFileAttributes([Borrow] SafeFileHandle file)
+    public override FileAttributes GetAttributes([Borrow] SafeFileHandle file)
     {
         Debug.Assert(IsValidFileHandle(file));
 
@@ -159,7 +159,7 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
         return FileAttributes.FromWin32((FILE_FLAGS_AND_ATTRIBUTES)fileInformation.dwFileAttributes);
     }
 
-    public override unsafe FileBasicInfo GetFileInfo([Borrow] SafeFileHandle file)
+    public override unsafe FileBasicInfo GetBasicInfo([Borrow] SafeFileHandle file)
     {
         Debug.Assert(IsValidFileHandle(file));
 

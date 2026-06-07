@@ -66,24 +66,27 @@ public readonly partial record struct PersistentFileId : IEquatable<PersistentFi
 
     public override int GetHashCode()
     {
-        var hashCode = new HashCode();
-        hashCode.Add(_platformId.GetType());
-
-        switch (_platformId)
+        unchecked
         {
-            case WindowsId windowsId:
-                hashCode.Add(windowsId);
-                break;
+            var hashCode = new HashCode();
+            hashCode.Add(_platformId.GetType());
 
-            case LinuxId linuxId:
-                hashCode.Add(linuxId);
-                break;
+            switch (_platformId)
+            {
+                case WindowsId windowsId:
+                    hashCode.Add(windowsId);
+                    break;
 
-            case null:
-                break;
+                case LinuxId linuxId:
+                    hashCode.Add(linuxId);
+                    break;
+
+                case null:
+                    break;
+            }
+
+            return hashCode.ToHashCode();
         }
-
-        return hashCode.ToHashCode();
     }
 
     public static PersistentFileId Parse(string s)

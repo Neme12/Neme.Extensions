@@ -254,25 +254,25 @@ public static partial class FileIO
         Strategy.Delete(file);
     }
 
-    public static void SetFileAttributes([Borrow] SafeFileHandle file, FileAttributes attributes)
+    public static void SetAttributes([Borrow] SafeFileHandle file, FileAttributes attributes)
     {
         Strategy.ValidateFileHandle(file);
 
-        Strategy.SetFileAttributes(file, attributes);
+        Strategy.SetAttributes(file, attributes);
     }
 
-    public static FileAttributes GetFileAttributes([Borrow] SafeFileHandle file)
+    public static FileAttributes GetAttributes([Borrow] SafeFileHandle file)
     {
         Strategy.ValidateFileHandle(file);
 
-        return Strategy.GetFileAttributes(file);
+        return Strategy.GetAttributes(file);
     }
 
-    public static FileBasicInfo GetFileInfo([Borrow] SafeFileHandle file)
+    public static FileBasicInfo GetBasicInfo([Borrow] SafeFileHandle file)
     {
         Strategy.ValidateFileHandle(file);
 
-        return Strategy.GetFileInfo(file);
+        return Strategy.GetBasicInfo(file);
     }
 
     public static FileId GetId([Borrow] SafeFileHandle file)

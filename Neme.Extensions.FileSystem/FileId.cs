@@ -77,20 +77,23 @@ public readonly partial record struct FileId : IEquatable<FileId>
 
     public override int GetHashCode()
     {
-        var hashCode = new HashCode();
-        hashCode.Add(_platformKind);
-
-        switch (_platformKind)
+        unchecked
         {
-            case PlatformKind.Windows:
-                hashCode.Add(_windowsId);
-                break;
+            var hashCode = new HashCode();
+            hashCode.Add(_platformKind);
 
-            case PlatformKind.Unix:
-                hashCode.Add(_unixId);
-                break;
+            switch (_platformKind)
+            {
+                case PlatformKind.Windows:
+                    hashCode.Add(_windowsId);
+                    break;
+
+                case PlatformKind.Unix:
+                    hashCode.Add(_unixId);
+                    break;
+            }
+
+            return hashCode.ToHashCode();
         }
-
-        return hashCode.ToHashCode();
     }
 }

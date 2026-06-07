@@ -6,7 +6,7 @@ namespace Neme.Extensions.FileSystem.Tests;
 public sealed partial class FileIOTests
 {
     [Collection(nameof(FileIOTestCollection))]
-    public sealed class SetFileAttributes
+    public sealed class SetAttributes
     {
         [Fact]
         public void NullHandle_ThrowsArgumentNullException()
@@ -15,7 +15,7 @@ public sealed partial class FileIOTests
             var handle = (SafeFileHandle)null!;
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => FileIO.SetFileAttributes(handle, FileAttributes.ReadOnly));
+            Assert.Throws<ArgumentNullException>(() => FileIO.SetAttributes(handle, FileAttributes.ReadOnly));
         }
 
         [Fact]
@@ -25,7 +25,7 @@ public sealed partial class FileIOTests
             using var handle = new SafeFileHandle((nint)(-1), ownsHandle: false);
 
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => FileIO.SetFileAttributes(handle, FileAttributes.ReadOnly));
+            Assert.Throws<ArgumentException>(() => FileIO.SetAttributes(handle, FileAttributes.ReadOnly));
         }
 
         [Fact]
@@ -39,10 +39,10 @@ public sealed partial class FileIOTests
                 using var handle = FileIO.OpenHandle(tempFile, options);
 
                 // Act
-                FileIO.SetFileAttributes(handle, FileAttributes.ReadOnly);
-                var readOnlyAttributes = FileIO.GetFileAttributes(handle);
-                FileIO.SetFileAttributes(handle, FileAttributes.Normal);
-                var normalAttributes = FileIO.GetFileAttributes(handle);
+                FileIO.SetAttributes(handle, FileAttributes.ReadOnly);
+                var readOnlyAttributes = FileIO.GetAttributes(handle);
+                FileIO.SetAttributes(handle, FileAttributes.Normal);
+                var normalAttributes = FileIO.GetAttributes(handle);
 
                 // Assert
                 Assert.True(readOnlyAttributes.HasFlag(FileAttributes.ReadOnly));
@@ -65,7 +65,7 @@ public sealed partial class FileIOTests
                 using var handle = FileIO.OpenHandle(tempFile, options);
 
                 // Act & Assert
-                Assert.Throws<UnauthorizedAccessException>(() => FileIO.SetFileAttributes(handle, FileAttributes.ReadOnly));
+                Assert.Throws<UnauthorizedAccessException>(() => FileIO.SetAttributes(handle, FileAttributes.ReadOnly));
             }
             finally
             {
@@ -84,10 +84,10 @@ public sealed partial class FileIOTests
                 using var handle = FileIO.OpenHandle(tempFile, options);
 
                 // Act
-                FileIO.SetFileAttributes(handle, FileAttributes.Hidden);
-                var hiddenAttributes = FileIO.GetFileAttributes(handle);
-                FileIO.SetFileAttributes(handle, FileAttributes.Normal);
-                var normalAttributes = FileIO.GetFileAttributes(handle);
+                FileIO.SetAttributes(handle, FileAttributes.Hidden);
+                var hiddenAttributes = FileIO.GetAttributes(handle);
+                FileIO.SetAttributes(handle, FileAttributes.Normal);
+                var normalAttributes = FileIO.GetAttributes(handle);
 
                 // Assert
                 Assert.True(hiddenAttributes.HasFlag(FileAttributes.Hidden));

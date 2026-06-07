@@ -34,11 +34,11 @@ internal abstract class FileIOStrategy
 
     public abstract void Delete([Borrow] SafeFileHandle file);
 
-    public abstract void SetFileAttributes([Borrow] SafeFileHandle file, FileAttributes attributes);
+    public abstract void SetAttributes([Borrow] SafeFileHandle file, FileAttributes attributes);
 
-    public abstract FileAttributes GetFileAttributes([Borrow] SafeFileHandle file);
+    public abstract FileAttributes GetAttributes([Borrow] SafeFileHandle file);
 
-    public abstract FileBasicInfo GetFileInfo([Borrow] SafeFileHandle file);
+    public abstract FileBasicInfo GetBasicInfo([Borrow] SafeFileHandle file);
 
     public abstract FileId GetId([Borrow] SafeFileHandle file);
 

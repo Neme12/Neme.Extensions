@@ -1,6 +1,6 @@
 ﻿namespace Neme.Extensions.FileSystem.Tests;
 
-public sealed class FsFileIdTests
+public sealed class PersistentFileIdTests
 {
     [Fact]
     public void FromWindowsId_ReturnsInstanceExposingWindowsFileId()

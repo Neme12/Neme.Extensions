@@ -3,7 +3,7 @@ using System.Runtime.Versioning;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
-public sealed class FsFileOptionsTests
+public sealed class FileOpenOptionsTests
 {
     [Fact]
     public void Constructor_WithExplicitShare_SetsModeAccessAndShare()

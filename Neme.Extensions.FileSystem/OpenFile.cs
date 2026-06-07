@@ -95,19 +95,19 @@ public sealed class OpenFile : IDisposable
     public FileAttributes GetAttributes()
     {
         ObjectDisposedException.ThrowIf(_handle is null, this);
-        return FileIO.GetFileAttributes(_handle);
+        return FileIO.GetAttributes(_handle);
     }
 
     public void SetAttributes(FileAttributes attributes)
     {
         ObjectDisposedException.ThrowIf(_handle is null, this);
-        FileIO.SetFileAttributes(_handle, attributes);
+        FileIO.SetAttributes(_handle, attributes);
     }
 
     public FileBasicInfo GetBasicInfo()
     {
         ObjectDisposedException.ThrowIf(_handle is null, this);
-        return FileIO.GetFileInfo(_handle);
+        return FileIO.GetBasicInfo(_handle);
     }
 
     public void Move(string destFileName, bool overwrite = false)

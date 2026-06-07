@@ -8,7 +8,7 @@ public sealed partial class FileIOTests
     [SupportedOSPlatform("windows")]
     [SupportedOSPlatform("linux")]
     [Collection(nameof(FileIOTestCollection))]
-    public sealed class GetPath_FsFileId
+    public sealed class GetPath_PersistentFileId
     {
         [PlatformOnlyFact(Platform.Windows)]
         public void GetPath_WithValidFileId_ReturnsPath()

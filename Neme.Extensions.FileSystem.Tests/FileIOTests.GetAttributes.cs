@@ -6,7 +6,7 @@ namespace Neme.Extensions.FileSystem.Tests;
 public sealed partial class FileIOTests
 {
     [Collection(nameof(FileIOTestCollection))]
-    public sealed class GetFileAttributes
+    public sealed class GetAttributes
     {
         [Fact]
         public void NullHandle_ThrowsArgumentNullException()
@@ -15,7 +15,7 @@ public sealed partial class FileIOTests
             var handle = (SafeFileHandle)null!;
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => FileIO.GetFileAttributes(handle));
+            Assert.Throws<ArgumentNullException>(() => FileIO.GetAttributes(handle));
         }
 
         [Fact]
@@ -25,7 +25,7 @@ public sealed partial class FileIOTests
             using var handle = new SafeFileHandle((nint)(-1), ownsHandle: false);
 
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => FileIO.GetFileAttributes(handle));
+            Assert.Throws<ArgumentException>(() => FileIO.GetAttributes(handle));
         }
 
         [Fact]
@@ -43,7 +43,7 @@ public sealed partial class FileIOTests
                 using var handle = FileIO.OpenHandle(tempDirectory, options);
 
                 // Act
-                var attributes = FileIO.GetFileAttributes(handle);
+                var attributes = FileIO.GetAttributes(handle);
 
                 // Assert
                 Assert.True(attributes.HasFlag(FileAttributes.Directory));

@@ -10,7 +10,7 @@ public sealed partial class FileIOTests
     [SupportedOSPlatform("windows")]
     [SupportedOSPlatform("linux")]
     [Collection(nameof(FileIOTestCollection))]
-    public sealed class OpenHandleById : IDisposable
+    public sealed class OpenHandle_PersistentFileId : IDisposable
     {
         private readonly string _tempFilePath;
         private readonly string _tempDirectoryPath;
@@ -23,7 +23,7 @@ public sealed partial class FileIOTests
 
         private readonly SafeFileHandle _tempFileHandle;
 
-        public OpenHandleById()
+        public OpenHandle_PersistentFileId()
         {
             _tempFilePath = Path.GetTempFileName();
             _tempDirectoryPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());

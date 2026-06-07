@@ -6,7 +6,7 @@ namespace Neme.Extensions.FileSystem.Tests;
 public sealed partial class FileIOTests
 {
     [Collection(nameof(FileIOTestCollection))]
-    public sealed class GetFileInfo
+    public sealed class GetBasicInfo
     {
         [Fact]
         public void GetFileInfo_ValidHandle_ReturnsBasicFileInfo()
@@ -22,7 +22,7 @@ public sealed partial class FileIOTests
                 var earliestExpectedTime = now - Duration.FromSeconds(5);
 
                 // Act
-                var result = FileIO.GetFileInfo(handle);
+                var result = FileIO.GetBasicInfo(handle);
 
                 // Assert
                 Assert.Equal(4, result.Size);
@@ -45,7 +45,7 @@ public sealed partial class FileIOTests
             var handle = (SafeFileHandle)null!;
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => FileIO.GetFileInfo(handle));
+            Assert.Throws<ArgumentNullException>(() => FileIO.GetBasicInfo(handle));
         }
 
         [Fact]
@@ -55,7 +55,7 @@ public sealed partial class FileIOTests
             using var handle = new SafeFileHandle((nint)(-1), ownsHandle: false);
 
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => FileIO.GetFileInfo(handle));
+            Assert.Throws<ArgumentException>(() => FileIO.GetBasicInfo(handle));
         }
 
         [Fact]
@@ -75,7 +75,7 @@ public sealed partial class FileIOTests
                 var earliestExpectedTime = now - Duration.FromSeconds(5);
 
                 // Act
-                var result = FileIO.GetFileInfo(handle);
+                var result = FileIO.GetBasicInfo(handle);
 
                 // Assert
                 Assert.True(result.Attributes.HasFlag(FileAttributes.Directory));

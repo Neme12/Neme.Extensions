@@ -379,7 +379,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         return (parentDirectoryHandle.Move()!, fileName);
     }
 
-    public override void SetFileAttributes([Borrow] SafeFileHandle file, FileAttributes attributes)
+    public override void SetAttributes([Borrow] SafeFileHandle file, FileAttributes attributes)
     {
         if (_handleMetadataTable.TryGetValue(file, out var metadata) && (metadata.Access & FileSystemAccess.WriteAttributes) == 0)
             throw new UnauthorizedAccessException("The handle must have write attributes access.");
@@ -453,7 +453,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         }
     }
 
-    public override FileAttributes GetFileAttributes([Borrow] SafeFileHandle file)
+    public override FileAttributes GetAttributes([Borrow] SafeFileHandle file)
     {
         Interop.MacOS.StatInfo? statInfo;
 
@@ -592,7 +592,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         }
     }
 
-    public override FileBasicInfo GetFileInfo([Borrow] SafeFileHandle file)
+    public override FileBasicInfo GetBasicInfo([Borrow] SafeFileHandle file)
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
