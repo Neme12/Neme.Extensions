@@ -14,12 +14,13 @@ public sealed class FileBookmarkTests
     }
 
     [Fact]
-    public void EqualInstances_AreEqual()
+    public void EqualInstances_HaveEqualHashCodes()
     {
         var fileId = FileId.FromWindowsId(new FileId.WindowsId(1UL, 2UL, 3UL));
         var left = new FileBookmark("C:/temp/test.txt", fileId);
         var right = new FileBookmark("C:/temp/test.txt", fileId);
 
         Assert.Equal(left, right);
+        Assert.Equal(left.GetHashCode(), right.GetHashCode());
     }
 }
