@@ -1,6 +1,5 @@
 ﻿using Neme.Extensions.Contracts;
 using Neme.Extensions.Ownership;
-using System.Runtime.Versioning;
 
 namespace Neme.Extensions.FileSystem;
 
@@ -9,7 +8,7 @@ namespace Neme.Extensions.FileSystem;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Use <see cref="Create(string, FileOpenOptions, bool)"/> to create the temporary file, write the contents through <see cref="FileStream"/>,
+/// Use <see cref="Create(string, FileOpenOptions, bool)"/> to create the temporary file, write the contents through <see cref="File"/>,
 /// and then call <see cref="Commit(bool)"/> to move the file to <see cref="FinalPath"/> without exposing a partially written file at the
 /// destination.
 /// </para>
@@ -18,30 +17,27 @@ namespace Neme.Extensions.FileSystem;
 /// <see cref="Close()">closed</see> and later <see cref="Reopen()">reopened</see> while it is still in its uncommitted <c>.part</c> state.
 /// </para>
 /// </remarks>
-public sealed class PartialFileWithStream :
+public sealed class PartialFile :
     IDisposable
-#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-    , IAsyncDisposable
-#endif
 {
-    private CheckedFileStream? _fileStream;
+    private OpenFile? _file;
     private readonly string _finalPath;
     private readonly FileOpenOptions _options;
     private State _state;
 
-    private PartialFileWithStream(CheckedFileStream partialFileStream, string finalPath, FileOpenOptions options)
+    private PartialFile(OpenFile partialFile, string finalPath)
     {
-        _fileStream = partialFileStream;
+        _file = partialFile;
         _finalPath = finalPath;
-        _options = options;
+        _options = partialFile.Options;
         _state = State.Open;
     }
 
     /// <summary>
-    /// Gets the stream for the temporary <c>.part</c> file while the file is open.
+    /// Gets the <see cref="OpenFile"/> for the temporary <c>.part</c> file while the file is open.
     /// </summary>
     [Owned]
-    public CheckedFileStream FileStream
+    public OpenFile File
     {
         get
         {
@@ -50,11 +46,11 @@ public sealed class PartialFileWithStream :
             if (_state == State.Closed)
                 throw new InvalidOperationException("File is closed.");
 
-            return _fileStream.NotNull();
+            return _file.NotNull();
         }
         private set
         {
-            _fileStream = value;
+            _file = value;
         }
     }
 
@@ -91,8 +87,8 @@ public sealed class PartialFileWithStream :
     /// <param name="finalPath">The final destination path that will be used by <see cref="Commit(bool)"/>.</param>
     /// <param name="options">The options used to open the temporary file. Delete access is required so the temporary file can be cleaned up.</param>
     /// <param name="createDirectory"><see langword="true"/> to create the destination directory if it does not already exist.</param>
-    /// <returns>A <see cref="PartialFileWithStream"/> for writing the temporary file.</returns>
-    public static PartialFileWithStream Create(string finalPath, FileOpenOptions options, bool createDirectory = false)
+    /// <returns>A <see cref="PartialFile"/> for writing the temporary file.</returns>
+    public static PartialFile Create(string finalPath, FileOpenOptions options, bool createDirectory = false)
     {
         ArgumentException.ThrowIfNullOrEmpty(finalPath);
 
@@ -104,8 +100,8 @@ public sealed class PartialFileWithStream :
         if (createDirectory)
             Directory.CreateDirectory(Path.GetDirectoryName(finalPath)!);
 
-        var fileStream = FileIO.Open(partialPath, options).CreateFileStream();
-        return new PartialFileWithStream(fileStream, finalPath, options);
+        var file = FileIO.Open(partialPath, options);
+        return new PartialFile(file, finalPath);
     }
 
     /// <summary>
@@ -120,12 +116,12 @@ public sealed class PartialFileWithStream :
 
         var reopenOptions = _options with { Mode = FileMode.Open };
 
-        _fileStream = FileIO.Open(FinalPath + ".part", reopenOptions).CreateFileStream();
+        _file = FileIO.Open(FinalPath + ".part", reopenOptions);
         _state = State.Open;
     }
 
     /// <summary>
-    /// Closes <see cref="FileStream"/> without committing the file.
+    /// Closes <see cref="File"/> without committing the file.
     /// </summary>
     /// <remarks>
     /// Call <see cref="Reopen()"/> to continue writing later, or dispose the instance to delete the temporary file.
@@ -137,37 +133,17 @@ public sealed class PartialFileWithStream :
         if (_state != State.Open)
             throw new InvalidOperationException("File is not open.");
 
-        _fileStream!.Dispose();
-        _fileStream = null;
+        _file!.Dispose();
+        _file = null;
         _state = State.Closed;
     }
-
-#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-    /// <summary>
-    /// Asynchronously closes <see cref="FileStream"/> without committing the file.
-    /// </summary>
-    /// <remarks>
-    /// Call <see cref="Reopen()"/> to continue writing later, or dispose the instance to delete the temporary file.
-    /// </remarks>
-    public async Task CloseAsync()
-    {
-        ObjectDisposedException.ThrowIf(_state == State.Disposed, this);
-
-        if (_state != State.Open)
-            throw new InvalidOperationException("File is not open.");
-
-        await _fileStream!.DisposeAsync();
-        _fileStream = null;
-        _state = State.Closed;
-    }
-#endif
 
     /// <summary>
     /// Atomically moves the temporary <c>.part</c> file to <see cref="FinalPath"/>.
     /// </summary>
     /// <param name="overwrite"><see langword="true"/> to overwrite an existing destination file; otherwise, the move fails if the destination exists.</param>
     /// <remarks>
-    /// This should be called only after all data has been written to <see cref="FileStream"/> and the file is ready to replace or create the final file.
+    /// This should be called only after all data has been written to <see cref="File"/> and the file is ready to replace or create the final file.
     /// </remarks>
     public void Commit(bool overwrite = false)
     {
@@ -176,7 +152,7 @@ public sealed class PartialFileWithStream :
         if (_state != State.Open)
             throw new InvalidOperationException("File must be open to commit.");
 
-        FileIO.Move(FileStream.SafeFileHandle, FinalPath, overwrite);
+        FileIO.Move(File.Handle, FinalPath, overwrite);
         _state = State.Committed;
     }
 
@@ -188,37 +164,16 @@ public sealed class PartialFileWithStream :
         if (_state != State.Committed)
         {
             if (_state == State.Open)
-                FileIO.Delete(FileStream.SafeFileHandle);
+                FileIO.Delete(File.Handle);
             else
-                File.Delete(CurrentPath);
+                System.IO.File.Delete(CurrentPath);
         }
 
         if (_state != State.Closed)
-            _fileStream!.Dispose();
+            _file!.Dispose();
 
         _state = State.Disposed;
     }
-
-#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-    public async ValueTask DisposeAsync()
-    {
-        if (_state == State.Disposed)
-            return;
-
-        if (_state != State.Committed)
-        {
-            if (_state == State.Open)
-                FileIO.Delete(FileStream.SafeFileHandle);
-            else
-                File.Delete(CurrentPath);
-        }
-
-        if (_state != State.Closed)
-            await _fileStream!.DisposeAsync();
-
-        _state = State.Disposed;
-    }
-#endif
 
     private enum State : byte
     {
