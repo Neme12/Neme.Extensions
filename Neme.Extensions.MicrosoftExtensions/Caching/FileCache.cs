@@ -639,7 +639,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
 
             await WriteMetadataAsync<TAsync>(file.Value.CurrentPath, metadata, cancellationToken);
 
-            file.Value.FinalizeFile(overwrite: true);
+            file.Value.Commit(overwrite: true);
 
             Log.CachedKey(_logger, key, expiresAt);
         }
