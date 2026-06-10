@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Neme.Extensions.Tests.Utilities;
 using NodaTime;
 using NodaTime.Testing;
+using System.Runtime.InteropServices;
 
 namespace Neme.Extensions.MicrosoftExtensions.Caching.Tests;
 
@@ -803,7 +804,9 @@ public sealed partial class FileCacheTests
             Assert.NotNull(filePath);
             var attributes = File.GetAttributes(filePath);
             Assert.False(attributes.HasFlag(FileAttributes.Temporary));
-            Assert.True(attributes.HasFlag(FileAttributes.Archive));
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                Assert.True(attributes.HasFlag(FileAttributes.Archive));
         }
 
         [Fact]
