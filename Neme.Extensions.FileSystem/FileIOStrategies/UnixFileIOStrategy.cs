@@ -379,6 +379,11 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         if (_handleMetadataTable.TryGetValue(file, out var metadata) && (metadata.Access & FileSystemAccess.WriteAttributes) == 0)
             throw new UnauthorizedAccessException("The handle must have write attributes access.");
 
+        SetAttributesCore(file, attributes);
+    }
+
+    private void SetAttributesCore([Borrow] SafeFileHandle file, FileAttributes attributes)
+    {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             bool hidden = (attributes & FileAttributes.Hidden) != 0;
@@ -1155,7 +1160,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         }
 
         if (attributes != default && attributes != FileAttributes.Normal)
-            SetAttributes(handle, attributes);
+            SetAttributesCore(handle, attributes);
 
         return true;
     }
