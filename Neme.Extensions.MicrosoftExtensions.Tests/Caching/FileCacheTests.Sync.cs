@@ -4,13 +4,12 @@ using Microsoft.Extensions.Options;
 using Neme.Extensions.Tests.Utilities;
 using NodaTime;
 using NodaTime.Testing;
-using System.Runtime.Versioning;
 
 namespace Neme.Extensions.MicrosoftExtensions.Caching.Tests;
 
-[SupportedOSPlatform("windows6.0.6000")]
 public sealed partial class FileCacheTests
 {
+    [Collection("FileCache")]
     public sealed class Sync : IDisposable
     {
         private const string MetadataExtension = ".metadata";
@@ -59,7 +58,7 @@ public sealed partial class FileCacheTests
             return filePath + MetadataExtension;
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void Set_StoresDataSuccessfully()
         {
             // Arrange
@@ -83,7 +82,7 @@ public sealed partial class FileCacheTests
             Assert.Equal(data, content);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void Get_ReturnsNullForNonExistentKey()
         {
             // Arrange
@@ -97,7 +96,7 @@ public sealed partial class FileCacheTests
             Assert.Null(result);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void Get_ReturnsFileHandleForExistingKey()
         {
             // Arrange
@@ -123,7 +122,7 @@ public sealed partial class FileCacheTests
             Assert.Equal(data, content);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void GetPath_ReturnsNullForNonExistentKey()
         {
             // Arrange
@@ -137,7 +136,7 @@ public sealed partial class FileCacheTests
             Assert.Null(result);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void GetPath_ReturnsPathForExistingKey()
         {
             // Arrange
@@ -159,7 +158,7 @@ public sealed partial class FileCacheTests
             Assert.True(File.Exists(GetMetadataPath(result)));
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void Get_ReturnsNullForExpiredKey()
         {
             // Arrange
@@ -187,7 +186,7 @@ public sealed partial class FileCacheTests
             Assert.False(File.Exists(GetMetadataPath(filePath)));
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void Get_WithSlidingExpiration_RefreshesExpiration()
         {
             // Arrange
@@ -215,7 +214,7 @@ public sealed partial class FileCacheTests
             Assert.NotNull(secondResult);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void GetOrCreate_CreatesEntryIfNotExists()
         {
             // Arrange
@@ -243,7 +242,7 @@ public sealed partial class FileCacheTests
             Assert.Equal(data, content);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void GetOrCreate_ReturnsExistingEntryIfExists()
         {
             // Arrange
@@ -278,7 +277,7 @@ public sealed partial class FileCacheTests
             Assert.Equal(originalData, content);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void GetOrCreatePath_CreatesEntryIfNotExists()
         {
             // Arrange
@@ -304,7 +303,7 @@ public sealed partial class FileCacheTests
             Assert.Equal(data, content);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void GetOrCreatePath_ReturnsExistingEntryIfExists()
         {
             // Arrange
@@ -336,7 +335,7 @@ public sealed partial class FileCacheTests
             Assert.Equal(originalData, content);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void Remove_DeletesExistingEntry()
         {
             // Arrange
@@ -363,7 +362,7 @@ public sealed partial class FileCacheTests
             Assert.Null(result);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void Remove_DoesNotThrowForNonExistentKey()
         {
             // Arrange
@@ -374,7 +373,7 @@ public sealed partial class FileCacheTests
             cache.Remove(key, CancellationToken.None);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void Clear_RemovesAllEntries()
         {
             // Arrange
@@ -413,7 +412,7 @@ public sealed partial class FileCacheTests
             }
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void Set_ThrowsArgumentNullException_WhenKeyIsNull()
         {
             // Arrange
@@ -424,7 +423,7 @@ public sealed partial class FileCacheTests
                 cache.Set(null!, (s, ct) => { }, FileCacheEntryOptions.Default));
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void Set_ThrowsArgumentException_WhenKeyIsEmpty()
         {
             // Arrange
@@ -435,7 +434,7 @@ public sealed partial class FileCacheTests
                 cache.Set(string.Empty, (s, ct) => { }, FileCacheEntryOptions.Default));
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void Set_ThrowsArgumentNullException_WhenWriteDataIsNull()
         {
             // Arrange
@@ -446,7 +445,7 @@ public sealed partial class FileCacheTests
                 cache.Set("key", null!, FileCacheEntryOptions.Default));
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void Get_ThrowsArgumentNullException_WhenKeyIsNull()
         {
             // Arrange
@@ -457,7 +456,7 @@ public sealed partial class FileCacheTests
                 cache.Get(null!, FileCacheEntryReadOptions.Default));
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void Get_ThrowsArgumentException_WhenKeyIsEmpty()
         {
             // Arrange
@@ -468,7 +467,7 @@ public sealed partial class FileCacheTests
                 cache.Get(string.Empty, FileCacheEntryReadOptions.Default));
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void GetOrCreate_ThrowsArgumentNullException_WhenKeyIsNull()
         {
             // Arrange
@@ -479,7 +478,7 @@ public sealed partial class FileCacheTests
                 cache.GetOrCreate(null!, (s, ct) => { }, FileCacheEntryOptions.Default));
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void GetOrCreate_ThrowsArgumentNullException_WhenFactoryIsNull()
         {
             // Arrange
@@ -490,7 +489,7 @@ public sealed partial class FileCacheTests
                 cache.GetOrCreate("key", null!, FileCacheEntryOptions.Default));
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void Remove_ThrowsArgumentNullException_WhenKeyIsNull()
         {
             // Arrange
@@ -501,7 +500,7 @@ public sealed partial class FileCacheTests
                 cache.Remove(null!, CancellationToken.None));
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void ConcurrentAccess_HandlesMultipleThreads()
         {
             // Arrange
@@ -528,7 +527,7 @@ public sealed partial class FileCacheTests
 #pragma warning restore xUnit1031
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void Set_WithCustomExpiration_UsesSpecifiedDuration()
         {
             // Arrange
@@ -561,7 +560,7 @@ public sealed partial class FileCacheTests
             }
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void Dispose_ReleasesResources()
         {
             // Arrange
@@ -573,7 +572,7 @@ public sealed partial class FileCacheTests
             // Assert - no exception should be thrown
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void Get_AppliesSpecifiedFileOptions()
         {
             // Arrange
@@ -594,7 +593,7 @@ public sealed partial class FileCacheTests
             Assert.Equal(FileOptions.RandomAccess, result.Options.Options);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void Get_AppliesDefaultFileOptionsWhenNotSpecified()
         {
             // Arrange
@@ -615,7 +614,7 @@ public sealed partial class FileCacheTests
             Assert.Equal(FileOptions.SequentialScan, result.Options.Options);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void Get_FileHandleIsNotAsyncWithoutFlag()
         {
             // Arrange
@@ -636,7 +635,7 @@ public sealed partial class FileCacheTests
             Assert.False(result.Handle.IsAsync);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void Get_FileHandleIsAsyncWithFlag()
         {
             // Arrange
@@ -657,7 +656,7 @@ public sealed partial class FileCacheTests
             Assert.True(result.Handle.IsAsync);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void Set_AppliesSpecifiedFileAttributes()
         {
             // Arrange
@@ -682,7 +681,7 @@ public sealed partial class FileCacheTests
             Assert.True(attributes.HasFlag(FileAttributes.Temporary));
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void Set_AppliesDefaultFileAttributesWhenNotSpecified()
         {
             // Arrange
@@ -704,7 +703,7 @@ public sealed partial class FileCacheTests
             Assert.True(attributes.HasFlag(FileAttributes.Archive));
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void GetOrCreate_AppliesSpecifiedFileOptions()
         {
             // Arrange
