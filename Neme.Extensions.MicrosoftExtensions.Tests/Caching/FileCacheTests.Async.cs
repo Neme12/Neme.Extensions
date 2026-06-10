@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Neme.Extensions.Tests.Utilities;
@@ -14,6 +14,8 @@ public sealed partial class FileCacheTests
 {
     public sealed class Async : IDisposable
     {
+        private const string MetadataExtension = ".metadata";
+
         private readonly string _testCacheDirectory;
         private readonly FakeClock _clock;
         private readonly ILogger<FileCache> _logger;
@@ -53,6 +55,11 @@ public sealed partial class FileCacheTests
             return new FileCache(options, _logger, _clock);
         }
 
+        private static string GetMetadataPath(string filePath)
+        {
+            return filePath + MetadataExtension;
+        }
+
         [PlatformOnlyFact(Platform.Windows)]
         public async Task SetAsync_StoresDataSuccessfully()
         {
@@ -71,6 +78,7 @@ public sealed partial class FileCacheTests
             var filePath = await cache.GetPathAsync(key);
             Assert.NotNull(filePath);
             Assert.True(File.Exists(filePath));
+            Assert.True(File.Exists(GetMetadataPath(filePath)));
 
             var content = await File.ReadAllBytesAsync(filePath);
             Assert.Equal(data, content);
@@ -149,6 +157,7 @@ public sealed partial class FileCacheTests
             // Assert
             Assert.NotNull(result);
             Assert.True(File.Exists(result));
+            Assert.True(File.Exists(GetMetadataPath(result)));
         }
 
         [PlatformOnlyFact(Platform.Windows)]
@@ -164,6 +173,9 @@ public sealed partial class FileCacheTests
                 await stream.WriteAsync(data, ct);
             }, new FileCacheEntryOptions { Expiration = Duration.FromMinutes(30) });
 
+            var filePath = await cache.GetPathAsync(key);
+            Assert.NotNull(filePath);
+
             // Advance time past expiration
             _clock.Advance(Duration.FromMinutes(31));
 
@@ -172,6 +184,8 @@ public sealed partial class FileCacheTests
 
             // Assert
             Assert.Null(result);
+            Assert.False(File.Exists(filePath));
+            Assert.False(File.Exists(GetMetadataPath(filePath)));
         }
 
         [PlatformOnlyFact(Platform.Windows)]
@@ -285,6 +299,7 @@ public sealed partial class FileCacheTests
             Assert.True(factoryCalled);
             Assert.NotNull(result);
             Assert.True(File.Exists(result));
+            Assert.True(File.Exists(GetMetadataPath(result)));
 
             var content = await File.ReadAllBytesAsync(result);
             Assert.Equal(data, content);
@@ -316,6 +331,7 @@ public sealed partial class FileCacheTests
             // Assert
             Assert.False(factoryCalled);
             Assert.NotNull(result);
+            Assert.True(File.Exists(GetMetadataPath(result)));
 
             var content = await File.ReadAllBytesAsync(result);
             Assert.Equal(originalData, content);
@@ -336,12 +352,14 @@ public sealed partial class FileCacheTests
 
             var filePath = await cache.GetPathAsync(key);
             Assert.NotNull(filePath);
+            Assert.True(File.Exists(GetMetadataPath(filePath)));
 
             // Act
             await cache.RemoveAsync(key, CancellationToken.None);
 
             // Assert
             Assert.False(File.Exists(filePath));
+            Assert.False(File.Exists(GetMetadataPath(filePath)));
             using var result = await cache.GetAsync(key, FileCacheEntryReadOptions.Default);
             Assert.Null(result);
         }
@@ -378,6 +396,7 @@ public sealed partial class FileCacheTests
             {
                 var filePath = await cache.GetPathAsync(key);
                 Assert.NotNull(filePath);
+                Assert.True(File.Exists(GetMetadataPath(filePath)));
             }
 
             // Act
@@ -388,6 +407,10 @@ public sealed partial class FileCacheTests
             {
                 using var result = await cache.GetAsync(key, FileCacheEntryReadOptions.Default);
                 Assert.Null(result);
+
+                var filePath = Path.Combine(_testCacheDirectory, key);
+                Assert.False(File.Exists(filePath));
+                Assert.False(File.Exists(GetMetadataPath(filePath)));
             }
         }
 
@@ -412,6 +435,12 @@ public sealed partial class FileCacheTests
                 await stream.WriteAsync(data, ct);
             }, new FileCacheEntryOptions { Expiration = Duration.FromHours(2) });
 
+            var expiredFilePath = Path.Combine(_testCacheDirectory, expiredKey);
+            var validFilePath = Path.Combine(_testCacheDirectory, validKey);
+
+            Assert.True(File.Exists(GetMetadataPath(expiredFilePath)));
+            Assert.True(File.Exists(GetMetadataPath(validFilePath)));
+
             // Advance time to expire first entry
             _clock.Advance(Duration.FromMinutes(15));
 
@@ -421,9 +450,13 @@ public sealed partial class FileCacheTests
             // Assert
             using var expiredResult = await cache.GetAsync(expiredKey, FileCacheEntryReadOptions.Default);
             Assert.Null(expiredResult);
+            Assert.False(File.Exists(expiredFilePath));
+            Assert.False(File.Exists(GetMetadataPath(expiredFilePath)));
 
             using var validResult = await cache.GetAsync(validKey, FileCacheEntryReadOptions.Default);
             Assert.NotNull(validResult);
+            Assert.True(File.Exists(validFilePath));
+            Assert.True(File.Exists(GetMetadataPath(validFilePath)));
         }
 
         [PlatformOnlyFact(Platform.Windows)]
@@ -456,6 +489,8 @@ public sealed partial class FileCacheTests
             Assert.True(Directory.Exists(folderPath));
             Assert.True(File.Exists(file1Path));
             Assert.True(File.Exists(file2Path));
+            Assert.True(File.Exists(GetMetadataPath(file1Path)));
+            Assert.True(File.Exists(GetMetadataPath(file2Path)));
 
             // Advance time to expire first file only
             _clock.Advance(Duration.FromMinutes(15));
@@ -466,6 +501,8 @@ public sealed partial class FileCacheTests
             // Assert - file1 deleted, file2 and folder still exist
             Assert.False(File.Exists(file1Path));
             Assert.True(File.Exists(file2Path));
+            Assert.False(File.Exists(GetMetadataPath(file1Path)));
+            Assert.True(File.Exists(GetMetadataPath(file2Path)));
             Assert.True(Directory.Exists(folderPath));
 
             // Advance time to expire second file
@@ -477,6 +514,8 @@ public sealed partial class FileCacheTests
             // Assert - both files and folder are deleted
             Assert.False(File.Exists(file1Path));
             Assert.False(File.Exists(file2Path));
+            Assert.False(File.Exists(GetMetadataPath(file1Path)));
+            Assert.False(File.Exists(GetMetadataPath(file2Path)));
             Assert.False(Directory.Exists(folderPath));
         }
 

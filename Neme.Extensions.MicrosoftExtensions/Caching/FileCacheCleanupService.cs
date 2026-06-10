@@ -1,14 +1,12 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NodaTime;
-using System.Runtime.Versioning;
 
 namespace Neme.Extensions.MicrosoftExtensions.Caching;
 
 /// <summary>
 /// Background hosted service that periodically cleans up expired file cache entries.
 /// </summary>
-[SupportedOSPlatform("windows6.0.6000")]
 internal sealed partial class FileCacheCleanupService : IHostedService, IDisposable
 {
     private readonly FileCache _fileCache;

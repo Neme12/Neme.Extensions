@@ -8,5 +8,8 @@
 ## File Handling
 - In this workspace, Mono.Unix.Native.Stat does not expose a st_flags field, so Darwin file flags require separate interop rather than relying on Stat.
 
+## Testing Guidelines
+- When updating paired sync/async test files, keep them fully symmetrical and place equivalent checks in the same relative locations in both files.
+
 ## General Guidelines
 - When identifying the root cause of an issue, trust that diagnosis and avoid changing unrelated logic such as equality implementations unless evidence requires it.

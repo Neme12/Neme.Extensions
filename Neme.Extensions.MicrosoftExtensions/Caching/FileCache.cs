@@ -2,19 +2,19 @@
 using Microsoft.Extensions.Options;
 using Neme.Extensions.FileSystem;
 using Neme.Extensions.IO;
-using Neme.Extensions.MicrosoftExtensions.InternalUtilities;
 using Neme.Extensions.Ownership;
 using Neme.Extensions.Threading;
 using NodaTime;
+using System.Buffers;
 using System.Collections.Concurrent;
-using System.Runtime.Versioning;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace Neme.Extensions.MicrosoftExtensions.Caching;
 
 /// <summary>
 /// A file-based cache service that stores cached data on disk with time-based expiration.
-/// Metadata is stored in NTFS Alternate Data Streams for efficiency.
+/// Metadata is stored in a separate sidecar file next to the cached file using the <c>.metadata</c> extension.
 /// Service <see cref="FileCacheCleanupService"/> cleans up expired entries in the background.
 /// </summary>
 /// <remarks>
@@ -25,10 +25,11 @@ namespace Neme.Extensions.MicrosoftExtensions.Caching;
 /// <para><strong>Expiration Behavior:</strong> Expired entries are removed during Get operations (returning null),
 /// but may persist on disk until the background cleanup service runs. Use <see cref="Clear"/> or <see cref="ClearAsync"/>
 /// to force immediate removal of all entries.</para>
+/// <para><strong>Storage Layout:</strong> Each cached file stores its expiration metadata in a separate sidecar file
+/// with the same path plus the <c>.metadata</c> extension.</para>
 /// <para><strong>Sliding Expiration:</strong> When an entry has sliding expiration, each successful Get operation
 /// automatically extends its lifetime by the configured duration.</para>
 /// </remarks>
-[SupportedOSPlatform("windows6.0.6000")]
 public sealed partial class FileCache : IFileCache, IDisposable
 {
     private readonly FileCacheOptions _options;
@@ -44,9 +45,25 @@ public sealed partial class FileCache : IFileCache, IDisposable
     internal string CacheDirectory =>
         _options.CacheDirectory;
 
-    private const string MetadataStreamName = "metadata";
+#if NET8_0_OR_GREATER
+    private SearchValues<char> _invalidPathChars =
+        SearchValues.Create(Path.GetInvalidPathChars());
+#else
+    private char[] _invalidPathChars =
+        Path.GetInvalidPathChars();
+#endif
 
-    private static readonly FileOpenOptions s_fileReadOptions = new()
+    private const string MetadataExtension = ".metadata";
+
+    private static readonly FileOpenOptions s_fileSyncReadOptions = new()
+    {
+        Mode = FileMode.Open,
+        Access = FileSystemAccess.Read,
+        Share = FileShare.Read,
+        Options = FileOptions.SequentialScan,
+    };
+
+    private static readonly FileOpenOptions s_fileAsyncReadOptions = new()
     {
         Mode = FileMode.Open,
         Access = FileSystemAccess.Read,
@@ -54,7 +71,15 @@ public sealed partial class FileCache : IFileCache, IDisposable
         Options = FileOptions.Asynchronous | FileOptions.SequentialScan,
     };
 
-    private static readonly FileOpenOptions s_fileWriteOptions = new()
+    private static readonly FileOpenOptions s_fileSyncWriteOptions = new()
+    {
+        Mode = FileMode.Create,
+        Access = FileSystemAccess.ReadWrite | FileSystemAccess.Delete,
+        Share = FileShare.ReadWrite | FileShare.Delete,
+        Options = FileOptions.SequentialScan,
+    };
+
+    private static readonly FileOpenOptions s_fileAsyncWriteOptions = new()
     {
         Mode = FileMode.Create,
         Access = FileSystemAccess.ReadWrite | FileSystemAccess.Delete,
@@ -73,6 +98,23 @@ public sealed partial class FileCache : IFileCache, IDisposable
         _cacheDirectory = optionsAccessor.Value.CacheDirectory;
 
         Directory.CreateDirectory(_cacheDirectory);
+    }
+
+    private void ValidateKey(string key, [CallerArgumentExpression(nameof(key))] string? paramName = null)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(key, paramName);
+
+#if NET8_0_OR_GREATER
+        if (key.AsSpan().IndexOfAny(_invalidPathChars) >= 0)
+#else
+        if (key.IndexOfAny(_invalidPathChars) >= 0)
+#endif
+        {
+            throw new ArgumentException($"Cache keys must not contain invalid path characters.", paramName);
+        }
+
+        if (IsMetadataPath(key))
+            throw new ArgumentException($"Cache keys must not end with '{MetadataExtension}' as it is reserved for internal metadata storage.", paramName);
     }
 
     /// <summary>
@@ -96,7 +138,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
         FileCacheEntryReadOptions options,
         CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrEmpty(key);
+        ValidateKey(key);
 
         WaitForGlobalLockAsync<IAsyncState.Sync>(cancellationToken).GetAwaiter().GetResult();
 
@@ -130,7 +172,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
         FileCacheEntryReadOptions options,
         CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrEmpty(key);
+        ValidateKey(key);
 
         await WaitForGlobalLockAsync<IAsyncState.Async>(cancellationToken);
 
@@ -161,7 +203,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
         string key,
         CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrEmpty(key);
+        ValidateKey(key);
 
         WaitForGlobalLockAsync<IAsyncState.Sync>(cancellationToken).GetAwaiter().GetResult();
 
@@ -190,7 +232,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
         string key,
         CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrEmpty(key);
+        ValidateKey(key);
 
         await WaitForGlobalLockAsync<IAsyncState.Async>(cancellationToken);
 
@@ -224,7 +266,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
         FileCacheEntryOptions options,
         CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrEmpty(key);
+        ValidateKey(key);
         ArgumentNullException.ThrowIfNull(writeData);
 
         WaitForGlobalLockAsync<IAsyncState.Sync>(cancellationToken).GetAwaiter().GetResult();
@@ -266,7 +308,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
         FileCacheEntryOptions options,
         CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrEmpty(key);
+        ValidateKey(key);
         ArgumentNullException.ThrowIfNull(writeData);
 
         await WaitForGlobalLockAsync<IAsyncState.Async>(cancellationToken);
@@ -304,7 +346,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
         FileCacheEntryOptions options,
         CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrEmpty(key);
+        ValidateKey(key);
         ArgumentNullException.ThrowIfNull(factory);
 
         WaitForGlobalLockAsync<IAsyncState.Sync>(cancellationToken).GetAwaiter().GetResult();
@@ -324,7 +366,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
             };
 
             SetCoreAsync<IAsyncState.Sync>(key, factoryFunc, resolvedOptions, cancellationToken).GetAwaiter().GetResult();
-            return FileIO.Open(GetFilePath(key), s_fileReadOptions with { Options = resolvedOptions.FileOptions });
+            return FileIO.Open(GetFilePath(key), s_fileSyncReadOptions with { Options = resolvedOptions.FileOptions });
         }
     }
 
@@ -353,7 +395,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
         FileCacheEntryOptions options,
         CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrEmpty(key);
+        ValidateKey(key);
         ArgumentNullException.ThrowIfNull(factory);
 
         await WaitForGlobalLockAsync<IAsyncState.Async>(cancellationToken);
@@ -367,7 +409,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
                 return cached.Value.FsFile;
 
             await SetCoreAsync<IAsyncState.Async>(key, factory, resolvedOptions, cancellationToken);
-            return FileIO.Open(GetFilePath(key), s_fileReadOptions with { Options = resolvedOptions.FileOptions });
+            return FileIO.Open(GetFilePath(key), s_fileAsyncReadOptions with { Options = resolvedOptions.FileOptions });
         }
     }
 
@@ -394,7 +436,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
         FileCacheEntryOptions options,
         CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrEmpty(key);
+        ValidateKey(key);
         ArgumentNullException.ThrowIfNull(factory);
 
         WaitForGlobalLockAsync<IAsyncState.Sync>(cancellationToken).GetAwaiter().GetResult();
@@ -441,7 +483,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
         FileCacheEntryOptions options,
         CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrEmpty(key);
+        ValidateKey(key);
         ArgumentNullException.ThrowIfNull(factory);
 
         await WaitForGlobalLockAsync<IAsyncState.Async>(cancellationToken);
@@ -470,7 +512,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
     /// </remarks>
     public void Remove(string key, CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrEmpty(key);
+        ValidateKey(key);
 
         var filePath = GetFilePath(key);
 
@@ -481,6 +523,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
             cancellationToken.ThrowIfCancellationRequested();
 
             DeleteFile(filePath);
+            DeleteFile(GetMetadataPath(filePath));
             Log.RemovedCacheKey(_logger, key);
         }
     }
@@ -496,7 +539,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
     /// </remarks>
     public async Task RemoveAsync(string key, CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrEmpty(key);
+        ValidateKey(key);
 
         var filePath = GetFilePath(key);
 
@@ -507,6 +550,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
             cancellationToken.ThrowIfCancellationRequested();
 
             DeleteFile(filePath);
+            DeleteFile(GetMetadataPath(filePath));
             Log.RemovedCacheKey(_logger, key);
         }
     }
@@ -576,6 +620,18 @@ public sealed partial class FileCache : IFileCache, IDisposable
         }
     }
 
+    private static FileOpenOptions FileReadOptions<TAsync>()
+        where TAsync : IAsyncState
+    {
+        return TAsync.IsAsync ? s_fileAsyncReadOptions : s_fileSyncReadOptions;
+    }
+
+    private static FileOpenOptions FileWriteOptions<TAsync>()
+        where TAsync : IAsyncState
+    {
+        return TAsync.IsAsync ? s_fileAsyncWriteOptions : s_fileSyncWriteOptions;
+    }
+
     [return: OwnershipTransfer]
     private async Task<FilePathOrFsFile?> GetCoreAsync<TAsync>(
         string key,
@@ -598,11 +654,12 @@ public sealed partial class FileCache : IFileCache, IDisposable
         if (isExpired && !isGetOrCreate)
         {
             DeleteFile(filePath);
+            DeleteFile(GetMetadataPath(filePath));
             return null;
         }
 
         return getFileHandle
-            ? FilePathOrFsFile.FromFsFile(FileIO.Open(filePath, s_fileReadOptions with { Options = options }))
+            ? FilePathOrFsFile.FromFsFile(FileIO.Open(filePath, FileReadOptions<TAsync>() with { Options = options }))
             : FilePathOrFsFile.FromPath(filePath);
     }
 
@@ -624,7 +681,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
             SlidingExpiration = options.IsSlidingExpiration ? options.Expiration : null,
         };
 
-        using (var file = OwnedOrBorrowed.Create(PartialFileWithStream.Create(filePath, s_fileWriteOptions with { Options = options.FileOptions, Attributes = options.FileAttributes }, createDirectory: true)))
+        using (var file = OwnedOrBorrowed.Create(PartialFileWithStream.Create(filePath, FileWriteOptions<TAsync>() with { Options = options.FileOptions, Attributes = options.FileAttributes }, createDirectory: true)))
         {
             if (TAsync.IsAsync)
             {
@@ -637,7 +694,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
                 file.Value.FileStream.Flush();
             }
 
-            await WriteMetadataAsync<TAsync>(file.Value.CurrentPath, metadata, cancellationToken);
+            await WriteMetadataAsync<TAsync>(file.Value.FinalPath, metadata, cancellationToken);
 
             file.Value.Commit(overwrite: true);
 
@@ -691,6 +748,12 @@ public sealed partial class FileCache : IFileCache, IDisposable
         return Path.Join(_cacheDirectory, key);
     }
 
+    private string GetMetadataPath(string path) =>
+        path + MetadataExtension;
+
+    private bool IsMetadataPath(string path) =>
+        path.EndsWith(MetadataExtension, StringComparison.Ordinal);
+
     private ResolvedEntryOptions GetResolvedEntryOptions<TAsync>(FileCacheEntryOptions options)
         where TAsync : IAsyncState
     {
@@ -708,13 +771,13 @@ public sealed partial class FileCache : IFileCache, IDisposable
         CancellationToken cancellationToken)
         where TAsync : IAsyncState
     {
-        var metadataPath = filePath + ":" + MetadataStreamName;
+        var metadataPath = filePath + MetadataExtension;
 
         OpenFile file;
 
         try
         {
-            file = FileIO.Open(metadataPath, s_fileReadOptions);
+            file = FileIO.Open(metadataPath, FileReadOptions<TAsync>());
         }
         catch (Exception e) when (e is FileNotFoundException or DirectoryNotFoundException)
         {
@@ -742,20 +805,22 @@ public sealed partial class FileCache : IFileCache, IDisposable
         CancellationToken cancellationToken)
         where TAsync : IAsyncState
     {
-        var metadataPath = filePath + ":" + MetadataStreamName;
+        var metadataPath = filePath + MetadataExtension;
 
-        using (var file = FileIO.Open(metadataPath, s_fileWriteOptions))
+        using (var file = PartialFile.Create(metadataPath, FileWriteOptions<TAsync>()))
         {
             if (TAsync.IsAsync)
             {
-                await using (var fileStream = file.CreateFileStream())
+                await using (var fileStream = file.File.CreateFileStream(leaveOpen: true))
                     await JsonSerializer.SerializeAsync(fileStream, metadata, FileCacheJsonSerializerContext.Default.FileCacheMetadata, cancellationToken);
             }
             else
             {
-                using (var fileStream = file.CreateFileStream())
+                using (var fileStream = file.File.CreateFileStream(leaveOpen: true))
                     JsonSerializer.Serialize(fileStream, metadata, FileCacheJsonSerializerContext.Default.FileCacheMetadata);
             }
+
+            file.Commit(overwrite: true);
         }
     }
 
@@ -791,6 +856,9 @@ public sealed partial class FileCache : IFileCache, IDisposable
 
             foreach (var (filePath, isDirectory) in EnumerateAllFiles(_cacheDirectory))
             {
+                if  (IsMetadataPath(filePath))
+                    continue;
+
                 try
                 {
                     if (isDirectory)
@@ -807,6 +875,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
                         if (metadata is null || isExpired)
                         {
                             DeleteFile(filePath);
+                            DeleteFile(GetMetadataPath(filePath));
                             ++deletedCount;
                         }
                     }

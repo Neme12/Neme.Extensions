@@ -2,13 +2,11 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using NodaTime;
-using System.Runtime.Versioning;
 
 namespace Neme.Extensions.MicrosoftExtensions.Caching;
 
 public static class ServiceCollectionExtensions
 {
-    [SupportedOSPlatform("windows6.0.6000")]
     public static IServiceCollection AddFileCache(
         this IServiceCollection services)
     {
@@ -22,7 +20,6 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    [SupportedOSPlatform("windows6.0.6000")]
     public static IServiceCollection AddFileCache(
         this IServiceCollection services,
         Action<FileCacheOptions> setupAction)

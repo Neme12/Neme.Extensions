@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Neme.Extensions.Tests.Utilities;
@@ -13,6 +13,8 @@ public sealed partial class FileCacheTests
 {
     public sealed class Sync : IDisposable
     {
+        private const string MetadataExtension = ".metadata";
+
         private readonly string _testCacheDirectory;
         private readonly FakeClock _clock;
         private readonly ILogger<FileCache> _logger;
@@ -52,6 +54,11 @@ public sealed partial class FileCacheTests
             return new FileCache(options, _logger, _clock);
         }
 
+        private static string GetMetadataPath(string filePath)
+        {
+            return filePath + MetadataExtension;
+        }
+
         [PlatformOnlyFact(Platform.Windows)]
         public void Set_StoresDataSuccessfully()
         {
@@ -70,6 +77,7 @@ public sealed partial class FileCacheTests
             var filePath = cache.GetPath(key);
             Assert.NotNull(filePath);
             Assert.True(File.Exists(filePath));
+            Assert.True(File.Exists(GetMetadataPath(filePath)));
 
             var content = File.ReadAllBytes(filePath);
             Assert.Equal(data, content);
@@ -148,6 +156,7 @@ public sealed partial class FileCacheTests
             // Assert
             Assert.NotNull(result);
             Assert.True(File.Exists(result));
+            Assert.True(File.Exists(GetMetadataPath(result)));
         }
 
         [PlatformOnlyFact(Platform.Windows)]
@@ -163,6 +172,9 @@ public sealed partial class FileCacheTests
                 stream.Write(data);
             }, new FileCacheEntryOptions { Expiration = Duration.FromMinutes(30) });
 
+            var filePath = cache.GetPath(key);
+            Assert.NotNull(filePath);
+
             // Advance time past expiration
             _clock.Advance(Duration.FromMinutes(31));
 
@@ -171,6 +183,8 @@ public sealed partial class FileCacheTests
 
             // Assert
             Assert.Null(result);
+            Assert.False(File.Exists(filePath));
+            Assert.False(File.Exists(GetMetadataPath(filePath)));
         }
 
         [PlatformOnlyFact(Platform.Windows)]
@@ -284,6 +298,7 @@ public sealed partial class FileCacheTests
             Assert.True(factoryCalled);
             Assert.NotNull(result);
             Assert.True(File.Exists(result));
+            Assert.True(File.Exists(GetMetadataPath(result)));
 
             var content = File.ReadAllBytes(result);
             Assert.Equal(data, content);
@@ -315,6 +330,7 @@ public sealed partial class FileCacheTests
             // Assert
             Assert.False(factoryCalled);
             Assert.NotNull(result);
+            Assert.True(File.Exists(GetMetadataPath(result)));
 
             var content = File.ReadAllBytes(result);
             Assert.Equal(originalData, content);
@@ -335,12 +351,14 @@ public sealed partial class FileCacheTests
 
             var filePath = cache.GetPath(key);
             Assert.NotNull(filePath);
+            Assert.True(File.Exists(GetMetadataPath(filePath)));
 
             // Act
             cache.Remove(key, CancellationToken.None);
 
             // Assert
             Assert.False(File.Exists(filePath));
+            Assert.False(File.Exists(GetMetadataPath(filePath)));
             using var result = cache.Get(key, FileCacheEntryReadOptions.Default);
             Assert.Null(result);
         }
@@ -377,6 +395,7 @@ public sealed partial class FileCacheTests
             {
                 var filePath = cache.GetPath(key);
                 Assert.NotNull(filePath);
+                Assert.True(File.Exists(GetMetadataPath(filePath)));
             }
 
             // Act
@@ -387,6 +406,10 @@ public sealed partial class FileCacheTests
             {
                 using var result = cache.Get(key, FileCacheEntryReadOptions.Default);
                 Assert.Null(result);
+
+                var filePath = Path.Combine(_testCacheDirectory, key);
+                Assert.False(File.Exists(filePath));
+                Assert.False(File.Exists(GetMetadataPath(filePath)));
             }
         }
 
