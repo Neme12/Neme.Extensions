@@ -86,8 +86,6 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             options.UnixCreateMode ?? DefaultCreateMode,
             options.PreallocationSize));
 
-        _handleMetadataTable.Add(handle.Value, new HandleMetadata(options.Access));
-
         return handle.Move();
     }
 
@@ -153,7 +151,6 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
             if (InitHandle(null, handle.Value!, null, options.Mode, options.Access, options.Share, options.Options, options.Attributes, options.PreallocationSize))
             {
-                _handleMetadataTable.Add(handle.Value, new HandleMetadata(options.Access));
                 return handle.Move()!;
             }
 
@@ -178,8 +175,6 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             options.Attributes,
             options.UnixCreateMode ?? DefaultCreateMode,
             options.PreallocationSize));
-
-        _handleMetadataTable.Add(handle.Value, new HandleMetadata(options.Access));
 
         return handle.Move();
     }
@@ -830,7 +825,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     private static bool IsOctalDigit(char c) =>
         c is >= '0' and <= '7';
 
-    private static SafeFileHandle Open(
+    private SafeFileHandle Open(
         string fullPath,
         FileMode mode,
         FileSystemAccess access,
@@ -878,7 +873,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         }
     }
 
-    private static SafeFileHandle OpenAt(
+    private SafeFileHandle OpenAt(
         SafeFileHandle? rootHandle,
         string? path,
         FileMode mode,
@@ -946,7 +941,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     }
 #pragma warning restore RS0042
 
-    private static bool InitHandle(
+    private bool InitHandle(
         SafeFileHandle? rootHandle,
         SafeFileHandle handle,
         string? path,
@@ -957,6 +952,8 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         FileAttributes attributes,
         long preallocationSize)
     {
+        _handleMetadataTable.Add(handle, new HandleMetadata(access));
+
         Stat status = default;
         bool statusHasValue = false;
 
@@ -1156,6 +1153,9 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
                 }
             }
         }
+
+        if (attributes != default && attributes != FileAttributes.Normal)
+            SetAttributes(handle, attributes);
 
         return true;
     }
