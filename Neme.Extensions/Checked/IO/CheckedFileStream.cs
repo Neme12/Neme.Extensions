@@ -5,7 +5,7 @@ using Microsoft.Win32.SafeHandles;
 
 namespace System.IO;
 
-public sealed class CheckedFileStream : FileStream
+public class CheckedFileStream : FileStream
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Obsolete("This constructor has been deprecated. Use FileStream(SafeFileHandle handle, FileAccess access) instead.")]

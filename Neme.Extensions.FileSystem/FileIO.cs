@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using Neme.Extensions.FileSystem.FileIOStrategies;
+using Neme.Extensions.FileSystem.Internal;
 using Neme.Extensions.Ownership;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
@@ -300,14 +301,16 @@ public static partial class FileIO
     {
         Strategy.ValidateFileHandle(file);
 
-        using var handle = OwnedOrBorrowed.Create(leaveOpen
-            ? new SafeFileHandle(file.DangerousGetHandle(), ownsHandle: false)
-            : file);
-
-        return new CheckedFileStream(
-            handle.Move(),
-            options.Access.ToFileAccess(),
-            bufferSize,
-            isAsync: (options.Options & FileOptions.Asynchronous) != 0);
+        return leaveOpen
+            ? new LeaveOpenFileStream(
+                file,
+                options.Access.ToFileAccess(),
+                bufferSize,
+                isAsync: (options.Options & FileOptions.Asynchronous) != 0)
+            : new CheckedFileStream(
+                file,
+                options.Access.ToFileAccess(),
+                bufferSize,
+                isAsync: (options.Options & FileOptions.Asynchronous) != 0);
     }
 }
