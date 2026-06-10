@@ -86,6 +86,8 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             options.UnixCreateMode ?? DefaultCreateMode,
             options.PreallocationSize));
 
+        _handleMetadataTable.Add(handle.Value, new HandleMetadata(options.Access));
+
         return handle.Move();
     }
 
@@ -151,6 +153,8 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
             if (InitHandle(null, handle.Value!, null, options.Mode, options.Access, options.Share, options.Options, options.Attributes, options.PreallocationSize))
             {
+                _handleMetadataTable.Add(handle.Value, new HandleMetadata(options.Access));
+
                 return handle.Move()!;
             }
 
@@ -175,6 +179,8 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             options.Attributes,
             options.UnixCreateMode ?? DefaultCreateMode,
             options.PreallocationSize));
+
+        _handleMetadataTable.Add(handle.Value, new HandleMetadata(options.Access));
 
         return handle.Move();
     }
@@ -382,7 +388,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         SetAttributesCore(file, attributes);
     }
 
-    private void SetAttributesCore([Borrow] SafeFileHandle file, FileAttributes attributes)
+    private static void SetAttributesCore([Borrow] SafeFileHandle file, FileAttributes attributes)
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
@@ -830,7 +836,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     private static bool IsOctalDigit(char c) =>
         c is >= '0' and <= '7';
 
-    private SafeFileHandle Open(
+    private static SafeFileHandle Open(
         string fullPath,
         FileMode mode,
         FileSystemAccess access,
@@ -878,7 +884,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         }
     }
 
-    private SafeFileHandle OpenAt(
+    private static SafeFileHandle OpenAt(
         SafeFileHandle? rootHandle,
         string? path,
         FileMode mode,
@@ -946,7 +952,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     }
 #pragma warning restore RS0042
 
-    private bool InitHandle(
+    private static bool InitHandle(
         SafeFileHandle? rootHandle,
         SafeFileHandle handle,
         string? path,
@@ -957,8 +963,6 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         FileAttributes attributes,
         long preallocationSize)
     {
-        _handleMetadataTable.Add(handle, new HandleMetadata(access));
-
         Stat status = default;
         bool statusHasValue = false;
 
