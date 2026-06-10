@@ -672,14 +672,16 @@ public sealed partial class FileCacheTests
             }, new FileCacheEntryOptions 
             { 
                 Expiration = Duration.FromHours(1),
-                FileAttributes = FileAttributes.Temporary 
+                FileAttributes = FileAttributes.Hidden,
             });
 
             // Assert
             var filePath = cache.GetPath(key);
             Assert.NotNull(filePath);
             var attributes = File.GetAttributes(filePath);
-            Assert.True(attributes.HasFlag(FileAttributes.Temporary));
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                Assert.True(attributes.HasFlag(FileAttributes.Hidden));
         }
 
         [Fact]
