@@ -1082,7 +1082,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             (options & FileOptions.RandomAccess) != 0 ? PosixFadviseAdvice.POSIX_FADV_RANDOM :
             (options & FileOptions.SequentialScan) != 0 ? PosixFadviseAdvice.POSIX_FADV_SEQUENTIAL :
             0;
-        if (fadv != 0)
+        if (fadv != 0 && !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             int result;
 
