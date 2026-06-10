@@ -4,14 +4,12 @@ using Microsoft.Extensions.Options;
 using Neme.Extensions.Tests.Utilities;
 using NodaTime;
 using NodaTime.Testing;
-using System.Runtime.Versioning;
 
 namespace Neme.Extensions.MicrosoftExtensions.Caching.Tests;
 
-[Collection("FileCache")]
-[SupportedOSPlatform("windows6.0.6000")]
 public sealed partial class FileCacheTests
 {
+    [Collection("FileCache")]
     public sealed class Async : IDisposable
     {
         private const string MetadataExtension = ".metadata";
@@ -60,7 +58,7 @@ public sealed partial class FileCacheTests
             return filePath + MetadataExtension;
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task SetAsync_StoresDataSuccessfully()
         {
             // Arrange
@@ -84,7 +82,7 @@ public sealed partial class FileCacheTests
             Assert.Equal(data, content);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task GetAsync_ReturnsNullForNonExistentKey()
         {
             // Arrange
@@ -98,7 +96,7 @@ public sealed partial class FileCacheTests
             Assert.Null(result);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task GetAsync_ReturnsFileHandleForExistingKey()
         {
             // Arrange
@@ -124,7 +122,7 @@ public sealed partial class FileCacheTests
             Assert.Equal(data, content);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task GetPathAsync_ReturnsNullForNonExistentKey()
         {
             // Arrange
@@ -138,7 +136,7 @@ public sealed partial class FileCacheTests
             Assert.Null(result);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task GetPathAsync_ReturnsPathForExistingKey()
         {
             // Arrange
@@ -160,7 +158,7 @@ public sealed partial class FileCacheTests
             Assert.True(File.Exists(GetMetadataPath(result)));
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task GetAsync_ReturnsNullForExpiredKey()
         {
             // Arrange
@@ -188,7 +186,7 @@ public sealed partial class FileCacheTests
             Assert.False(File.Exists(GetMetadataPath(filePath)));
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task GetAsync_WithSlidingExpiration_RefreshesExpiration()
         {
             // Arrange
@@ -216,7 +214,7 @@ public sealed partial class FileCacheTests
             Assert.NotNull(secondResult);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task GetOrCreateAsync_CreatesEntryIfNotExists()
         {
             // Arrange
@@ -244,7 +242,7 @@ public sealed partial class FileCacheTests
             Assert.Equal(data, content);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task GetOrCreateAsync_ReturnsExistingEntryIfExists()
         {
             // Arrange
@@ -279,7 +277,7 @@ public sealed partial class FileCacheTests
             Assert.Equal(originalData, content);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task GetOrCreatePathAsync_CreatesEntryIfNotExists()
         {
             // Arrange
@@ -305,7 +303,7 @@ public sealed partial class FileCacheTests
             Assert.Equal(data, content);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task GetOrCreatePathAsync_ReturnsExistingEntryIfExists()
         {
             // Arrange
@@ -337,7 +335,7 @@ public sealed partial class FileCacheTests
             Assert.Equal(originalData, content);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task RemoveAsync_DeletesExistingEntry()
         {
             // Arrange
@@ -364,7 +362,7 @@ public sealed partial class FileCacheTests
             Assert.Null(result);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task RemoveAsync_DoesNotThrowForNonExistentKey()
         {
             // Arrange
@@ -375,7 +373,7 @@ public sealed partial class FileCacheTests
             await cache.RemoveAsync(key, CancellationToken.None);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task ClearAsync_RemovesAllEntries()
         {
             // Arrange
@@ -414,7 +412,7 @@ public sealed partial class FileCacheTests
             }
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task CleanupExpiredFilesAsync_RemovesOnlyExpiredEntries()
         {
             // Arrange
@@ -459,7 +457,7 @@ public sealed partial class FileCacheTests
             Assert.True(File.Exists(GetMetadataPath(validFilePath)));
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task CleanupExpiredFilesAsync_DeletesFolderWhenAllFilesExpire()
         {
             // Arrange
@@ -519,7 +517,7 @@ public sealed partial class FileCacheTests
             Assert.False(Directory.Exists(folderPath));
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task SetAsync_ThrowsArgumentNullException_WhenKeyIsNull()
         {
             // Arrange
@@ -530,7 +528,7 @@ public sealed partial class FileCacheTests
                 await cache.SetAsync(null!, (s, ct) => Task.CompletedTask, FileCacheEntryOptions.Default));
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task SetAsync_ThrowsArgumentException_WhenKeyIsEmpty()
         {
             // Arrange
@@ -541,7 +539,7 @@ public sealed partial class FileCacheTests
                 await cache.SetAsync(string.Empty, (s, ct) => Task.CompletedTask, FileCacheEntryOptions.Default));
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task SetAsync_ThrowsArgumentNullException_WhenWriteDataIsNull()
         {
             // Arrange
@@ -552,7 +550,7 @@ public sealed partial class FileCacheTests
                 await cache.SetAsync("key", null!, FileCacheEntryOptions.Default));
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task GetAsync_ThrowsArgumentNullException_WhenKeyIsNull()
         {
             // Arrange
@@ -563,7 +561,7 @@ public sealed partial class FileCacheTests
                 await cache.GetAsync(null!, FileCacheEntryReadOptions.Default));
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task GetAsync_ThrowsArgumentException_WhenKeyIsEmpty()
         {
             // Arrange
@@ -574,7 +572,7 @@ public sealed partial class FileCacheTests
                 await cache.GetAsync(string.Empty, FileCacheEntryReadOptions.Default));
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task GetOrCreateAsync_ThrowsArgumentNullException_WhenKeyIsNull()
         {
             // Arrange
@@ -585,7 +583,7 @@ public sealed partial class FileCacheTests
                 await cache.GetOrCreateAsync(null!, (s, ct) => Task.CompletedTask, FileCacheEntryOptions.Default));
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task GetOrCreateAsync_ThrowsArgumentNullException_WhenFactoryIsNull()
         {
             // Arrange
@@ -596,7 +594,7 @@ public sealed partial class FileCacheTests
                 await cache.GetOrCreateAsync("key", null!, FileCacheEntryOptions.Default));
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task RemoveAsync_ThrowsArgumentNullException_WhenKeyIsNull()
         {
             // Arrange
@@ -607,7 +605,7 @@ public sealed partial class FileCacheTests
                 await cache.RemoveAsync(null!, CancellationToken.None));
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task ConcurrentAccess_HandlesMultipleThreads()
         {
             // Arrange
@@ -632,7 +630,7 @@ public sealed partial class FileCacheTests
             await Task.WhenAll(tasks);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task SetAsync_WithCustomExpiration_UsesSpecifiedDuration()
         {
             // Arrange
@@ -665,7 +663,7 @@ public sealed partial class FileCacheTests
             }
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public void Dispose_ReleasesResources()
         {
             // Arrange
@@ -677,7 +675,7 @@ public sealed partial class FileCacheTests
             // Assert - no exception should be thrown
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task GetAsync_AppliesSpecifiedFileOptions()
         {
             // Arrange
@@ -698,7 +696,7 @@ public sealed partial class FileCacheTests
             Assert.Equal(FileOptions.Asynchronous | FileOptions.RandomAccess, result.Options.Options);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task GetAsync_AppliesDefaultFileOptionsWhenNotSpecified()
         {
             // Arrange
@@ -719,7 +717,7 @@ public sealed partial class FileCacheTests
             Assert.Equal(FileOptions.Asynchronous | FileOptions.SequentialScan, result.Options.Options);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task GetAsync_FileHandleIsNotAsyncWithoutFlag()
         {
             // Arrange
@@ -740,7 +738,7 @@ public sealed partial class FileCacheTests
             Assert.False(result.Handle.IsAsync);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task GetAsync_FileHandleIsAsyncWithFlag()
         {
             // Arrange
@@ -761,7 +759,7 @@ public sealed partial class FileCacheTests
             Assert.True(result.Handle.IsAsync);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task SetAsync_AppliesSpecifiedFileAttributes()
         {
             // Arrange
@@ -786,7 +784,7 @@ public sealed partial class FileCacheTests
             Assert.True(attributes.HasFlag(FileAttributes.Temporary));
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task SetAsync_AppliesDefaultFileAttributesWhenNotSpecified()
         {
             // Arrange
@@ -808,7 +806,7 @@ public sealed partial class FileCacheTests
             Assert.True(attributes.HasFlag(FileAttributes.Archive));
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task GetOrCreateAsync_AppliesSpecifiedFileOptions()
         {
             // Arrange
@@ -831,7 +829,7 @@ public sealed partial class FileCacheTests
             Assert.Equal(FileOptions.Asynchronous | FileOptions.RandomAccess, result.Options.Options);
         }
 
-        [PlatformOnlyFact(Platform.Windows)]
+        [Fact]
         public async Task GetAsync_AcceptsImplicitConversionFromFileCacheEntryOptions()
         {
             // Arrange
