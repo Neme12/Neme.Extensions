@@ -33,6 +33,8 @@ public sealed class PartialFile :
         _state = State.Open;
     }
 
+    public static string Extension => ".part";
+
     /// <summary>
     /// Gets the <see cref="OpenFile"/> for the temporary <c>.part</c> file while the file is open.
     /// </summary>
@@ -77,7 +79,7 @@ public sealed class PartialFile :
         get
         {
             ObjectDisposedException.ThrowIf(_state == State.Disposed, this);
-            return _state == State.Committed ? _finalPath : _finalPath + ".part";
+            return _state == State.Committed ? _finalPath : _finalPath + Extension;
         }
     }
 
@@ -95,7 +97,7 @@ public sealed class PartialFile :
         if ((options.Access & FileSystemAccess.Delete) == 0)
             throw new ArgumentException("Options must include delete access.", nameof(options));
 
-        var partialPath = finalPath + ".part";
+        var partialPath = finalPath + Extension;
 
         if (createDirectory)
             Directory.CreateDirectory(Path.GetDirectoryName(finalPath)!);
@@ -116,7 +118,7 @@ public sealed class PartialFile :
 
         var reopenOptions = _options with { Mode = FileMode.Open };
 
-        _file = FileIO.Open(FinalPath + ".part", reopenOptions);
+        _file = FileIO.Open(FinalPath + Extension, reopenOptions);
         _state = State.Open;
     }
 
