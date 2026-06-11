@@ -1,4 +1,6 @@
 ﻿#if !NETFRAMEWORK
+using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.InteropServices;
 using System.Runtime.InteropServices;
 
 namespace Neme.Extensions.Internal.Interop;
@@ -27,11 +29,17 @@ internal static partial class Interop
 
 #if NET7_0_OR_GREATER
         [LibraryImport(Libraries.neme_macos_shim, EntryPoint = "neme_fstat", SetLastError = true)]
-        internal static partial int FStat(int fd, out StatInfo stat);
+        private static partial int FStatCore(int fd, out StatInfo stat);
 #else
         [DllImport(Libraries.neme_macos_shim, EntryPoint = "neme_fstat", SetLastError = true)]
-        internal static extern int FStat(int fd, out StatInfo stat);
+        private static extern int FStatCore(int fd, out StatInfo stat);
 #endif
+
+        public static int FStat(SafeFileHandle fd, out StatInfo stat)
+        {
+            using (var scope = fd.CreateScope())
+                return FStatCore((int)scope.Handle, out stat);
+        }
     }
 }
 #endif

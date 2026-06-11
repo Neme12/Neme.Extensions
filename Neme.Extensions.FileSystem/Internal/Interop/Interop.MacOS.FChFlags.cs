@@ -1,4 +1,6 @@
 ﻿#if !NETFRAMEWORK
+using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.InteropServices;
 using System.Runtime.InteropServices;
 
 namespace Neme.Extensions.Internal.Interop;
@@ -34,11 +36,17 @@ internal static partial class Interop
 
 #if NET7_0_OR_GREATER
         [LibraryImport(Libraries.libc, EntryPoint = "fchflags", SetLastError = true)]
-        internal static partial int FChFlags(int fd, FileFlags flags);
+        private static partial int FChFlagsCore(int fd, FileFlags flags);
 #else
         [DllImport(Libraries.libc, EntryPoint = "fchflags", SetLastError = true)]
-        internal static extern int FChFlags(int fd, FileFlags flags);
+        private static extern int FChFlagsCore(int fd, FileFlags flags);
 #endif
+
+        public static int FChFlags(SafeFileHandle fd, FileFlags flags)
+        {
+            using (var scope = fd.CreateScope())
+                return FChFlagsCore((int)scope.Handle, flags);
+        }
     }
 }
 #endif

@@ -61,14 +61,15 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     private static readonly OpenFlags O_PathIfSupported =
         RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? OpenFlags.O_PATH : OpenFlags.O_RDONLY;
 
-    private static string GetFdLinkPath(SafeHandleExtensions.Scope<SafeFileHandle> fileScope)
+    private static string GetFdLinkPath(SafeFileHandle file)
     {
         var prefix =
             RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? LinuxFdPathPrefix :
             RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? MacFdPathPrefix :
             BsdFdPathPrefix;
 
-        return Invariant($"{prefix}{fileScope.Handle}");
+        using (var scope = file.CreateScope())
+            return Invariant($"{prefix}{scope.Handle}");
     }
 
     [return: OwnershipTransfer]
@@ -108,7 +109,6 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         var openFlags = GetOpenByHandleFlags(options.Mode, options.Access, options.Share, options.Options);
 
         using var mountHandle = OpenMountHandle(mountPath);
-        using var mountScope = mountHandle.CreateScope();
         using OwnedOrBorrowed<SafeFileHandle?> handle = OwnedOrBorrowed.Create<SafeFileHandle?>(null);
 
         var bufferLength = (uint?)linuxFileId.Buffer?.Length ?? linuxFileId.InlineBufferLength;
@@ -131,8 +131,8 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
         while (true)
         {
-            var rawHandle = Interop.Linux.OpenByHandleAt((int)mountScope.Handle, ref fileHeader, openFlags);
-            handle.SetValue(new SafeFileHandle((nint)rawHandle, ownsHandle: true));
+            var openHandle = Interop.Linux.OpenByHandleAt(mountHandle, ref fileHeader, openFlags);
+            handle.SetValue(openHandle);
 
             if (handle.Value!.IsInvalid)
             {
@@ -191,25 +191,19 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         if (access is not null)
             throw new PlatformNotSupportedException("Specifying access when duplicating a handle is not supported on Unix.");
 
-        using (var fileScope = file.CreateScope())
-        {
-            var rawHandle = Syscall.dup((int)fileScope.Handle);
-            if (rawHandle < 0)
-                throw UnixMarshal.GetExceptionForLastStdlibError();
+        using var handle = OwnedOrBorrowed.Create(Syscall.dup(file));
 
-            using var handle = OwnedOrBorrowed.Create(new SafeFileHandle((nint)rawHandle, ownsHandle: true));
+        if (handle.Value.IsInvalid)
+            throw UnixMarshal.GetExceptionForLastStdlibError();
 
-            if (_handleMetadataTable.TryGetValue(file, out var metadata))
-                _handleMetadataTable.Add(handle.Value, metadata);
+        if (_handleMetadataTable.TryGetValue(file, out var metadata))
+            _handleMetadataTable.Add(handle.Value, metadata);
 
-            return handle.Move();
-        }
+        return handle.Move();
     }
 
     public override unsafe string GetPath([Borrow] SafeFileHandle file)
     {
-        using var fileScope = file.CreateScope();
-
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             using var bufferLease = ArrayPool<byte>.Shared.RentLease(Interop.MacOS.MAXPATHLEN);
@@ -217,7 +211,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             int result;
 
             fixed (byte* bufferPointer = bufferLease.Buffer)
-                result = Interop.MacOS.FcntlGetPath((int)fileScope.Handle, bufferPointer);
+                result = Interop.MacOS.FcntlGetPath(file, bufferPointer);
 
             if (result != 0)
                 throw UnixMarshal.GetExceptionForLastUnixError();
@@ -236,7 +230,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         }
         else
         {
-            var path = GetFdLinkPath(fileScope);
+            var path = GetFdLinkPath(file);
 
             var initialBufferSize = Stackalloc.MaxLength<byte>();
             using var bufferLease = ArrayPool<byte>.Shared.RentLeaseOrStackalloc(
@@ -277,26 +271,23 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
         int result;
 
-        using (var parentDirectoryScope = parentDirectoryHandle.CreateScope())
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                result = Interop.MacOS.RenameAtXNp(
-                    (int)parentDirectoryScope.Handle,
-                    fileName,
-                    Interop.Libc.AT_FDCWD,
-                    destFileName,
-                    overwrite ? Interop.MacOS.RenameAtXNpFlags.None : Interop.MacOS.RenameAtXNpFlags.RENAME_EXCL);
-            }
-            else
-            {
-                result = Interop.Linux.RenameAt2(
-                    (int)parentDirectoryScope.Handle,
-                    fileName,
-                    Interop.Libc.AT_FDCWD,
-                    destFileName,
-                    overwrite ? Interop.Linux.RenameAt2Flags.None : Interop.Linux.RenameAt2Flags.RENAME_NOREPLACE);
-            }
+            result = Interop.MacOS.RenameAtXNp(
+                parentDirectoryHandle,
+                fileName,
+                Interop.Libc.AT_FDCWD_HANDLE,
+                destFileName,
+                overwrite ? Interop.MacOS.RenameAtXNpFlags.None : Interop.MacOS.RenameAtXNpFlags.RENAME_EXCL);
+        }
+        else
+        {
+            result = Interop.Linux.RenameAt2(
+                parentDirectoryHandle,
+                fileName,
+                Interop.Libc.AT_FDCWD_HANDLE,
+                destFileName,
+                overwrite ? Interop.Linux.RenameAt2Flags.None : Interop.Linux.RenameAt2Flags.RENAME_NOREPLACE);
         }
 
         if (result != 0)
@@ -314,10 +305,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
         try
         {
-            int result = -1;
-
-            using (var fileScope = file.CreateScope())
-                result = Syscall.unlinkat((int)fileScope.Handle, "", AtFlags.AT_EMPTY_PATH);
+            int result = Syscall.unlinkat(file, "", AtFlags.AT_EMPTY_PATH);
 
             if (result == 0)
                 return;
@@ -333,10 +321,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         var (parentDirectory, fileName) = GetParentDirectoryAndFileName(file);
         using var parentDirectoryHandle = parentDirectory;
 
-        int result2;
-
-        using (var parentDirectoryScope = parentDirectoryHandle.CreateScope())
-            result2 = Syscall.unlinkat((int)parentDirectoryScope.Handle, fileName, 0);
+        int result2 = Syscall.unlinkat(parentDirectoryHandle, fileName, 0);
 
         if (result2 != 0)
             throw UnixMarshal.GetExceptionForLastStdlibError();
@@ -394,12 +379,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         {
             bool hidden = (attributes & FileAttributes.Hidden) != 0;
 
-            int result;
-            Interop.MacOS.StatInfo statInfo;
-
-            using (var fileScope = file.CreateScope())
-                result = Interop.MacOS.FStat((int)fileScope.Handle, out statInfo);
-
+            int result = Interop.MacOS.FStat(file, out var statInfo);
             if (result != 0)
                 throw UnixMarshal.GetExceptionForLastUnixError();
 
@@ -412,21 +392,13 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
                     ? flags | Interop.MacOS.FileFlags.UF_HIDDEN
                     : flags & ~Interop.MacOS.FileFlags.UF_HIDDEN;
 
-                int result2;
-
-                using (var fileScope = file.CreateScope())
-                    result2 = Interop.MacOS.FChFlags((int)fileScope.Handle, newFlags);
-
+                int result2 = Interop.MacOS.FChFlags(file, newFlags);
                 if (result2 != 0)
                     throw UnixMarshal.GetExceptionForLastUnixError();
             }
         }
 
-        int result3;
-        Stat status;
-
-        using (var fileScope = file.CreateScope())
-            result3 = Syscall.fstat((int)fileScope.Handle, out status);
+        var result3 = Syscall.fstat(file, out var status);
 
         if (result3 != 0)
             throw UnixMarshal.GetExceptionForLastStdlibError();
@@ -449,10 +421,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         // Change the permissions on the file
         if (newMode != oldMode)
         {
-            int result4;
-
-            using (var fileScope = file.CreateScope())
-                result4 = Syscall.fchmod((int)fileScope.Handle, (FilePermissions)newMode);
+            int result4 = Syscall.fchmod(file, (FilePermissions)newMode);
 
             if (result4 != 0)
                 throw UnixMarshal.GetExceptionForLastStdlibError();
@@ -465,12 +434,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            int result;
-            Interop.MacOS.StatInfo statInfoValue;
-
-            using (var fileScope = file.CreateScope())
-                result = Interop.MacOS.FStat((int)fileScope.Handle, out statInfoValue);
-
+            var result = Interop.MacOS.FStat(file, out var statInfoValue);
             if (result != 0)
                 throw UnixMarshal.GetExceptionForLastUnixError();
 
@@ -488,11 +452,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         [Borrow] SafeFileHandle file,
         Interop.MacOS.StatInfo? statInfo)
     {
-        int result;
-        Stat status;
-
-        using (var fileScope = file.CreateScope())
-            result = Syscall.fstat((int)fileScope.Handle, out status);
+        var result = Syscall.fstat(file, out var status);
 
         if (result != 0)
             throw UnixMarshal.GetExceptionForLastStdlibError();
@@ -602,12 +562,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            int result;
-            Interop.MacOS.StatInfo statInfo;
-
-            using (var fileScope = file.CreateScope())
-                result = Interop.MacOS.FStat((int)fileScope.Handle, out statInfo);
-
+            var result = Interop.MacOS.FStat(file, out var statInfo);
             if (result != 0)
                 throw UnixMarshal.GetExceptionForLastUnixError();
 
@@ -623,12 +578,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
-            int result2;
-            Interop.Linux.StatXInfo statInfo;
-
-            using (var fileScope = file.CreateScope())
-                result2 = Interop.Linux.StatX((int)fileScope.Handle, "", Interop.Linux.StatXFlags.AT_EMPTY_PATH, Interop.Linux.StatXMask.All, out statInfo);
-
+            var result2 = Interop.Linux.StatX(file, "", Interop.Linux.StatXFlags.AT_EMPTY_PATH, Interop.Linux.StatXMask.All, out var statInfo);
             if (result2 != 0)
                 throw UnixMarshal.GetExceptionForLastUnixError();
 
@@ -649,12 +599,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         }
         else
         {
-            int result3;
-            Stat status;
-
-            using (var fileScope = file.CreateScope())
-                result3 = Syscall.fstat((int)fileScope.Handle, out status);
-
+            var result3 = Syscall.fstat(file, out var status);
             if (result3 != 0)
                 throw UnixMarshal.GetExceptionForLastStdlibError();
 
@@ -672,12 +617,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
     public override FileId GetId([Borrow] SafeFileHandle file)
     {
-        Stat stat;
-        int result;
-
-        using (var fileScope = file.CreateScope())
-            result = Syscall.fstat((int)fileScope.Handle, out stat);
-
+        var result = Syscall.fstat(file, out var stat);
         if (result != 0)
             throw UnixMarshal.GetExceptionForLastStdlibError();
 
@@ -690,8 +630,6 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
-            using var fileScope = file.CreateScope();
-
             ref Interop.Linux.FileHandleHeader fileHeader = ref Unsafe.NullRef<Interop.Linux.FileHandleHeader>();
             Span<byte> fileInfoBuffer;
 
@@ -708,7 +646,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 #pragma warning restore CS9081
                 fileHeader.handle_bytes = (uint)size;
 
-                var result = Interop.Linux.NameToHandleAt((int)fileScope.Handle, "", ref fileHeader, out mountId, Interop.Linux.NameToHandleAtFlags.AT_EMPTY_PATH);
+                var result = Interop.Linux.NameToHandleAt(file, "", ref fileHeader, out mountId, Interop.Linux.NameToHandleAtFlags.AT_EMPTY_PATH);
                 if (result != 0)
                 {
                     var error = (Errno)Marshal.GetLastPInvokeError();
@@ -910,24 +848,22 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         using OwnedOrBorrowed<SafeFileHandle?> handle =
             OwnedOrBorrowed.Create<SafeFileHandle?>(null);
 
-        using var rootScope = rootHandle?.CreateScope();
-
         while (true)
         {
-            int rawHandle;
+            SafeFileHandle rawHandle;
 
             if (path is not null)
             {
-                rawHandle = Syscall.openat((int?)rootScope?.Handle ?? 0, path ?? "", openFlags, (FilePermissions)openPermissions);
+                rawHandle = Syscall.openat(rootHandle ?? Interop.Libc.AT_FDCWD_HANDLE, path ?? "", openFlags, (FilePermissions)openPermissions);
             }
             else
             {
+                path = GetFdLinkPath(rootHandle!);
                 rootHandle = null;
-                path = GetFdLinkPath(rootScope!.Value);
-                rawHandle = Syscall.open(path, openFlags, (FilePermissions)openPermissions);
+                rawHandle = Syscall.open_handle(path, openFlags, (FilePermissions)openPermissions);
             }
 
-            handle.SetValue(new SafeFileHandle((nint)rawHandle, ownsHandle: true));
+            handle.SetValue(rawHandle);
 
             if (handle.Value!.IsInvalid)
             {
@@ -1038,8 +974,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
             if (rootHandle is not null)
             {
-                using (var rootScope = rootHandle.CreateScope())
-                    result = Syscall.fstatat((int)rootScope.Handle, path!, out pathStatus, 0);
+                result = Syscall.fstatat(rootHandle, path!, out pathStatus, 0);
             }
             else
             {
@@ -1090,10 +1025,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             0;
         if (fadv != 0 && !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            int result;
-
-            using (var handleScope = handle.CreateScope())
-                result = Syscall.posix_fadvise((int)handleScope.Handle, 0, 0, fadv);
+            int result = Syscall.posix_fadvise(handle, 0, 0, fadv);
 
             if (result != 0 && Stdlib.GetLastError() is var error and not Errno.ENOSYS) // just a hint.
                 throw UnixMarshal.GetExceptionForUnixError(error, path);
@@ -1104,11 +1036,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             // Truncate the file now if the file mode requires it. This ensures that the file only will be truncated
             // if opened successfully.
 
-            int truncateResult;
-
-            using (var scope = handle.CreateScope())
-                truncateResult = Syscall.ftruncate((int)scope.Handle, 0);
-
+            int truncateResult = Syscall.ftruncate(handle, 0);
             if (truncateResult != 0)
             {
                 var error = Stdlib.GetLastError();
@@ -1124,10 +1052,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
         if (preallocationSize > 0)
         {
-            int result;
-
-            using (var scope = handle.CreateScope())
-                result = Syscall.posix_fallocate((int)scope.Handle, 0, (ulong)preallocationSize);
+            int result = Syscall.posix_fallocate(handle, 0, (ulong)preallocationSize);
 
             if (result != 0)
             {
@@ -1143,16 +1068,12 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
                     if (rootHandle is not null)
                     {
-                        using (var rootScope = rootHandle.CreateScope())
-                            result = Syscall.unlinkat((int)rootScope.Handle, path!, 0);
+                        result = Syscall.unlinkat(rootHandle, path!, 0);
                     }
                     else
                     {
                         result = Syscall.unlink(path.NotNull());
                     }
-
-                    using (var handleScope = handle.CreateScope())
-                        Syscall.unlinkat((int)handleScope.Handle, null!, AtFlags.AT_EMPTY_PATH);
 
                     throw new IOException(
                         string.Format(error == Errno.EFBIG
@@ -1177,10 +1098,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     {
         if (!statusHasValue)
         {
-            int result;
-
-            using (var handleScope = handle.CreateScope())
-                result = Syscall.fstat((int)handleScope.Handle, out status);
+            int result = Syscall.fstat(handle, out status);
 
             if (result != 0)
                 throw UnixMarshal.GetExceptionForLastStdlibError(path);

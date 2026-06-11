@@ -1,4 +1,6 @@
 ﻿#if !NETFRAMEWORK
+using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.InteropServices;
 using System.Runtime.InteropServices;
 
 namespace Neme.Extensions.Internal.Interop;
@@ -80,11 +82,17 @@ internal static partial class Interop
 
 #if NET7_0_OR_GREATER
         [LibraryImport(Libraries.neme_linux_shim, EntryPoint = "neme_statx", StringMarshalling = StringMarshalling.Utf8, SetLastError = true)]
-        internal static partial int StatX(int dirfd, string? pathname, StatXFlags flags, StatXMask mask, out StatXInfo statx);
+        private static partial int StatXCore(int dirfd, string? pathname, StatXFlags flags, StatXMask mask, out StatXInfo statx);
 #else
         [DllImport(Libraries.neme_linux_shim, EntryPoint = "neme_statx", SetLastError = true)]
-        internal static extern int StatX(int dirfd, [MarshalAs(UnmanagedTypePolyfill.LPUTF8Str)] string? pathname, StatXFlags flags, StatXMask mask, out StatXInfo statx);
+        private static extern int StatXCore(int dirfd, [MarshalAs(UnmanagedTypePolyfill.LPUTF8Str)] string? pathname, StatXFlags flags, StatXMask mask, out StatXInfo statx);
 #endif
+
+        public static int StatX(SafeFileHandle dirfd, string? pathname, StatXFlags flags, StatXMask mask, out StatXInfo statx)
+        {
+            using (var dirScope = dirfd.CreateScope())
+                return StatXCore((int)dirScope.Handle, pathname, flags, mask, out statx);
+        }
     }
 }
 #endif

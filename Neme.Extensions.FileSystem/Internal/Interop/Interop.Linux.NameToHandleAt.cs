@@ -1,4 +1,6 @@
-﻿using System.Runtime.InteropServices;
+﻿using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.InteropServices;
+using System.Runtime.InteropServices;
 
 namespace Neme.Extensions.Internal.Interop;
 
@@ -23,10 +25,16 @@ internal static partial class Interop
 
 #if NET7_0_OR_GREATER
         [LibraryImport(Libraries.libc, EntryPoint = "name_to_handle_at", StringMarshalling = StringMarshalling.Utf8, SetLastError = true)]
-        internal static partial int NameToHandleAt(int dirfd, string pathname, ref FileHandleHeader handle, out int mount_id, NameToHandleAtFlags flags);
+        private static partial int NameToHandleAtCore(int dirfd, string pathname, ref FileHandleHeader handle, out int mount_id, NameToHandleAtFlags flags);
 #else
         [DllImport(Libraries.libc, EntryPoint = "name_to_handle_at", SetLastError = true)]
-        internal static extern int NameToHandleAt(int dirfd, [MarshalAs(UnmanagedTypePolyfill.LPUTF8Str)] string pathname, ref FileHandleHeader handle, out int mount_id, NameToHandleAtFlags flags);
+        private static extern int NameToHandleAtCore(int dirfd, [MarshalAs(UnmanagedTypePolyfill.LPUTF8Str)] string pathname, ref FileHandleHeader handle, out int mount_id, NameToHandleAtFlags flags);
 #endif
+
+        public static int NameToHandleAt(SafeFileHandle dirfd, string pathname, ref FileHandleHeader handle, out int mount_id, NameToHandleAtFlags flags)
+        {
+            using (var dirScope = dirfd.CreateScope())
+                return NameToHandleAtCore((int)dirScope.Handle, pathname, ref handle, out mount_id, flags);
+        }
     }
 }

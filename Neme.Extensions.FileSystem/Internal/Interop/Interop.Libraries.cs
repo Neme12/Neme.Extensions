@@ -1,4 +1,6 @@
-﻿namespace Neme.Extensions.Internal.Interop;
+﻿using Microsoft.Win32.SafeHandles;
+
+namespace Neme.Extensions.Internal.Interop;
 
 internal static partial class Interop
 {
@@ -12,5 +14,8 @@ internal static partial class Interop
     internal static partial class Libc
     {
         internal const int AT_FDCWD = -100;
+
+        internal static readonly SafeFileHandle AT_FDCWD_HANDLE =
+            new SafeFileHandle((nint)AT_FDCWD, ownsHandle: false);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.InteropServices;
 using System.Runtime.InteropServices;
 
 namespace Neme.Extensions.Internal.Interop;
@@ -18,10 +19,16 @@ internal static partial class Interop
 
 #if NET7_0_OR_GREATER
         [LibraryImport(Libraries.libc, EntryPoint = "flock", SetLastError = true)]
-        internal static partial int FLock(SafeFileHandle fd, LockOperations operation);
+        private static partial int FLockCore(int fd, LockOperations operation);
 #else
         [DllImport(Libraries.libc, EntryPoint = "flock", SetLastError = true)]
-        internal static extern int FLock(SafeFileHandle fd, LockOperations operation);
+        private static extern int FLockCore(int fd, LockOperations operation);
 #endif
+
+        public static int FLock(SafeFileHandle fd, LockOperations operation)
+        {
+            using (var scope = fd.CreateScope())
+                return FLockCore((int)scope.Handle, operation);
+        }
     }
 }
