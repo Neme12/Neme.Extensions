@@ -113,8 +113,8 @@ public sealed partial class FileCache : IFileCache, IDisposable
             throw new ArgumentException($"Cache keys must not contain invalid path characters.", paramName);
         }
 
-        if (IsMetadataPath(key))
-            throw new ArgumentException($"Cache keys must not end with '{MetadataExtension}' as it is reserved for internal metadata storage.", paramName);
+        if (IsMetadataPath(key) || IsPartialPath(key))
+            throw new ArgumentException($"Cache keys must not end with '{MetadataExtension}' or '{PartialFile.Extension}'.", paramName);
     }
 
     /// <summary>
@@ -748,11 +748,14 @@ public sealed partial class FileCache : IFileCache, IDisposable
         return Path.Join(_cacheDirectory, key);
     }
 
-    private string GetMetadataPath(string path) =>
+    private static string GetMetadataPath(string path) =>
         path + MetadataExtension;
 
-    private bool IsMetadataPath(string path) =>
-        path.EndsWith(MetadataExtension, StringComparison.Ordinal);
+    private static bool IsMetadataPath(string path) =>
+        path.EndsWith(MetadataExtension, StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsPartialPath(string path) =>
+        path.EndsWith(PartialFile.Extension, StringComparison.OrdinalIgnoreCase);
 
     private ResolvedEntryOptions GetResolvedEntryOptions<TAsync>(FileCacheEntryOptions options)
         where TAsync : IAsyncState
@@ -856,7 +859,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
 
             foreach (var (filePath, isDirectory) in EnumerateAllFiles(_cacheDirectory))
             {
-                if  (IsMetadataPath(filePath))
+                if (IsMetadataPath(filePath) || IsPartialPath(filePath))
                     continue;
 
                 try
