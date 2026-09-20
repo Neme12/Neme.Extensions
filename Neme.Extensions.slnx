@@ -8,6 +8,8 @@
   </Folder>
   <Project Path="Neme.Extensions.AspNetCore.Tests/Neme.Extensions.AspNetCore.Tests.csproj" />
   <Project Path="Neme.Extensions.AspNetCore/Neme.Extensions.AspNetCore.csproj" />
+  <Project Path="Neme.Extensions.EntityFrameworkCore.SqlServer.Tests/Neme.Extensions.EntityFrameworkCore.SqlServer.Tests.csproj" />
+  <Project Path="Neme.Extensions.EntityFrameworkCore.SqlServer/Neme.Extensions.EntityFrameworkCore.SqlServer.csproj" />
   <Project Path="Neme.Extensions.EntityFrameworkCore.Tests/Neme.Extensions.EntityFrameworkCore.Tests.csproj" />
   <Project Path="Neme.Extensions.EntityFrameworkCore/Neme.Extensions.EntityFrameworkCore.csproj" />
   <Project Path="Neme.Extensions.FileSystem.Tests/Neme.Extensions.FileSystem.Tests.csproj" />
