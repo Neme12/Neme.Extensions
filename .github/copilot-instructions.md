@@ -7,8 +7,10 @@
 
 ## File Handling
 - In this workspace, Mono.Unix.Native.Stat does not expose a st_flags field, so Darwin file flags require separate interop rather than relying on Stat.
+- For the Neme.Extensions.FileSystem API, prefer naming the handle-backed wrapper types as file system entries rather than emphasizing raw handle semantics, since they support sharing without implying locking. Use names that convey a stable reference to a specific file, such as FileReference.
 
 ## Testing Guidelines
+- When adding tests in this repository, create a test class for the class being tested, with a nested class named after each method being tested, following the patterns used in SqlServerMigrationBuilderExtensionsTests and FileIOTests. Within each nested class, name the test methods after the scenario or expected behavior without repeating the method name already captured by the nested class.
 - When updating paired sync/async test files, keep them fully symmetrical and place equivalent checks in the same relative locations in both files.
 
 ## General Guidelines
