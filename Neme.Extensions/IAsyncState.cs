@@ -23,7 +23,7 @@
 /// }
 /// 
 /// // Called from sync method
-/// var content = ReadFileAsync&lt;IAsyncState.Sync&gt;(path, ct).GetAwaiter().GetResult();
+/// var content = ReadFileAsync&lt;IAsyncState.Sync&gt;(path, ct).GetAwaiter().GetCompletedResult();
 /// 
 /// // Called from async method
 /// var content = await ReadFileAsync&lt;IAsyncState.Async&gt;(path, ct);
