@@ -2,10 +2,13 @@
 
 public static class ArrayPolyfill
 {
-    public static int MaxLength =>
+    extension(Array)
+    {
+        public static int MaxLength =>
 #if NET6_0_OR_GREATER
-        Array.MaxLength;
+            Array.MaxLength;
 #else
-        0X7FFFFFC7;
+            0X7FFFFFC7;
 #endif
+    }
 }
