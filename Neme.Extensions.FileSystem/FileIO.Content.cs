@@ -23,8 +23,8 @@ public static partial class FileIO
         ArgumentNullException.ThrowIfNull(encoding);
 
         using var stream = new LeaveOpenFileStream(file, FileAccess.Read, FileStream.DefaultBufferSize, isAsync: file.IsAsync);
-        using StreamReader sr = new StreamReader(stream, encoding, detectEncodingFromByteOrderMarks: true);
-        return sr.ReadToEnd();
+        using var streamReader = new StreamReader(stream, encoding, detectEncodingFromByteOrderMarks: true);
+        return streamReader.ReadToEnd();
     }
 
     public static Task<string> ReadAllTextAsync([Borrow] SafeFileHandle file, CancellationToken cancellationToken = default)
@@ -35,76 +35,19 @@ public static partial class FileIO
         ArgumentNullException.ThrowIfNull(file);
         ArgumentNullException.ThrowIfNull(encoding);
 
-        return cancellationToken.IsCancellationRequested
-            ? Task.FromCanceled<string>(cancellationToken)
-            : InternalReadAllTextAsync(file, encoding, cancellationToken);
-    }
+        return Core(file, encoding, cancellationToken);
 
-    private static string InternalReadAllText([Borrow] SafeFileHandle file, Encoding encoding, CancellationToken cancellationToken)
-    {
-        Debug.Assert(file != null);
-        Debug.Assert(encoding != null);
-
-        char[]? buffer = null;
-        using var stream = new LeaveOpenFileStream(file, FileAccess.Read, FileStream.DefaultBufferSize, isAsync: file.IsAsync);
-        using var streamReader = new StreamReader(stream, encoding, detectEncodingFromByteOrderMarks: true);
-
-        try
+        static async Task<string> Core([Borrow] SafeFileHandle file, Encoding encoding, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            buffer = ArrayPool<char>.Shared.Rent(streamReader.CurrentEncoding.GetMaxCharCount(FileStream.DefaultBufferSize));
-            StringBuilder sb = new StringBuilder();
-
-            while (true)
-            {
-                int read = streamReader.Read(buffer, 0, buffer.Length);
-                if (read == 0)
-                    return sb.ToString();
-
-                sb.Append(buffer, 0, read);
-            }
-        }
-        finally
-        {
-            if (buffer != null)
-                ArrayPool<char>.Shared.Return(buffer);
-        }
-    }
-
-    private static async Task<string> InternalReadAllTextAsync([Borrow] SafeFileHandle file, Encoding encoding, CancellationToken cancellationToken)
-    {
-        Debug.Assert(file != null);
-        Debug.Assert(encoding != null);
-
-        char[]? buffer = null;
-        using var stream = new LeaveOpenFileStream(file, FileAccess.Read, FileStream.DefaultBufferSize, isAsync: file.IsAsync);
-        using var streamReader = new StreamReader(stream, encoding, detectEncodingFromByteOrderMarks: true);
-
-        try
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            buffer = ArrayPool<char>.Shared.Rent(streamReader.CurrentEncoding.GetMaxCharCount(FileStream.DefaultBufferSize));
-            StringBuilder sb = new StringBuilder();
-
-            while (true)
-            {
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-                int read = await streamReader.ReadAsync(buffer.AsMemory(), cancellationToken).ConfigureAwait(false);
+            using var stream = new LeaveOpenFileStream(file, FileAccess.Read, FileStream.DefaultBufferSize, isAsync: file.IsAsync);
+            using var streamReader = new StreamReader(stream, encoding, detectEncodingFromByteOrderMarks: true);
+#if NET7_0_OR_GREATER
+            return await streamReader.ReadToEndAsync(cancellationToken);
 #else
-                int read = await streamReader.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
+            return await streamReader.ReadToEndAsync();
 #endif
-                if (read == 0)
-                    return sb.ToString();
-
-                sb.Append(buffer, 0, read);
-            }
-        }
-        finally
-        {
-            if (buffer != null)
-                ArrayPool<char>.Shared.Return(buffer);
         }
     }
 
