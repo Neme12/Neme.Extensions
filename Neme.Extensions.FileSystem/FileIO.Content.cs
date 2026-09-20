@@ -8,11 +8,106 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ExceptionServices;
+using System.Text;
 
 namespace Neme.Extensions.FileSystem;
 
 public static partial class FileIO
 {
+    public static string ReadAllText([Borrow] SafeFileHandle file) =>
+        ReadAllText(file, Encoding.UTF8);
+
+    public static string ReadAllText([Borrow] SafeFileHandle file, Encoding encoding)
+    {
+        ArgumentNullException.ThrowIfNull(file);
+        ArgumentNullException.ThrowIfNull(encoding);
+
+        using var stream = new LeaveOpenFileStream(file, FileAccess.Read, FileStream.DefaultBufferSize, isAsync: file.IsAsync);
+        using StreamReader sr = new StreamReader(stream, encoding, detectEncodingFromByteOrderMarks: true);
+        return sr.ReadToEnd();
+    }
+
+    public static Task<string> ReadAllTextAsync([Borrow] SafeFileHandle file, CancellationToken cancellationToken = default)
+        => ReadAllTextAsync(file, Encoding.UTF8, cancellationToken);
+
+    public static Task<string> ReadAllTextAsync([Borrow] SafeFileHandle file, Encoding encoding, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(file);
+        ArgumentNullException.ThrowIfNull(encoding);
+
+        return cancellationToken.IsCancellationRequested
+            ? Task.FromCanceled<string>(cancellationToken)
+            : InternalReadAllTextAsync(file, encoding, cancellationToken);
+    }
+
+    private static string InternalReadAllText([Borrow] SafeFileHandle file, Encoding encoding, CancellationToken cancellationToken)
+    {
+        Debug.Assert(file != null);
+        Debug.Assert(encoding != null);
+
+        char[]? buffer = null;
+        using var stream = new LeaveOpenFileStream(file, FileAccess.Read, FileStream.DefaultBufferSize, isAsync: file.IsAsync);
+        using var streamReader = new StreamReader(stream, encoding, detectEncodingFromByteOrderMarks: true);
+
+        try
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            buffer = ArrayPool<char>.Shared.Rent(streamReader.CurrentEncoding.GetMaxCharCount(FileStream.DefaultBufferSize));
+            StringBuilder sb = new StringBuilder();
+
+            while (true)
+            {
+                int read = streamReader.Read(buffer, 0, buffer.Length);
+                if (read == 0)
+                    return sb.ToString();
+
+                sb.Append(buffer, 0, read);
+            }
+        }
+        finally
+        {
+            if (buffer != null)
+                ArrayPool<char>.Shared.Return(buffer);
+        }
+    }
+
+    private static async Task<string> InternalReadAllTextAsync([Borrow] SafeFileHandle file, Encoding encoding, CancellationToken cancellationToken)
+    {
+        Debug.Assert(file != null);
+        Debug.Assert(encoding != null);
+
+        char[]? buffer = null;
+        using var stream = new LeaveOpenFileStream(file, FileAccess.Read, FileStream.DefaultBufferSize, isAsync: file.IsAsync);
+        using var streamReader = new StreamReader(stream, encoding, detectEncodingFromByteOrderMarks: true);
+
+        try
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            buffer = ArrayPool<char>.Shared.Rent(streamReader.CurrentEncoding.GetMaxCharCount(FileStream.DefaultBufferSize));
+            StringBuilder sb = new StringBuilder();
+
+            while (true)
+            {
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+                int read = await streamReader.ReadAsync(buffer.AsMemory(), cancellationToken).ConfigureAwait(false);
+#else
+                int read = await streamReader.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
+#endif
+                if (read == 0)
+                    return sb.ToString();
+
+                sb.Append(buffer, 0, read);
+            }
+        }
+        finally
+        {
+            if (buffer != null)
+                ArrayPool<char>.Shared.Return(buffer);
+        }
+    }
+
     public static byte[] ReadAllBytes([Borrow] SafeFileHandle file, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -97,9 +192,8 @@ public static partial class FileIO
 #endif
 
                 if (n == 0)
-                {
                     return buffer.Slice(0, bytesRead).ToArray();
-                }
+
                 bytesRead += n;
             }
         }

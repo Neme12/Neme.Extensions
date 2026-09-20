@@ -197,4 +197,171 @@ public sealed partial class FileIOTests
             }
         }
     }
+
+    [Collection(nameof(FileIOTestCollection))]
+    public sealed class ReadAllText
+    {
+        [Fact]
+        public void WithByteOrderMark_UsesDetectedEncodingAndLeavesHandleOpen()
+        {
+            // Arrange
+            const string expected = "Hello, 世界";
+            var tempFile = Path.GetTempFileName();
+            try
+            {
+                File.WriteAllText(tempFile, expected, System.Text.Encoding.Unicode);
+                var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                using var handle = FileIO.OpenHandle(tempFile, options);
+
+                // Act
+                string result = FileIO.ReadAllText(handle, System.Text.Encoding.ASCII);
+
+                // Assert
+                Assert.Equal(expected, result);
+                Assert.False(handle.IsClosed);
+            }
+            finally
+            {
+                File.Delete(tempFile);
+            }
+        }
+
+        [Fact]
+        public void WithNullHandle_ThrowsArgumentNullException()
+        {
+            // Act
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() => FileIO.ReadAllText(null!, System.Text.Encoding.UTF8));
+
+            // Assert
+            Assert.Equal("file", exception.ParamName);
+        }
+
+        [Fact]
+        public void WithNullEncoding_ThrowsArgumentNullExceptionWithoutClosingHandle()
+        {
+            // Arrange
+            const string expected = "Handle remains readable";
+            var tempFile = Path.GetTempFileName();
+            try
+            {
+                File.WriteAllText(tempFile, expected);
+                var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                using var handle = FileIO.OpenHandle(tempFile, options);
+
+                // Act
+                ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() => FileIO.ReadAllText(handle, null!));
+
+                // Assert
+                Assert.Equal("encoding", exception.ParamName);
+                Assert.False(handle.IsClosed);
+                Assert.Equal(expected, FileIO.ReadAllText(handle, System.Text.Encoding.UTF8));
+            }
+            finally
+            {
+                File.Delete(tempFile);
+            }
+        }
+    }
+
+    [Collection(nameof(FileIOTestCollection))]
+    public sealed class ReadAllTextAsync
+    {
+        [Fact]
+        public async Task WithByteOrderMark_UsesDetectedEncodingAndLeavesHandleOpen()
+        {
+            // Arrange
+            const string expected = "Hello, 世界";
+            var tempFile = Path.GetTempFileName();
+            try
+            {
+                File.WriteAllText(tempFile, expected, System.Text.Encoding.Unicode);
+                var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                using var handle = FileIO.OpenHandle(tempFile, options);
+
+                // Act
+                string result = await FileIO.ReadAllTextAsync(handle, System.Text.Encoding.ASCII);
+
+                // Assert
+                Assert.Equal(expected, result);
+                Assert.False(handle.IsClosed);
+            }
+            finally
+            {
+                File.Delete(tempFile);
+            }
+        }
+
+        [Fact]
+        public void WithNullHandle_ThrowsArgumentNullException()
+        {
+            // Arrange
+            void Act() => _ = FileIO.ReadAllTextAsync(null!, System.Text.Encoding.UTF8);
+
+            // Act
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(Act);
+
+            // Assert
+            Assert.Equal("file", exception.ParamName);
+        }
+
+        [Fact]
+        public async Task WithNullEncoding_ThrowsArgumentNullExceptionWithoutClosingHandle()
+        {
+            // Arrange
+            const string expected = "Handle remains readable";
+            var tempFile = Path.GetTempFileName();
+            try
+            {
+                File.WriteAllText(tempFile, expected);
+                var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                using var handle = FileIO.OpenHandle(tempFile, options);
+
+                // Arrange
+                void Act() => _ = FileIO.ReadAllTextAsync(handle, null!);
+
+                // Act
+                ArgumentNullException exception = Assert.Throws<ArgumentNullException>(Act);
+
+                // Assert
+                Assert.Equal("encoding", exception.ParamName);
+                Assert.False(handle.IsClosed);
+                Assert.Equal(expected, await FileIO.ReadAllTextAsync(handle, System.Text.Encoding.UTF8));
+            }
+            finally
+            {
+                File.Delete(tempFile);
+            }
+        }
+
+        [Fact]
+        public async Task WithCanceledToken_ReturnsCanceledTaskWithoutClosingHandle()
+        {
+            // Arrange
+            const string expected = "Canceled reads should not consume the handle.";
+            var tempFile = Path.GetTempFileName();
+            try
+            {
+                File.WriteAllText(tempFile, expected);
+                var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                using var handle = FileIO.OpenHandle(tempFile, options);
+                using var cancellationTokenSource = new CancellationTokenSource();
+                cancellationTokenSource.Cancel();
+
+                // Act
+                Task<string> task = FileIO.ReadAllTextAsync(handle, System.Text.Encoding.UTF8, cancellationTokenSource.Token);
+
+                // Assert
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
+                Assert.True(task.IsCanceled);
+                Assert.False(handle.IsClosed);
+                Assert.Equal(expected, await FileIO.ReadAllTextAsync(handle, System.Text.Encoding.UTF8));
+            }
+            finally
+            {
+                File.Delete(tempFile);
+            }
+        }
+
+    }
+
 }
