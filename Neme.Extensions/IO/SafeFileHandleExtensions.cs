@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.Internal;
 using System.Runtime.CompilerServices;
 
 namespace Neme.Extensions.IO;
@@ -11,14 +12,14 @@ public static class SafeFileHandleExtensions
 #if NET8_0_OR_GREATER
             SafeFileHandleAccessors.CanSeek(handle);
 #else
-            new FileStream(handle, FileAccess.Read).CanSeek;
+            new NoopFileStream(handle, FileAccess.Read).CanSeek;
 #endif
 
         public long Length =>
 #if NET6_0_OR_GREATER
             RandomAccess.GetLength(handle);
 #else
-            new FileStream(handle, FileAccess.Read).Length;
+            new NoopFileStream(handle, FileAccess.Read).Length;
 #endif
 
     }
