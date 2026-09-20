@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(LibraryTargetFrameworks)</TargetFrameworks>
-		<LinuxShimBuildScript>$(MSBuildProjectDirectory)/native/linux/build.sh</LinuxShimBuildScript>
+    <LinuxShimBuildScript>$(MSBuildProjectDirectory)/native/linux/build.sh</LinuxShimBuildScript>
 		<LinuxShimSource>$(MSBuildProjectDirectory)/native/linux/libneme_linux_shim.c</LinuxShimSource>
 		<LinuxShimUniversalOutput>$(MSBuildProjectDirectory)/../runtimes/linux/native/libneme_linux_shim.so</LinuxShimUniversalOutput>
 		<LinuxShimX64Output>$(MSBuildProjectDirectory)/../runtimes/linux-x64/native/libneme_linux_shim.so</LinuxShimX64Output>

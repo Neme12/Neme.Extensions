@@ -1,4 +1,6 @@
-﻿using Microsoft.Win32.SafeHandles;
+﻿// Code derived from https://github.com/dotnet/runtime/blob/v11.0.0-rc.1.26425.128/src/libraries/System.Private.CoreLib/src/System/IO/File.cs
+
+using Microsoft.Win32.SafeHandles;
 using Neme.Extensions.FileSystem.Internal;
 using Neme.Extensions.IO;
 using Neme.Extensions.Ownership;
@@ -11,19 +13,111 @@ namespace Neme.Extensions.FileSystem;
 
 public static partial class FileIO
 {
+    public static byte[] ReadAllBytes([Borrow] SafeFileHandle file, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        long fileLength = 0;
+        if (file.CanSeek && (fileLength = file.Length) > Array.MaxLength)
+        {
+            throw new IOException(Strings.IO_FileTooLong2GB);
+        }
+
+#if DEBUG
+        fileLength = 0; // improve the test coverage for ReadAllBytesUnknownLength
+#endif
+
+        if (fileLength == 0)
+        {
+            // Some file systems (e.g. procfs on Linux) return 0 for length even when there's content; also there are non-seekable files.
+            // Thus we need to assume 0 doesn't mean empty.
+            return ReadAllBytesUnknownLength(file, cancellationToken);
+        }
+
+#if !NET6_0_OR_GREATER
+        using var fileStream = new LeaveOpenFileStream(file, FileAccess.Read, FileStream.DefaultBufferSize, isAsync: file.IsAsync);
+#endif
+
+        int index = 0;
+        int count = (int)fileLength;
+        byte[] bytes = new byte[count];
+        while (count > 0)
+        {
+#if NET6_0_OR_GREATER
+            int n = RandomAccess.Read(file, bytes.AsSpan(index, count), index);
+#else
+            int n = fileStream.Read(bytes, index, count);
+#endif
+            if (n == 0)
+            {
+                ThrowEndOfFileException();
+            }
+
+            index += n;
+            count -= n;
+        }
+        return bytes;
+    }
+
+    private static byte[] ReadAllBytesUnknownLength(SafeFileHandle file, CancellationToken cancellationToken)
+    {
+#if !NET6_0_OR_GREATER
+        using var fileStream = new LeaveOpenFileStream(file, FileAccess.Read, FileStream.DefaultBufferSize, isAsync: file.IsAsync);
+#endif
+
+        byte[]? rentedArray = null;
+        Span<byte> buffer = stackalloc byte[512];
+
+        try
+        {
+            int bytesRead = 0;
+            while (true)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (bytesRead == buffer.Length)
+                {
+                    uint newLength = (uint)buffer.Length * 2;
+                    if (newLength > Array.MaxLength)
+                        newLength = (uint)Math.Max(Array.MaxLength, buffer.Length + 1);
+
+                    byte[] tmp = ArrayPool<byte>.Shared.Rent((int)newLength);
+                    buffer.CopyTo(tmp);
+                    byte[]? oldRentedArray = rentedArray;
+                    buffer = rentedArray = tmp;
+                    if (oldRentedArray != null)
+                        ArrayPool<byte>.Shared.Return(oldRentedArray);
+                }
+
+                Debug.Assert(bytesRead < buffer.Length);
+#if NET6_0_OR_GREATER
+                int n = RandomAccess.Read(file, buffer.Slice(bytesRead), bytesRead);
+#else
+                int n = fileStream.Read(buffer.Slice(bytesRead));
+#endif
+
+                if (n == 0)
+                {
+                    return buffer.Slice(0, bytesRead).ToArray();
+                }
+                bytesRead += n;
+            }
+        }
+        finally
+        {
+            if (rentedArray != null)
+                ArrayPool<byte>.Shared.Return(rentedArray);
+        }
+    }
+
     public static Task<byte[]> ReadAllBytesAsync([Borrow] SafeFileHandle file, CancellationToken cancellationToken = default)
     {
         if (cancellationToken.IsCancellationRequested)
-        {
             return Task.FromCanceled<byte[]>(cancellationToken);
-        }
 
         long fileLength = 0L;
         if (file.CanSeek && (fileLength = file.Length) > Array.MaxLength)
-        {
-            file.Dispose();
             return Task.FromException<byte[]>(ExceptionDispatchInfo.SetCurrentStackTrace(new IOException(Strings.IO_FileTooLong2GB)));
-        }
 
 #if DEBUG
         fileLength = 0; // improve the test coverage for InternalReadAllBytesUnknownLengthAsync
