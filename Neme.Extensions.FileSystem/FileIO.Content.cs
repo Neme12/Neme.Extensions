@@ -11,10 +11,10 @@ public static partial class FileIO
 {
     private static Encoding UTF8NoBOM => field ??= new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
-    private static void ResetPosition([Borrow] Stream fileStream)
+    private static void ResetPosition([Borrow] Stream stream)
     {
-        if (fileStream.CanSeek)
-            fileStream.Seek(0, SeekOrigin.Begin);
+        if (stream.CanSeek)
+            stream.Seek(0, SeekOrigin.Begin);
     }
 
     public static string ReadAllText([Borrow] SafeFileHandle file, Encoding? encoding = null, CancellationToken cancellationToken = default)
@@ -25,6 +25,7 @@ public static partial class FileIO
 
         using var stream = new LeaveOpenFileStream(file, FileAccess.Read, FileStream.DefaultBufferSize, isAsync: file.IsAsync);
         using var streamReader = new StreamReader(stream, encoding ?? Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+        using var _ = new StreamPositionScope(stream);
         ResetPosition(stream);
         return streamReader.ReadToEnd(cancellationToken);
     }
@@ -42,6 +43,7 @@ public static partial class FileIO
         {
             using var stream = new LeaveOpenFileStream(file, FileAccess.Read, FileStream.DefaultBufferSize, isAsync: file.IsAsync);
             using var streamReader = new StreamReader(stream, encoding ?? Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+            using var _ = new StreamPositionScope(stream);
             ResetPosition(stream);
 #if NET7_0_OR_GREATER
             return await streamReader.ReadToEndAsync(cancellationToken);
@@ -62,6 +64,7 @@ public static partial class FileIO
 
         using var stream = new LeaveOpenFileStream(file, FileAccess.Write, FileStream.DefaultBufferSize, isAsync: file.IsAsync);
         using var streamWriter = new StreamWriter(stream, encoding ?? UTF8NoBOM, FileStream.DefaultBufferSize, leaveOpen: true);
+        using var _ = new StreamPositionScope(stream);
         ResetPosition(stream);
         streamWriter.WriteBuffered(contents, cancellationToken);
         streamWriter.Flush();
@@ -83,6 +86,7 @@ public static partial class FileIO
         {
             using var stream = new LeaveOpenFileStream(file, FileAccess.Write, FileStream.DefaultBufferSize, isAsync: file.IsAsync);
             using var streamWriter = new StreamWriter(stream, encoding ?? UTF8NoBOM, FileStream.DefaultBufferSize, leaveOpen: true);
+            using var _ = new StreamPositionScope(stream);
             ResetPosition(stream);
             await streamWriter.WriteBufferedAsync(contents, cancellationToken);
 #if NET8_0_OR_GREATER
@@ -100,6 +104,7 @@ public static partial class FileIO
         cancellationToken.ThrowIfCancellationRequested();
 
         using var stream = new LeaveOpenFileStream(file, FileAccess.Read, FileStream.DefaultBufferSize, isAsync: file.IsAsync);
+        using var _ = new StreamPositionScope(stream);
         ResetPosition(stream);
         return stream.ReadToEnd(cancellationToken);
     }
@@ -116,6 +121,7 @@ public static partial class FileIO
         static async Task<byte[]> CoreAsync([Borrow] SafeFileHandle file, CancellationToken cancellationToken = default)
         {
             using var stream = new LeaveOpenFileStream(file, FileAccess.Read, FileStream.DefaultBufferSize, isAsync: file.IsAsync);
+            using var _ = new StreamPositionScope(stream);
             ResetPosition(stream);
             return await stream.ReadToEndAsync(cancellationToken);
         }
@@ -131,6 +137,7 @@ public static partial class FileIO
         cancellationToken.ThrowIfCancellationRequested();
 
         using var stream = new LeaveOpenFileStream(file, FileAccess.Write, FileStream.DefaultBufferSize, isAsync: file.IsAsync);
+        using var _ = new StreamPositionScope(stream);
         ResetPosition(stream);
         stream.WriteBuffered(bytes, cancellationToken);
     }
@@ -150,6 +157,7 @@ public static partial class FileIO
         static async Task CoreAsync([Borrow] SafeFileHandle file, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken = default)
         {
             using var stream = new LeaveOpenFileStream(file, FileAccess.Write, FileStream.DefaultBufferSize, isAsync: file.IsAsync);
+            using var _ = new StreamPositionScope(stream);
             ResetPosition(stream);
             await stream.WriteBufferedAsync(bytes, cancellationToken);
         }
@@ -230,6 +238,29 @@ public static partial class FileIO
             using var stream = new LeaveOpenFileStream(file, FileAccess.Write, FileStream.DefaultBufferSize, isAsync: file.IsAsync);
             stream.Position = stream.Length;
             await stream.WriteBufferedAsync(bytes, cancellationToken);
+        }
+    }
+
+    private struct StreamPositionScope : IDisposable
+    {
+        private Stream _stream;
+        private readonly long? _initialPosition;
+
+        public StreamPositionScope(Stream stream)
+        {
+            _stream = stream;
+            _initialPosition = stream.CanSeek ? stream.Position : null;
+        }
+
+        public void Dispose()
+        {
+            if (_stream is not null)
+            {
+                if (_stream.CanSeek)
+                    _stream.Position = _initialPosition!.Value;
+
+                _stream = null!;
+            }
         }
     }
 }
