@@ -261,6 +261,33 @@ public sealed partial class FileIOTests
                 File.Delete(tempFile);
             }
         }
+
+        [Fact]
+        public void WithCanceledToken_ThrowsOperationCanceled()
+        {
+            // Arrange
+            const string expected = "Canceled reads should not consume the handle.";
+            var tempFile = Path.GetTempFileName();
+            try
+            {
+                File.WriteAllText(tempFile, expected);
+                var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                using var handle = FileIO.OpenHandle(tempFile, options);
+                using var cancellationTokenSource = new CancellationTokenSource();
+                cancellationTokenSource.Cancel();
+
+                // Act
+                var result = Assert.ThrowsAny<OperationCanceledException>(() => FileIO.ReadAllText(handle, System.Text.Encoding.UTF8, cancellationTokenSource.Token));
+
+                // Assert
+                Assert.False(handle.IsClosed);
+                Assert.Equal(expected, FileIO.ReadAllText(handle, System.Text.Encoding.UTF8));
+            }
+            finally
+            {
+                File.Delete(tempFile);
+            }
+        }
     }
 
     [Collection(nameof(FileIOTestCollection))]
@@ -361,7 +388,5 @@ public sealed partial class FileIOTests
                 File.Delete(tempFile);
             }
         }
-
     }
-
 }

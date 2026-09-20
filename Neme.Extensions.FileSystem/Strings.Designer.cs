@@ -70,29 +70,11 @@ namespace Neme.Extensions.FileSystem {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to read beyond the end of the stream..
-        /// </summary>
-        internal static string IO_EOF_ReadBeyondEOF {
-            get {
-                return ResourceManager.GetString("IO_EOF_ReadBeyondEOF", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Failed to create &apos;{0}&apos; with allocation size &apos;{1}&apos; because the file was too large..
         /// </summary>
         internal static string IO_FileTooLarge_Path_AllocationSize {
             get {
                 return ResourceManager.GetString("IO_FileTooLarge_Path_AllocationSize", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The file is too long. This operation is currently limited to supporting files less than 2 gigabytes in size..
-        /// </summary>
-        internal static string IO_FileTooLong2GB {
-            get {
-                return ResourceManager.GetString("IO_FileTooLong2GB", resourceCulture);
             }
         }
         

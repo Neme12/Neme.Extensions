@@ -59,5 +59,23 @@ namespace Neme.Extensions {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to read beyond the end of the stream..
+        /// </summary>
+        internal static string IO_EOF_ReadBeyondEOF {
+            get {
+                return ResourceManager.GetString("IO_EOF_ReadBeyondEOF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The file is too long. This operation is currently limited to supporting files less than 2 gigabytes in size..
+        /// </summary>
+        internal static string IO_FileTooLong2GB {
+            get {
+                return ResourceManager.GetString("IO_FileTooLong2GB", resourceCulture);
+            }
+        }
     }
 }
