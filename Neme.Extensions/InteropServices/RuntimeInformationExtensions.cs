@@ -2,7 +2,12 @@
 
 namespace Neme.Extensions.InteropServices;
 
-public static class RuntimeInformationExtensions
+#if NEME_EXTENSIONS
+public
+#else
+internal
+#endif
+static class RuntimeInformationExtensions
 {
     extension(RuntimeInformation)
     {

@@ -6,7 +6,12 @@ using Windows.Win32.Foundation;
 namespace Neme.Extensions.InteropServices;
 
 [SupportedOSPlatform("windows")]
-public static class WinNtMarshal
+#if NEME_EXTENSIONS
+public
+#else
+internal
+#endif
+static class WinNtMarshal
 {
     [SupportedOSPlatform("windows5.1.2600")]
     public static Exception GetExceptionForNtStatus(int status, string? path = "")

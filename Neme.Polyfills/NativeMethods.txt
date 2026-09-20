@@ -1,0 +1,4 @@
+RtlNtStatusToDosError
+NtQueryInformationFile
+NTCREATEFILE_CREATE_OPTIONS
+WIN32_ERROR

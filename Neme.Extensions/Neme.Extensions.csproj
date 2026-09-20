@@ -59,6 +59,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Compile Update="IOStrings.Designer.cs">
+		  <DependentUpon>IOStrings.resx</DependentUpon>
+		  <DesignTime>True</DesignTime>
+		  <AutoGen>True</AutoGen>
+		</Compile>
 		<Compile Update="Strings.Designer.cs">
 			<DesignTime>True</DesignTime>
 			<AutoGen>True</AutoGen>
@@ -67,6 +72,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<EmbeddedResource Update="IOStrings.resx">
+		  <LastGenOutput>IOStrings.Designer.cs</LastGenOutput>
+		  <Generator>ResXFileCodeGenerator</Generator>
+		</EmbeddedResource>
 		<EmbeddedResource Update="Strings.resx">
 			<Generator>ResXFileCodeGenerator</Generator>
 			<LastGenOutput>Strings.Designer.cs</LastGenOutput>

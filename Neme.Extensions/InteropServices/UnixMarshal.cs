@@ -26,48 +26,48 @@ public static class UnixMarshal
                 if (!isDirError && (path is null || ParentDirectoryExists(path)))
                 {
                     return !string.IsNullOrEmpty(path) ?
-                        new FileNotFoundException(string.Format(Strings.IO_FileNotFound_FileName, path), path, exception) :
-                        new FileNotFoundException(Strings.IO_FileNotFound, exception);
+                        new FileNotFoundException(string.Format(IOStrings.IO_FileNotFound_FileName, path), path, exception) :
+                        new FileNotFoundException(IOStrings.IO_FileNotFound, exception);
                 }
                 goto case UnixErrno.ENOTDIR;
 
             case UnixErrno.ENOTDIR:
                 return !string.IsNullOrEmpty(path) ?
 #if NET11_0_OR_GREATER
-                    new DirectoryNotFoundException(string.Format(Strings.IO_PathNotFound_Path, path), path, exception) :
+                    new DirectoryNotFoundException(string.Format(IOStrings.IO_PathNotFound_Path, path), path, exception) :
 #else
-                    new DirectoryNotFoundException(string.Format(Strings.IO_PathNotFound_Path, path), exception) :
+                    new DirectoryNotFoundException(string.Format(IOStrings.IO_PathNotFound_Path, path), exception) :
 #endif
-                    new DirectoryNotFoundException(Strings.IO_PathNotFound_NoPathName, exception);
+                    new DirectoryNotFoundException(IOStrings.IO_PathNotFound_NoPathName, exception);
 
             case UnixErrno.EACCES:
             case UnixErrno.EBADF:
             case UnixErrno.EPERM:
                 Exception inner = new IOException(exception.Message, exception);
                 return !string.IsNullOrEmpty(path) ?
-                    new UnauthorizedAccessException(string.Format(Strings.UnauthorizedAccess_IODenied_Path, path), inner) :
-                    new UnauthorizedAccessException(Strings.UnauthorizedAccess_IODenied_NoPathName, inner);
+                    new UnauthorizedAccessException(string.Format(IOStrings.UnauthorizedAccess_IODenied_Path, path), inner) :
+                    new UnauthorizedAccessException(IOStrings.UnauthorizedAccess_IODenied_NoPathName, inner);
 
             case UnixErrno.ENAMETOOLONG:
                 return !string.IsNullOrEmpty(path) ?
-                    new PathTooLongException(string.Format(Strings.IO_PathTooLong_Path, path), exception) :
-                    new PathTooLongException(Strings.IO_PathTooLong, exception);
+                    new PathTooLongException(string.Format(IOStrings.IO_PathTooLong_Path, path), exception) :
+                    new PathTooLongException(IOStrings.IO_PathTooLong, exception);
 
             case UnixErrno.EWOULDBLOCK:
                 return !string.IsNullOrEmpty(path) ?
-                    new IOException(string.Format(Strings.IO_SharingViolation_File, path), exception) :
-                    new IOException(Strings.IO_SharingViolation_NoFileName, exception);
+                    new IOException(string.Format(IOStrings.IO_SharingViolation_File, path), exception) :
+                    new IOException(IOStrings.IO_SharingViolation_NoFileName, exception);
 
             case UnixErrno.ECANCELED:
                 return new OperationCanceledException(null, exception);
 
             case UnixErrno.EFBIG:
-                return new ArgumentOutOfRangeException("value", Strings.ArgumentOutOfRange_FileLengthTooBig);
+                return new ArgumentOutOfRangeException("value", IOStrings.ArgumentOutOfRange_FileLengthTooBig);
 
             case UnixErrno.EEXIST:
                 if (!string.IsNullOrEmpty(path))
                 {
-                    return new IOException(string.Format(Strings.IO_FileExists_Name, path), exception);
+                    return new IOException(string.Format(IOStrings.IO_FileExists_Name, path), exception);
                 }
                 goto default;
 

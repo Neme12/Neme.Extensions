@@ -9,7 +9,12 @@ using Windows.Win32.Foundation;
 namespace Neme.Extensions.InteropServices;
 
 [SupportedOSPlatform("windows")]
-public static class Win32Marshal
+#if NEME_EXTENSIONS
+public
+#else
+internal
+#endif
+static class Win32Marshal
 {
     public static Exception GetExceptionForLastWin32Error(string? path = "") =>
         GetExceptionForWin32Error(new Win32Exception(), path);
@@ -25,44 +30,44 @@ public static class Win32Marshal
             case WIN32_ERROR.ERROR_FILE_NOT_FOUND:
                 return new FileNotFoundException(
                     string.IsNullOrEmpty(path)
-                        ? Strings.IO_FileNotFound
-                        : string.Format(Strings.IO_FileNotFound_FileName, path),
+                        ? IOStrings.IO_FileNotFound
+                        : string.Format(IOStrings.IO_FileNotFound_FileName, path),
                     path, exception);
             case WIN32_ERROR.ERROR_PATH_NOT_FOUND:
                 return new DirectoryNotFoundException(
                     string.IsNullOrEmpty(path)
-                        ? Strings.IO_PathNotFound_NoPathName
-                        : string.Format(Strings.IO_PathNotFound_Path, path),
+                        ? IOStrings.IO_PathNotFound_NoPathName
+                        : string.Format(IOStrings.IO_PathNotFound_Path, path),
                     exception);
             case WIN32_ERROR.ERROR_ACCESS_DENIED:
                 return new UnauthorizedAccessException(
                     string.IsNullOrEmpty(path)
-                        ? Strings.UnauthorizedAccess_IODenied_NoPathName
-                        : string.Format(Strings.UnauthorizedAccess_IODenied_Path, path),
+                        ? IOStrings.UnauthorizedAccess_IODenied_NoPathName
+                        : string.Format(IOStrings.UnauthorizedAccess_IODenied_Path, path),
                     exception);
             case WIN32_ERROR.ERROR_ALREADY_EXISTS:
                 if (string.IsNullOrEmpty(path))
                     goto default;
                 return new IOException(
-                    string.Format(Strings.IO_AlreadyExists_Name, path),
+                    string.Format(IOStrings.IO_AlreadyExists_Name, path),
                     exception);
             case WIN32_ERROR.ERROR_FILENAME_EXCED_RANGE:
                 return new PathTooLongException(
                     string.IsNullOrEmpty(path)
-                        ? Strings.IO_PathTooLong
-                        : string.Format(Strings.IO_PathTooLong_Path, path),
+                        ? IOStrings.IO_PathTooLong
+                        : string.Format(IOStrings.IO_PathTooLong_Path, path),
                     exception);
             case WIN32_ERROR.ERROR_SHARING_VIOLATION:
                 return new IOException(
                     string.IsNullOrEmpty(path)
-                        ? Strings.IO_SharingViolation_NoFileName
-                        : string.Format(Strings.IO_SharingViolation_File, path),
+                        ? IOStrings.IO_SharingViolation_NoFileName
+                        : string.Format(IOStrings.IO_SharingViolation_File, path),
                     exception);
             case WIN32_ERROR.ERROR_FILE_EXISTS:
                 if (string.IsNullOrEmpty(path))
                     goto default;
                 return new IOException(
-                    string.Format(Strings.IO_FileExists_Name, path),
+                    string.Format(IOStrings.IO_FileExists_Name, path),
                     exception);
             case WIN32_ERROR.ERROR_OPERATION_ABORTED:
                 return new OperationCanceledException(null, exception);

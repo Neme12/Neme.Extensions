@@ -93,6 +93,24 @@ internal static class ThrowHelper
     }
 
     [DoesNotReturn]
+    internal static void ThrowInvalidOperationException()
+    {
+        throw new InvalidOperationException();
+    }
+
+    [DoesNotReturn]
+    internal static void ThrowInvalidOperationException(ExceptionResource resource)
+    {
+        throw GetInvalidOperationException(resource);
+    }
+
+    [DoesNotReturn]
+    internal static void ThrowInvalidOperationException(ExceptionResource resource, Exception e)
+    {
+        throw new InvalidOperationException(GetResourceString(resource), e);
+    }
+
+    [DoesNotReturn]
     internal static void ThrowObjectDisposedException(object? instance)
     {
         throw new ObjectDisposedException(instance?.GetType().FullName);
@@ -135,6 +153,11 @@ internal static class ThrowHelper
     private static ArgumentException GetArgumentException(ExceptionResource resource, ExceptionArgument argument)
     {
         return new ArgumentException(GetResourceString(resource), GetArgumentName(argument));
+    }
+
+    private static InvalidOperationException GetInvalidOperationException(ExceptionResource resource)
+    {
+        return new InvalidOperationException(GetResourceString(resource));
     }
 
     private static string GetArgumentName(ExceptionArgument argument)
