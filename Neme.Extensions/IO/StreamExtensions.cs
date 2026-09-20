@@ -1,4 +1,5 @@
-﻿using Neme.Extensions.Contracts;
+﻿using Neme.Extensions.Buffers;
+using Neme.Extensions.Contracts;
 using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -20,10 +21,6 @@ public static class StreamExtensions
             if (stream.CanSeek && (streamLength = stream.Length) > Array.MaxLength)
                 throw new IOException(Strings.IO_FileTooLong2GB);
 
-#if DEBUG
-            streamLength = 0; // improve the test coverage for ReadAllBytesUnknownLength
-#endif
-
             return streamLength > 0
                 ? stream.InternalReadToEnd((int)streamLength, cancellationToken)
                 : stream.InternalReadToEndUnknownLength(cancellationToken);
@@ -39,10 +36,6 @@ public static class StreamExtensions
             long streamLength = 0L;
             if (stream.CanSeek && (streamLength = stream.Length) > Array.MaxLength)
                 return Task.FromException<byte[]>(ExceptionDispatchInfo.SetCurrentStackTrace(new IOException(Strings.IO_FileTooLong2GB)));
-
-#if DEBUG
-            streamLength = 0; // improve the test coverage for InternalReadAllBytesUnknownLengthAsync
-#endif
 
             return streamLength > 0 ?
                 stream.InternalReadToEndAsync((int)streamLength, cancellationToken) :
@@ -189,13 +182,59 @@ public static class StreamExtensions
             }
         }
 
+        public void WriteBuffered(ReadOnlySpan<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            Require.ArgumentNotNull(stream);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            using (var bytes = ArrayPool<byte>.Shared.RentLease(4096))
+            {
+                for (int offset = 0; offset < buffer.Length; offset += bytes.Length)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    int length = Math.Min(bytes.Length, buffer.Length - offset);
+                    buffer.Slice(offset, length).CopyTo(bytes.Array);
+
+                    stream.Write(bytes.Array, 0, length);
+                }
+            }
+        }
+
+        public Task WriteBufferedAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            Require.ArgumentNotNull(stream);
+
+            if (cancellationToken.IsCancellationRequested)
+                return Task.FromCanceled(cancellationToken);
+
+            return CoreAsync(stream, buffer, cancellationToken);
+
+            static async Task CoreAsync(Stream stream, ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+            {
+                using (var bytes = ArrayPool<byte>.Shared.RentLease(4096))
+                {
+                    for (int offset = 0; offset < buffer.Length; offset += bytes.Length)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        int length = Math.Min(bytes.Length, buffer.Length - offset);
+                        buffer.Slice(offset, length).CopyTo(bytes.Array);
+
+                        await stream.WriteAsync(bytes.Array, 0, length, cancellationToken).ConfigureAwait(false);
+                    }
+                }
+            }
+        }
+
         [DoesNotReturn]
         private static void ThrowEndOfFileException()
         {
             throw CreateEndOfFileException();
-        }
 
-        private static Exception CreateEndOfFileException() =>
-            new EndOfStreamException(Strings.IO_EOF_ReadBeyondEOF);
+            static Exception CreateEndOfFileException() =>
+                new EndOfStreamException(Strings.IO_EOF_ReadBeyondEOF);
+        }
     }
 }

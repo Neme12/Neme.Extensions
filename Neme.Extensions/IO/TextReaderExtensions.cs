@@ -1,4 +1,5 @@
 ﻿using Neme.Extensions.Buffers;
+using Neme.Extensions.Contracts;
 using System.Buffers;
 using System.Text;
 
@@ -10,6 +11,8 @@ public static class TextReaderExtensions
     {
         public string ReadToEnd(CancellationToken cancellationToken = default)
         {
+            Require.ArgumentNotNull(textReader);
+
             cancellationToken.ThrowIfCancellationRequested();
 
             var stringBuilder = new StringBuilder(4096);

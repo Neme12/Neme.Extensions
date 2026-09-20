@@ -1,4 +1,5 @@
 ﻿using Neme.Extensions.Contracts;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
@@ -10,16 +11,76 @@ public readonly record struct FileOpenOptions
     private readonly AllOptions _allOptions;
     private readonly long _preallocationSize;
 
-    public FileOpenOptions(FileMode mode, FileSystemAccess access, FileShare share)
-    {
-        _allOptions = ToAllOptions(mode, access, share, 0, 0, null);
-    }
-
     public FileOpenOptions(FileMode mode, FileSystemAccess access)
     {
         _allOptions = ToAllOptions(mode, access, (access & FileSystemAccess.Write) != 0 || (access & FileSystemAccess.Delete) != 0
             ? FileShare.None
             : FileShare.Read, 0, 0, null);
+    }
+
+    public FileOpenOptions(FileMode mode, FileSystemAccess access, FileShare share, FileOptions options = 0, FileAttributes attributes = 0)
+    {
+        _allOptions = ToAllOptions(mode, access, share, options, attributes, null);
+    }
+
+    public static FileOpenOptions Create(FileSystemAccess access) =>
+        new(FileMode.Create, access, GetDefaultFileShare(access));
+
+    public static FileOpenOptions Create(
+        FileSystemAccess access,
+        FileShare share,
+        FileOptions options = 0,
+        FileAttributes attributes = 0)
+    {
+        return new(FileMode.Create, access, share, options, attributes);
+    }
+
+    public static FileOpenOptions CreateNew(FileSystemAccess access) =>
+        new(FileMode.CreateNew, access, GetDefaultFileShare(access));
+
+    public static FileOpenOptions CreateNew(
+        FileSystemAccess access,
+        FileShare share,
+        FileOptions options = 0,
+        FileAttributes attributes = 0)
+    {
+        return new(FileMode.CreateNew, access, share, options, attributes);
+    }
+
+    public static FileOpenOptions Open(FileSystemAccess access) =>
+        new(FileMode.Open, access, GetDefaultFileShare(access));
+
+    public static FileOpenOptions Open(
+        FileSystemAccess access,
+        FileShare share,
+        FileOptions options = 0,
+        FileAttributes attributes = 0)
+    {
+        return new(FileMode.Open, access, share, options, attributes);
+    }
+
+    public static FileOpenOptions OpenOrCreate(FileSystemAccess access) =>
+        new(FileMode.OpenOrCreate, access, GetDefaultFileShare(access));
+
+    public static FileOpenOptions OpenOrCreate(
+        FileSystemAccess access,
+        FileShare share,
+        FileOptions options = 0,
+        FileAttributes attributes = 0)
+    {
+        return new(FileMode.OpenOrCreate, access, share, options, attributes);
+    }
+
+    public static FileOpenOptions Append(FileSystemAccess access = FileSystemAccess.Write) =>
+        new(FileMode.Append, access, GetDefaultFileShare(access));
+
+    public static FileOpenOptions Append(
+        FileSystemAccess access = FileSystemAccess.Write,
+        FileShare share = FileShare.None,
+        FileOptions options = 0,
+        FileAttributes attributes = 0)
+    {
+        return new(FileMode.Append, access, share, options, attributes);
     }
 
     public FileMode Mode
@@ -74,6 +135,21 @@ public readonly record struct FileOpenOptions
 
             _preallocationSize = value;
         }
+    }
+
+    internal static FileShare GetDefaultFileShare(FileSystemAccess access)
+    {
+        var rawAccess = (RawFileSystemAccess)access;
+
+        if ((rawAccess & RawFileSystemAccess.Write) != 0 ||
+            (rawAccess & RawFileSystemAccess.Delete) != 0)
+            return FileShare.None;
+
+        if ((rawAccess & RawFileSystemAccess.Read) != 0 ||
+            (rawAccess & RawFileSystemAccess.Execute) != 0)
+            return FileShare.Read;
+
+        return FileShare.ReadWrite | FileShare.Delete;
     }
 
 #if NET6_0_OR_GREATER
