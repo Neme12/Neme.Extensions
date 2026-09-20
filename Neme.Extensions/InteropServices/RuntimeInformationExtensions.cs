@@ -6,22 +6,23 @@ public static class RuntimeInformationExtensions
 {
     extension(RuntimeInformation)
     {
-        public static bool IsNetVersionOrGreater(int major, int minor)
-        {
-            var (runtimeKind, versionMajor, versionMinor) = GetTargetRuntime();
+        public static bool IsNetCore =>
+            GetRuntimeKindAndPrefixLength(RuntimeInformation.FrameworkDescription).runtimeKind == RuntimeKind.NetCore;
 
-            if (runtimeKind != RuntimeKind.Net)
+        public static bool IsNetCoreVersionOrGreater(int major, int minor)
+        {
+            var (runtimeKind, versionMajor, versionMinor) = GetTargetRuntime(RuntimeInformation.FrameworkDescription);
+
+            if (runtimeKind != RuntimeKind.NetCore)
                 return false;
 
             return new Version(versionMajor, versionMinor) >= new Version(major, minor);
         }
 
-        public static bool IsNetCoreVersionOrGreater(int major, int minor) =>
-            IsNetVersionOrGreater(major, minor);
 
         public static bool IsNetFrameworkVersionOrGreater(int major, int minor)
         {
-            var (runtimeKind, versionMajor, versionMinor) = GetTargetRuntime();
+            var (runtimeKind, versionMajor, versionMinor) = GetTargetRuntime(RuntimeInformation.FrameworkDescription);
 
             if (runtimeKind != RuntimeKind.NetFramework)
                 return false;
@@ -30,24 +31,19 @@ public static class RuntimeInformationExtensions
         }
     }
 
+    private const string NetFrameworkPrefix = ".NET Framework ";
+    private const string NetCorePrefix = ".NET Core";
+    private const string NetPrefix = ".NET";
+
     private enum RuntimeKind
     {
-        Net,
+        NetCore,
         NetFramework,
     }
 
-    private static (RuntimeKind runtimeKind, int versionMajor, int versionMinor) GetTargetRuntime()
+    private static (RuntimeKind runtimeKind, int versionMajor, int versionMinor) GetTargetRuntime(string frameworkDescription)
     {
-        const string netFrameworkPrefix = ".NET Framework ";
-        const string netCorePrefix = ".NET Core";
-        const string netPrefix = ".NET";
-        var frameworkDescription = RuntimeInformation.FrameworkDescription;
-
-        var (runtimeKind, prefixLength) =
-            frameworkDescription.StartsWith(netFrameworkPrefix, StringComparison.Ordinal) ? (RuntimeKind.NetFramework, netFrameworkPrefix.Length) :
-            frameworkDescription.StartsWith(netCorePrefix, StringComparison.Ordinal) ? (RuntimeKind.Net, netCorePrefix.Length) :
-            frameworkDescription.StartsWith(netPrefix, StringComparison.Ordinal) ? (RuntimeKind.Net, netPrefix.Length) :
-            throw new PlatformNotSupportedException($"Unknown framework description: {frameworkDescription}");
+        var (runtimeKind, prefixLength) = GetRuntimeKindAndPrefixLength(frameworkDescription);
 
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         var versionText = frameworkDescription.AsSpan(prefixLength);
@@ -57,5 +53,14 @@ public static class RuntimeInformationExtensions
 
         var version = Version.Parse(versionText);
         return (runtimeKind, version.Major, version.Minor);
+    }
+
+    private static (RuntimeKind runtimeKind, int prefixLength) GetRuntimeKindAndPrefixLength(string frameworkDescription)
+    {
+        return
+            frameworkDescription.StartsWith(NetFrameworkPrefix, StringComparison.Ordinal) ? (RuntimeKind.NetFramework, NetFrameworkPrefix.Length) :
+            frameworkDescription.StartsWith(NetCorePrefix, StringComparison.Ordinal) ? (RuntimeKind.NetCore, NetCorePrefix.Length) :
+            frameworkDescription.StartsWith(NetPrefix, StringComparison.Ordinal) ? (RuntimeKind.NetCore, NetPrefix.Length) :
+            throw new PlatformNotSupportedException($"Unknown framework description: {frameworkDescription}");
     }
 }

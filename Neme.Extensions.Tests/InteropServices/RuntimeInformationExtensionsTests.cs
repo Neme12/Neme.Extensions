@@ -27,75 +27,31 @@ public sealed class RuntimeInformationExtensionsTests
         [Fact]
         public void NetFrameworkRuntime_ReturnsFalse()
         {
-            Assert.False(RuntimeInformation.IsNetVersionOrGreater(CurrentFrameworkMajor, CurrentFrameworkMinor));
+            Assert.False(RuntimeInformation.IsNetCoreVersionOrGreater(CurrentFrameworkMajor, CurrentFrameworkMinor));
         }
 #else
         [Fact]
         public void CurrentVersion_ReturnsTrue()
         {
-            Assert.True(RuntimeInformation.IsNetVersionOrGreater(CurrentNetMajor, CurrentNetMinor));
+            Assert.True(RuntimeInformation.IsNetCoreVersionOrGreater(CurrentNetMajor, CurrentNetMinor));
         }
 
         [Fact]
         public void EarlierMajorVersion_ReturnsTrue()
         {
-            Assert.True(RuntimeInformation.IsNetVersionOrGreater(CurrentNetMajor - 1, CurrentNetMinor + 1));
+            Assert.True(RuntimeInformation.IsNetCoreVersionOrGreater(CurrentNetMajor - 1, CurrentNetMinor + 1));
         }
 
         [Fact]
         public void LaterMajorVersion_ReturnsFalse()
         {
-            Assert.False(RuntimeInformation.IsNetVersionOrGreater(CurrentNetMajor + 1, CurrentNetMinor));
+            Assert.False(RuntimeInformation.IsNetCoreVersionOrGreater(CurrentNetMajor + 1, CurrentNetMinor));
         }
 
         [Fact]
         public void LaterMinorVersion_ReturnsFalse()
         {
-            Assert.False(RuntimeInformation.IsNetVersionOrGreater(CurrentNetMajor , CurrentNetMinor + 1));
-        }
-#endif
-    }
-
-    public sealed class IsNetCoreVersionOrGreater
-    {
-#if NET48
-        [Fact]
-        public void NetFrameworkRuntime_ReturnsFalse()
-        {
-            Assert.False(RuntimeInformation.IsNetVersionOrGreater(CurrentFrameworkMajor, CurrentFrameworkMinor));
-            Assert.False(RuntimeInformation.IsNetCoreVersionOrGreater(CurrentFrameworkMajor, CurrentFrameworkMinor));
-
-            Assert.False(RuntimeInformation.IsNetVersionOrGreater(CurrentFrameworkMajor - 1, CurrentFrameworkMinor + 1));
-            Assert.False(RuntimeInformation.IsNetCoreVersionOrGreater(CurrentFrameworkMajor - 1, CurrentFrameworkMinor + 1));
-            
-            Assert.False(RuntimeInformation.IsNetVersionOrGreater(CurrentFrameworkMajor, CurrentFrameworkMinor - 1));
-            Assert.False(RuntimeInformation.IsNetCoreVersionOrGreater(CurrentFrameworkMajor, CurrentFrameworkMinor - 1));
-            
-            Assert.False(RuntimeInformation.IsNetVersionOrGreater(CurrentFrameworkMajor + 1, CurrentFrameworkMinor));
-            Assert.False(RuntimeInformation.IsNetCoreVersionOrGreater(CurrentFrameworkMajor + 1, CurrentFrameworkMinor));
-            
-            Assert.False(RuntimeInformation.IsNetVersionOrGreater(CurrentFrameworkMajor, CurrentFrameworkMinor + 1));
-            Assert.False(RuntimeInformation.IsNetCoreVersionOrGreater(CurrentFrameworkMajor, CurrentFrameworkMinor + 1));
-        }
-#else
-        [Fact]
-        public void MatchesIsNetVersionOrGreater()
-        {
-            Assert.Equal(
-                RuntimeInformation.IsNetVersionOrGreater(CurrentNetMajor, CurrentNetMinor),
-                RuntimeInformation.IsNetCoreVersionOrGreater(CurrentNetMajor, CurrentNetMinor));
-
-            Assert.Equal(
-                RuntimeInformation.IsNetVersionOrGreater(CurrentNetMajor - 1, CurrentNetMinor + 1),
-                RuntimeInformation.IsNetCoreVersionOrGreater(CurrentNetMajor - 1, CurrentNetMinor + 1));
-
-            Assert.Equal(
-                RuntimeInformation.IsNetVersionOrGreater(CurrentNetMajor + 1, CurrentNetMinor),
-                RuntimeInformation.IsNetCoreVersionOrGreater(CurrentNetMajor + 1, CurrentNetMinor));
-            
-            Assert.Equal(
-                RuntimeInformation.IsNetVersionOrGreater(CurrentNetMajor, CurrentNetMinor + 1),
-                RuntimeInformation.IsNetCoreVersionOrGreater(CurrentNetMajor, CurrentNetMinor + 1));
+            Assert.False(RuntimeInformation.IsNetCoreVersionOrGreater(CurrentNetMajor , CurrentNetMinor + 1));
         }
 #endif
     }
