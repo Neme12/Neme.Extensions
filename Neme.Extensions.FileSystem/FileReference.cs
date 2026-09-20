@@ -6,22 +6,22 @@ using System.Runtime.Versioning;
 
 namespace Neme.Extensions.FileSystem;
 
-public sealed class OpenFile : IDisposable
+public sealed class FileReference : IDisposable
 {
     [Owned]
     private SafeFileHandle _handle;
     private readonly FileOpenOptions _options;
 
-    internal OpenFile([OwnershipTransfer] SafeFileHandle handle, FileOpenOptions options)
+    internal FileReference([OwnershipTransfer] SafeFileHandle handle, FileOpenOptions options)
     {
         _handle = handle;
         _options = options;
     }
 
 #if DEBUG
-    ~OpenFile()
+    ~FileReference()
     {
-        Debug.Fail($"{nameof(OpenFile)} should have been disposed.");
+        Debug.Fail($"{nameof(FileReference)} should have been disposed.");
     }
 #endif
 
@@ -72,7 +72,7 @@ public sealed class OpenFile : IDisposable
     }
 
     [return: OwnershipTransfer]
-    public OpenFile OpenAt(string path, FileOpenOptions options)
+    public FileReference OpenAt(string path, FileOpenOptions options)
     {
         ObjectDisposedException.ThrowIf(_handle is null, this);
         return FileIO.OpenAt(_handle, path, options);

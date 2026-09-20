@@ -34,7 +34,7 @@ public static partial class FileIO
     }
 
     [return: OwnershipTransfer]
-    public static OpenFile Open(string path, FileOpenOptions options) =>
+    public static FileReference Open(string path, FileOpenOptions options) =>
         new(OpenHandle(path, options), options);
 
     public static bool TryOpenHandle(
@@ -59,7 +59,7 @@ public static partial class FileIO
     public static bool TryOpen(
         string path,
         FileOpenOptions options,
-        [NotNullWhen(true)][OwnershipTransfer] out OpenFile? file,
+        [NotNullWhen(true)][OwnershipTransfer] out FileReference? file,
         bool requireDirectory = true)
     {
         try
@@ -89,7 +89,7 @@ public static partial class FileIO
     [SupportedOSPlatform("windows")]
     [SupportedOSPlatform("linux")]
     [return: OwnershipTransfer]
-    public static OpenFile Open(
+    public static FileReference Open(
         PersistentFileId fileId,
         FileOpenOptions options)
     {
@@ -121,7 +121,7 @@ public static partial class FileIO
     public static bool TryOpen(
         PersistentFileId fileId,
         FileOpenOptions options,
-        [NotNullWhen(true)][OwnershipTransfer] out OpenFile? file,
+        [NotNullWhen(true)][OwnershipTransfer] out FileReference? file,
         bool requireDirectory = true)
     {
         try
@@ -152,7 +152,7 @@ public static partial class FileIO
     }
 
     [return: OwnershipTransfer]
-    public static OpenFile OpenAt(
+    public static FileReference OpenAt(
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
         FileOpenOptions options)
@@ -183,7 +183,7 @@ public static partial class FileIO
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
         FileOpenOptions options,
-        [NotNullWhen(true)][OwnershipTransfer] out OpenFile? file,
+        [NotNullWhen(true)][OwnershipTransfer] out FileReference? file,
         bool requireDirectory = true)
     {
         try
@@ -207,7 +207,7 @@ public static partial class FileIO
     }
 
     [return: OwnershipTransfer]
-    public static OpenFile Reopen([Borrow] OpenFile file, FileOpenOptions? options = null) =>
+    public static FileReference Reopen([Borrow] FileReference file, FileOpenOptions? options = null) =>
         new(OpenHandleAt(file.Handle, null, file.Options), options ?? file.Options);
 
     [return: OwnershipTransfer]
@@ -219,7 +219,7 @@ public static partial class FileIO
     }
 
     [return: OwnershipTransfer]
-    public static OpenFile Duplicate([Borrow] OpenFile file) =>
+    public static FileReference Duplicate([Borrow] FileReference file) =>
         new(DuplicateHandle(file.Handle, file.Options.Access), file.Options);
 
     public static string GetPath([Borrow] SafeFileHandle file)

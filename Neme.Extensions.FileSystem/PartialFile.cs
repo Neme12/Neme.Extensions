@@ -20,12 +20,12 @@ namespace Neme.Extensions.FileSystem;
 public sealed class PartialFile :
     IDisposable
 {
-    private OpenFile? _file;
+    private FileReference? _file;
     private readonly string _finalPath;
     private readonly FileOpenOptions _options;
     private State _state;
 
-    private PartialFile(OpenFile partialFile, string finalPath)
+    private PartialFile(FileReference partialFile, string finalPath)
     {
         _file = partialFile;
         _finalPath = finalPath;
@@ -36,10 +36,10 @@ public sealed class PartialFile :
     public static string Extension => ".part";
 
     /// <summary>
-    /// Gets the <see cref="OpenFile"/> for the temporary <c>.part</c> file while the file is open.
+    /// Gets the <see cref="FileReference"/> for the temporary <c>.part</c> file while the file is open.
     /// </summary>
     [Owned]
-    public OpenFile File
+    public FileReference File
     {
         get
         {
