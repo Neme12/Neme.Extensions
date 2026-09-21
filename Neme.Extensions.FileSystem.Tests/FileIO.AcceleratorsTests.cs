@@ -11,7 +11,7 @@ public sealed partial class FileIOTests
             // Arrange
             string? createdPath = null;
             var access = FileSystemAccess.ReadWrite;
-            var share = FileShare.ReadWrite | FileShare.Delete;
+            var share = FileShare.All;
 
             // Act
             using (var handle = FileIO.CreateTempFileHandle(access, share))
@@ -43,7 +43,7 @@ public sealed partial class FileIOTests
             string? createdPath = null;
             byte[] expected = [7, 8, 9];
             var access = FileSystemAccess.ReadWrite;
-            var share = FileShare.ReadWrite | FileShare.Delete;
+            var share = FileShare.All;
             var options = FileOptions.Asynchronous;
             var attributes = FileAttributes.Normal;
 
@@ -52,7 +52,7 @@ public sealed partial class FileIOTests
                 using (var handle = FileIO.CreateTempFileHandle(access, share, options, attributes))
                 {
                     createdPath = FileIO.GetPath(handle);
-                    var fileOptions = new FileOpenOptions(FileMode.Open, access, share, options, attributes);
+                    var fileOptions = FileOpenOptions.Open(access, share, options, attributes);
                     using var stream = FileIO.CreateFileStream(handle, fileOptions, leaveOpen: true, bufferSize: 128);
 
                     // Act

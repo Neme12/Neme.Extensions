@@ -56,7 +56,7 @@ public sealed class PartialFileWithStreamTests
         // Arrange
         var tempDirectory = CreateTempDirectory();
         var finalPath = Path.Combine(tempDirectory, "file.txt");
-        var options = new FileOpenOptions(FileMode.Create, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+        var options = FileOpenOptions.Create(FileSystemAccess.ReadWrite, FileShare.All);
 
         try
         {
@@ -719,7 +719,7 @@ public sealed class PartialFileWithStreamTests
 
 
     private static FileOpenOptions CreateOptions() =>
-        new(FileMode.Create, FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.ReadWrite | FileShare.Delete);
+        new(FileMode.Create, FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.All);
 
     private static string CreateTempDirectory()
     {

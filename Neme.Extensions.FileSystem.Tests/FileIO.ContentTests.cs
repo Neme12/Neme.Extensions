@@ -19,11 +19,11 @@ public sealed partial class FileIOTests
         public async Task WithNonEmptyFile_ReturnsFileContents()
         {
             // Arrange
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             byte[] expected = [1, 2, 3, 4, 5];
             FileIO.WriteAllBytes(tempFile, expected);
 
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            var options = FileOpenOptions.Open(FileSystemAccess.Read, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
 
             // Act
@@ -38,11 +38,11 @@ public sealed partial class FileIOTests
         public async Task WithCanceledToken_ReturnsCanceledTaskWithoutClosingHandle()
         {
             // Arrange
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             byte[] expected = [9, 8, 7];
             FileIO.WriteAllBytes(tempFile, expected);
 
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            var options = FileOpenOptions.Open(FileSystemAccess.Read, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
             using var cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.Cancel();
@@ -63,10 +63,10 @@ public sealed partial class FileIOTests
         public async Task WithFileLongerThanArrayMaxLength_ClosesHandleAndThrowsIOException()
         {
             // Arrange
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             SetTempFileLength(tempFile, (long)Array.MaxLength + 1);
 
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            var options = FileOpenOptions.Open(FileSystemAccess.Read, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
 
             // Act
@@ -86,11 +86,11 @@ public sealed partial class FileIOTests
         public void WithNonEmptyFile_ReturnsFileContents()
         {
             // Arrange
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             byte[] expected = [1, 2, 3, 4, 5];
             FileIO.WriteAllBytes(tempFile, expected);
 
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            var options = FileOpenOptions.Open(FileSystemAccess.Read, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
 
             // Act
@@ -105,8 +105,8 @@ public sealed partial class FileIOTests
         public void WithEmptyFile_ReturnsEmptyArray()
         {
             // Arrange
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
+            var options = FileOpenOptions.Open(FileSystemAccess.Read, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
 
             // Act
@@ -121,11 +121,11 @@ public sealed partial class FileIOTests
         public void WithCanceledToken_ThrowsOperationCanceledExceptionWithoutClosingHandle()
         {
             // Arrange
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             byte[] expected = [9, 8, 7];
             FileIO.WriteAllBytes(tempFile, expected);
 
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            var options = FileOpenOptions.Open(FileSystemAccess.Read, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
             using var cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.Cancel();
@@ -142,10 +142,10 @@ public sealed partial class FileIOTests
         public void WithFileLongerThanArrayMaxLength_ThrowsIOExceptionWithoutClosingHandle()
         {
             // Arrange
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             SetTempFileLength(tempFile, (long)Array.MaxLength + 1);
 
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            var options = FileOpenOptions.Open(FileSystemAccess.Read, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
 
             // Act
@@ -165,10 +165,10 @@ public sealed partial class FileIOTests
         {
             // Arrange
             const string expected = "Hello, 世界";
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             FileIO.WriteAllText(tempFile, expected.AsSpan(), System.Text.Encoding.Unicode);
 
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            var options = FileOpenOptions.Open(FileSystemAccess.Read, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
 
             // Act
@@ -194,9 +194,9 @@ public sealed partial class FileIOTests
         {
             // Arrange
             const string expected = "Canceled reads should not consume the handle.";
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             FileIO.WriteAllText(tempFile, expected.AsSpan());
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            var options = FileOpenOptions.Open(FileSystemAccess.Read, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
             using var cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.Cancel();
@@ -218,10 +218,10 @@ public sealed partial class FileIOTests
         {
             // Arrange
             const string expected = "Hello, 世界";
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             FileIO.WriteAllText(tempFile, expected.AsSpan(), System.Text.Encoding.Unicode);
 
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            var options = FileOpenOptions.Open(FileSystemAccess.Read, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
 
             // Act
@@ -250,9 +250,9 @@ public sealed partial class FileIOTests
         {
             // Arrange
             const string expected = "Canceled reads should not consume the handle.";
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             FileIO.WriteAllText(tempFile, expected.AsSpan());
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            var options = FileOpenOptions.Open(FileSystemAccess.Read, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
             using var cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.Cancel();
@@ -277,8 +277,8 @@ public sealed partial class FileIOTests
             // Arrange
             const string expected = "Hello, 世界";
             var expectedBytes = System.Text.Encoding.UTF8.GetBytes(expected);
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
+            var options = FileOpenOptions.Open(FileSystemAccess.ReadWrite, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
 
             // Act
@@ -305,9 +305,9 @@ public sealed partial class FileIOTests
             // Arrange
             const string originalContents = "Original contents";
             const string replacementContents = "Replacement contents";
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             FileIO.WriteAllText(tempFile, originalContents.AsSpan());
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            var options = FileOpenOptions.Open(FileSystemAccess.ReadWrite, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
             using var cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.Cancel();
@@ -328,8 +328,8 @@ public sealed partial class FileIOTests
             // Arrange
             const string expected = "Hello, 世界";
             var expectedBytes = System.Text.Encoding.UTF8.GetBytes(expected);
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
+            var options = FileOpenOptions.Open(FileSystemAccess.ReadWrite, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
 
             // Act
@@ -359,9 +359,9 @@ public sealed partial class FileIOTests
             // Arrange
             const string originalContents = "Original contents";
             const string replacementContents = "Replacement contents";
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             FileIO.WriteAllText(tempFile, originalContents.AsSpan());
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            var options = FileOpenOptions.Open(FileSystemAccess.ReadWrite, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
             using var cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.Cancel();
@@ -385,8 +385,8 @@ public sealed partial class FileIOTests
         {
             // Arrange
             byte[] expected = [1, 2, 3, 4, 5];
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
+            var options = FileOpenOptions.Open(FileSystemAccess.ReadWrite, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
 
             // Act
@@ -413,9 +413,9 @@ public sealed partial class FileIOTests
             // Arrange
             byte[] originalBytes = [9, 8, 7];
             byte[] replacementBytes = [1, 2, 3, 4];
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             FileIO.WriteAllBytes(tempFile, originalBytes);
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            var options = FileOpenOptions.Open(FileSystemAccess.ReadWrite, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
             using var cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.Cancel();
@@ -435,8 +435,8 @@ public sealed partial class FileIOTests
         {
             // Arrange
             byte[] expected = [1, 2, 3, 4, 5];
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
+            var options = FileOpenOptions.Open(FileSystemAccess.ReadWrite, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
 
             // Act
@@ -466,9 +466,9 @@ public sealed partial class FileIOTests
             // Arrange
             byte[] originalBytes = [9, 8, 7];
             byte[] replacementBytes = [1, 2, 3, 4];
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             FileIO.WriteAllBytes(tempFile, originalBytes);
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            var options = FileOpenOptions.Open(FileSystemAccess.ReadWrite, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
             using var cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.Cancel();
@@ -494,9 +494,9 @@ public sealed partial class FileIOTests
             byte[] originalBytes = [9, 8, 7];
             byte[] appendedBytes = [1, 2, 3, 4];
             byte[] expectedBytes = [9, 8, 7, 1, 2, 3, 4];
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             FileIO.WriteAllBytes(tempFile, originalBytes);
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            var options = FileOpenOptions.Open(FileSystemAccess.ReadWrite, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
 
             // Act
@@ -527,9 +527,9 @@ public sealed partial class FileIOTests
             // Arrange
             byte[] originalBytes = [9, 8, 7];
             byte[] appendedBytes = [1, 2, 3, 4];
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             FileIO.WriteAllBytes(tempFile, originalBytes);
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            var options = FileOpenOptions.Open(FileSystemAccess.ReadWrite, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
             using var cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.Cancel();
@@ -550,9 +550,9 @@ public sealed partial class FileIOTests
             // Arrange
             byte[] originalBytes = [9, 8, 7];
             byte[] appendedBytes = [1, 2, 3, 4];
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             FileIO.WriteAllBytes(tempFile, originalBytes);
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            var options = FileOpenOptions.Open(FileSystemAccess.ReadWrite, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
             handle.Dispose();
 
@@ -576,9 +576,9 @@ public sealed partial class FileIOTests
             byte[] originalBytes = [9, 8, 7];
             byte[] appendedBytes = [1, 2, 3, 4];
             byte[] expectedBytes = [9, 8, 7, 1, 2, 3, 4];
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             FileIO.WriteAllBytes(tempFile, originalBytes);
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            var options = FileOpenOptions.Open(FileSystemAccess.ReadWrite, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
 
             // Act
@@ -612,9 +612,9 @@ public sealed partial class FileIOTests
             // Arrange
             byte[] originalBytes = [9, 8, 7];
             byte[] appendedBytes = [1, 2, 3, 4];
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             FileIO.WriteAllBytes(tempFile, originalBytes);
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            var options = FileOpenOptions.Open(FileSystemAccess.ReadWrite, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
             using var cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.Cancel();
@@ -639,9 +639,9 @@ public sealed partial class FileIOTests
             // Arrange
             byte[] originalBytes = [9, 8, 7];
             byte[] appendedBytes = [1, 2, 3, 4];
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             FileIO.WriteAllBytes(tempFile, originalBytes);
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            var options = FileOpenOptions.Open(FileSystemAccess.ReadWrite, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
             handle.Dispose();
 
@@ -683,10 +683,10 @@ public sealed partial class FileIOTests
             const string originalContents = "Hello";
             const string appendedContents = ", 世界";
             const string expectedContents = "Hello, 世界";
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             FileIO.WriteAllText(tempFile, originalContents.AsSpan(), new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            var options = FileOpenOptions.Open(FileSystemAccess.ReadWrite, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
 
             // Act
@@ -707,10 +707,10 @@ public sealed partial class FileIOTests
             const string originalContents = "Hello";
             const string appendedContents = " World";
             const string expectedContents = "Hello World";
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             FileIO.WriteAllText(tempFile, originalContents.AsSpan(), System.Text.Encoding.ASCII);
 
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            var options = FileOpenOptions.Open(FileSystemAccess.ReadWrite, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
 
             // Act
@@ -741,9 +741,9 @@ public sealed partial class FileIOTests
             // Arrange
             const string originalContents = "Original contents";
             const string appendedContents = " plus appended contents";
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             FileIO.WriteAllText(tempFile, originalContents.AsSpan(), new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            var options = FileOpenOptions.Open(FileSystemAccess.ReadWrite, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
             using var cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.Cancel();
@@ -762,9 +762,9 @@ public sealed partial class FileIOTests
         {
             // Arrange
             const string originalContents = "Original contents";
-            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             FileIO.WriteAllText(tempFile, originalContents.AsSpan(), new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+            var options = FileOpenOptions.Open(FileSystemAccess.ReadWrite, FileShare.All);
             using var handle = FileIO.ReopenHandle(tempFile, options);
             handle.Dispose();
 

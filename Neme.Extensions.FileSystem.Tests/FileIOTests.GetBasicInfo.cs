@@ -16,7 +16,7 @@ public sealed partial class FileIOTests
             try
             {
                 File.WriteAllBytes(tempFile, [1, 2, 3, 4]);
-                var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadAttributes, FileShare.ReadWrite | FileShare.Delete);
+                var options = FileOpenOptions.Open(FileSystemAccess.ReadAttributes, FileShare.All);
                 using var handle = FileIO.OpenHandle(tempFile, options);
                 var now = SystemClock.Instance.GetCurrentInstant();
                 var earliestExpectedTime = now - Duration.FromSeconds(5);
@@ -66,10 +66,7 @@ public sealed partial class FileIOTests
             Directory.CreateDirectory(tempDirectory);
             try
             {
-                var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadAttributes, FileShare.ReadWrite | FileShare.Delete)
-                {
-                    Attributes = FileAttributes.Directory,
-                };
+                var options = FileOpenOptions.Open(FileSystemAccess.ReadAttributes, FileShare.All, 0, FileAttributes.Directory);
                 using var handle = FileIO.OpenHandle(tempDirectory, options);
                 var now = SystemClock.Instance.GetCurrentInstant();
                 var earliestExpectedTime = now - Duration.FromSeconds(5);

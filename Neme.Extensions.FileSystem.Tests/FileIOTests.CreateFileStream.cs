@@ -15,10 +15,7 @@ public sealed partial class FileIOTests
             var tempFile = Path.GetTempFileName();
             try
             {
-                var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadWrite)
-                {
-                    Options = FileOptions.Asynchronous,
-                };
+                var options = FileOpenOptions.Open(FileSystemAccess.ReadWrite, FileShare.None, FileOptions.Asynchronous);
                 using var handle = FileIO.OpenHandle(tempFile, options);
 
                 // Act
@@ -51,7 +48,7 @@ public sealed partial class FileIOTests
             try
             {
                 File.WriteAllBytes(tempFile, [42]);
-                var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read);
+                var options = FileOpenOptions.Open(FileSystemAccess.Read);
                 using var handle = FileIO.OpenHandle(tempFile, options);
 
                 // Act
@@ -82,7 +79,7 @@ public sealed partial class FileIOTests
             var tempFile = Path.GetTempFileName();
             try
             {
-                var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Write);
+                var options = FileOpenOptions.Open(FileSystemAccess.Write);
                 using var handle = FileIO.OpenHandle(tempFile, options);
 
                 // Act
@@ -110,7 +107,7 @@ public sealed partial class FileIOTests
         {
             // Arrange
             var handle = new SafeFileHandle((nint)(-1), ownsHandle: false);
-            var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read);
+            var options = FileOpenOptions.Open(FileSystemAccess.Read);
 
             // Act & Assert
             Assert.Throws<ArgumentException>(() => FileIO.CreateFileStream(handle, options));

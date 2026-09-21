@@ -25,9 +25,9 @@ public sealed partial class FileIOTests
         {
             _tempFilePath = Path.GetTempFileName();
 #if NET6_0_OR_GREATER
-            _tempFileHandle = File.OpenHandle(_tempFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            _tempFileHandle = File.OpenHandle(_tempFilePath, FileMode.Open, FileAccess.Read, FileShare.All);
 #else
-            var fileStream = new FileStream(_tempFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 4096);
+            var fileStream = new FileStream(_tempFilePath, FileMode.Open, FileAccess.Read, FileShare.All, 4096);
             _tempDisposable = fileStream;
             _tempFileHandle = fileStream.SafeFileHandle;
 #endif
@@ -118,7 +118,7 @@ public sealed partial class FileIOTests
         public void WithSameFileTwice_ReturnsSameFileId()
         {
             // Arrange
-            using var fileStream2 = new FileStream(_tempFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            using var fileStream2 = new FileStream(_tempFilePath, FileMode.Open, FileAccess.Read, FileShare.All);
 
             // Act
             var result1 = FileIO.GetPersistentId(_tempFileHandle);

@@ -9,8 +9,12 @@ namespace Neme.Extensions.FileSystem;
 
 internal static class FileShareExtensions
 {
+    public const FileShare All = FileShare.Read | FileShare.Write | FileShare.Delete;
+
     extension(FileShare share)
     {
+        public static FileShare All => All;
+
         public FILE_SHARE_MODE ToWin32()
         {
             // The values of FileShare map directly to FILE_SHARE_MODE.

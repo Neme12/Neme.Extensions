@@ -8,18 +8,18 @@ public sealed class FileOpenOptionsTests
     [Fact]
     public void Constructor_WithExplicitShare_SetsModeAccessAndShare()
     {
-        var sut = new FileOpenOptions(FileMode.CreateNew, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+        var sut = FileOpenOptions.CreateNew(FileSystemAccess.ReadWrite, FileShare.All);
 
         Assert.Equal(FileMode.CreateNew, sut.Mode);
         Assert.Equal(FileSystemAccess.ReadWrite, sut.Access);
-        Assert.Equal(FileShare.ReadWrite | FileShare.Delete, sut.Share);
+        Assert.Equal(FileShare.All, sut.Share);
         Assert.Equal(FileOptions.None, sut.Options);
         Assert.Equal(default, sut.Attributes);
         Assert.Null(sut.UnixCreateMode);
     }
 
     [Theory]
-    [InlineData(FileSystemAccess.None, FileShare.Read)]
+    [InlineData(FileSystemAccess.None, FileShare.ReadWrite | FileShare.Delete)]
     [InlineData(FileSystemAccess.Read, FileShare.Read)]
     [InlineData(FileSystemAccess.Execute, FileShare.Read)]
     [InlineData(FileSystemAccess.Write, FileShare.None)]
@@ -27,7 +27,7 @@ public sealed class FileOpenOptionsTests
     [InlineData(FileSystemAccess.ReadWrite, FileShare.None)]
     public void Constructor_WithImplicitShare_ComputesExpectedShare(FileSystemAccess access, FileShare expectedShare)
     {
-        var sut = new FileOpenOptions(FileMode.Open, access);
+        var sut = FileOpenOptions.Open(access);
 
         Assert.Equal(FileMode.Open, sut.Mode);
         Assert.Equal(access, sut.Access);
@@ -51,14 +51,14 @@ public sealed class FileOpenOptionsTests
         {
             Mode = FileMode.Append,
             Access = FileSystemAccess.Delete | FileSystemAccess.Write,
-            Share = FileShare.ReadWrite | FileShare.Delete,
+            Share = FileShare.All,
             Options = expectedOptions,
             Attributes = expectedAttributes,
         };
 
         Assert.Equal(FileMode.Append, sut.Mode);
         Assert.Equal(FileSystemAccess.Delete | FileSystemAccess.Write, sut.Access);
-        Assert.Equal(FileShare.ReadWrite | FileShare.Delete, sut.Share);
+        Assert.Equal(FileShare.All, sut.Share);
         Assert.Equal(expectedOptions, sut.Options);
         Assert.Equal(expectedAttributes, sut.Attributes);
         Assert.Null(sut.UnixCreateMode);
