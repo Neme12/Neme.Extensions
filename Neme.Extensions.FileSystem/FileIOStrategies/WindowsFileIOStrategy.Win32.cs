@@ -23,7 +23,7 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
     protected override int MaxPathLength => short.MaxValue - 4; // 4 for the \\?\ prefix.
 
     [return: OwnershipTransfer]
-    public override SafeFileHandle OpenHandle(string path, FileCreateOptions options)
+    public override SafeFileHandle OpenHandle(string path, FileOpenOptions options)
     {
         Debug.Assert(IsValidPath(path));
 

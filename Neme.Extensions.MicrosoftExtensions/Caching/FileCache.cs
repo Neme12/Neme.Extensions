@@ -56,7 +56,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
 
     private const string MetadataExtension = ".metadata";
 
-    private static readonly FileCreateOptions s_fileSyncReadOptions = new()
+    private static readonly FileOpenOptions s_fileSyncReadOptions = new()
     {
         Mode = FileMode.Open,
         Access = FileSystemAccess.Read,
@@ -64,7 +64,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
         Options = FileOptions.SequentialScan,
     };
 
-    private static readonly FileCreateOptions s_fileAsyncReadOptions = new()
+    private static readonly FileOpenOptions s_fileAsyncReadOptions = new()
     {
         Mode = FileMode.Open,
         Access = FileSystemAccess.Read,
@@ -72,7 +72,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
         Options = FileOptions.Asynchronous | FileOptions.SequentialScan,
     };
 
-    private static readonly FileCreateOptions s_fileSyncWriteOptions = new()
+    private static readonly FileOpenOptions s_fileSyncWriteOptions = new()
     {
         Mode = FileMode.Create,
         Access = FileSystemAccess.ReadWrite | FileSystemAccess.Delete,
@@ -80,7 +80,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
         Options = FileOptions.SequentialScan,
     };
 
-    private static readonly FileCreateOptions s_fileAsyncWriteOptions = new()
+    private static readonly FileOpenOptions s_fileAsyncWriteOptions = new()
     {
         Mode = FileMode.Create,
         Access = FileSystemAccess.ReadWrite | FileSystemAccess.Delete,
@@ -621,13 +621,13 @@ public sealed partial class FileCache : IFileCache, IDisposable
         }
     }
 
-    private static FileCreateOptions FileReadOptions<TAsync>()
+    private static FileOpenOptions FileReadOptions<TAsync>()
         where TAsync : IAsyncState
     {
         return TAsync.IsAsync ? s_fileAsyncReadOptions : s_fileSyncReadOptions;
     }
 
-    private static FileCreateOptions FileWriteOptions<TAsync>()
+    private static FileOpenOptions FileWriteOptions<TAsync>()
         where TAsync : IAsyncState
     {
         return TAsync.IsAsync ? s_fileAsyncWriteOptions : s_fileSyncWriteOptions;

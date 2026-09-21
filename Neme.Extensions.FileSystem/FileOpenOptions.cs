@@ -6,27 +6,27 @@ using System.Runtime.Versioning;
 namespace Neme.Extensions.FileSystem;
 
 [StructLayout(LayoutKind.Auto)]
-public readonly record struct FileCreateOptions
+public readonly record struct FileOpenOptions
 {
     private readonly AllOptions _allOptions;
     private readonly long _preallocationSize;
 
-    public FileCreateOptions(FileMode mode, FileSystemAccess access)
+    public FileOpenOptions(FileMode mode, FileSystemAccess access)
     {
         _allOptions = ToAllOptions(mode, access, (access & FileSystemAccess.Write) != 0 || (access & FileSystemAccess.Delete) != 0
             ? FileShare.None
             : FileShare.Read, 0, 0, null);
     }
 
-    public FileCreateOptions(FileMode mode, FileSystemAccess access, FileShare share, FileOptions options = 0, FileAttributes attributes = 0)
+    public FileOpenOptions(FileMode mode, FileSystemAccess access, FileShare share, FileOptions options = 0, FileAttributes attributes = 0)
     {
         _allOptions = ToAllOptions(mode, access, share, options, attributes, null);
     }
 
-    public static FileCreateOptions Create(FileSystemAccess access) =>
+    public static FileOpenOptions Create(FileSystemAccess access) =>
         new(FileMode.Create, access, GetDefaultFileShare(access));
 
-    public static FileCreateOptions Create(
+    public static FileOpenOptions Create(
         FileSystemAccess access,
         FileShare share,
         FileOptions options = 0,
@@ -35,10 +35,10 @@ public readonly record struct FileCreateOptions
         return new(FileMode.Create, access, share, options, attributes);
     }
 
-    public static FileCreateOptions CreateNew(FileSystemAccess access) =>
+    public static FileOpenOptions CreateNew(FileSystemAccess access) =>
         new(FileMode.CreateNew, access, GetDefaultFileShare(access));
 
-    public static FileCreateOptions CreateNew(
+    public static FileOpenOptions CreateNew(
         FileSystemAccess access,
         FileShare share,
         FileOptions options = 0,
@@ -47,10 +47,10 @@ public readonly record struct FileCreateOptions
         return new(FileMode.CreateNew, access, share, options, attributes);
     }
 
-    public static FileCreateOptions Open(FileSystemAccess access) =>
+    public static FileOpenOptions Open(FileSystemAccess access) =>
         new(FileMode.Open, access, GetDefaultFileShare(access));
 
-    public static FileCreateOptions Open(
+    public static FileOpenOptions Open(
         FileSystemAccess access,
         FileShare share,
         FileOptions options = 0,
@@ -59,10 +59,10 @@ public readonly record struct FileCreateOptions
         return new(FileMode.Open, access, share, options, attributes);
     }
 
-    public static FileCreateOptions OpenOrCreate(FileSystemAccess access) =>
+    public static FileOpenOptions OpenOrCreate(FileSystemAccess access) =>
         new(FileMode.OpenOrCreate, access, GetDefaultFileShare(access));
 
-    public static FileCreateOptions OpenOrCreate(
+    public static FileOpenOptions OpenOrCreate(
         FileSystemAccess access,
         FileShare share,
         FileOptions options = 0,
@@ -71,10 +71,10 @@ public readonly record struct FileCreateOptions
         return new(FileMode.OpenOrCreate, access, share, options, attributes);
     }
 
-    public static FileCreateOptions Append(FileSystemAccess access = FileSystemAccess.Write) =>
+    public static FileOpenOptions Append(FileSystemAccess access = FileSystemAccess.Write) =>
         new(FileMode.Append, access, GetDefaultFileShare(access));
 
-    public static FileCreateOptions Append(
+    public static FileOpenOptions Append(
         FileSystemAccess access = FileSystemAccess.Write,
         FileShare share = FileShare.None,
         FileOptions options = 0,
@@ -153,13 +153,13 @@ public readonly record struct FileCreateOptions
     }
 
 #if NET6_0_OR_GREATER
-    public static FileCreateOptions FromFileStreamOptions(FileStreamOptions options)
+    public static FileOpenOptions FromFileStreamOptions(FileStreamOptions options)
     {
 #if NET7_0_OR_GREATER
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 #endif
         {
-            return new FileCreateOptions
+            return new FileOpenOptions
             {
                 Mode = options.Mode,
                 Access = FileSystemAccess.FromFileAccess(options.Access),
@@ -170,7 +170,7 @@ public readonly record struct FileCreateOptions
 #if NET7_0_OR_GREATER
         else
         {
-            return new FileCreateOptions
+            return new FileOpenOptions
             {
                 Mode = options.Mode,
                 Access = FileSystemAccess.FromFileAccess(options.Access),
@@ -182,7 +182,7 @@ public readonly record struct FileCreateOptions
 #endif
     }
 
-    public static implicit operator FileCreateOptions(FileStreamOptions options) =>
+    public static implicit operator FileOpenOptions(FileStreamOptions options) =>
         FromFileStreamOptions(options);
 #endif
 

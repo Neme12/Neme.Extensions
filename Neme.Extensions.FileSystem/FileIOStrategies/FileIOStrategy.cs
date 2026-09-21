@@ -12,18 +12,18 @@ internal abstract class FileIOStrategy
     protected abstract int MaxPathLength { get; }
 
     [return: OwnershipTransfer]
-    public abstract SafeFileHandle OpenHandle(string path, FileCreateOptions options);
+    public abstract SafeFileHandle OpenHandle(string path, FileOpenOptions options);
 
     [SupportedOSPlatform("windows")]
     [SupportedOSPlatform("linux")]
     [return: OwnershipTransfer]
-    public abstract SafeFileHandle OpenHandle(PersistentFileId fileId, FileCreateOptions options);
+    public abstract SafeFileHandle OpenHandle(PersistentFileId fileId, FileOpenOptions options);
 
     [return: OwnershipTransfer]
     public abstract SafeFileHandle OpenHandleAt(
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
-        FileCreateOptions options);
+        FileOpenOptions options);
 
     [return: OwnershipTransfer]
     public abstract SafeFileHandle DuplicateHandle([Borrow] SafeFileHandle file, FileSystemAccess? access);
