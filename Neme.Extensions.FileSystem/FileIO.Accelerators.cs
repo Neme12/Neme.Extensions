@@ -5,7 +5,7 @@ namespace Neme.Extensions.FileSystem;
 public static partial class FileIO
 {
     public static SafeFileHandle CreateTempFileHandle(FileSystemAccess access) =>
-        CreateTempFileHandle(access, FileOpenOptions.GetDefaultFileShare(access));
+        CreateTempFileHandle(access, FileCreateOptions.GetDefaultFileShare(access));
 
     public static SafeFileHandle CreateTempFileHandle(
         FileSystemAccess access,
@@ -18,7 +18,7 @@ public static partial class FileIO
     }
 
     public static FileReference CreateTempFile(FileSystemAccess access) =>
-        CreateTempFile(access, FileOpenOptions.GetDefaultFileShare(access));
+        CreateTempFile(access, FileCreateOptions.GetDefaultFileShare(access));
 
     public static FileReference CreateTempFile(
         FileSystemAccess access,
@@ -30,13 +30,13 @@ public static partial class FileIO
         return FileIO.Open(filePath, fileOptions);
     }
 
-    private static (string filePath, FileOpenOptions) GetTempFilePathAndOptions(
+    private static (string filePath, FileCreateOptions) GetTempFilePathAndOptions(
         FileSystemAccess access,
         FileShare share,
         FileOptions options,
         FileAttributes attributes)
     {
-        var fileOptions = FileOpenOptions.CreateNew(access, share, options, attributes);
+        var fileOptions = FileCreateOptions.CreateNew(access, share, options, attributes);
         var fileName = Invariant($"{Guid.NewGuid()}.tmp");
         return (Path.GetTempPath() + fileName, fileOptions);
     }

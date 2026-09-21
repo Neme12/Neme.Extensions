@@ -35,7 +35,7 @@ public sealed partial class FileIOTests
             var tempFile = Path.GetTempFileName();
             try
             {
-                var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.WriteAttributes, FileShare.ReadWrite | FileShare.Delete);
+                var options = new FileCreateOptions(FileMode.Open, FileSystemAccess.WriteAttributes, FileShare.ReadWrite | FileShare.Delete);
                 using var handle = FileIO.OpenHandle(tempFile, options);
 
                 // Act
@@ -61,7 +61,7 @@ public sealed partial class FileIOTests
             var tempFile = Path.GetTempFileName();
             try
             {
-                var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                var options = new FileCreateOptions(FileMode.Open, FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete);
                 using var handle = FileIO.OpenHandle(tempFile, options);
 
                 // Act & Assert
@@ -80,7 +80,7 @@ public sealed partial class FileIOTests
             var tempFile = Path.GetTempFileName();
             try
             {
-                var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+                var options = new FileCreateOptions(FileMode.Open, FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
                 using var handle = FileIO.OpenHandle(tempFile, options);
 
                 // Act

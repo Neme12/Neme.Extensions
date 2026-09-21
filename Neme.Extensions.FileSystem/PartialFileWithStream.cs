@@ -9,7 +9,7 @@ namespace Neme.Extensions.FileSystem;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Use <see cref="Create(string, FileOpenOptions, bool)"/> to create the temporary file, write the contents through <see cref="FileStream"/>,
+/// Use <see cref="Create(string, FileCreateOptions, bool)"/> to create the temporary file, write the contents through <see cref="FileStream"/>,
 /// and then call <see cref="Commit(bool)"/> to move the file to <see cref="FinalPath"/> without exposing a partially written file at the
 /// destination.
 /// </para>
@@ -26,10 +26,10 @@ public sealed class PartialFileWithStream :
 {
     private CheckedFileStream? _fileStream;
     private readonly string _finalPath;
-    private readonly FileOpenOptions _options;
+    private readonly FileCreateOptions _options;
     private State _state;
 
-    private PartialFileWithStream(CheckedFileStream partialFileStream, string finalPath, FileOpenOptions options)
+    private PartialFileWithStream(CheckedFileStream partialFileStream, string finalPath, FileCreateOptions options)
     {
         _fileStream = partialFileStream;
         _finalPath = finalPath;
@@ -94,7 +94,7 @@ public sealed class PartialFileWithStream :
     /// <param name="options">The options used to open the temporary file. Delete access is required so the temporary file can be cleaned up.</param>
     /// <param name="createDirectory"><see langword="true"/> to create the destination directory if it does not already exist.</param>
     /// <returns>A <see cref="PartialFileWithStream"/> for writing the temporary file.</returns>
-    public static PartialFileWithStream Create(string finalPath, FileOpenOptions options, bool createDirectory = false)
+    public static PartialFileWithStream Create(string finalPath, FileCreateOptions options, bool createDirectory = false)
     {
         ArgumentException.ThrowIfNullOrEmpty(finalPath);
 

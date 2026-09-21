@@ -10,9 +10,9 @@ public sealed class FileReference : IDisposable
 {
     [Owned]
     private SafeFileHandle _handle;
-    private readonly FileOpenOptions _options;
+    private readonly FileCreateOptions _options;
 
-    internal FileReference([OwnershipTransfer] SafeFileHandle handle, FileOpenOptions options)
+    internal FileReference([OwnershipTransfer] SafeFileHandle handle, FileCreateOptions options)
     {
         _handle = handle;
         _options = options;
@@ -35,7 +35,7 @@ public sealed class FileReference : IDisposable
         }
     }
 
-    public FileOpenOptions Options
+    public FileCreateOptions Options
     {
         get
         {
@@ -72,7 +72,7 @@ public sealed class FileReference : IDisposable
     }
 
     [return: OwnershipTransfer]
-    public FileReference OpenAt(string path, FileOpenOptions options)
+    public FileReference OpenAt(string path, FileCreateOptions options)
     {
         ObjectDisposedException.ThrowIf(_handle is null, this);
         return FileIO.OpenAt(_handle, path, options);
