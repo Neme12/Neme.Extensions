@@ -37,7 +37,7 @@ public static partial class FileIO
         string path,
         FileOpenOptions options,
         [NotNullWhen(true)][OwnershipTransfer] out SafeFileHandle? handle,
-        bool requireDirectory = true)
+        bool ignoreMissingDirectory = false)
     {
         try
         {
@@ -45,7 +45,7 @@ public static partial class FileIO
             return true;
 
         }
-        catch (Exception e) when (e is FileNotFoundException || !requireDirectory && e is DirectoryNotFoundException)
+        catch (Exception e) when (e is FileNotFoundException || ignoreMissingDirectory && e is DirectoryNotFoundException)
         {
             handle = null;
             return false;

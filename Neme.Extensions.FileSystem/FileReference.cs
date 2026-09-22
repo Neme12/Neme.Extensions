@@ -77,9 +77,9 @@ public sealed class FileReference : IDisposable
         string path,
         FileOpenOptions options,
         [NotNullWhen(true)][OwnershipTransfer] out FileReference? file,
-        bool requireDirectory = true)
+        bool ignoreMissingDirectory = false)
     {
-        file = FileIO.TryOpenHandle(path, options, out var fileHandle, requireDirectory)
+        file = FileIO.TryOpenHandle(path, options, out var fileHandle, ignoreMissingDirectory)
             ? new(fileHandle, options.HandleOptions)
             : null;
         return file is not null;
