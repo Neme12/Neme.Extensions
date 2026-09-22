@@ -130,7 +130,7 @@ public sealed class FileReference : IDisposable
             GC.SuppressFinalize(this);
 
         ObjectDisposedException.ThrowIf(_handle is null, this);
-        return FileIO.CreateFileStream(_handle, _options, leaveOpen, bufferSize);
+        return FileIO.CreateFileStream(_handle, _options.Access.ToFileAccess(), leaveOpen, bufferSize);
     }
 
     [return: OwnershipTransfer]

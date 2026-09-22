@@ -295,7 +295,7 @@ public static partial class FileIO
     [return: OwnershipTransferUnless(nameof(leaveOpen))]
     public static CheckedFileStream CreateFileStream(
         [OwnershipTransferUnless(nameof(leaveOpen))] SafeFileHandle file,
-        FileOpenOptions options,
+        FileAccess access,
         bool leaveOpen = false,
         int bufferSize = 4096)
     {
@@ -304,13 +304,13 @@ public static partial class FileIO
         return leaveOpen
             ? new LeaveOpenFileStream(
                 file,
-                options.Access.ToFileAccess(),
+                access,
                 bufferSize,
-                isAsync: (options.Options & FileOptions.Asynchronous) != 0)
+                isAsync: file.IsAsync)
             : new CheckedFileStream(
                 file,
-                options.Access.ToFileAccess(),
+                access,
                 bufferSize,
-                isAsync: (options.Options & FileOptions.Asynchronous) != 0);
+                isAsync: file.IsAsync);
     }
 }

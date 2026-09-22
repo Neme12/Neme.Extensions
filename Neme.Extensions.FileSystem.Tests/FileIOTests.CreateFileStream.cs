@@ -19,7 +19,7 @@ public sealed partial class FileIOTests
                 using var handle = FileIO.OpenHandle(tempFile, options);
 
                 // Act
-                using (var stream = FileIO.CreateFileStream(handle, options, bufferSize: 128))
+                using (var stream = FileIO.CreateFileStream(handle, FileAccess.ReadWrite, bufferSize: 128))
                 {
                     stream.WriteByte(123);
                     stream.Position = 0;
@@ -52,7 +52,7 @@ public sealed partial class FileIOTests
                 using var handle = FileIO.OpenHandle(tempFile, options);
 
                 // Act
-                using (var stream = FileIO.CreateFileStream(handle, options, leaveOpen: true, bufferSize: 128))
+                using (var stream = FileIO.CreateFileStream(handle, FileAccess.Read, leaveOpen: true, bufferSize: 128))
                 {
                     var result = stream.ReadByte();
 
@@ -83,7 +83,7 @@ public sealed partial class FileIOTests
                 using var handle = FileIO.OpenHandle(tempFile, options);
 
                 // Act
-                using (var stream = FileIO.CreateFileStream(handle, options, bufferSize: 128))
+                using (var stream = FileIO.CreateFileStream(handle, FileAccess.Write, bufferSize: 128))
                 {
                     stream.WriteByte(99);
 
@@ -110,7 +110,7 @@ public sealed partial class FileIOTests
             var options = FileOpenOptions.Open(FileSystemAccess.Read);
 
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => FileIO.CreateFileStream(handle, options));
+            Assert.Throws<ArgumentException>(() => FileIO.CreateFileStream(handle, FileAccess.Read));
         }
     }
 }

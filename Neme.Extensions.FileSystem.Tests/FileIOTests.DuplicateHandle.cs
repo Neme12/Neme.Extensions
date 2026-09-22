@@ -43,7 +43,7 @@ public sealed partial class FileIOTests
                 originalHandle.Dispose();
 
                 // Act
-                using var stream = FileIO.CreateFileStream(duplicatedHandle, options, leaveOpen: true);
+                using var stream = FileIO.CreateFileStream(duplicatedHandle, FileAccess.Read, leaveOpen: true);
                 using var reader = new StreamReader(stream);
                 var result = reader.ReadToEnd();
 
@@ -75,7 +75,7 @@ public sealed partial class FileIOTests
                     using var duplicatedHandle = FileIO.DuplicateHandle(originalHandle, FileSystemAccess.Write);
                     originalHandle.Dispose();
 
-                    using (var stream = FileIO.CreateFileStream(duplicatedHandle, duplicatedOptions, leaveOpen: true))
+                    using (var stream = FileIO.CreateFileStream(duplicatedHandle, FileAccess.Write, leaveOpen: true))
                     {
                         stream.WriteByte(42);
                     }

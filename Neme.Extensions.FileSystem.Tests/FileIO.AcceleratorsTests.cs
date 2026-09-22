@@ -53,7 +53,7 @@ public sealed partial class FileIOTests
                 {
                     createdPath = FileIO.GetPath(handle);
                     var fileOptions = FileOpenOptions.Open(access, share, options, attributes);
-                    using var stream = FileIO.CreateFileStream(handle, fileOptions, leaveOpen: true, bufferSize: 128);
+                    using var stream = FileIO.CreateFileStream(handle, FileAccess.ReadWrite, leaveOpen: true, bufferSize: 128);
 
                     // Act
                     stream.Write(expected, 0, expected.Length);
