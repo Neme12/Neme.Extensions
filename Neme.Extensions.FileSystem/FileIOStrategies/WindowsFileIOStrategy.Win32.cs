@@ -21,19 +21,19 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
 {
     protected override int MaxFileNameLength => 255;
     protected override int MaxPathLength => short.MaxValue - 4; // 4 for the \\?\ prefix.
-
+    
     [return: OwnershipTransfer]
-    public override SafeFileHandle OpenHandle(string path, FileOpenOptions options)
+    public override SafeFileHandle OpenHandle(string path, FileOpenRequest request)
     {
         Debug.Assert(IsValidPath(path));
 
         var handle = PInvoke.CreateFile(
             path,
-            (uint)options.Access.ToWin32(),
-            options.Share.ToWin32(),
+            (uint)request.Access.ToWin32(),
+            request.Share.ToWin32(),
             null,
-            options.Mode.ToWin32(),
-            options.Options.ToWin32() | options.Attributes.ToWin32(),
+            request.Mode.ToWin32(),
+            request.Options.ToWin32() | request.Attributes.ToWin32(),
             null);
 
         if (handle.IsInvalid)

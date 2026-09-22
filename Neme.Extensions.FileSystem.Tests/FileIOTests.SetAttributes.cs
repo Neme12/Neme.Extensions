@@ -35,7 +35,7 @@ public sealed partial class FileIOTests
             var tempFile = Path.GetTempFileName();
             try
             {
-                var options = FileOpenOptions.Open(FileSystemAccess.WriteAttributes, FileShare.All);
+                var options = FileOpenRequest.Open(FileSystemAccess.WriteAttributes, FileShare.All);
                 using var handle = FileIO.OpenHandle(tempFile, options);
 
                 // Act
@@ -61,7 +61,7 @@ public sealed partial class FileIOTests
             var tempFile = Path.GetTempFileName();
             try
             {
-                var options = FileOpenOptions.Open(FileSystemAccess.Read, FileShare.All);
+                var options = FileOpenRequest.Open(FileSystemAccess.Read, FileShare.All);
                 using var handle = FileIO.OpenHandle(tempFile, options);
 
                 // Act & Assert
@@ -80,7 +80,7 @@ public sealed partial class FileIOTests
             var tempFile = Path.GetTempFileName();
             try
             {
-                var options = FileOpenOptions.Open(FileSystemAccess.ReadWrite, FileShare.All);
+                var options = FileOpenRequest.Open(FileSystemAccess.ReadWrite, FileShare.All);
                 using var handle = FileIO.OpenHandle(tempFile, options);
 
                 // Act

@@ -36,7 +36,7 @@ public sealed partial class FileIOTests
             Directory.CreateDirectory(tempDirectory);
             try
             {
-                var options = FileOpenOptions.Open(FileSystemAccess.ReadAttributes, FileShare.All, 0, FileAttributes.Directory);
+                var options = FileOpenRequest.Open(FileSystemAccess.ReadAttributes, FileShare.All, 0, FileAttributes.Directory);
                 using var handle = FileIO.OpenHandle(tempDirectory, options);
 
                 // Act

@@ -8,7 +8,7 @@ public sealed class FileOpenOptionsTests
     [Fact]
     public void Constructor_WithExplicitShare_SetsModeAccessAndShare()
     {
-        var sut = FileOpenOptions.CreateNew(FileSystemAccess.ReadWrite, FileShare.All);
+        var sut = FileOpenRequest.CreateNew(FileSystemAccess.ReadWrite, FileShare.All);
 
         Assert.Equal(FileMode.CreateNew, sut.Mode);
         Assert.Equal(FileSystemAccess.ReadWrite, sut.Access);
@@ -27,7 +27,7 @@ public sealed class FileOpenOptionsTests
     [InlineData(FileSystemAccess.ReadWrite, FileShare.None)]
     public void Constructor_WithImplicitShare_ComputesExpectedShare(FileSystemAccess access, FileShare expectedShare)
     {
-        var sut = FileOpenOptions.Open(access);
+        var sut = FileOpenRequest.Open(access);
 
         Assert.Equal(FileMode.Open, sut.Mode);
         Assert.Equal(access, sut.Access);
@@ -47,7 +47,7 @@ public sealed class FileOpenOptionsTests
 
         var expectedAttributes = FileAttributes.Hidden | FileAttributes.ReadOnly | FileAttributes.Archive;
 
-        var sut = new FileOpenOptions
+        var sut = new FileOpenRequest
         {
             Mode = FileMode.Append,
             Access = FileSystemAccess.Delete | FileSystemAccess.Write,
@@ -69,7 +69,7 @@ public sealed class FileOpenOptionsTests
     {
         var expected = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead;
 
-        var sut = new FileOpenOptions
+        var sut = new FileOpenRequest
         {
 #pragma warning disable CA1416
             UnixCreateMode = expected,
@@ -82,7 +82,7 @@ public sealed class FileOpenOptionsTests
     [PlatformOnlyFact(Platform.Unix)]
     public void UnixCreateMode_OnUnix_CanBeSetToNull()
     {
-        var sut = new FileOpenOptions
+        var sut = new FileOpenRequest
         {
 #pragma warning disable CA1416
             UnixCreateMode = null,
@@ -95,7 +95,7 @@ public sealed class FileOpenOptionsTests
     [PlatformOnlyFact(Platform.Windows)]
     public void UnixCreateMode_OnWindows_ThrowsPlatformNotSupportedException()
     {
-        Assert.Throws<PlatformNotSupportedException>(() => new FileOpenOptions
+        Assert.Throws<PlatformNotSupportedException>(() => new FileOpenRequest
         {
 #pragma warning disable CA1416
             UnixCreateMode = UnixFileMode.UserRead,
@@ -115,7 +115,7 @@ public sealed class FileOpenOptionsTests
             Options = FileOptions.Asynchronous | FileOptions.WriteThrough | FileOptions.RandomAccess,
         };
 
-        var sut = FileOpenOptions.FromFileStreamOptions(options);
+        var sut = FileOpenRequest.FromFileStreamOptions(options);
 
         Assert.Equal(FileMode.Truncate, sut.Mode);
         Assert.Equal(FileSystemAccess.ReadWrite, sut.Access);
@@ -136,8 +136,8 @@ public sealed class FileOpenOptionsTests
             Options = FileOptions.DeleteOnClose | FileOptions.SequentialScan,
         };
 
-        FileOpenOptions converted = options;
-        var expected = FileOpenOptions.FromFileStreamOptions(options);
+        FileOpenRequest converted = options;
+        var expected = FileOpenRequest.FromFileStreamOptions(options);
 
         Assert.Equal(expected, converted);
     }
@@ -157,7 +157,7 @@ public sealed class FileOpenOptionsTests
             UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite,
         };
 
-        var sut = FileOpenOptions.FromFileStreamOptions(options);
+        var sut = FileOpenRequest.FromFileStreamOptions(options);
 
         Assert.Equal(FileMode.Truncate, sut.Mode);
         Assert.Equal(FileSystemAccess.ReadWrite, sut.Access);

@@ -70,17 +70,17 @@ public sealed class FileReference : IDisposable
         ((RawFileSystemAccess)_options.Access & RawFileSystemAccess.Write) != 0;
 
     [return: OwnershipTransfer]
-    public static FileReference Open(string path, FileOpenOptions options) =>
-        new(FileIO.OpenHandle(path, options), options.HandleOptions);
+    public static FileReference Open(string path, FileOpenRequest request) =>
+        new(FileIO.OpenHandle(path, request), request.HandleOptions);
 
     public static bool TryOpen(
         string path,
-        FileOpenOptions options,
+        FileOpenRequest request,
         [NotNullWhen(true)][OwnershipTransfer] out FileReference? file,
         bool ignoreMissingDirectory = false)
     {
-        file = FileIO.TryOpenHandle(path, options, out var fileHandle, ignoreMissingDirectory)
-            ? new(fileHandle, options.HandleOptions)
+        file = FileIO.TryOpenHandle(path, request, out var fileHandle, ignoreMissingDirectory)
+            ? new(fileHandle, request.HandleOptions)
             : null;
         return file is not null;
     }
@@ -90,21 +90,21 @@ public sealed class FileReference : IDisposable
     [return: OwnershipTransfer]
     public static FileReference Open(
         PersistentFileId fileId,
-        FileOpenOptions options)
+        FileOpenRequest request)
     {
-        return new(FileIO.OpenHandle(fileId, options), options.HandleOptions);
+        return new(FileIO.OpenHandle(fileId, request), request.HandleOptions);
     }
 
     [SupportedOSPlatform("windows")]
     [SupportedOSPlatform("linux")]
     public static bool TryOpen(
         PersistentFileId fileId,
-        FileOpenOptions options,
+        FileOpenRequest request,
         [NotNullWhen(true)][OwnershipTransfer] out FileReference? file,
         bool requireDirectory = true)
     {
-        file = FileIO.TryOpenHandle(fileId, options, out var fileHandle, requireDirectory)
-            ? new(fileHandle, options.HandleOptions)
+        file = FileIO.TryOpenHandle(fileId, request, out var fileHandle, requireDirectory)
+            ? new(fileHandle, request.HandleOptions)
             : null;
         return file is not null;
     }
@@ -113,29 +113,29 @@ public sealed class FileReference : IDisposable
     public static FileReference OpenAt(
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
-        FileOpenOptions options)
+        FileOpenRequest request)
     {
-        return new(FileIO.OpenHandleAt(rootDirectory, path, options), options.HandleOptions);
+        return new(FileIO.OpenHandleAt(rootDirectory, path, request), request.HandleOptions);
     }
 
     public static bool TryOpenAt(
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
-        FileOpenOptions options,
+        FileOpenRequest request,
         [NotNullWhen(true)][OwnershipTransfer] out FileReference? file,
         bool requireDirectory = true)
     {
-        file = FileIO.TryOpenHandleAt(rootDirectory, path, options, out var fileHandle, requireDirectory)
-            ? new(fileHandle, options.HandleOptions)
+        file = FileIO.TryOpenHandleAt(rootDirectory, path, request, out var fileHandle, requireDirectory)
+            ? new(fileHandle, request.HandleOptions)
             : null;
         return file is not null;
     }
 
     [return: OwnershipTransfer]
-    public static FileReference Reopen([Borrow] FileReference file, FileOpenOptions? options = null)
+    public static FileReference Reopen([Borrow] FileReference file, FileOpenRequest? request = null)
     {
-        var openOptions = options ?? FileOpenOptions.Open(file.Options);
-        return new(FileIO.OpenHandleAt(file.Handle, null, openOptions), openOptions.HandleOptions);
+        var openRequest = request ?? FileOpenRequest.Open(file.Options);
+        return new(FileIO.OpenHandleAt(file.Handle, null, openRequest), openRequest.HandleOptions);
     }
 
     [return: OwnershipTransfer]
@@ -144,7 +144,7 @@ public sealed class FileReference : IDisposable
 
     [return: OwnershipTransfer]
     public static FileReference CreateTempFile(FileSystemAccess access) =>
-        CreateTempFile(access, FileOpenOptions.GetDefaultFileShare(access));
+        CreateTempFile(access, FileOpenRequest.GetDefaultFileShare(access));
 
     [return: OwnershipTransfer]
     public static FileReference CreateTempFile(
@@ -153,8 +153,8 @@ public sealed class FileReference : IDisposable
         FileOptions options = FileOptions.DeleteOnClose,
         FileAttributes attributes = FileAttributes.Temporary)
     {
-        var (filePath, openOptions) = FileIO.GetTempFilePathAndOptions(access, share, options, attributes);
-        return Open(filePath, openOptions);
+        var (path, request) = FileIO.GetTempFilePathAndRequest(access, share, options, attributes);
+        return Open(path, request);
     }
 
     public string GetPath()

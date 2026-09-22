@@ -26,22 +26,22 @@ public static partial class FileIO
 #pragma warning restore CA1416
 
     [return: OwnershipTransfer]
-    public static SafeFileHandle OpenHandle(string path, FileOpenOptions options)
+    public static SafeFileHandle OpenHandle(string path, FileOpenRequest request)
     {
         Strategy.ValidatePath(path);
 
-        return Strategy.OpenHandle(path, options);
+        return Strategy.OpenHandle(path, request);
     }
 
     public static bool TryOpenHandle(
         string path,
-        FileOpenOptions options,
+        FileOpenRequest request,
         [NotNullWhen(true)][OwnershipTransfer] out SafeFileHandle? handle,
         bool ignoreMissingDirectory = false)
     {
         try
         {
-            handle = OpenHandle(path, options);
+            handle = OpenHandle(path, request);
             return true;
 
         }
@@ -57,24 +57,24 @@ public static partial class FileIO
     [return: OwnershipTransfer]
     public static SafeFileHandle OpenHandle(
         PersistentFileId fileId,
-        FileOpenOptions options)
+        FileOpenRequest request)
     {
         Strategy.ValidateFileId(fileId);
 
-        return Strategy.OpenHandle(fileId, options);
+        return Strategy.OpenHandle(fileId, request);
     }
 
     [SupportedOSPlatform("windows")]
     [SupportedOSPlatform("linux")]
     public static bool TryOpenHandle(
         PersistentFileId fileId,
-        FileOpenOptions options,
+        FileOpenRequest request,
         [NotNullWhen(true)][OwnershipTransfer] out SafeFileHandle? handle,
         bool requireDirectory = true)
     {
         try
         {
-            handle = OpenHandle(fileId, options);
+            handle = OpenHandle(fileId, request);
             return true;
         }
         catch (Exception e) when (e is FileNotFoundException || !requireDirectory && e is DirectoryNotFoundException)
@@ -88,7 +88,7 @@ public static partial class FileIO
     public static SafeFileHandle OpenHandleAt(
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
-        FileOpenOptions options)
+        FileOpenRequest request)
     {
         if (rootDirectory is null && path is null)
             throw new ArgumentException($"Either {nameof(rootDirectory)} or {nameof(path)} must be provided.");
@@ -96,19 +96,19 @@ public static partial class FileIO
         Strategy.ValidateFileHandle(rootDirectory, optional: true);
         Strategy.ValidatePath(path, optional: true);
 
-        return Strategy.OpenHandleAt(rootDirectory, path, options);
+        return Strategy.OpenHandleAt(rootDirectory, path, request);
     }
 
     public static bool TryOpenHandleAt(
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
-        FileOpenOptions options,
+        FileOpenRequest request,
         [NotNullWhen(true)][OwnershipTransfer] out SafeFileHandle? file,
         bool requireDirectory = true)
     {
         try
         {
-            file = OpenHandleAt(rootDirectory, path, options);
+            file = OpenHandleAt(rootDirectory, path, request);
             return true;
         }
         catch (Exception e) when (e is FileNotFoundException || !requireDirectory && e is DirectoryNotFoundException)
@@ -119,11 +119,11 @@ public static partial class FileIO
     }
 
     [return: OwnershipTransfer]
-    public static SafeFileHandle ReopenHandle([Borrow] SafeFileHandle file, FileOpenOptions options)
+    public static SafeFileHandle ReopenHandle([Borrow] SafeFileHandle file, FileOpenRequest request)
     {
         Strategy.ValidateFileHandle(file);
 
-        return Strategy.OpenHandleAt(file, null, options);
+        return Strategy.OpenHandleAt(file, null, request);
     }
 
     [return: OwnershipTransfer]
@@ -147,8 +147,8 @@ public static partial class FileIO
     {
         Strategy.ValidateFileId(fileId);
 
-        var options = new FileOpenOptions(FileMode.Open, FileSystemAccess.ReadAttributes, FileShare.ReadWrite | FileShare.Delete);
-        using (var handle = Strategy.OpenHandle(fileId, options))
+        var request = new FileOpenRequest(FileMode.Open, FileSystemAccess.ReadAttributes, FileShare.ReadWrite | FileShare.Delete);
+        using (var handle = Strategy.OpenHandle(fileId, request))
             return Strategy.GetPath(handle);
     }
 

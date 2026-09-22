@@ -52,7 +52,7 @@ public sealed partial class FileIOTests
                 using (var handle = FileIO.CreateTempFileHandle(access, share, options, attributes))
                 {
                     createdPath = FileIO.GetPath(handle);
-                    var fileOptions = FileOpenOptions.Open(access, share, options, attributes);
+                    var fileOptions = FileOpenRequest.Open(access, share, options, attributes);
                     using var stream = FileIO.CreateFileStream(handle, FileAccess.ReadWrite, bufferSize: 128);
 
                     // Act

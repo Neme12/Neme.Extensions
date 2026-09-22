@@ -34,7 +34,7 @@ public sealed partial class FileIOTests
             // Arrange
             var tempFile = Path.GetTempFileName();
             File.WriteAllText(tempFile, "duplicate handle content");
-            var options = FileOpenOptions.Open(FileSystemAccess.Read, FileShare.All);
+            var options = FileOpenRequest.Open(FileSystemAccess.Read, FileShare.All);
 
             try
             {
@@ -63,7 +63,7 @@ public sealed partial class FileIOTests
         {
             // Arrange
             var tempFile = Path.GetTempFileName();
-            var originalOptions = FileOpenOptions.Open(FileSystemAccess.ReadWrite, FileShare.All);
+            var originalOptions = FileOpenRequest.Open(FileSystemAccess.ReadWrite, FileShare.All);
 
             try
             {
@@ -71,7 +71,7 @@ public sealed partial class FileIOTests
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    var duplicatedOptions = FileOpenOptions.Open(FileSystemAccess.Write, FileShare.All);
+                    var duplicatedOptions = FileOpenRequest.Open(FileSystemAccess.Write, FileShare.All);
                     using var duplicatedHandle = FileIO.DuplicateHandle(originalHandle, FileSystemAccess.Write);
                     originalHandle.Dispose();
 

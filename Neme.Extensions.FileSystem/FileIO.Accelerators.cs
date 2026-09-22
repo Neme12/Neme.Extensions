@@ -7,7 +7,7 @@ public static partial class FileIO
 {
     [return: OwnershipTransfer]
     public static SafeFileHandle CreateTempFileHandle(FileSystemAccess access) =>
-        CreateTempFileHandle(access, FileOpenOptions.GetDefaultFileShare(access));
+        CreateTempFileHandle(access, FileOpenRequest.GetDefaultFileShare(access));
 
     [return: OwnershipTransfer]
     public static SafeFileHandle CreateTempFileHandle(
@@ -16,17 +16,17 @@ public static partial class FileIO
         FileOptions options = FileOptions.DeleteOnClose,
         FileAttributes attributes = FileAttributes.Temporary)
     {
-        var (filePath, openOptions) = GetTempFilePathAndOptions(access, share, options, attributes);
-        return OpenHandle(filePath, openOptions);
+        var (path, request) = GetTempFilePathAndRequest(access, share, options, attributes);
+        return OpenHandle(path, request);
     }
 
-    internal static (string filePath, FileOpenOptions openOptions) GetTempFilePathAndOptions(
+    internal static (string path, FileOpenRequest request) GetTempFilePathAndRequest(
         FileSystemAccess access,
         FileShare share,
         FileOptions options,
         FileAttributes attributes)
     {
-        var fileOptions = FileOpenOptions.CreateNew(access, share, options, attributes);
+        var fileOptions = FileOpenRequest.CreateNew(access, share, options, attributes);
         var fileName = Invariant($"{Guid.NewGuid()}.tmp");
         return (Path.GetTempPath() + fileName, fileOptions);
     }

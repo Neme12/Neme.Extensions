@@ -9,7 +9,7 @@ namespace Neme.Extensions.FileSystem;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Use <see cref="Create(string, FileOpenOptions, bool)"/> to create the temporary file, write the contents through <see cref="FileStream"/>,
+/// Use <see cref="Create(string, FileOpenRequest, bool)"/> to create the temporary file, write the contents through <see cref="FileStream"/>,
 /// and then call <see cref="Commit(bool)"/> to move the file to <see cref="FinalPath"/> without exposing a partially written file at the
 /// destination.
 /// </para>
@@ -91,23 +91,23 @@ public sealed class PartialFileWithStream :
     /// Creates a new temporary file at <paramref name="finalPath"/> with the <c>.part</c> suffix.
     /// </summary>
     /// <param name="finalPath">The final destination path that will be used by <see cref="Commit(bool)"/>.</param>
-    /// <param name="options">The options used to open the temporary file. Delete access is required so the temporary file can be cleaned up.</param>
+    /// <param name="request">The options used to open the temporary file. Delete access is required so the temporary file can be cleaned up.</param>
     /// <param name="createDirectory"><see langword="true"/> to create the destination directory if it does not already exist.</param>
     /// <returns>A <see cref="PartialFileWithStream"/> for writing the temporary file.</returns>
-    public static PartialFileWithStream Create(string finalPath, FileOpenOptions options, bool createDirectory = false)
+    public static PartialFileWithStream Create(string finalPath, FileOpenRequest request, bool createDirectory = false)
     {
         ArgumentException.ThrowIfNullOrEmpty(finalPath);
 
-        if ((options.Access & FileSystemAccess.Delete) == 0)
-            throw new ArgumentException("Options must include delete access.", nameof(options));
+        if ((request.Access & FileSystemAccess.Delete) == 0)
+            throw new ArgumentException("Options must include delete access.", nameof(request));
 
         var partialPath = finalPath + Extension;
 
         if (createDirectory)
             Directory.CreateDirectory(Path.GetDirectoryName(finalPath)!);
 
-        var fileStream = FileReference.Open(partialPath, options).CreateFileStream(ownsHandle: true);
-        return new PartialFileWithStream(fileStream, finalPath, options.HandleOptions);
+        var fileStream = FileReference.Open(partialPath, request).CreateFileStream(ownsHandle: true);
+        return new PartialFileWithStream(fileStream, finalPath, request.HandleOptions);
     }
 
     /// <summary>
@@ -120,7 +120,7 @@ public sealed class PartialFileWithStream :
         if (_state != State.Closed)
             throw new InvalidOperationException("File is not closed.");
 
-        _fileStream = FileReference.Open(FinalPath + Extension, FileOpenOptions.Open(_options)).CreateFileStream(ownsHandle: true);
+        _fileStream = FileReference.Open(FinalPath + Extension, FileOpenRequest.Open(_options)).CreateFileStream(ownsHandle: true);
         _state = State.Open;
     }
 

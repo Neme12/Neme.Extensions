@@ -21,7 +21,7 @@ internal sealed partial class WindowsFileIOStrategy
     private static readonly ConcurrentDictionary<ulong, SafeFileHandle> s_volumeHandleCache = new();
 
     [return: OwnershipTransfer]
-    public override unsafe SafeFileHandle OpenHandle(PersistentFileId fileId, FileOpenOptions options)
+    public override unsafe SafeFileHandle OpenHandle(PersistentFileId fileId, FileOpenRequest request)
     {
         Debug.Assert(IsValidFileId(fileId));
 
@@ -52,18 +52,18 @@ internal sealed partial class WindowsFileIOStrategy
         };
 
         var createOptions =
-            options.Options.ToWinNT(options.Attributes) |
+            request.Options.ToWinNT(request.Attributes) |
             NTCREATEFILE_CREATE_OPTIONS.FILE_OPEN_BY_FILE_ID;
 
         var status = WinNTPInvoke.NtCreateFile(
             out var handle,
-            options.Access.ToWin32(),
+            request.Access.ToWin32(),
             in objectAttributes,
             out _,
-            options.PreallocationSize,
-            options.Attributes.ToWinNT(),
-            options.Share.ToWin32(),
-            options.Mode.ToWinNT(),
+            request.PreallocationSize,
+            request.Attributes.ToWinNT(),
+            request.Share.ToWin32(),
+            request.Mode.ToWinNT(),
             createOptions,
             []);
 
@@ -81,7 +81,7 @@ internal sealed partial class WindowsFileIOStrategy
     }
 
     [return: OwnershipTransfer]
-    public override unsafe SafeFileHandle OpenHandleAt([Borrow] SafeFileHandle? rootDirectory, string? path, FileOpenOptions options)
+    public override unsafe SafeFileHandle OpenHandleAt([Borrow] SafeFileHandle? rootDirectory, string? path, FileOpenRequest request)
 #pragma warning disable RS0042
     {
         Debug.Assert(rootDirectory is not null || path is not null);
@@ -123,14 +123,14 @@ internal sealed partial class WindowsFileIOStrategy
 
             status2 = WinNTPInvoke.NtCreateFile(
                 out handle,
-                options.Access.ToWin32(),
+                request.Access.ToWin32(),
                 in objectAttributes,
                 out _,
-                options.PreallocationSize,
-                options.Attributes.ToWinNT(),
-                options.Share.ToWin32(),
-                options.Mode.ToWinNT(),
-                options.Options.ToWinNT(options.Attributes),
+                request.PreallocationSize,
+                request.Attributes.ToWinNT(),
+                request.Share.ToWin32(),
+                request.Mode.ToWinNT(),
+                request.Options.ToWinNT(request.Attributes),
                 []);
         }
         finally

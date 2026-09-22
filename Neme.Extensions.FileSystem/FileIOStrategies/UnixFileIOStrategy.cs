@@ -73,40 +73,40 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     }
 
     [return: OwnershipTransfer]
-    public override SafeFileHandle OpenHandle(string path, FileOpenOptions options)
+    public override SafeFileHandle OpenHandle(string path, FileOpenRequest request)
     {
         Debug.Assert(IsValidPath(path));
 
         using var handle = OwnedOrBorrowed.Create(Open(
             Path.GetFullPath(path),
-            options.Mode,
-            options.Access,
-            options.Share,
-            options.Options,
-            options.Attributes,
-            options.UnixCreateMode ?? DefaultCreateMode,
-            options.PreallocationSize));
+            request.Mode,
+            request.Access,
+            request.Share,
+            request.Options,
+            request.Attributes,
+            request.UnixCreateMode ?? DefaultCreateMode,
+            request.PreallocationSize));
 
-        _handleMetadataTable.Add(handle.Value, new HandleMetadata(options.Access));
+        _handleMetadataTable.Add(handle.Value, new HandleMetadata(request.Access));
 
         return handle.Move();
     }
 
     [SupportedOSPlatform("linux")]
     [return: OwnershipTransfer]
-    public override unsafe SafeFileHandle OpenHandle(PersistentFileId fileId, FileOpenOptions options)
+    public override unsafe SafeFileHandle OpenHandle(PersistentFileId fileId, FileOpenRequest request)
     {
         Debug.Assert(IsValidFileId(fileId));
 
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             throw new PlatformNotSupportedException();
 
-        if (options.Mode is FileMode.CreateNew or FileMode.OpenOrCreate)
-            throw new NotSupportedException($"{options.Mode} is not supported when opening a file by ID on Unix.");
+        if (request.Mode is FileMode.CreateNew or FileMode.OpenOrCreate)
+            throw new NotSupportedException($"{request.Mode} is not supported when opening a file by ID on Unix.");
 
         var linuxFileId = fileId.LinuxFileId;
         var mountPath = linuxFileId.MountPath;
-        var openFlags = GetOpenByHandleFlags(options.Mode, options.Access, options.Share, options.Options);
+        var openFlags = GetOpenByHandleFlags(request.Mode, request.Access, request.Share, request.Options);
 
         using var mountHandle = OpenMountHandle(mountPath);
         using OwnedOrBorrowed<SafeFileHandle?> handle = OwnedOrBorrowed.Create<SafeFileHandle?>(null);
@@ -151,9 +151,9 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
                 throw UnixMarshal.GetExceptionForUnixError(error, path: null);
             }
 
-            if (InitHandle(null, handle.Value!, null, options.Mode, options.Access, options.Share, options.Options, options.Attributes, options.PreallocationSize))
+            if (InitHandle(null, handle.Value!, null, request.Mode, request.Access, request.Share, request.Options, request.Attributes, request.PreallocationSize))
             {
-                _handleMetadataTable.Add(handle.Value, new HandleMetadata(options.Access));
+                _handleMetadataTable.Add(handle.Value, new HandleMetadata(request.Access));
 
                 return handle.Move()!;
             }
@@ -163,7 +163,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     }
 
     [return: OwnershipTransfer]
-    public override SafeFileHandle OpenHandleAt([Borrow] SafeFileHandle? rootDirectory, string? path, FileOpenOptions options)
+    public override SafeFileHandle OpenHandleAt([Borrow] SafeFileHandle? rootDirectory, string? path, FileOpenRequest request)
     {
         Debug.Assert(rootDirectory is not null || path is not null);
         Debug.Assert(rootDirectory is null || IsValidFileHandle(rootDirectory));
@@ -172,15 +172,15 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         using var handle = OwnedOrBorrowed.Create(OpenAt(
             rootDirectory,
             path,
-            options.Mode,
-            options.Access,
-            options.Share,
-            options.Options,
-            options.Attributes,
-            options.UnixCreateMode ?? DefaultCreateMode,
-            options.PreallocationSize));
+            request.Mode,
+            request.Access,
+            request.Share,
+            request.Options,
+            request.Attributes,
+            request.UnixCreateMode ?? DefaultCreateMode,
+            request.PreallocationSize));
 
-        _handleMetadataTable.Add(handle.Value, new HandleMetadata(options.Access));
+        _handleMetadataTable.Add(handle.Value, new HandleMetadata(request.Access));
 
         return handle.Move();
     }
