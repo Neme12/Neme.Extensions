@@ -1,6 +1,6 @@
 ﻿namespace Neme.Extensions;
 
-internal static class ExceptionExtensions
+public static class ExceptionExtensions
 {
     extension(Exception)
     {
@@ -11,9 +11,22 @@ internal static class ExceptionExtensions
             {
                 return action();
             }
-            catch (TException ex)
+            catch (TException e)
             {
-                return handler(ex);
+                return handler(e);
+            }
+        }
+
+        public static T TryCatch<T, TException>(Func<T> action, Func<TException, bool> condition, Func<TException, T> handler)
+            where TException : Exception
+        {
+            try
+            {
+                return action();
+            }
+            catch (TException e) when (condition(e))
+            {
+                return handler(e);
             }
         }
     }

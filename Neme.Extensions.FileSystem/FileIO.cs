@@ -292,22 +292,22 @@ public static partial class FileIO
         return Strategy.GetPersistentId(file);
     }
 
-    [return: OwnershipTransferUnless(nameof(leaveOpen))]
+    [return: OwnershipTransferWhen(nameof(ownsHandle))]
     public static CheckedFileStream CreateFileStream(
-        [OwnershipTransferUnless(nameof(leaveOpen))] SafeFileHandle file,
+        [OwnershipTransferWhen(nameof(ownsHandle))] SafeFileHandle file,
         FileAccess access,
-        bool leaveOpen = false,
+        bool ownsHandle = false,
         int bufferSize = 4096)
     {
         Strategy.ValidateFileHandle(file);
 
-        return leaveOpen
-            ? new LeaveOpenFileStream(
+        return ownsHandle
+            ? new CheckedFileStream(
                 file,
                 access,
                 bufferSize,
                 isAsync: file.IsAsync)
-            : new CheckedFileStream(
+            : new LeaveOpenFileStream(
                 file,
                 access,
                 bufferSize,

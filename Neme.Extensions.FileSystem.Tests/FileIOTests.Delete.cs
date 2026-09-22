@@ -48,7 +48,7 @@ public sealed partial class FileIOTests
                 FileIO.Delete(handle);
 
                 // Assert
-                using (var stream = FileIO.CreateFileStream(handle, FileAccess.ReadWrite, leaveOpen: true, bufferSize: 128))
+                using (var stream = FileIO.CreateFileStream(handle, FileAccess.ReadWrite, bufferSize: 128))
                 {
                     stream.WriteByte(123);
                     stream.Position = 0;

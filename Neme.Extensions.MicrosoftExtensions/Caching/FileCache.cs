@@ -56,37 +56,17 @@ public sealed partial class FileCache : IFileCache, IDisposable
 
     private const string MetadataExtension = ".metadata";
 
-    private static readonly FileOpenOptions s_fileSyncReadOptions = new()
-    {
-        Mode = FileMode.Open,
-        Access = FileSystemAccess.Read,
-        Share = FileShare.Read,
-        Options = FileOptions.SequentialScan,
-    };
+    private static readonly FileOpenOptions s_fileSyncReadOptions =
+        FileOpenOptions.Open(FileSystemAccess.Read, FileShare.Read, FileOptions.SequentialScan);
 
-    private static readonly FileOpenOptions s_fileAsyncReadOptions = new()
-    {
-        Mode = FileMode.Open,
-        Access = FileSystemAccess.Read,
-        Share = FileShare.Read,
-        Options = FileOptions.Asynchronous | FileOptions.SequentialScan,
-    };
+    private static readonly FileOpenOptions s_fileAsyncReadOptions =
+        FileOpenOptions.Open(FileSystemAccess.Read, FileShare.Read, FileOptions.SequentialScan | FileOptions.Asynchronous);
 
-    private static readonly FileOpenOptions s_fileSyncWriteOptions = new()
-    {
-        Mode = FileMode.Create,
-        Access = FileSystemAccess.ReadWrite | FileSystemAccess.Delete,
-        Share = FileShare.ReadWrite | FileShare.Delete,
-        Options = FileOptions.SequentialScan,
-    };
+    private static readonly FileOpenOptions s_fileSyncWriteOptions =
+        FileOpenOptions.Create(FileSystemAccess.ReadWriteDelete, FileShare.All, FileOptions.SequentialScan);
 
-    private static readonly FileOpenOptions s_fileAsyncWriteOptions = new()
-    {
-        Mode = FileMode.Create,
-        Access = FileSystemAccess.ReadWrite | FileSystemAccess.Delete,
-        Share = FileShare.ReadWrite | FileShare.Delete,
-        Options = FileOptions.Asynchronous | FileOptions.SequentialScan,
-    };
+    private static readonly FileOpenOptions s_fileAsyncWriteOptions =
+        FileOpenOptions.Create(FileSystemAccess.ReadWriteDelete, FileShare.All, FileOptions.SequentialScan | FileOptions.Asynchronous);
 
     public FileCache(
         IOptions<FileCacheOptions> optionsAccessor,
@@ -777,16 +757,8 @@ public sealed partial class FileCache : IFileCache, IDisposable
     {
         var metadataPath = filePath + MetadataExtension;
 
-        FileReference file;
-
-        try
-        {
-            file = FileIO.Open(metadataPath, FileReadOptions<TAsync>());
-        }
-        catch (Exception e) when (e is FileNotFoundException or DirectoryNotFoundException)
-        {
+        if (!FileIO.TryOpen(metadataPath, FileReadOptions<TAsync>(), out var file))
             return null;
-        }
 
         using (file)
         {
@@ -815,12 +787,12 @@ public sealed partial class FileCache : IFileCache, IDisposable
         {
             if (TAsync.IsAsync)
             {
-                await using (var fileStream = file.File.CreateFileStream(leaveOpen: true))
+                await using (var fileStream = file.File.CreateFileStream())
                     await JsonSerializer.SerializeAsync(fileStream, metadata, FileCacheJsonSerializerContext.Default.FileCacheMetadata, cancellationToken);
             }
             else
             {
-                using (var fileStream = file.File.CreateFileStream(leaveOpen: true))
+                using (var fileStream = file.File.CreateFileStream())
                     JsonSerializer.Serialize(fileStream, metadata, FileCacheJsonSerializerContext.Default.FileCacheMetadata);
             }
 

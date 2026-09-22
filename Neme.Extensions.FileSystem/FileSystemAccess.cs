@@ -11,4 +11,5 @@ public enum FileSystemAccess
     Delete = 1 << 4,
     Execute = 1 << 5 | ReadAttributes,
     ReadWrite = Read | Write,
+    ReadWriteDelete = Read | Write | Delete,
 }

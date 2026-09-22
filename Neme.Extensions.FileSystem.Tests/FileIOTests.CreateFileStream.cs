@@ -9,7 +9,7 @@ public sealed partial class FileIOTests
     public sealed class CreateFileStream
     {
         [Fact]
-        public void LeaveOpenFalse_CreatesReadWriteAsyncStreamAndClosesHandle()
+        public void OwnsHandleTrue_CreatesReadWriteAsyncStreamAndClosesHandle()
         {
             // Arrange
             var tempFile = Path.GetTempFileName();
@@ -19,7 +19,7 @@ public sealed partial class FileIOTests
                 using var handle = FileIO.OpenHandle(tempFile, options);
 
                 // Act
-                using (var stream = FileIO.CreateFileStream(handle, FileAccess.ReadWrite, bufferSize: 128))
+                using (var stream = FileIO.CreateFileStream(handle, FileAccess.ReadWrite, ownsHandle: true, bufferSize: 128))
                 {
                     stream.WriteByte(123);
                     stream.Position = 0;
@@ -41,7 +41,7 @@ public sealed partial class FileIOTests
         }
 
         [Fact]
-        public void LeaveOpenTrue_LeavesOriginalHandleOpen()
+        public void OwnsHandleFalse_LeavesOriginalHandleOpen()
         {
             // Arrange
             var tempFile = Path.GetTempFileName();
@@ -52,7 +52,7 @@ public sealed partial class FileIOTests
                 using var handle = FileIO.OpenHandle(tempFile, options);
 
                 // Act
-                using (var stream = FileIO.CreateFileStream(handle, FileAccess.Read, leaveOpen: true, bufferSize: 128))
+                using (var stream = FileIO.CreateFileStream(handle, FileAccess.Read, bufferSize: 128))
                 {
                     var result = stream.ReadByte();
 
@@ -79,7 +79,7 @@ public sealed partial class FileIOTests
             var tempFile = Path.GetTempFileName();
             try
             {
-                var options = FileOpenOptions.Open(FileSystemAccess.Write);
+                var options = FileOpenOptions.Open(FileSystemAccess.ReadWrite);
                 using var handle = FileIO.OpenHandle(tempFile, options);
 
                 // Act
@@ -93,8 +93,8 @@ public sealed partial class FileIOTests
                     Assert.False(stream.IsAsync);
                 }
 
-                Assert.Equal([99], File.ReadAllBytes(tempFile));
-                Assert.True(handle.IsClosed);
+                Assert.Equal([99], FileIO.ReadAllBytes(handle));
+                Assert.False(handle.IsClosed);
             }
             finally
             {
@@ -108,7 +108,7 @@ public sealed partial class FileIOTests
             // Arrange
             var handle = new SafeFileHandle((nint)(-1), ownsHandle: false);
             var options = FileOpenOptions.Open(FileSystemAccess.Read);
-
+            
             // Act & Assert
             Assert.Throws<ArgumentException>(() => FileIO.CreateFileStream(handle, FileAccess.Read));
         }

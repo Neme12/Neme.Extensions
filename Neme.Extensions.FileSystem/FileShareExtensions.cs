@@ -7,7 +7,7 @@ using Windows.Win32.Storage.FileSystem;
 
 namespace Neme.Extensions.FileSystem;
 
-internal static class FileShareExtensions
+public static class FileShareExtensions
 {
     public const FileShare All = FileShare.Read | FileShare.Write | FileShare.Delete;
 
@@ -15,7 +15,7 @@ internal static class FileShareExtensions
     {
         public static FileShare All => All;
 
-        public FILE_SHARE_MODE ToWin32()
+        internal FILE_SHARE_MODE ToWin32()
         {
             // The values of FileShare map directly to FILE_SHARE_MODE.
             return (FILE_SHARE_MODE)share;
@@ -23,7 +23,7 @@ internal static class FileShareExtensions
 
 #if !NETFRAMEWORK
         [UnsupportedOSPlatform("windows")]
-        public OpenFlags ToUnix()
+        internal OpenFlags ToUnix()
         {
             // Handle Inheritable, other FileShare flags are handled by Init
             return (share & FileShare.Inheritable) == 0 ? OpenFlags.O_CLOEXEC : default;

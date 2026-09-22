@@ -504,7 +504,7 @@ public sealed partial class FileIOTests
 
             // Assert
             Assert.False(handle.IsClosed);
-            using var stream = FileIO.CreateFileStream(handle, FileAccess.Read, leaveOpen: true, bufferSize: 128);
+            using var stream = FileIO.CreateFileStream(handle, FileAccess.Read, bufferSize: 128);
             stream.Position = 0;
             var actualBytes = new byte[stream.Length];
             _ = stream.Read(actualBytes, 0, actualBytes.Length);
@@ -537,7 +537,7 @@ public sealed partial class FileIOTests
             // Act & Assert
             Assert.ThrowsAny<OperationCanceledException>(() => FileIO.AppendAllBytes(handle, appendedBytes.AsSpan(), cancellationTokenSource.Token));
             Assert.False(handle.IsClosed);
-            using var stream = FileIO.CreateFileStream(handle, FileAccess.Read, leaveOpen: true, bufferSize: 128);
+            using var stream = FileIO.CreateFileStream(handle, FileAccess.Read, bufferSize: 128);
             stream.Position = 0;
             var actualBytes = new byte[stream.Length];
             _ = stream.Read(actualBytes, 0, actualBytes.Length);
@@ -586,7 +586,7 @@ public sealed partial class FileIOTests
 
             // Assert
             Assert.False(handle.IsClosed);
-            using var stream = FileIO.CreateFileStream(handle, FileAccess.Read, leaveOpen: true, bufferSize: 128);
+            using var stream = FileIO.CreateFileStream(handle, FileAccess.Read, bufferSize: 128);
             stream.Position = 0;
             var actualBytes = new byte[stream.Length];
             _ = await stream.ReadAsync(actualBytes, 0, actualBytes.Length);
@@ -626,7 +626,7 @@ public sealed partial class FileIOTests
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
             Assert.True(task.IsCanceled);
             Assert.False(handle.IsClosed);
-            using var stream = FileIO.CreateFileStream(handle, FileAccess.Read, leaveOpen: true, bufferSize: 128);
+            using var stream = FileIO.CreateFileStream(handle, FileAccess.Read, bufferSize: 128);
             stream.Position = 0;
             var actualBytes = new byte[stream.Length];
             _ = await stream.ReadAsync(actualBytes, 0, actualBytes.Length);
@@ -694,7 +694,7 @@ public sealed partial class FileIOTests
 
             // Assert
             Assert.False(handle.IsClosed);
-            using var stream = FileIO.CreateFileStream(handle, FileAccess.Read, leaveOpen: true, bufferSize: 128);
+            using var stream = FileIO.CreateFileStream(handle, FileAccess.Read, bufferSize: 128);
             stream.Position = 0;
             using var reader = new StreamReader(stream, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false), detectEncodingFromByteOrderMarks: true, bufferSize: 128, leaveOpen: true);
             Assert.Equal(expectedContents, reader.ReadToEnd());
@@ -718,7 +718,7 @@ public sealed partial class FileIOTests
 
             // Assert
             Assert.False(handle.IsClosed);
-            using var stream = FileIO.CreateFileStream(handle, FileAccess.Read, leaveOpen: true, bufferSize: 128);
+            using var stream = FileIO.CreateFileStream(handle, FileAccess.Read, bufferSize: 128);
             stream.Position = 0;
             var actualBytes = new byte[stream.Length];
             _ = stream.Read(actualBytes, 0, actualBytes.Length);
@@ -751,7 +751,7 @@ public sealed partial class FileIOTests
             // Act & Assert
             Assert.ThrowsAny<OperationCanceledException>(() => FileIO.AppendAllText(handle, appendedContents.AsSpan(), encoding: null, cancellationTokenSource.Token));
             Assert.False(handle.IsClosed);
-            using var stream = FileIO.CreateFileStream(handle, FileAccess.Read, leaveOpen: true, bufferSize: 128);
+            using var stream = FileIO.CreateFileStream(handle, FileAccess.Read, bufferSize: 128);
             stream.Position = 0;
             using var reader = new StreamReader(stream, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false), detectEncodingFromByteOrderMarks: true, bufferSize: 128, leaveOpen: true);
             Assert.Equal(originalContents, reader.ReadToEnd());
