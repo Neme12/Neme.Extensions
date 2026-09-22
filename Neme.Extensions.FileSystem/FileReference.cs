@@ -101,9 +101,9 @@ public sealed class FileReference : IDisposable
         PersistentFileId fileId,
         FileOpenRequest request,
         [NotNullWhen(true)][OwnershipTransfer] out FileReference? file,
-        bool requireDirectory = true)
+        bool ignoreMissingDirectory = false)
     {
-        file = FileIO.TryOpenHandle(fileId, request, out var fileHandle, requireDirectory)
+        file = FileIO.TryOpenHandle(fileId, request, out var fileHandle, ignoreMissingDirectory)
             ? new(fileHandle, request.HandleOptions)
             : null;
         return file is not null;
@@ -123,9 +123,9 @@ public sealed class FileReference : IDisposable
         string? path,
         FileOpenRequest request,
         [NotNullWhen(true)][OwnershipTransfer] out FileReference? file,
-        bool requireDirectory = true)
+        bool ignoreMissingDirectory = false)
     {
-        file = FileIO.TryOpenHandleAt(rootDirectory, path, request, out var fileHandle, requireDirectory)
+        file = FileIO.TryOpenHandleAt(rootDirectory, path, request, out var fileHandle, ignoreMissingDirectory)
             ? new(fileHandle, request.HandleOptions)
             : null;
         return file is not null;

@@ -757,7 +757,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
     {
         var metadataPath = filePath + MetadataExtension;
 
-        if (!FileReference.TryOpen(metadataPath, FileReadOptions<TAsync>(), out var file))
+        if (!FileReference.TryOpen(metadataPath, FileReadOptions<TAsync>(), out var file, ignoreMissingDirectory: true))
             return null;
 
         using (file)

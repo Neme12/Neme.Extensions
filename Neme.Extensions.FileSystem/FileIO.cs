@@ -70,14 +70,14 @@ public static partial class FileIO
         PersistentFileId fileId,
         FileOpenRequest request,
         [NotNullWhen(true)][OwnershipTransfer] out SafeFileHandle? handle,
-        bool requireDirectory = true)
+        bool ignoreMissingDirectory = false)
     {
         try
         {
             handle = OpenHandle(fileId, request);
             return true;
         }
-        catch (Exception e) when (e is FileNotFoundException || !requireDirectory && e is DirectoryNotFoundException)
+        catch (Exception e) when (e is FileNotFoundException || ignoreMissingDirectory && e is DirectoryNotFoundException)
         {
             handle = null;
             return false;
@@ -104,14 +104,14 @@ public static partial class FileIO
         string? path,
         FileOpenRequest request,
         [NotNullWhen(true)][OwnershipTransfer] out SafeFileHandle? file,
-        bool requireDirectory = true)
+        bool ignoreMissingDirectory = false)
     {
         try
         {
             file = OpenHandleAt(rootDirectory, path, request);
             return true;
         }
-        catch (Exception e) when (e is FileNotFoundException || !requireDirectory && e is DirectoryNotFoundException)
+        catch (Exception e) when (e is FileNotFoundException || ignoreMissingDirectory && e is DirectoryNotFoundException)
         {
             file = null;
             return false;
