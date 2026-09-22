@@ -125,40 +125,40 @@ public readonly record struct FileOpenRequest
 
     public FileMode Mode
     {
-        get => AllOptionsToFileMode(_allOptions);
+        get => AllOptionsToMode(_allOptions);
         init => _allOptions = ToAllOptions(value, Access, Share, Options, Attributes, UnixCreateMode);
     }
 
     public FileSystemAccess Access
     {
-        get => AllOptionsToFileSystemAccess(_allOptions);
+        get => AllOptionsToAccess(_allOptions);
         init => _allOptions = ToAllOptions(Mode, value, Share, Options, Attributes, UnixCreateMode);
     }
 
     public FileShare Share
     {
-        get => AllOptionsToFileShare(_allOptions);
+        get => AllOptionsToShare(_allOptions);
         init => _allOptions = ToAllOptions(Mode, Access, value, Options, Attributes, UnixCreateMode);
     }
 
     public FileOptions Options
     {
-        get => AllOptionsToFileOptions(_allOptions);
+        get => AllOptionsToFlags(_allOptions);
         init => _allOptions = ToAllOptions(Mode, Access, Share, value, Attributes, UnixCreateMode);
     }
 
     public FileAttributes Attributes
     {
-        get => AllOptionsToFileAttributes(_allOptions);
+        get => AllOptionsToAttributes(_allOptions);
         init => _allOptions = ToAllOptions(Mode, Access, Share, Options, value, UnixCreateMode);
     }
 
     public FileHandleOptions HandleOptions
     {
         get => new(
-            AllOptionsToFileSystemAccess(_allOptions),
-            AllOptionsToFileShare(_allOptions),
-            AllOptionsToFileOptions(_allOptions));
+            AllOptionsToAccess(_allOptions),
+            AllOptionsToShare(_allOptions),
+            AllOptionsToFlags(_allOptions));
         init =>
             _allOptions = ToAllOptions(
                 Mode,
@@ -250,25 +250,25 @@ public readonly record struct FileOpenRequest
         FileAttributes attributes,
         UnixFileMode? unixFileMode)
     {
-        return FileModeToAllOptions(mode)
-            | FileSystemAccessToAllOptions(access)
-            | FileShareToAllOptions(share)
-            | FileOptionsToAllOptions(flags)
-            | FileAttributesToAllOptions(attributes)
+        return ModeToAllOptions(mode)
+            | AccessToAllOptions(access)
+            | ShareToAllOptions(share)
+            | FlagsToAllOptions(flags)
+            | AttributesToAllOptions(attributes)
             | UnixFileModeToAllOptions(unixFileMode);
     }
 
-    private static AllOptions FileModeToAllOptions(FileMode mode)
+    private static AllOptions ModeToAllOptions(FileMode mode)
     {
         return (AllOptions)((ulong)mode & ModeMask);
     }
 
-    private static FileMode AllOptionsToFileMode(AllOptions options)
+    private static FileMode AllOptionsToMode(AllOptions options)
     {
         return (FileMode)((ulong)options & ModeMask);
     }
 
-    private static AllOptions FileSystemAccessToAllOptions(FileSystemAccess access)
+    private static AllOptions AccessToAllOptions(FileSystemAccess access)
     {
         AllOptions value = 0;
 
@@ -295,7 +295,7 @@ public readonly record struct FileOpenRequest
         return value;
     }
 
-    private static FileSystemAccess AllOptionsToFileSystemAccess(AllOptions options)
+    private static FileSystemAccess AllOptionsToAccess(AllOptions options)
     {
         RawFileSystemAccess value = 0;
 
@@ -320,7 +320,7 @@ public readonly record struct FileOpenRequest
         return (FileSystemAccess)value;
     }
 
-    private static AllOptions FileShareToAllOptions(FileShare share)
+    private static AllOptions ShareToAllOptions(FileShare share)
     {
         AllOptions value = 0;
 
@@ -339,7 +339,7 @@ public readonly record struct FileOpenRequest
         return value;
     }
 
-    private static FileShare AllOptionsToFileShare(AllOptions options)
+    private static FileShare AllOptionsToShare(AllOptions options)
     {
         FileShare value = 0;
 
@@ -358,57 +358,57 @@ public readonly record struct FileOpenRequest
         return value;
     }
 
-    private static AllOptions FileOptionsToAllOptions(FileOptions flags)
+    private static AllOptions FlagsToAllOptions(FileOptions flags)
     {
         AllOptions value = 0;
 
         if ((flags & FileOptions.WriteThrough) != 0)
-            value |= AllOptions.Options_WriteThrough;
+            value |= AllOptions.Flags_WriteThrough;
 
         if ((flags & FileOptions.Asynchronous) != 0)
-            value |= AllOptions.Options_Asynchronous;
+            value |= AllOptions.Flags_Asynchronous;
 
         if ((flags & FileOptions.RandomAccess) != 0)
-            value |= AllOptions.Options_RandomAccess;
+            value |= AllOptions.Flags_RandomAccess;
 
         if ((flags & FileOptions.DeleteOnClose) != 0)
-            value |= AllOptions.Options_DeleteOnClose;
+            value |= AllOptions.Flags_DeleteOnClose;
 
         if ((flags & FileOptions.SequentialScan) != 0)
-            value |= AllOptions.Options_SequentialScan;
+            value |= AllOptions.Flags_SequentialScan;
 
         if ((flags & FileOptions.Encrypted) != 0)
-            value |= AllOptions.Options_Encrypted;
+            value |= AllOptions.Flags_Encrypted;
 
         return value;
     }
 
-    private static FileOptions AllOptionsToFileOptions(AllOptions options)
+    private static FileOptions AllOptionsToFlags(AllOptions options)
     {
         FileOptions value = 0;
 
-        if ((options & AllOptions.Options_WriteThrough) != 0)
+        if ((options & AllOptions.Flags_WriteThrough) != 0)
             value |= FileOptions.WriteThrough;
 
-        if ((options & AllOptions.Options_Asynchronous) != 0)
+        if ((options & AllOptions.Flags_Asynchronous) != 0)
             value |= FileOptions.Asynchronous;
 
-        if ((options & AllOptions.Options_RandomAccess) != 0)
+        if ((options & AllOptions.Flags_RandomAccess) != 0)
             value |= FileOptions.RandomAccess;
 
-        if ((options & AllOptions.Options_DeleteOnClose) != 0)
+        if ((options & AllOptions.Flags_DeleteOnClose) != 0)
             value |= FileOptions.DeleteOnClose;
 
-        if ((options & AllOptions.Options_SequentialScan) != 0)
+        if ((options & AllOptions.Flags_SequentialScan) != 0)
             value |= FileOptions.SequentialScan;
 
-        if ((options & AllOptions.Options_Encrypted) != 0)
+        if ((options & AllOptions.Flags_Encrypted) != 0)
             value |= FileOptions.Encrypted;
 
         return value;
     }
 
-    private static AllOptions FileAttributesToAllOptions(FileAttributes attributes)
+    private static AllOptions AttributesToAllOptions(FileAttributes attributes)
     {
         AllOptions value = 0;
 
@@ -463,7 +463,7 @@ public readonly record struct FileOpenRequest
         return value;
     }
 
-    private static FileAttributes AllOptionsToFileAttributes(AllOptions options)
+    private static FileAttributes AllOptionsToAttributes(AllOptions options)
     {
         FileAttributes value = 0;
 
@@ -633,12 +633,12 @@ public readonly record struct FileOpenRequest
         Share_Delete = 1 << 11,
         Share_Inheritable = 1 << 12,
 
-        Options_WriteThrough = 1 << 13,
-        Options_Asynchronous = 1 << 14,
-        Options_RandomAccess = 1 << 15,
-        Options_DeleteOnClose = 1 << 16,
-        Options_SequentialScan = 1 << 17,
-        Options_Encrypted = 1 << 18,
+        Flags_WriteThrough = 1 << 13,
+        Flags_Asynchronous = 1 << 14,
+        Flags_RandomAccess = 1 << 15,
+        Flags_DeleteOnClose = 1 << 16,
+        Flags_SequentialScan = 1 << 17,
+        Flags_Encrypted = 1 << 18,
 
         Attributes_ReadOnly = 1 << 19,
         Attributes_Hidden = 1 << 20,
