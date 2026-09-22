@@ -18,9 +18,14 @@ public readonly record struct FileOpenOptions
             : FileShare.Read, 0, 0, null);
     }
 
-    public FileOpenOptions(FileMode mode, FileSystemAccess access, FileShare share, FileOptions options = 0, FileAttributes attributes = 0)
+    public FileOpenOptions(FileMode mode, FileSystemAccess access, FileShare share, FileOptions options = FileOptions.None, FileAttributes attributes = 0)
     {
         _allOptions = ToAllOptions(mode, access, share, options, attributes, null);
+    }
+
+    public FileOpenOptions(FileMode mode, FileHandleOptions options, FileAttributes attributes = 0)
+    {
+        _allOptions = ToAllOptions(mode, options.Access, options.Share, options.Options, attributes, null);
     }
 
     public static FileOpenOptions Create(FileSystemAccess access) =>
@@ -29,10 +34,17 @@ public readonly record struct FileOpenOptions
     public static FileOpenOptions Create(
         FileSystemAccess access,
         FileShare share,
-        FileOptions options = 0,
+        FileOptions options = FileOptions.None,
         FileAttributes attributes = 0)
     {
         return new(FileMode.Create, access, share, options, attributes);
+    }
+
+    public static FileOpenOptions Create(
+        FileHandleOptions options,
+        FileAttributes attributes = 0)
+    {
+        return new(FileMode.Create, options.Access, options.Share, options.Options, attributes);
     }
 
     public static FileOpenOptions CreateNew(FileSystemAccess access) =>
@@ -41,10 +53,17 @@ public readonly record struct FileOpenOptions
     public static FileOpenOptions CreateNew(
         FileSystemAccess access,
         FileShare share,
-        FileOptions options = 0,
+        FileOptions options = FileOptions.None,
         FileAttributes attributes = 0)
     {
         return new(FileMode.CreateNew, access, share, options, attributes);
+    }
+
+    public static FileOpenOptions CreateNew(
+        FileHandleOptions options,
+        FileAttributes attributes = 0)
+    {
+        return new(FileMode.CreateNew, options.Access, options.Share, options.Options, attributes);
     }
 
     public static FileOpenOptions Open(FileSystemAccess access) =>
@@ -53,10 +72,17 @@ public readonly record struct FileOpenOptions
     public static FileOpenOptions Open(
         FileSystemAccess access,
         FileShare share,
-        FileOptions options = 0,
+        FileOptions options = FileOptions.None,
         FileAttributes attributes = 0)
     {
         return new(FileMode.Open, access, share, options, attributes);
+    }
+
+    public static FileOpenOptions Open(
+        FileHandleOptions options,
+        FileAttributes attributes = 0)
+    {
+        return new(FileMode.Open, options.Access, options.Share, options.Options, attributes);
     }
 
     public static FileOpenOptions OpenOrCreate(FileSystemAccess access) =>
@@ -65,10 +91,17 @@ public readonly record struct FileOpenOptions
     public static FileOpenOptions OpenOrCreate(
         FileSystemAccess access,
         FileShare share,
-        FileOptions options = 0,
+        FileOptions options = FileOptions.None,
         FileAttributes attributes = 0)
     {
         return new(FileMode.OpenOrCreate, access, share, options, attributes);
+    }
+
+    public static FileOpenOptions OpenOrCreate(
+        FileHandleOptions options,
+        FileAttributes attributes = 0)
+    {
+        return new(FileMode.OpenOrCreate, options.Access, options.Share, options.Options, attributes);
     }
 
     public static FileOpenOptions Append(FileSystemAccess access = FileSystemAccess.Write) =>
@@ -77,10 +110,17 @@ public readonly record struct FileOpenOptions
     public static FileOpenOptions Append(
         FileSystemAccess access = FileSystemAccess.Write,
         FileShare share = FileShare.None,
-        FileOptions options = 0,
+        FileOptions options = FileOptions.None,
         FileAttributes attributes = 0)
     {
         return new(FileMode.Append, access, share, options, attributes);
+    }
+
+    public static FileOpenOptions Append(
+        FileHandleOptions options,
+        FileAttributes attributes = 0)
+    {
+        return new(FileMode.Append, options.Access, options.Share, options.Options, attributes);
     }
 
     public FileMode Mode
@@ -91,7 +131,7 @@ public readonly record struct FileOpenOptions
 
     public FileSystemAccess Access
     {
-        get => AllOptionsToFsFileAccess(_allOptions);
+        get => AllOptionsToFileSystemAccess(_allOptions);
         init => _allOptions = ToAllOptions(Mode, value, Share, Options, Attributes, UnixCreateMode);
     }
 
@@ -111,6 +151,22 @@ public readonly record struct FileOpenOptions
     {
         get => AllOptionsToFileAttributes(_allOptions);
         init => _allOptions = ToAllOptions(Mode, Access, Share, Options, value, UnixCreateMode);
+    }
+
+    public FileHandleOptions HandleOptions
+    {
+        get => new(
+            AllOptionsToFileSystemAccess(_allOptions),
+            AllOptionsToFileShare(_allOptions),
+            AllOptionsToFileOptions(_allOptions));
+        init =>
+            _allOptions = ToAllOptions(
+                Mode,
+                value.Access,
+                value.Share,
+                value.Options,
+                Attributes,
+                UnixCreateMode);
     }
 
     public UnixFileMode? UnixCreateMode
@@ -195,7 +251,7 @@ public readonly record struct FileOpenOptions
         UnixFileMode? unixFileMode)
     {
         return FileModeToAllOptions(mode)
-            | FsFileAccessToAllOptions(access)
+            | FileSystemAccessToAllOptions(access)
             | FileShareToAllOptions(share)
             | FileOptionsToAllOptions(options)
             | FileAttributesToAllOptions(attributes)
@@ -212,7 +268,7 @@ public readonly record struct FileOpenOptions
         return (FileMode)((ulong)options & ModeMask);
     }
 
-    private static AllOptions FsFileAccessToAllOptions(FileSystemAccess access)
+    private static AllOptions FileSystemAccessToAllOptions(FileSystemAccess access)
     {
         AllOptions value = 0;
 
@@ -239,7 +295,7 @@ public readonly record struct FileOpenOptions
         return value;
     }
 
-    private static FileSystemAccess AllOptionsToFsFileAccess(AllOptions options)
+    private static FileSystemAccess AllOptionsToFileSystemAccess(AllOptions options)
     {
         RawFileSystemAccess value = 0;
 

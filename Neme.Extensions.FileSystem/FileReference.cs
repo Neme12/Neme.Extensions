@@ -10,9 +10,9 @@ public sealed class FileReference : IDisposable
 {
     [Owned]
     private SafeFileHandle _handle;
-    private readonly FileOpenOptions _options;
+    private readonly FileHandleOptions _options;
 
-    internal FileReference([OwnershipTransfer] SafeFileHandle handle, FileOpenOptions options)
+    internal FileReference([OwnershipTransfer] SafeFileHandle handle, FileHandleOptions options)
     {
         _handle = handle;
         _options = options;
@@ -35,7 +35,7 @@ public sealed class FileReference : IDisposable
         }
     }
 
-    public FileOpenOptions Options
+    public FileHandleOptions Options
     {
         get
         {

@@ -26,10 +26,10 @@ public sealed class PartialFileWithStream :
 {
     private CheckedFileStream? _fileStream;
     private readonly string _finalPath;
-    private readonly FileOpenOptions _options;
+    private readonly FileHandleOptions _options;
     private State _state;
 
-    private PartialFileWithStream(CheckedFileStream partialFileStream, string finalPath, FileOpenOptions options)
+    private PartialFileWithStream(CheckedFileStream partialFileStream, string finalPath, FileHandleOptions options)
     {
         _fileStream = partialFileStream;
         _finalPath = finalPath;
@@ -107,7 +107,7 @@ public sealed class PartialFileWithStream :
             Directory.CreateDirectory(Path.GetDirectoryName(finalPath)!);
 
         var fileStream = FileIO.Open(partialPath, options).CreateFileStream(ownsHandle: true);
-        return new PartialFileWithStream(fileStream, finalPath, options);
+        return new PartialFileWithStream(fileStream, finalPath, options.HandleOptions);
     }
 
     /// <summary>
@@ -120,9 +120,7 @@ public sealed class PartialFileWithStream :
         if (_state != State.Closed)
             throw new InvalidOperationException("File is not closed.");
 
-        var reopenOptions = _options with { Mode = FileMode.Open };
-
-        _fileStream = FileIO.Open(FinalPath + Extension, reopenOptions).CreateFileStream(ownsHandle: true);
+        _fileStream = FileIO.Open(FinalPath + Extension, FileOpenOptions.Open(_options)).CreateFileStream(ownsHandle: true);
         _state = State.Open;
     }
 

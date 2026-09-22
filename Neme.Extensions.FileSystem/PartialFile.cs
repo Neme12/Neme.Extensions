@@ -22,7 +22,7 @@ public sealed class PartialFile :
 {
     private FileReference? _file;
     private readonly string _finalPath;
-    private readonly FileOpenOptions _options;
+    private readonly FileHandleOptions _options;
     private State _state;
 
     private PartialFile(FileReference partialFile, string finalPath)
@@ -116,9 +116,7 @@ public sealed class PartialFile :
         if (_state != State.Closed)
             throw new InvalidOperationException("File is not closed.");
 
-        var reopenOptions = _options with { Mode = FileMode.Open };
-
-        _file = FileIO.Open(FinalPath + Extension, reopenOptions);
+        _file = FileIO.Open(FinalPath + Extension, FileOpenOptions.Open(_options));
         _state = State.Open;
     }
 

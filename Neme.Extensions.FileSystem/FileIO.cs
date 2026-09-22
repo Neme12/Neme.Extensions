@@ -35,7 +35,7 @@ public static partial class FileIO
 
     [return: OwnershipTransfer]
     public static FileReference Open(string path, FileOpenOptions options) =>
-        new(OpenHandle(path, options), options);
+        new(OpenHandle(path, options), options.HandleOptions);
 
     public static bool TryOpenHandle(
         string path,
@@ -93,7 +93,7 @@ public static partial class FileIO
         PersistentFileId fileId,
         FileOpenOptions options)
     {
-        return new(OpenHandle(fileId, options), options);
+        return new(OpenHandle(fileId, options), options.HandleOptions);
     }
 
     [SupportedOSPlatform("windows")]
@@ -157,7 +157,7 @@ public static partial class FileIO
         string? path,
         FileOpenOptions options)
     {
-        return new(OpenHandleAt(rootDirectory, path, options), options);
+        return new(OpenHandleAt(rootDirectory, path, options), options.HandleOptions);
     }
 
     public static bool TryOpenHandleAt(
@@ -207,8 +207,11 @@ public static partial class FileIO
     }
 
     [return: OwnershipTransfer]
-    public static FileReference Reopen([Borrow] FileReference file, FileOpenOptions? options = null) =>
-        new(OpenHandleAt(file.Handle, null, file.Options), options ?? file.Options);
+    public static FileReference Reopen([Borrow] FileReference file, FileOpenOptions? options = null)
+    {
+        var openOptions = options ?? FileOpenOptions.Open(file.Options);
+        return new(OpenHandleAt(file.Handle, null, openOptions), openOptions.HandleOptions);
+    }
 
     [return: OwnershipTransfer]
     public static SafeFileHandle DuplicateHandle([Borrow] SafeFileHandle file, FileSystemAccess? access)
