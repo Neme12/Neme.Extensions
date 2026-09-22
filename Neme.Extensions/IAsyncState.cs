@@ -39,7 +39,7 @@ public interface IAsyncState
     /// <summary>
     /// Represents synchronous execution. Use as a type parameter to indicate a synchronous code path.
     /// </summary>
-    public sealed class Sync : IAsyncState
+    public readonly struct Sync : IAsyncState
     {
         public static bool IsAsync => false;
     }
@@ -47,7 +47,7 @@ public interface IAsyncState
     /// <summary>
     /// Represents asynchronous execution. Use as a type parameter to indicate an asynchronous code path.
     /// </summary>
-    public sealed class Async : IAsyncState
+    public readonly struct Async : IAsyncState
     {
         public static bool IsAsync => true;
     }
