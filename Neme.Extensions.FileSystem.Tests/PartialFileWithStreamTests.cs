@@ -62,7 +62,7 @@ public sealed class PartialFileWithStreamTests
         {
             // Act & Assert
             var exception = Assert.Throws<ArgumentException>(() => PartialFileWithStream.Create(finalPath, options));
-            Assert.Equal("options", exception.ParamName);
+            Assert.Equal("request", exception.ParamName);
         }
         finally
         {

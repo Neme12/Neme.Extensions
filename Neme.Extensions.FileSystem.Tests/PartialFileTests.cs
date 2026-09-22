@@ -23,12 +23,12 @@ public sealed class PartialFileTests
         var tempDirectory = CreateTempDirectoryPath();
         var finalPath = Path.Combine(tempDirectory, "file.txt");
         var options = FileOpenRequest.CreateNew(FileSystemAccess.ReadWrite, FileShare.All);
-
+        
         try
         {
             // Act & Assert
             var exception = Assert.Throws<ArgumentException>(() => PartialFile.Create(finalPath, options));
-            Assert.Equal("options", exception.ParamName);
+            Assert.Equal("request", exception.ParamName);
             Assert.Contains("Options must include delete access.", exception.Message, StringComparison.Ordinal);
         }
         finally
