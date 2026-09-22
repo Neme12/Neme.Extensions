@@ -18,14 +18,14 @@ public readonly record struct FileOpenRequest
             : FileShare.Read, 0, 0, null);
     }
 
-    public FileOpenRequest(FileMode mode, FileSystemAccess access, FileShare share, FileOptions options = FileOptions.None, FileAttributes attributes = 0)
+    public FileOpenRequest(FileMode mode, FileSystemAccess access, FileShare share, FileOptions flags = FileOptions.None, FileAttributes attributes = 0)
     {
-        _allOptions = ToAllOptions(mode, access, share, options, attributes, null);
+        _allOptions = ToAllOptions(mode, access, share, flags, attributes, null);
     }
 
     public FileOpenRequest(FileMode mode, FileHandleOptions options, FileAttributes attributes = 0)
     {
-        _allOptions = ToAllOptions(mode, options.Access, options.Share, options.Options, attributes, null);
+        _allOptions = ToAllOptions(mode, options.Access, options.Share, options.Flags, attributes, null);
     }
 
     public static FileOpenRequest Create(FileSystemAccess access) =>
@@ -34,17 +34,17 @@ public readonly record struct FileOpenRequest
     public static FileOpenRequest Create(
         FileSystemAccess access,
         FileShare share,
-        FileOptions options = FileOptions.None,
+        FileOptions flags = FileOptions.None,
         FileAttributes attributes = 0)
     {
-        return new(FileMode.Create, access, share, options, attributes);
+        return new(FileMode.Create, access, share, flags, attributes);
     }
 
     public static FileOpenRequest Create(
         FileHandleOptions options,
         FileAttributes attributes = 0)
     {
-        return new(FileMode.Create, options.Access, options.Share, options.Options, attributes);
+        return new(FileMode.Create, options.Access, options.Share, options.Flags, attributes);
     }
 
     public static FileOpenRequest CreateNew(FileSystemAccess access) =>
@@ -53,17 +53,17 @@ public readonly record struct FileOpenRequest
     public static FileOpenRequest CreateNew(
         FileSystemAccess access,
         FileShare share,
-        FileOptions options = FileOptions.None,
+        FileOptions flags = FileOptions.None,
         FileAttributes attributes = 0)
     {
-        return new(FileMode.CreateNew, access, share, options, attributes);
+        return new(FileMode.CreateNew, access, share, flags, attributes);
     }
 
     public static FileOpenRequest CreateNew(
         FileHandleOptions options,
         FileAttributes attributes = 0)
     {
-        return new(FileMode.CreateNew, options.Access, options.Share, options.Options, attributes);
+        return new(FileMode.CreateNew, options.Access, options.Share, options.Flags, attributes);
     }
 
     public static FileOpenRequest Open(FileSystemAccess access) =>
@@ -72,17 +72,17 @@ public readonly record struct FileOpenRequest
     public static FileOpenRequest Open(
         FileSystemAccess access,
         FileShare share,
-        FileOptions options = FileOptions.None,
+        FileOptions flags = FileOptions.None,
         FileAttributes attributes = 0)
     {
-        return new(FileMode.Open, access, share, options, attributes);
+        return new(FileMode.Open, access, share, flags, attributes);
     }
 
     public static FileOpenRequest Open(
         FileHandleOptions options,
         FileAttributes attributes = 0)
     {
-        return new(FileMode.Open, options.Access, options.Share, options.Options, attributes);
+        return new(FileMode.Open, options.Access, options.Share, options.Flags, attributes);
     }
 
     public static FileOpenRequest OpenOrCreate(FileSystemAccess access) =>
@@ -91,17 +91,17 @@ public readonly record struct FileOpenRequest
     public static FileOpenRequest OpenOrCreate(
         FileSystemAccess access,
         FileShare share,
-        FileOptions options = FileOptions.None,
+        FileOptions flags = FileOptions.None,
         FileAttributes attributes = 0)
     {
-        return new(FileMode.OpenOrCreate, access, share, options, attributes);
+        return new(FileMode.OpenOrCreate, access, share, flags, attributes);
     }
 
     public static FileOpenRequest OpenOrCreate(
         FileHandleOptions options,
         FileAttributes attributes = 0)
     {
-        return new(FileMode.OpenOrCreate, options.Access, options.Share, options.Options, attributes);
+        return new(FileMode.OpenOrCreate, options.Access, options.Share, options.Flags, attributes);
     }
 
     public static FileOpenRequest Append(FileSystemAccess access = FileSystemAccess.Write) =>
@@ -110,17 +110,17 @@ public readonly record struct FileOpenRequest
     public static FileOpenRequest Append(
         FileSystemAccess access = FileSystemAccess.Write,
         FileShare share = FileShare.None,
-        FileOptions options = FileOptions.None,
+        FileOptions flags = FileOptions.None,
         FileAttributes attributes = 0)
     {
-        return new(FileMode.Append, access, share, options, attributes);
+        return new(FileMode.Append, access, share, flags, attributes);
     }
 
     public static FileOpenRequest Append(
         FileHandleOptions options,
         FileAttributes attributes = 0)
     {
-        return new(FileMode.Append, options.Access, options.Share, options.Options, attributes);
+        return new(FileMode.Append, options.Access, options.Share, options.Flags, attributes);
     }
 
     public FileMode Mode
@@ -164,7 +164,7 @@ public readonly record struct FileOpenRequest
                 Mode,
                 value.Access,
                 value.Share,
-                value.Options,
+                value.Flags,
                 Attributes,
                 UnixCreateMode);
     }
@@ -246,14 +246,14 @@ public readonly record struct FileOpenRequest
         FileMode mode,
         FileSystemAccess access,
         FileShare share,
-        FileOptions options,
+        FileOptions flags,
         FileAttributes attributes,
         UnixFileMode? unixFileMode)
     {
         return FileModeToAllOptions(mode)
             | FileSystemAccessToAllOptions(access)
             | FileShareToAllOptions(share)
-            | FileOptionsToAllOptions(options)
+            | FileOptionsToAllOptions(flags)
             | FileAttributesToAllOptions(attributes)
             | UnixFileModeToAllOptions(unixFileMode);
     }
@@ -358,26 +358,26 @@ public readonly record struct FileOpenRequest
         return value;
     }
 
-    private static AllOptions FileOptionsToAllOptions(FileOptions options)
+    private static AllOptions FileOptionsToAllOptions(FileOptions flags)
     {
         AllOptions value = 0;
 
-        if ((options & FileOptions.WriteThrough) != 0)
+        if ((flags & FileOptions.WriteThrough) != 0)
             value |= AllOptions.Options_WriteThrough;
 
-        if ((options & FileOptions.Asynchronous) != 0)
+        if ((flags & FileOptions.Asynchronous) != 0)
             value |= AllOptions.Options_Asynchronous;
 
-        if ((options & FileOptions.RandomAccess) != 0)
+        if ((flags & FileOptions.RandomAccess) != 0)
             value |= AllOptions.Options_RandomAccess;
 
-        if ((options & FileOptions.DeleteOnClose) != 0)
+        if ((flags & FileOptions.DeleteOnClose) != 0)
             value |= AllOptions.Options_DeleteOnClose;
 
-        if ((options & FileOptions.SequentialScan) != 0)
+        if ((flags & FileOptions.SequentialScan) != 0)
             value |= AllOptions.Options_SequentialScan;
 
-        if ((options & FileOptions.Encrypted) != 0)
+        if ((flags & FileOptions.Encrypted) != 0)
             value |= AllOptions.Options_Encrypted;
 
         return value;

@@ -20,7 +20,7 @@ public sealed class FileHandleOptionsTests
 
             Assert.Equal(expectedAccess, sut.Access);
             Assert.Equal(expectedShare, sut.Share);
-            Assert.Equal(expectedOptions, sut.Options);
+            Assert.Equal(expectedOptions, sut.Flags);
         }
 
         [Fact]
@@ -30,7 +30,7 @@ public sealed class FileHandleOptionsTests
 
             Assert.Equal(FileSystemAccess.None, sut.Access);
             Assert.Equal(FileShare.None, sut.Share);
-            Assert.Equal((FileOptions)0, sut.Options);
+            Assert.Equal((FileOptions)0, sut.Flags);
         }
     }
 
@@ -46,13 +46,13 @@ public sealed class FileHandleOptionsTests
             var sut = new FileHandleOptions
             {
                 Share = expectedShare,
-                Options = expectedOptions,
+                Flags = expectedOptions,
                 Access = expectedAccess,
             };
 
             Assert.Equal(expectedAccess, sut.Access);
             Assert.Equal(expectedShare, sut.Share);
-            Assert.Equal(expectedOptions, sut.Options);
+            Assert.Equal(expectedOptions, sut.Flags);
         }
     }
 
@@ -68,17 +68,17 @@ public sealed class FileHandleOptionsTests
             var sut = new FileHandleOptions
             {
                 Access = expectedAccess,
-                Options = expectedOptions,
+                Flags = expectedOptions,
                 Share = expectedShare,
             };
 
             Assert.Equal(expectedAccess, sut.Access);
             Assert.Equal(expectedShare, sut.Share);
-            Assert.Equal(expectedOptions, sut.Options);
+            Assert.Equal(expectedOptions, sut.Flags);
         }
     }
 
-    public sealed class Options
+    public sealed class Flags
     {
         [Fact]
         public void WhenSetAfterAccessAndShare_PreservesExistingValues()
@@ -91,12 +91,12 @@ public sealed class FileHandleOptionsTests
             {
                 Access = expectedAccess,
                 Share = expectedShare,
-                Options = expectedOptions,
+                Flags = expectedOptions,
             };
 
             Assert.Equal(expectedAccess, sut.Access);
             Assert.Equal(expectedShare, sut.Share);
-            Assert.Equal(expectedOptions, sut.Options);
+            Assert.Equal(expectedOptions, sut.Flags);
         }
     }
 }

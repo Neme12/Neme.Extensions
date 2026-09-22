@@ -6,24 +6,27 @@ public readonly record struct FileHandleOptions
 {
     private readonly AllOptions _allOptions;
 
-    public FileHandleOptions(FileSystemAccess access, FileShare share, FileOptions options = FileOptions.None)
+    public FileHandleOptions(
+        FileSystemAccess access,
+        FileShare share,
+        FileOptions flags = FileOptions.None)
     {
-        _allOptions = ToAllOptions(access, share, options);
+        _allOptions = ToAllOptions(access, share, flags);
     }
 
     public FileSystemAccess Access
     {
         get => AllOptionsToFileSystemAccess(_allOptions);
-        init => _allOptions = ToAllOptions(value, Share, Options);
+        init => _allOptions = ToAllOptions(value, Share, Flags);
     }
 
     public FileShare Share
     {
         get => AllOptionsToFileShare(_allOptions);
-        init => _allOptions = ToAllOptions(Access, value, Options);
+        init => _allOptions = ToAllOptions(Access, value, Flags);
     }
 
-    public FileOptions Options
+    public FileOptions Flags
     {
         get => AllOptionsToFileOptions(_allOptions);
         init => _allOptions = ToAllOptions(Access, Share, value);
@@ -32,12 +35,12 @@ public readonly record struct FileHandleOptions
     private static AllOptions ToAllOptions(
         FileSystemAccess access,
         FileShare share,
-        FileOptions options)
+        FileOptions flags)
     {
         return
             FileSystemAccessToAllOptions(access) |
             FileShareToAllOptions(share) |
-            FileOptionsToAllOptions(options);
+            FileOptionsToAllOptions(flags);
     }
 
     private static AllOptions FileSystemAccessToAllOptions(FileSystemAccess access)
@@ -130,26 +133,26 @@ public readonly record struct FileHandleOptions
         return value;
     }
 
-    private static AllOptions FileOptionsToAllOptions(FileOptions options)
+    private static AllOptions FileOptionsToAllOptions(FileOptions flags)
     {
         AllOptions value = 0;
 
-        if ((options & FileOptions.WriteThrough) != 0)
+        if ((flags & FileOptions.WriteThrough) != 0)
             value |= AllOptions.Options_WriteThrough;
 
-        if ((options & FileOptions.Asynchronous) != 0)
+        if ((flags & FileOptions.Asynchronous) != 0)
             value |= AllOptions.Options_Asynchronous;
 
-        if ((options & FileOptions.RandomAccess) != 0)
+        if ((flags & FileOptions.RandomAccess) != 0)
             value |= AllOptions.Options_RandomAccess;
 
-        if ((options & FileOptions.DeleteOnClose) != 0)
+        if ((flags & FileOptions.DeleteOnClose) != 0)
             value |= AllOptions.Options_DeleteOnClose;
 
-        if ((options & FileOptions.SequentialScan) != 0)
+        if ((flags & FileOptions.SequentialScan) != 0)
             value |= AllOptions.Options_SequentialScan;
 
-        if ((options & FileOptions.Encrypted) != 0)
+        if ((flags & FileOptions.Encrypted) != 0)
             value |= AllOptions.Options_Encrypted;
 
         return value;
@@ -187,7 +190,7 @@ public readonly record struct FileHandleOptions
         {
             Access = FileSystemAccess.FromFileAccess(options.Access),
             Share = options.Share,
-            Options = options.Options,
+            Flags = options.Options,
         };
     }
 

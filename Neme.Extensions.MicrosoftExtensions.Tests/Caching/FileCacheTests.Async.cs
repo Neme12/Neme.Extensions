@@ -694,7 +694,7 @@ public sealed partial class FileCacheTests
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(FileOptions.Asynchronous | FileOptions.RandomAccess, result.Options.Options);
+            Assert.Equal(FileOptions.Asynchronous | FileOptions.RandomAccess, result.Options.Flags);
         }
 
         [Fact]
@@ -715,7 +715,7 @@ public sealed partial class FileCacheTests
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(FileOptions.Asynchronous | FileOptions.SequentialScan, result.Options.Options);
+            Assert.Equal(FileOptions.Asynchronous | FileOptions.SequentialScan, result.Options.Flags);
         }
 
         [Fact]
@@ -831,7 +831,7 @@ public sealed partial class FileCacheTests
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(FileOptions.Asynchronous | FileOptions.RandomAccess, result.Options.Options);
+            Assert.Equal(FileOptions.Asynchronous | FileOptions.RandomAccess, result.Options.Flags);
         }
 
         [Fact]
@@ -858,7 +858,7 @@ public sealed partial class FileCacheTests
 
             // Assert - Only FileOptions should be applied
             Assert.NotNull(result);
-            Assert.Equal(FileOptions.Asynchronous | FileOptions.DeleteOnClose, result.Options.Options);
+            Assert.Equal(FileOptions.Asynchronous | FileOptions.DeleteOnClose, result.Options.Flags);
         }
     }
 }

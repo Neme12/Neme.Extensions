@@ -591,7 +591,7 @@ public sealed partial class FileCacheTests
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(FileOptions.RandomAccess, result.Options.Options);
+            Assert.Equal(FileOptions.RandomAccess, result.Options.Flags);
         }
 
         [Fact]
@@ -612,7 +612,7 @@ public sealed partial class FileCacheTests
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(FileOptions.SequentialScan, result.Options.Options);
+            Assert.Equal(FileOptions.SequentialScan, result.Options.Flags);
         }
 
         [Fact]
@@ -728,7 +728,7 @@ public sealed partial class FileCacheTests
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(FileOptions.RandomAccess, result.Options.Options);
+            Assert.Equal(FileOptions.RandomAccess, result.Options.Flags);
         }
     }
 }

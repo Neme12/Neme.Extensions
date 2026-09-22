@@ -16,7 +16,7 @@ public sealed class FileReference : IDisposable
     internal FileReference([OwnershipTransfer] SafeFileHandle handle, FileHandleOptions options)
     {
         Debug.Assert(handle is { IsClosed: false, IsInvalid: false });
-        Debug.Assert(handle.IsAsync == ((options.Options & FileOptions.Asynchronous) != 0));
+        Debug.Assert(handle.IsAsync == ((options.Flags & FileOptions.Asynchronous) != 0));
 
         _handle = handle;
         _options = options;
@@ -55,7 +55,7 @@ public sealed class FileReference : IDisposable
 #if NET6_0_OR_GREATER
             return _handle.IsAsync;
 #else
-            return (_options.Options & FileOptions.Asynchronous) != 0;
+            return (_options.Flags & FileOptions.Asynchronous) != 0;
 #endif
         }
     }

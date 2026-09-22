@@ -205,7 +205,7 @@ public sealed class PartialFileTests
             Assert.NotSame(originalFile, sut.File);
             Assert.Equal(FileSystemAccess.ReadWriteDelete, sut.File.Options.Access);
             Assert.Equal(FileShare.All, sut.File.Options.Share);
-            Assert.Equal(FileOptions.None, sut.File.Options.Options);
+            Assert.Equal(FileOptions.None, sut.File.Options.Flags);
             Assert.True(File.Exists(finalPath + ".part"));
         }
         finally
