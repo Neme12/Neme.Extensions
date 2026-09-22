@@ -2,6 +2,7 @@
 using Neme.Extensions.IO;
 using Neme.Extensions.Ownership;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 
 namespace Neme.Extensions.FileSystem;
@@ -14,6 +15,9 @@ public sealed class FileReference : IDisposable
 
     internal FileReference([OwnershipTransfer] SafeFileHandle handle, FileHandleOptions options)
     {
+        Debug.Assert(handle is { IsClosed: false, IsInvalid: false });
+        Debug.Assert(handle.IsAsync == ((options.Options & FileOptions.Asynchronous) != 0));
+
         _handle = handle;
         _options = options;
     }
@@ -65,17 +69,98 @@ public sealed class FileReference : IDisposable
     public bool CanWrite =>
         ((RawFileSystemAccess)_options.Access & RawFileSystemAccess.Write) != 0;
 
+    [return: OwnershipTransfer]
+    public static FileReference Open(string path, FileOpenOptions options) =>
+        new(FileIO.OpenHandle(path, options), options.HandleOptions);
+
+    public static bool TryOpen(
+        string path,
+        FileOpenOptions options,
+        [NotNullWhen(true)][OwnershipTransfer] out FileReference? file,
+        bool requireDirectory = true)
+    {
+        file = FileIO.TryOpenHandle(path, options, out var fileHandle, requireDirectory)
+            ? new(fileHandle, options.HandleOptions)
+            : null;
+        return file is not null;
+    }
+
+    [SupportedOSPlatform("windows")]
+    [SupportedOSPlatform("linux")]
+    [return: OwnershipTransfer]
+    public static FileReference Open(
+        PersistentFileId fileId,
+        FileOpenOptions options)
+    {
+        return new(FileIO.OpenHandle(fileId, options), options.HandleOptions);
+    }
+
+    [SupportedOSPlatform("windows")]
+    [SupportedOSPlatform("linux")]
+    public static bool TryOpen(
+        PersistentFileId fileId,
+        FileOpenOptions options,
+        [NotNullWhen(true)][OwnershipTransfer] out FileReference? file,
+        bool requireDirectory = true)
+    {
+        file = FileIO.TryOpenHandle(fileId, options, out var fileHandle, requireDirectory)
+            ? new(fileHandle, options.HandleOptions)
+            : null;
+        return file is not null;
+    }
+
+    [return: OwnershipTransfer]
+    public static FileReference OpenAt(
+        [Borrow] SafeFileHandle? rootDirectory,
+        string? path,
+        FileOpenOptions options)
+    {
+        return new(FileIO.OpenHandleAt(rootDirectory, path, options), options.HandleOptions);
+    }
+
+    public static bool TryOpenAt(
+        [Borrow] SafeFileHandle? rootDirectory,
+        string? path,
+        FileOpenOptions options,
+        [NotNullWhen(true)][OwnershipTransfer] out FileReference? file,
+        bool requireDirectory = true)
+    {
+        file = FileIO.TryOpenHandleAt(rootDirectory, path, options, out var fileHandle, requireDirectory)
+            ? new(fileHandle, options.HandleOptions)
+            : null;
+        return file is not null;
+    }
+
+    [return: OwnershipTransfer]
+    public static FileReference Reopen([Borrow] FileReference file, FileOpenOptions? options = null)
+    {
+        var openOptions = options ?? FileOpenOptions.Open(file.Options);
+        return new(FileIO.OpenHandleAt(file.Handle, null, openOptions), openOptions.HandleOptions);
+    }
+
+    [return: OwnershipTransfer]
+    public static FileReference Duplicate([Borrow] FileReference file) =>
+        new(FileIO.DuplicateHandle(file.Handle), file.Options);
+
+    [return: OwnershipTransfer]
+    public static FileReference CreateTempFile(FileSystemAccess access) =>
+        CreateTempFile(access, FileOpenOptions.GetDefaultFileShare(access));
+
+    [return: OwnershipTransfer]
+    public static FileReference CreateTempFile(
+        FileSystemAccess access,
+        FileShare share,
+        FileOptions options = FileOptions.DeleteOnClose,
+        FileAttributes attributes = FileAttributes.Temporary)
+    {
+        var (filePath, openOptions) = FileIO.GetTempFilePathAndOptions(access, share, options, attributes);
+        return Open(filePath, openOptions);
+    }
+
     public string GetPath()
     {
         ObjectDisposedException.ThrowIf(_handle is null, this);
         return FileIO.GetPath(_handle);
-    }
-
-    [return: OwnershipTransfer]
-    public FileReference OpenAt(string path, FileOpenOptions options)
-    {
-        ObjectDisposedException.ThrowIf(_handle is null, this);
-        return FileIO.OpenAt(_handle, path, options);
     }
 
     public FileId GetId()

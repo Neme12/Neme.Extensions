@@ -1,36 +1,26 @@
 ﻿using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.Ownership;
 
 namespace Neme.Extensions.FileSystem;
 
 public static partial class FileIO
 {
+    [return: OwnershipTransfer]
     public static SafeFileHandle CreateTempFileHandle(FileSystemAccess access) =>
         CreateTempFileHandle(access, FileOpenOptions.GetDefaultFileShare(access));
 
+    [return: OwnershipTransfer]
     public static SafeFileHandle CreateTempFileHandle(
         FileSystemAccess access,
         FileShare share,
         FileOptions options = FileOptions.DeleteOnClose,
         FileAttributes attributes = FileAttributes.Temporary)
     {
-        var (filePath, fileOptions) = GetTempFilePathAndOptions(access, share, options, attributes);
-        return FileIO.OpenHandle(filePath, fileOptions);
+        var (filePath, openOptions) = GetTempFilePathAndOptions(access, share, options, attributes);
+        return OpenHandle(filePath, openOptions);
     }
 
-    public static FileReference CreateTempFile(FileSystemAccess access) =>
-        CreateTempFile(access, FileOpenOptions.GetDefaultFileShare(access));
-
-    public static FileReference CreateTempFile(
-        FileSystemAccess access,
-        FileShare share,
-        FileOptions options = FileOptions.DeleteOnClose,
-        FileAttributes attributes = FileAttributes.Temporary)
-    {
-        var (filePath, fileOptions) = GetTempFilePathAndOptions(access, share, options, attributes);
-        return FileIO.Open(filePath, fileOptions);
-    }
-
-    private static (string filePath, FileOpenOptions) GetTempFilePathAndOptions(
+    internal static (string filePath, FileOpenOptions openOptions) GetTempFilePathAndOptions(
         FileSystemAccess access,
         FileShare share,
         FileOptions options,

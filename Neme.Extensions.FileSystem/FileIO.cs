@@ -33,10 +33,6 @@ public static partial class FileIO
         return Strategy.OpenHandle(path, options);
     }
 
-    [return: OwnershipTransfer]
-    public static FileReference Open(string path, FileOpenOptions options) =>
-        new(OpenHandle(path, options), options.HandleOptions);
-
     public static bool TryOpenHandle(
         string path,
         FileOpenOptions options,
@@ -56,24 +52,6 @@ public static partial class FileIO
         }
     }
 
-    public static bool TryOpen(
-        string path,
-        FileOpenOptions options,
-        [NotNullWhen(true)][OwnershipTransfer] out FileReference? file,
-        bool requireDirectory = true)
-    {
-        try
-        {
-            file = Open(path, options);
-            return true;
-        }
-        catch (Exception e) when (e is FileNotFoundException || !requireDirectory && e is DirectoryNotFoundException)
-        {
-            file = null;
-            return false;
-        }
-    }
-
     [SupportedOSPlatform("windows")]
     [SupportedOSPlatform("linux")]
     [return: OwnershipTransfer]
@@ -84,16 +62,6 @@ public static partial class FileIO
         Strategy.ValidateFileId(fileId);
 
         return Strategy.OpenHandle(fileId, options);
-    }
-
-    [SupportedOSPlatform("windows")]
-    [SupportedOSPlatform("linux")]
-    [return: OwnershipTransfer]
-    public static FileReference Open(
-        PersistentFileId fileId,
-        FileOpenOptions options)
-    {
-        return new(OpenHandle(fileId, options), options.HandleOptions);
     }
 
     [SupportedOSPlatform("windows")]
@@ -116,26 +84,6 @@ public static partial class FileIO
         }
     }
 
-    [SupportedOSPlatform("windows")]
-    [SupportedOSPlatform("linux")]
-    public static bool TryOpen(
-        PersistentFileId fileId,
-        FileOpenOptions options,
-        [NotNullWhen(true)][OwnershipTransfer] out FileReference? file,
-        bool requireDirectory = true)
-    {
-        try
-        {
-            file = Open(fileId, options);
-            return true;
-        }
-        catch (Exception e) when (e is FileNotFoundException || !requireDirectory && e is DirectoryNotFoundException)
-        {
-            file = null;
-            return false;
-        }
-    }
-
     [return: OwnershipTransfer]
     public static SafeFileHandle OpenHandleAt(
         [Borrow] SafeFileHandle? rootDirectory,
@@ -149,15 +97,6 @@ public static partial class FileIO
         Strategy.ValidatePath(path, optional: true);
 
         return Strategy.OpenHandleAt(rootDirectory, path, options);
-    }
-
-    [return: OwnershipTransfer]
-    public static FileReference OpenAt(
-        [Borrow] SafeFileHandle? rootDirectory,
-        string? path,
-        FileOpenOptions options)
-    {
-        return new(OpenHandleAt(rootDirectory, path, options), options.HandleOptions);
     }
 
     public static bool TryOpenHandleAt(
@@ -179,25 +118,6 @@ public static partial class FileIO
         }
     }
 
-    public static bool TryOpenAt(
-        [Borrow] SafeFileHandle? rootDirectory,
-        string? path,
-        FileOpenOptions options,
-        [NotNullWhen(true)][OwnershipTransfer] out FileReference? file,
-        bool requireDirectory = true)
-    {
-        try
-        {
-            file = OpenAt(rootDirectory, path, options);
-            return true;
-        }
-        catch (Exception e) when (e is FileNotFoundException || !requireDirectory && e is DirectoryNotFoundException)
-        {
-            file = null;
-            return false;
-        }
-    }
-
     [return: OwnershipTransfer]
     public static SafeFileHandle ReopenHandle([Borrow] SafeFileHandle file, FileOpenOptions options)
     {
@@ -207,23 +127,12 @@ public static partial class FileIO
     }
 
     [return: OwnershipTransfer]
-    public static FileReference Reopen([Borrow] FileReference file, FileOpenOptions? options = null)
-    {
-        var openOptions = options ?? FileOpenOptions.Open(file.Options);
-        return new(OpenHandleAt(file.Handle, null, openOptions), openOptions.HandleOptions);
-    }
-
-    [return: OwnershipTransfer]
-    public static SafeFileHandle DuplicateHandle([Borrow] SafeFileHandle file, FileSystemAccess? access)
+    public static SafeFileHandle DuplicateHandle([Borrow] SafeFileHandle file, FileSystemAccess? access = null)
     {
         Strategy.ValidateFileHandle(file);
 
         return Strategy.DuplicateHandle(file, access);
     }
-
-    [return: OwnershipTransfer]
-    public static FileReference Duplicate([Borrow] FileReference file) =>
-        new(DuplicateHandle(file.Handle, file.Options.Access), file.Options);
 
     public static string GetPath([Borrow] SafeFileHandle file)
     {

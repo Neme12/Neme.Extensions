@@ -102,7 +102,7 @@ public sealed class PartialFile :
         if (createDirectory)
             Directory.CreateDirectory(Path.GetDirectoryName(finalPath)!);
 
-        var file = FileIO.Open(partialPath, options);
+        var file = FileReference.Open(partialPath, options);
         return new PartialFile(file, finalPath);
     }
 
@@ -116,7 +116,7 @@ public sealed class PartialFile :
         if (_state != State.Closed)
             throw new InvalidOperationException("File is not closed.");
 
-        _file = FileIO.Open(FinalPath + Extension, FileOpenOptions.Open(_options));
+        _file = FileReference.Open(FinalPath + Extension, FileOpenOptions.Open(_options));
         _state = State.Open;
     }
 

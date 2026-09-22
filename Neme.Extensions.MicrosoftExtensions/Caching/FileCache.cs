@@ -347,7 +347,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
             };
 
             SetCoreAsync<IAsyncState.Sync>(key, factoryFunc, resolvedOptions, cancellationToken).GetAwaiter().GetCompletedResult();
-            return FileIO.Open(GetFilePath(key), s_fileSyncReadOptions with { Options = resolvedOptions.FileOptions });
+            return FileReference.Open(GetFilePath(key), s_fileSyncReadOptions with { Options = resolvedOptions.FileOptions });
         }
     }
 
@@ -390,7 +390,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
                 return cached.Value.FileReference;
 
             await SetCoreAsync<IAsyncState.Async>(key, factory, resolvedOptions, cancellationToken);
-            return FileIO.Open(GetFilePath(key), s_fileAsyncReadOptions with { Options = resolvedOptions.FileOptions });
+            return FileReference.Open(GetFilePath(key), s_fileAsyncReadOptions with { Options = resolvedOptions.FileOptions });
         }
     }
 
@@ -640,7 +640,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
         }
 
         return getFileHandle
-            ? FilePathOrReference.FromFileReference(FileIO.Open(filePath, FileReadOptions<TAsync>() with { Options = options }))
+            ? FilePathOrReference.FromFileReference(FileReference.Open(filePath, FileReadOptions<TAsync>() with { Options = options }))
             : FilePathOrReference.FromPath(filePath);
     }
 
@@ -757,7 +757,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
     {
         var metadataPath = filePath + MetadataExtension;
 
-        if (!FileIO.TryOpen(metadataPath, FileReadOptions<TAsync>(), out var file))
+        if (!FileReference.TryOpen(metadataPath, FileReadOptions<TAsync>(), out var file))
             return null;
 
         using (file)
