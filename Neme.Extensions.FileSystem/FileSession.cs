@@ -7,13 +7,13 @@ using System.Runtime.Versioning;
 
 namespace Neme.Extensions.FileSystem;
 
-public sealed class FileReference : IDisposable
+public sealed class FileSession : IDisposable
 {
     [Owned]
     private SafeFileHandle _handle;
     private readonly FileHandleOptions _options;
 
-    internal FileReference([OwnershipTransfer] SafeFileHandle handle, FileHandleOptions options)
+    internal FileSession([OwnershipTransfer] SafeFileHandle handle, FileHandleOptions options)
     {
         Debug.Assert(handle is { IsClosed: false, IsInvalid: false });
         Debug.Assert(handle.IsAsync == ((options.Flags & FileOptions.Asynchronous) != 0));
@@ -23,9 +23,9 @@ public sealed class FileReference : IDisposable
     }
 
 #if DEBUG
-    ~FileReference()
+    ~FileSession()
     {
-        Debug.Fail($"{nameof(FileReference)} should have been disposed.");
+        Debug.Fail($"{nameof(FileSession)} should have been disposed.");
     }
 #endif
 
@@ -70,13 +70,13 @@ public sealed class FileReference : IDisposable
         ((RawFileSystemAccess)_options.Access & RawFileSystemAccess.Write) != 0;
 
     [return: OwnershipTransfer]
-    public static FileReference Open(string path, FileOpenRequest request) =>
+    public static FileSession Open(string path, FileOpenRequest request) =>
         new(FileIO.OpenHandle(path, request), request.HandleOptions);
 
     public static bool TryOpen(
         string path,
         FileOpenRequest request,
-        [NotNullWhen(true)][OwnershipTransfer] out FileReference? file,
+        [NotNullWhen(true)][OwnershipTransfer] out FileSession? file,
         bool ignoreMissingDirectory = false)
     {
         file = FileIO.TryOpenHandle(path, request, out var fileHandle, ignoreMissingDirectory)
@@ -88,7 +88,7 @@ public sealed class FileReference : IDisposable
     [SupportedOSPlatform("windows")]
     [SupportedOSPlatform("linux")]
     [return: OwnershipTransfer]
-    public static FileReference Open(
+    public static FileSession Open(
         PersistentFileId fileId,
         FileOpenRequest request)
     {
@@ -100,7 +100,7 @@ public sealed class FileReference : IDisposable
     public static bool TryOpen(
         PersistentFileId fileId,
         FileOpenRequest request,
-        [NotNullWhen(true)][OwnershipTransfer] out FileReference? file,
+        [NotNullWhen(true)][OwnershipTransfer] out FileSession? file,
         bool ignoreMissingDirectory = false)
     {
         file = FileIO.TryOpenHandle(fileId, request, out var fileHandle, ignoreMissingDirectory)
@@ -110,7 +110,7 @@ public sealed class FileReference : IDisposable
     }
 
     [return: OwnershipTransfer]
-    public static FileReference OpenAt(
+    public static FileSession OpenAt(
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
         FileOpenRequest request)
@@ -122,7 +122,7 @@ public sealed class FileReference : IDisposable
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
         FileOpenRequest request,
-        [NotNullWhen(true)][OwnershipTransfer] out FileReference? file,
+        [NotNullWhen(true)][OwnershipTransfer] out FileSession? file,
         bool ignoreMissingDirectory = false)
     {
         file = FileIO.TryOpenHandleAt(rootDirectory, path, request, out var fileHandle, ignoreMissingDirectory)
@@ -132,22 +132,22 @@ public sealed class FileReference : IDisposable
     }
 
     [return: OwnershipTransfer]
-    public static FileReference Reopen([Borrow] FileReference file, FileOpenRequest? request = null)
+    public static FileSession Reopen([Borrow] FileSession file, FileOpenRequest? request = null)
     {
         var openRequest = request ?? FileOpenRequest.Open(file.Options);
         return new(FileIO.OpenHandleAt(file.Handle, null, openRequest), openRequest.HandleOptions);
     }
 
     [return: OwnershipTransfer]
-    public static FileReference Duplicate([Borrow] FileReference file) =>
+    public static FileSession Duplicate([Borrow] FileSession file) =>
         new(FileIO.DuplicateHandle(file.Handle), file.Options);
 
     [return: OwnershipTransfer]
-    public static FileReference CreateTempFile(FileSystemAccess access) =>
+    public static FileSession CreateTempFile(FileSystemAccess access) =>
         CreateTempFile(access, FileOpenRequest.GetDefaultFileShare(access));
 
     [return: OwnershipTransfer]
-    public static FileReference CreateTempFile(
+    public static FileSession CreateTempFile(
         FileSystemAccess access,
         FileShare share,
         FileOptions options = FileOptions.DeleteOnClose,

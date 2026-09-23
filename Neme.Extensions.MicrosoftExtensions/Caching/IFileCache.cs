@@ -6,13 +6,13 @@ namespace Neme.Extensions.MicrosoftExtensions.Caching;
 public interface IFileCache
 {
     [return: OwnershipTransfer]
-    FileReference? Get(
+    FileSession? Get(
         string key,
         FileCacheEntryReadOptions options,
         CancellationToken cancellationToken = default);
 
     [return: OwnershipTransfer]
-    Task<FileReference?> GetAsync(
+    Task<FileSession?> GetAsync(
         string key,
         FileCacheEntryReadOptions options,
         CancellationToken cancellationToken = default);
@@ -26,14 +26,14 @@ public interface IFileCache
         CancellationToken cancellationToken = default);
 
     [return: OwnershipTransfer]
-    FileReference GetOrCreate(
+    FileSession GetOrCreate(
         string key,
         [Borrow] Action<Stream, CancellationToken> factory,
         FileCacheEntryOptions options,
         CancellationToken cancellationToken = default);
 
     [return: OwnershipTransfer]
-    Task<FileReference> GetOrCreateAsync(
+    Task<FileSession> GetOrCreateAsync(
         string key,
         [Borrow] Func<Stream, CancellationToken, Task> factory,
         FileCacheEntryOptions options,

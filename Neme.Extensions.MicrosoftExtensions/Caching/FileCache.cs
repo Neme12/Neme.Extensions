@@ -104,17 +104,17 @@ public sealed partial class FileCache : IFileCache, IDisposable
     /// <param name="key">The cache key. Must not be null or empty.</param>
     /// <param name="options">Read-specific options. Use <see cref="FileCacheEntryReadOptions.Default"/> to apply global defaults.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>A <see cref="FileReference"/> handle with ownership transferred to the caller (you must dispose it),
+    /// <returns>A <see cref="FileSession"/> handle with ownership transferred to the caller (you must dispose it),
     /// or <c>null</c> if the key doesn't exist or the entry has expired.</returns>
     /// <remarks>
-    /// <para><strong>Ownership:</strong> The caller owns the returned <see cref="FileReference"/> and must dispose it.</para>
+    /// <para><strong>Ownership:</strong> The caller owns the returned <see cref="FileSession"/> and must dispose it.</para>
     /// <para><strong>Expired Entries:</strong> If the entry has expired, it is deleted from disk and <c>null</c> is returned.</para>
     /// <para><strong>Sliding Expiration:</strong> If the entry uses sliding expiration, this call automatically extends its lifetime.</para>
     /// <para><strong>vs GetPath:</strong> Use this method when you need a file stream. Use <see cref="GetPath"/> when you only need
     /// the file path (avoids opening a handle).</para>
     /// </remarks>
     [return: OwnershipTransfer]
-    public FileReference? Get(
+    public FileSession? Get(
         string key,
         FileCacheEntryReadOptions options,
         CancellationToken cancellationToken = default)
@@ -128,7 +128,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
             var fileOptions = options.FileOptions ?? _options.DefaultSyncFileOptions;
 
             var result = GetCoreAsync<IAsyncState.Sync>(key, fileOptions, isGetOrCreate: false, getFileHandle: true, cancellationToken).GetAwaiter().GetCompletedResult();
-            return result?.FileReference;
+            return result?.FileSession;
         }
     }
 
@@ -138,17 +138,17 @@ public sealed partial class FileCache : IFileCache, IDisposable
     /// <param name="key">The cache key. Must not be null or empty.</param>
     /// <param name="options">Read-specific options. Use <see cref="FileCacheEntryReadOptions.Default"/> to apply global defaults.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>A <see cref="FileReference"/> handle with ownership transferred to the caller (you must dispose it),
+    /// <returns>A <see cref="FileSession"/> handle with ownership transferred to the caller (you must dispose it),
     /// or <c>null</c> if the key doesn't exist or the entry has expired.</returns>
     /// <remarks>
-    /// <para><strong>Ownership:</strong> The caller owns the returned <see cref="FileReference"/> and must dispose it.</para>
+    /// <para><strong>Ownership:</strong> The caller owns the returned <see cref="FileSession"/> and must dispose it.</para>
     /// <para><strong>Expired Entries:</strong> If the entry has expired, it is deleted from disk and <c>null</c> is returned.</para>
     /// <para><strong>Sliding Expiration:</strong> If the entry uses sliding expiration, this call automatically extends its lifetime.</para>
     /// <para><strong>vs GetPathAsync:</strong> Use this method when you need a file stream. Use <see cref="GetPathAsync"/> when you only need
     /// the file path (avoids opening a handle).</para>
     /// </remarks>
     [return: OwnershipTransfer]
-    public async Task<FileReference?> GetAsync(
+    public async Task<FileSession?> GetAsync(
         string key,
         FileCacheEntryReadOptions options,
         CancellationToken cancellationToken = default)
@@ -162,7 +162,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
             var fileOptions = options.FileOptions ?? _options.DefaultAsyncFileOptions;
 
             var result = await GetCoreAsync<IAsyncState.Async>(key, fileOptions, isGetOrCreate: false, getFileHandle: true, cancellationToken);
-            return result?.FileReference;
+            return result?.FileSession;
         }
     }
 
@@ -310,18 +310,18 @@ public sealed partial class FileCache : IFileCache, IDisposable
     /// The stream is borrowed and must not be disposed by the callback.</param>
     /// <param name="options">Entry-specific options. Use <see cref="FileCacheEntryOptions.Default"/> to apply global defaults.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>A <see cref="FileReference"/> handle with ownership transferred to the caller (you must dispose it).</returns>
+    /// <returns>A <see cref="FileSession"/> handle with ownership transferred to the caller (you must dispose it).</returns>
     /// <remarks>
     /// <para><strong>Atomicity:</strong> The check-and-create operation is atomic per key. If multiple threads call this simultaneously
     /// for the same key, only one will invoke the factory; others will wait and receive the newly created entry.</para>
     /// <para><strong>Expired Entries:</strong> If an entry exists but has expired, it is treated as non-existent:
     /// the factory is invoked and a fresh entry is created.</para>
-    /// <para><strong>Ownership:</strong> The caller owns the returned <see cref="FileReference"/> and must dispose it.</para>
+    /// <para><strong>Ownership:</strong> The caller owns the returned <see cref="FileSession"/> and must dispose it.</para>
     /// <para><strong>vs Get + Set:</strong> This method is more efficient than checking Get and calling Set conditionally,
     /// as it performs the operation atomically under a single lock.</para>
     /// </remarks>
     [return: OwnershipTransfer]
-    public FileReference GetOrCreate(
+    public FileSession GetOrCreate(
         string key,
         [Borrow] Action<Stream, CancellationToken> factory,
         FileCacheEntryOptions options,
@@ -338,7 +338,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
 
             var cached = GetCoreAsync<IAsyncState.Sync>(key, resolvedOptions.FileOptions, isGetOrCreate: true, getFileHandle: true, cancellationToken).GetAwaiter().GetCompletedResult();
             if (cached is not null)
-                return cached.Value.FileReference;
+                return cached.Value.FileSession;
 
             Func<Stream, CancellationToken, Task> factoryFunc = (stream, cancellationToken) =>
             {
@@ -347,7 +347,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
             };
 
             SetCoreAsync<IAsyncState.Sync>(key, factoryFunc, resolvedOptions, cancellationToken).GetAwaiter().GetCompletedResult();
-            return FileReference.Open(GetFilePath(key), s_fileSyncReadOptions with { Options = resolvedOptions.FileOptions });
+            return FileSession.Open(GetFilePath(key), s_fileSyncReadOptions with { Options = resolvedOptions.FileOptions });
         }
     }
 
@@ -359,18 +359,18 @@ public sealed partial class FileCache : IFileCache, IDisposable
     /// The stream is borrowed and must not be disposed by the callback.</param>
     /// <param name="options">Entry-specific options. Use <see cref="FileCacheEntryOptions.Default"/> to apply global defaults.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>A <see cref="FileReference"/> handle with ownership transferred to the caller (you must dispose it).</returns>
+    /// <returns>A <see cref="FileSession"/> handle with ownership transferred to the caller (you must dispose it).</returns>
     /// <remarks>
     /// <para><strong>Atomicity:</strong> The check-and-create operation is atomic per key. If multiple threads call this simultaneously
     /// for the same key, only one will invoke the factory; others will wait and receive the newly created entry.</para>
     /// <para><strong>Expired Entries:</strong> If an entry exists but has expired, it is treated as non-existent:
     /// the factory is invoked and a fresh entry is created.</para>
-    /// <para><strong>Ownership:</strong> The caller owns the returned <see cref="FileReference"/> and must dispose it.</para>
+    /// <para><strong>Ownership:</strong> The caller owns the returned <see cref="FileSession"/> and must dispose it.</para>
     /// <para><strong>vs GetAsync + SetAsync:</strong> This method is more efficient than checking GetAsync and calling SetAsync conditionally,
     /// as it performs the operation atomically under a single lock.</para>
     /// </remarks>
     [return: OwnershipTransfer]
-    public async Task<FileReference> GetOrCreateAsync(
+    public async Task<FileSession> GetOrCreateAsync(
         string key,
         [Borrow] Func<Stream, CancellationToken, Task> factory,
         FileCacheEntryOptions options,
@@ -387,10 +387,10 @@ public sealed partial class FileCache : IFileCache, IDisposable
 
             var cached = await GetCoreAsync<IAsyncState.Async>(key, resolvedOptions.FileOptions, isGetOrCreate: true, getFileHandle: true, cancellationToken);
             if (cached is not null)
-                return cached.Value.FileReference;
+                return cached.Value.FileSession;
 
             await SetCoreAsync<IAsyncState.Async>(key, factory, resolvedOptions, cancellationToken);
-            return FileReference.Open(GetFilePath(key), s_fileAsyncReadOptions with { Options = resolvedOptions.FileOptions });
+            return FileSession.Open(GetFilePath(key), s_fileAsyncReadOptions with { Options = resolvedOptions.FileOptions });
         }
     }
 
@@ -614,7 +614,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
     }
 
     [return: OwnershipTransfer]
-    private async Task<FilePathOrReference?> GetCoreAsync<TAsync>(
+    private async Task<FilePathOrSession?> GetCoreAsync<TAsync>(
         string key,
         FileOptions options,
         bool isGetOrCreate,
@@ -640,8 +640,8 @@ public sealed partial class FileCache : IFileCache, IDisposable
         }
 
         return getFileHandle
-            ? FilePathOrReference.FromFileReference(FileReference.Open(filePath, FileReadOptions<TAsync>() with { Options = options }))
-            : FilePathOrReference.FromPath(filePath);
+            ? FilePathOrSession.FromSession(FileSession.Open(filePath, FileReadOptions<TAsync>() with { Options = options }))
+            : FilePathOrSession.FromPath(filePath);
     }
 
     [return: OwnershipTransfer]
@@ -757,7 +757,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
     {
         var metadataPath = filePath + MetadataExtension;
 
-        if (!FileReference.TryOpen(metadataPath, FileReadOptions<TAsync>(), out var file, ignoreMissingDirectory: true))
+        if (!FileSession.TryOpen(metadataPath, FileReadOptions<TAsync>(), out var file, ignoreMissingDirectory: true))
             return null;
 
         using (file)
@@ -961,17 +961,17 @@ public sealed partial class FileCache : IFileCache, IDisposable
         public static partial void MetadataMissingForFile(ILogger logger, string file);
     }
 
-    private readonly record struct FilePathOrReference
+    private readonly record struct FilePathOrSession
     {
         [Borrowed]
         private readonly object _object;
 
-        private FilePathOrReference(string filePath)
+        private FilePathOrSession(string filePath)
         {
             _object = filePath;
         }
 
-        private FilePathOrReference([Borrow] FileReference file)
+        private FilePathOrSession([Borrow] FileSession file)
         {
             _object = file;
         }
@@ -980,19 +980,19 @@ public sealed partial class FileCache : IFileCache, IDisposable
             _object is string;
 
         public bool IsFileReference =>
-            _object is FileReference;
+            _object is FileSession;
 
         public string FilePath =>
             _object as string ?? throw new InvalidOperationException("Not a file path.");
 
         [Borrowed]
-        public FileReference FileReference =>
-            _object as FileReference ?? throw new InvalidOperationException("Not a FileReference.");
+        public FileSession FileSession =>
+            _object as FileSession ?? throw new InvalidOperationException("Not a FileReference.");
 
-        public static FilePathOrReference FromPath(string filePath) =>
+        public static FilePathOrSession FromPath(string filePath) =>
             new(filePath);
 
-        public static FilePathOrReference FromFileReference([Borrow] FileReference file) =>
+        public static FilePathOrSession FromSession([Borrow] FileSession file) =>
             new(file);
     }
 

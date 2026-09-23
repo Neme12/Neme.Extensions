@@ -106,7 +106,7 @@ public sealed class PartialFileWithStream :
         if (createDirectory)
             Directory.CreateDirectory(Path.GetDirectoryName(finalPath)!);
 
-        var fileStream = FileReference.Open(partialPath, request).CreateFileStream(ownsHandle: true);
+        var fileStream = FileSession.Open(partialPath, request).CreateFileStream(ownsHandle: true);
         return new PartialFileWithStream(fileStream, finalPath, request.HandleOptions);
     }
 
@@ -120,7 +120,7 @@ public sealed class PartialFileWithStream :
         if (_state != State.Closed)
             throw new InvalidOperationException("File is not closed.");
 
-        _fileStream = FileReference.Open(FinalPath + Extension, FileOpenRequest.Open(_options)).CreateFileStream(ownsHandle: true);
+        _fileStream = FileSession.Open(FinalPath + Extension, FileOpenRequest.Open(_options)).CreateFileStream(ownsHandle: true);
         _state = State.Open;
     }
 

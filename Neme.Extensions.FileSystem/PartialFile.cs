@@ -20,12 +20,12 @@ namespace Neme.Extensions.FileSystem;
 public sealed class PartialFile :
     IDisposable
 {
-    private FileReference? _file;
+    private FileSession? _file;
     private readonly string _finalPath;
     private readonly FileHandleOptions _options;
     private State _state;
 
-    private PartialFile(FileReference partialFile, string finalPath)
+    private PartialFile(FileSession partialFile, string finalPath)
     {
         _file = partialFile;
         _finalPath = finalPath;
@@ -36,10 +36,10 @@ public sealed class PartialFile :
     public static string Extension => ".part";
 
     /// <summary>
-    /// Gets the <see cref="FileReference"/> for the temporary <c>.part</c> file while the file is open.
+    /// Gets the <see cref="FileSession"/> for the temporary <c>.part</c> file while the file is open.
     /// </summary>
     [Owned]
-    public FileReference File
+    public FileSession File
     {
         get
         {
@@ -102,7 +102,7 @@ public sealed class PartialFile :
         if (createDirectory)
             Directory.CreateDirectory(Path.GetDirectoryName(finalPath)!);
 
-        var file = FileReference.Open(partialPath, request);
+        var file = FileSession.Open(partialPath, request);
         return new PartialFile(file, finalPath);
     }
 
@@ -116,7 +116,7 @@ public sealed class PartialFile :
         if (_state != State.Closed)
             throw new InvalidOperationException("File is not closed.");
 
-        _file = FileReference.Open(FinalPath + Extension, FileOpenRequest.Open(_options));
+        _file = FileSession.Open(FinalPath + Extension, FileOpenRequest.Open(_options));
         _state = State.Open;
     }
 
