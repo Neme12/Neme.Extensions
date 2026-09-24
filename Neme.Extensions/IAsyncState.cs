@@ -1,7 +1,5 @@
 ﻿namespace Neme.Extensions;
 
-#if NET6_0_OR_GREATER
-
 /// <summary>
 /// A type parameter interface for distinguishing between synchronous and asynchronous execution paths
 /// in generic methods. Use <see cref="Sync"/> for synchronous operations and <see cref="Async"/> for asynchronous operations.
@@ -31,17 +29,21 @@
 /// </example>
 public interface IAsyncState
 {
+#if NET6_0_OR_GREATER
     /// <summary>
     /// Gets a value indicating whether this represents asynchronous execution.
     /// </summary>
     static abstract bool IsAsync { get; }
+#endif
 
     /// <summary>
     /// Represents synchronous execution. Use as a type parameter to indicate a synchronous code path.
     /// </summary>
     public readonly struct Sync : IAsyncState
     {
+#if NET6_0_OR_GREATER
         public static bool IsAsync => false;
+#endif
     }
 
     /// <summary>
@@ -49,8 +51,8 @@ public interface IAsyncState
     /// </summary>
     public readonly struct Async : IAsyncState
     {
+#if NET6_0_OR_GREATER
         public static bool IsAsync => true;
+#endif
     }
 }
-
-#endif
