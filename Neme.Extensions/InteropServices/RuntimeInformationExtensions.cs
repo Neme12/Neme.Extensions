@@ -14,6 +14,9 @@ static class RuntimeInformationExtensions
         public static bool IsNetCore =>
             GetRuntimeKindAndPrefixLength(RuntimeInformation.FrameworkDescription).runtimeKind == RuntimeKind.NetCore;
 
+        public static bool IsNetFramework =>
+            GetRuntimeKindAndPrefixLength(RuntimeInformation.FrameworkDescription).runtimeKind == RuntimeKind.NetFramework;
+
         public static bool IsNetCoreVersionOrGreater(int major, int minor)
         {
             var (runtimeKind, versionMajor, versionMinor) = GetTargetRuntime(RuntimeInformation.FrameworkDescription);

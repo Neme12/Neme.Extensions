@@ -60,5 +60,43 @@ public static class StreamPolyfill
 #endif
         }
 #endif
+
+#if !(NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
+        public ValueTask DisposeAsync()
+        {
+            stream.Dispose();
+            return default;
+        }
+#endif
+    }
+
+    extension<TStream>(TStream stream)
+        where TStream : Stream
+    {
+        public IAsyncDisposable AsAsyncDisposable(out TStream streamOut)
+        {
+            streamOut = stream;
+
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            return stream;
+#else
+            return new StreamAsyncDisposable(stream);
+#endif
         }
     }
+
+#if !(NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
+    private sealed class StreamAsyncDisposable : IAsyncDisposable
+    {
+        private readonly Stream _stream;
+
+        public StreamAsyncDisposable(Stream stream)
+        {
+            _stream = stream;
+        }
+
+        public ValueTask DisposeAsync() =>
+            _stream.DisposeAsync();
+    }
+#endif
+}

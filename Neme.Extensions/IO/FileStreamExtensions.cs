@@ -4,7 +4,7 @@ public static class FileStreamExtensions
 {
     public const int DefaultBufferSize = 4096;
 
-    extension(FileStream fileStream)
+    extension(FileStream)
     {
         public static int DefaultBufferSize =>
             DefaultBufferSize;
