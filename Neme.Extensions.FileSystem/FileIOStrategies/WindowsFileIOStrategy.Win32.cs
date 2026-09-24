@@ -74,7 +74,8 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
 
         while (true)
         {
-            charsWritten = PInvoke.GetFinalPathNameByHandle(file, bufferLease.Buffer, 0u);
+            charsWritten = PInvoke.GetFinalPathNameByHandle(file, bufferLease.Buffer,
+                GETFINALPATHNAMEBYHANDLE_FLAGS.VOLUME_NAME_DOS);
             if (charsWritten != bufferLease.Length)
                 break;
 
