@@ -141,6 +141,13 @@ public static partial class FileIO
         return Strategy.GetPath(file);
     }
 
+    public static FileAccess GetAccess([Borrow] SafeFileHandle file)
+    {
+        Strategy.ValidateFileHandle(file);
+
+        return Strategy.GetAccess(file);
+    }
+
     [SupportedOSPlatform("windows")]
     [SupportedOSPlatform("linux")]
     public static string GetPath(PersistentFileId fileId)

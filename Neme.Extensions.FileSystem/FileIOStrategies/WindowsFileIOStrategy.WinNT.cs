@@ -66,7 +66,7 @@ internal sealed partial class WindowsFileIOStrategy
             request.Mode.ToWinNT(),
             createOptions,
             []);
-
+        
         if (status.SeverityCode != NTSTATUS.Severity.Success)
         {
             if (status == NTSTATUS.STATUS_INVALID_PARAMETER)
@@ -145,6 +145,29 @@ internal sealed partial class WindowsFileIOStrategy
         return new SafeFileHandle(handle, ownsHandle: true);
     }
 #pragma warning restore RS0042
+
+    public override unsafe FileAccess GetAccess([Borrow] SafeFileHandle file)
+    {
+        ref var fileInfo = ref AllocateFileInfo<FILE_ACCESS_INFORMATION>(
+            stackalloc byte[sizeof(FILE_ACCESS_INFORMATION)],
+            out var fileInfoBuffer);
+
+        NTSTATUS status;
+
+        using (var handleScope = file.CreateScope())
+        {
+            status = WinNTPInvoke.NtQueryInformationFile(
+                (HANDLE)handleScope.Handle,
+                out _,
+                fileInfoBuffer,
+                FILE_INFORMATION_CLASS.FileAccessInformation);
+        }
+
+        if (status.SeverityCode != NTSTATUS.Severity.Success)
+            throw WinNtMarshal.GetExceptionForNtStatus(status);
+
+        return FileAccess.FromWin32((FILE_ACCESS_RIGHTS)fileInfo.AccessFlags);
+    }
 
     private static SafeFileHandle FindAndOpenVolumeBySerialNumber(ulong volumeSerialNumber)
     {

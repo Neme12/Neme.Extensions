@@ -12,6 +12,7 @@
 ## Testing Guidelines
 - When adding tests in this repository, create a test class for the class being tested, with a nested class named after each method being tested, following the patterns used in SqlServerMigrationBuilderExtensionsTests and FileIOTests. Within each nested class, name the test methods after the scenario or expected behavior without repeating the method name already captured by the nested class.
 - When updating paired sync/async test files, keep them fully symmetrical and place equivalent checks in the same relative locations in both files.
+- Do *not* use Path.GetTempFileName to create temporary files. Use FileIO.CreateTempFileHandle or FileSession.CreateTempFile and a using statement instead, which will automatically delete the file afterwards.
 
 ## General Guidelines
 - When identifying the root cause of an issue, trust that diagnosis and avoid changing unrelated logic such as equality implementations unless evidence requires it.

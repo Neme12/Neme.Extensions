@@ -28,6 +28,8 @@ internal abstract class FileIOStrategy
     [return: OwnershipTransfer]
     public abstract SafeFileHandle DuplicateHandle([Borrow] SafeFileHandle file, FileSystemAccess? access);
 
+    public abstract FileAccess GetAccess([Borrow] SafeFileHandle file);
+
     public abstract string GetPath([Borrow] SafeFileHandle file);
 
     public abstract void Move([Borrow] SafeFileHandle sourceFile, string destFileName, bool overwrite);
