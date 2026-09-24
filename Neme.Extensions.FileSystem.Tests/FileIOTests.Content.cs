@@ -1,7 +1,5 @@
 ﻿using Microsoft.Win32.SafeHandles;
-using Neme.Extensions.FileSystem.Internal;
 using Neme.Extensions.FileSystem.Tests.TestUtilities;
-using Neme.Extensions.IO;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
@@ -11,8 +9,8 @@ public sealed partial class FileIOTests
     {
         private static void SetTempFileLength(SafeFileHandle file, long length)
         {
-            using var stream = new LeaveOpenFileStream(file, FileAccess.ReadWrite, FileStream.DefaultBufferSize, isAsync: file.IsAsync);
-            stream.SetLength(length);
+            using (var stream = FileIO.CreateFileStream(file, FileAccess.ReadWrite))
+                stream.SetLength(length);
         }
 
         [Collection(nameof(FileIOTestCollection))]

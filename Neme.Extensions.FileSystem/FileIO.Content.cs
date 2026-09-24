@@ -24,7 +24,7 @@ public static partial class FileIO
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        using var stream = new LeaveOpenFileStream(file, FileAccess.Read, FileStream.DefaultBufferSize, isAsync: file.IsAsync);
+        using var stream = CreateFileStream(file, FileAccess.Read);
         using var streamReader = new StreamReader(stream, encoding ?? Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
         using var _ = new StreamPositionScope(stream);
         ResetPosition(stream);
@@ -42,7 +42,7 @@ public static partial class FileIO
 
         static async Task<string> CoreAsync([Borrow] SafeFileHandle file, Encoding? encoding, CancellationToken cancellationToken)
         {
-            await using var _ = new LeaveOpenFileStream(file, FileAccess.Read, FileStream.DefaultBufferSize, isAsync: file.IsAsync).AsAsyncDisposable(out var stream);
+            await using var _ = CreateFileStream(file, FileAccess.Read).AsAsyncDisposable(out var stream);
             using var streamReader = new StreamReader(stream, encoding ?? Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
             using var _2 = new StreamPositionScope(stream);
             ResetPosition(stream);
@@ -59,7 +59,7 @@ public static partial class FileIO
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        using var stream = new LeaveOpenFileStream(file, FileAccess.Write, FileStream.DefaultBufferSize, isAsync: file.IsAsync);
+        using var stream = CreateFileStream(file, FileAccess.Write);
         using var streamWriter = new StreamWriter(stream, encoding ?? UTF8NoBOM, FileStream.DefaultBufferSize, leaveOpen: true);
         using var _ = new StreamPositionScope(stream);
         ResetPosition(stream);
@@ -81,7 +81,7 @@ public static partial class FileIO
 
         static async Task CoreAsync([Borrow] SafeFileHandle file, ReadOnlyMemory<char> contents, Encoding? encoding, CancellationToken cancellationToken = default)
         {
-            await using var _ = new LeaveOpenFileStream(file, FileAccess.Write, FileStream.DefaultBufferSize, isAsync: file.IsAsync).AsAsyncDisposable(out var stream);
+            await using var _ = CreateFileStream(file, FileAccess.Write).AsAsyncDisposable(out var stream);
             using var streamWriter = new StreamWriter(stream, encoding ?? UTF8NoBOM, FileStream.DefaultBufferSize, leaveOpen: true);
             using var _2 = new StreamPositionScope(stream);
             ResetPosition(stream);
@@ -101,7 +101,7 @@ public static partial class FileIO
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        using var stream = new LeaveOpenFileStream(file, FileAccess.Write, FileStream.DefaultBufferSize, isAsync: file.IsAsync);
+        using var stream = CreateFileStream(file, FileAccess.Write);
         using var streamWriter = new StreamWriter(stream, encoding ?? UTF8NoBOM, FileStream.DefaultBufferSize, leaveOpen: true);
         stream.Position = stream.Length;
         streamWriter.WriteBuffered(contents, cancellationToken);
@@ -123,7 +123,7 @@ public static partial class FileIO
 
         static async Task CoreAsync([Borrow] SafeFileHandle file, ReadOnlyMemory<char> contents, Encoding? encoding, CancellationToken cancellationToken = default)
         {
-            await using var _ = new LeaveOpenFileStream(file, FileAccess.Write, FileStream.DefaultBufferSize, isAsync: file.IsAsync).AsAsyncDisposable(out var stream);
+            await using var _ = CreateFileStream(file, FileAccess.Write).AsAsyncDisposable(out var stream);
             using var streamWriter = new StreamWriter(stream, encoding ?? UTF8NoBOM, FileStream.DefaultBufferSize, leaveOpen: true);
             stream.Position = stream.Length;
             await streamWriter.WriteBufferedAsync(contents, cancellationToken);
@@ -255,7 +255,7 @@ public static partial class FileIO
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        using var stream = new LeaveOpenFileStream(file, FileAccess.Read, FileStream.DefaultBufferSize, isAsync: file.IsAsync);
+        using var stream = CreateFileStream(file, FileAccess.Read);
         using var _ = new StreamPositionScope(stream);
         ResetPosition(stream);
         return stream.ReadToEnd(cancellationToken);
@@ -272,7 +272,7 @@ public static partial class FileIO
 
         static async Task<byte[]> CoreAsync([Borrow] SafeFileHandle file, CancellationToken cancellationToken = default)
         {
-            await using var _ = new LeaveOpenFileStream(file, FileAccess.Read, FileStream.DefaultBufferSize, isAsync: file.IsAsync).AsAsyncDisposable(out var stream);
+            await using var _ = CreateFileStream(file, FileAccess.Read).AsAsyncDisposable(out var stream);
             using var _2 = new StreamPositionScope(stream);
             ResetPosition(stream);
             return await stream.ReadToEndAsync(cancellationToken);
@@ -288,7 +288,7 @@ public static partial class FileIO
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        using var stream = new LeaveOpenFileStream(file, FileAccess.Write, FileStream.DefaultBufferSize, isAsync: file.IsAsync);
+        using var stream = CreateFileStream(file, FileAccess.Write);
         using var _ = new StreamPositionScope(stream);
         ResetPosition(stream);
         stream.WriteBuffered(bytes, cancellationToken);
@@ -308,7 +308,7 @@ public static partial class FileIO
 
         static async Task CoreAsync([Borrow] SafeFileHandle file, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken = default)
         {
-            await using var _ = new LeaveOpenFileStream(file, FileAccess.Write, FileStream.DefaultBufferSize, isAsync: file.IsAsync).AsAsyncDisposable(out var stream);
+            await using var _ = CreateFileStream(file, FileAccess.Write).AsAsyncDisposable(out var stream);
             using var _2 = new StreamPositionScope(stream);
             ResetPosition(stream);
             await stream.WriteBufferedAsync(bytes, cancellationToken);
@@ -326,7 +326,7 @@ public static partial class FileIO
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        using var stream = new LeaveOpenFileStream(file, FileAccess.Write, FileStream.DefaultBufferSize, isAsync: file.IsAsync);
+        using var stream = CreateFileStream(file, FileAccess.Write);
         stream.Position = stream.Length;
         stream.WriteBuffered(bytes, cancellationToken);
     }
@@ -347,7 +347,7 @@ public static partial class FileIO
 
         static async Task CoreAsync([Borrow] SafeFileHandle file, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken = default)
         {
-            await using var _ = new LeaveOpenFileStream(file, FileAccess.Write, FileStream.DefaultBufferSize, isAsync: file.IsAsync).AsAsyncDisposable(out var stream);
+            await using var _ = CreateFileStream(file, FileAccess.Write).AsAsyncDisposable(out var stream);
             stream.Position = stream.Length;
             await stream.WriteBufferedAsync(bytes, cancellationToken);
         }
