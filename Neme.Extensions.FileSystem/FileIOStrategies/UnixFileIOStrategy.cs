@@ -679,6 +679,19 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         }
     }
 
+    public override long Seek([Borrow] SafeFileHandle file, long offset, SeekOrigin origin)
+    {
+        long result;
+
+        using (var handleScope = file.CreateScope())
+            result = Syscall.lseek((int)handleScope.Handle, offset, (SeekFlags)origin);
+
+        if (result < 0)
+            throw UnixMarshal.GetExceptionForLastStdlibError();
+
+        return result;
+    }
+
     private static unsafe ref T AllocateFileInfo<T>(Span<byte> buffer, out Span<byte> fileInfoBuffer) where T : unmanaged
     {
         Debug.Assert(buffer.Length >= sizeof(T));

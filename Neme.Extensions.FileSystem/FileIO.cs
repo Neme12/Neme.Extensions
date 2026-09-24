@@ -211,6 +211,13 @@ public static partial class FileIO
         return Strategy.GetPersistentId(file);
     }
 
+    public static long Seek([Borrow] SafeFileHandle file, long offset, SeekOrigin origin)
+    {
+        Strategy.ValidateFileHandle(file);
+
+        return Strategy.Seek(file, offset, origin);
+    }
+
     [return: OwnershipTransferWhen(nameof(ownsHandle))]
     public static CheckedFileStream CreateFileStream(
         [OwnershipTransferWhen(nameof(ownsHandle))] SafeFileHandle file,

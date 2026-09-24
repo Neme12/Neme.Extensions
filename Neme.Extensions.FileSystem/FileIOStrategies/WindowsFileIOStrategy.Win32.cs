@@ -232,6 +232,14 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
         return PersistentFileId.FromWindowsId(windowsFileId);
     }
 
+    public override long Seek([Borrow] SafeFileHandle file, long offset, SeekOrigin origin)
+    {
+        if (!Win32PInvoke.SetFilePointerEx(file, offset, out var newPosition, (SET_FILE_POINTER_MOVE_METHOD)origin))
+            throw Win32Marshal.GetExceptionForLastWin32Error();
+
+        return newPosition;
+    }
+
     private static Instant InstantFromFileTime(long fileTime)
     {
         if (fileTime == 0)

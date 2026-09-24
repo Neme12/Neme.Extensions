@@ -17,5 +17,11 @@ public static class SafeFileHandleExtensions
 
         public bool CanWrite =>
             FileIO.GetAccess(file).HasFlag(FileAccess.Write);
+
+        public long Position
+        {
+            get => FileIO.Seek(file, 0, SeekOrigin.Current);
+            set => FileIO.Seek(file, value, SeekOrigin.Begin);
+        }
     }
 }
