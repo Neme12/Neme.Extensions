@@ -12,7 +12,6 @@ using System.Runtime.Versioning;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
-using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 
 namespace Neme.Extensions.FileSystem.FileIOStrategies;
 
@@ -238,6 +237,18 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
             throw Win32Marshal.GetExceptionForLastWin32Error();
 
         return newPosition;
+    }
+
+    public override unsafe long GetLength([Borrow] SafeFileHandle file)
+    {
+        ref var fileInfo = ref AllocateFileInfo<FILE_STANDARD_INFO>(
+            stackalloc byte[sizeof(FILE_STANDARD_INFO)],
+            out var fileInfoBuffer);
+
+        if (!Win32PInvoke.GetFileInformationByHandleEx(file, FILE_INFO_BY_HANDLE_CLASS.FileStandardInfo, fileInfoBuffer))
+            throw Win32Marshal.GetExceptionForLastWin32Error();
+
+        return fileInfo.EndOfFile;
     }
 
     private static Instant InstantFromFileTime(long fileTime)

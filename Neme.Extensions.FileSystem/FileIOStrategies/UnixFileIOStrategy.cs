@@ -692,6 +692,15 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         return result;
     }
 
+    public override long GetLength([Borrow] SafeFileHandle file)
+    {
+        var result = Syscall.fstat(file, out var stat);
+        if (result < 0)
+            throw UnixMarshal.GetExceptionForLastStdlibError();
+
+        return stat.st_size;
+    }
+
     private static unsafe ref T AllocateFileInfo<T>(Span<byte> buffer, out Span<byte> fileInfoBuffer) where T : unmanaged
     {
         Debug.Assert(buffer.Length >= sizeof(T));

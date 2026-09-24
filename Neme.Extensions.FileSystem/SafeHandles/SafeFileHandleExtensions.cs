@@ -23,5 +23,17 @@ public static class SafeFileHandleExtensions
             get => FileIO.Seek(file, 0, SeekOrigin.Current);
             set => FileIO.Seek(file, value, SeekOrigin.Begin);
         }
+
+        public long Length
+        {
+            get
+            {
+#if NET6_0_OR_GREATER
+                return RandomAccess.GetLength(file);
+#else
+                return FileIO.GetLength(file);
+#endif
+            }
+        }
     }
 }

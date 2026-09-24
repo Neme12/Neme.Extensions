@@ -44,11 +44,13 @@ internal abstract class FileIOStrategy
 
     public abstract FileId GetId([Borrow] SafeFileHandle file);
 
-    public abstract long Seek([Borrow] SafeFileHandle file, long offset, SeekOrigin origin);
-
     [SupportedOSPlatform("windows")]
     [SupportedOSPlatform("linux")]
     public abstract PersistentFileId GetPersistentId([Borrow] SafeFileHandle file);
+
+    public abstract long Seek([Borrow] SafeFileHandle file, long offset, SeekOrigin origin);
+
+    public abstract long GetLength([Borrow] SafeFileHandle file);
 
     internal void ValidateFileName(string? fileName, bool optional = false, [CallerArgumentExpression(nameof(fileName))] string? paramName = null)
     {
