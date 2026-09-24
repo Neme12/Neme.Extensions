@@ -1,5 +1,6 @@
 ﻿using Neme.Extensions.Buffers;
 using Neme.Extensions.Contracts;
+using Roslyn.Utilities;
 using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -228,6 +229,12 @@ public static class StreamExtensions
             }
         }
 
+        public PositionScope CreatePositionScope(long? initialPosition = null)
+        {
+            Require.ArgumentNotNull(stream);
+            return new PositionScope(stream, initialPosition);
+        }
+
         [DoesNotReturn]
         private static void ThrowEndOfFileException()
         {
@@ -235,6 +242,38 @@ public static class StreamExtensions
 
             static Exception CreateEndOfFileException() =>
                 new EndOfStreamException(Strings.IO_EOF_ReadBeyondEOF);
+        }
+    }
+
+    [NonDefaultable]
+    [NonCopyable]
+    public struct PositionScope : IDisposable
+    {
+        private Stream _stream;
+        private readonly long? _originalPosition;
+
+        internal PositionScope(Stream stream, long? initialPosition)
+        {
+            _stream = stream;
+
+            if (stream.CanSeek)
+            {
+                _originalPosition = stream.Position;
+
+                if (initialPosition is not null)
+                    stream.Position = initialPosition.Value;
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_stream is not null)
+            {
+                if (_originalPosition is not null)
+                    _stream.Position = _originalPosition.Value;
+
+                _stream = null!;
+            }
         }
     }
 }

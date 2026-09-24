@@ -1,6 +1,5 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using Neme.Extensions.Contracts;
-using Neme.Extensions.FileSystem.Internal;
 using Neme.Extensions.InteropServices;
 using Neme.Extensions.IO;
 using Neme.Extensions.Ownership;
@@ -12,12 +11,6 @@ public static partial class FileIO
 {
     private static Encoding UTF8NoBOM => field ??= new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
-    private static void ResetPosition([Borrow] Stream stream)
-    {
-        if (stream.CanSeek)
-            stream.Seek(0, SeekOrigin.Begin);
-    }
-
     public static string ReadAllText([Borrow] SafeFileHandle file, Encoding? encoding = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(file);
@@ -26,9 +19,8 @@ public static partial class FileIO
 
         using (var stream = CreateFileStream(file, FileAccess.Read))
         using (var streamReader = new StreamReader(stream, encoding ?? Encoding.UTF8, detectEncodingFromByteOrderMarks: true))
-        using (new StreamPositionScope(stream))
+        using (stream.CreatePositionScope(0))
         {
-            ResetPosition(stream);
             return streamReader.ReadToEnd(cancellationToken);
         }
     }
@@ -46,9 +38,8 @@ public static partial class FileIO
         {
             await using (CreateFileStream(file, FileAccess.Read).AsAsyncDisposable(out var stream))
             using (var streamReader = new StreamReader(stream, encoding ?? Encoding.UTF8, detectEncodingFromByteOrderMarks: true))
-            using (new StreamPositionScope(stream))
+            using (stream.CreatePositionScope(0))
             {
-                ResetPosition(stream);
                 return await streamReader.ReadToEndAsync(cancellationToken);
             }
         }
@@ -65,9 +56,8 @@ public static partial class FileIO
 
         using (var stream = CreateFileStream(file, FileAccess.Write))
         using (var streamWriter = new StreamWriter(stream, encoding ?? UTF8NoBOM, FileStream.DefaultBufferSize, leaveOpen: true))
-        using (new StreamPositionScope(stream))
+        using (stream.CreatePositionScope(0))
         {
-            ResetPosition(stream);
             streamWriter.WriteBuffered(contents, cancellationToken);
             streamWriter.Flush();
         }
@@ -89,9 +79,8 @@ public static partial class FileIO
         {
             await using (CreateFileStream(file, FileAccess.Write).AsAsyncDisposable(out var stream))
             using (var streamWriter = new StreamWriter(stream, encoding ?? UTF8NoBOM, FileStream.DefaultBufferSize, leaveOpen: true))
-            using (new StreamPositionScope(stream))
+            using (stream.CreatePositionScope(0))
             {
-                ResetPosition(stream);
                 await streamWriter.WriteBufferedAsync(contents, cancellationToken);
                 await streamWriter.FlushAsync(cancellationToken);
             }
@@ -152,10 +141,8 @@ public static partial class FileIO
 
         using (var stream = CreateFileStream(file, FileAccess.Read))
         using (var streamReader = new StreamReader(stream, encoding ?? Encoding.UTF8, true, StreamReader.DefaultBufferSize, leaveOpen: true))
-        using (new StreamPositionScope(stream))
+        using (stream.CreatePositionScope(0))
         {
-            ResetPosition(stream);
-
             string? line;
             while ((line = streamReader.ReadLine()) != null)
             {
@@ -184,10 +171,8 @@ public static partial class FileIO
 
             await using (CreateFileStream(file, FileAccess.Read).AsAsyncDisposable(out var stream))
             using (var streamReader = new StreamReader(stream, encoding ?? Encoding.UTF8, true, StreamReader.DefaultBufferSize, leaveOpen: true))
-            using (new StreamPositionScope(stream))
+            using (stream.CreatePositionScope(0))
             {
-                ResetPosition(stream);
-
                 string? line;
                 while ((line = await streamReader.ReadLineAsync(cancellationToken)) != null)
                 {
@@ -213,10 +198,8 @@ public static partial class FileIO
 
         using (var stream = CreateFileStream(file, FileAccess.Write))
         using (var streamWriter = new StreamWriter(stream, encoding ?? UTF8NoBOM, StreamWriter.DefaultBufferSize, leaveOpen: true))
-        using (new StreamPositionScope(stream))
+        using (stream.CreatePositionScope(0))
         {
-            ResetPosition(stream);
-
             foreach (var line in contents)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -245,10 +228,8 @@ public static partial class FileIO
         {
             await using (CreateFileStream(file, FileAccess.Write).AsAsyncDisposable(out var stream))
             using (var streamWriter = new StreamWriter(stream, encoding ?? UTF8NoBOM, StreamWriter.DefaultBufferSize, leaveOpen: true))
-            using (new StreamPositionScope(stream))
+            using (stream.CreatePositionScope(0))
             {
-                ResetPosition(stream);
-
                 foreach (string line in contents)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
@@ -268,9 +249,8 @@ public static partial class FileIO
         cancellationToken.ThrowIfCancellationRequested();
 
         using (var stream = CreateFileStream(file, FileAccess.Read))
-        using (new StreamPositionScope(stream))
+        using (stream.CreatePositionScope(0))
         {
-            ResetPosition(stream);
             return stream.ReadToEnd(cancellationToken);
         }
     }
@@ -287,9 +267,8 @@ public static partial class FileIO
         static async Task<byte[]> CoreAsync([Borrow] SafeFileHandle file, CancellationToken cancellationToken = default)
         {
             await using (CreateFileStream(file, FileAccess.Read).AsAsyncDisposable(out var stream))
-            using (new StreamPositionScope(stream))
+            using (stream.CreatePositionScope(0))
             {
-                ResetPosition(stream);
                 return await stream.ReadToEndAsync(cancellationToken);
             }
         }
@@ -305,9 +284,8 @@ public static partial class FileIO
         cancellationToken.ThrowIfCancellationRequested();
 
         using (var stream = CreateFileStream(file, FileAccess.Write))
-        using (new StreamPositionScope(stream))
+        using (stream.CreatePositionScope(0))
         {
-            ResetPosition(stream);
             stream.WriteBuffered(bytes, cancellationToken);
         }
     }
@@ -327,9 +305,8 @@ public static partial class FileIO
         static async Task CoreAsync([Borrow] SafeFileHandle file, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken = default)
         {
             await using (CreateFileStream(file, FileAccess.Write).AsAsyncDisposable(out var stream))
-            using (new StreamPositionScope(stream))
+            using (stream.CreatePositionScope(0))
             {
-                ResetPosition(stream);
                 await stream.WriteBufferedAsync(bytes, cancellationToken);
             }
         }
@@ -373,32 +350,6 @@ public static partial class FileIO
             {
                 stream.Position = stream.Length;
                 await stream.WriteBufferedAsync(bytes, cancellationToken);
-            }
-        }
-    }
-
-    private struct StreamPositionScope : IDisposable
-    {
-        private FileStream _stream;
-        private readonly long? _initialPosition;
-
-        public StreamPositionScope(FileStream stream)
-        {
-            _stream = stream;
-            _initialPosition = stream.CanSeek
-                ? stream.Position
-                : null;
-
-        }
-
-        public void Dispose()
-        {
-            if (_stream is not null)
-            {
-                if (_initialPosition is not null)
-                    _stream.Position = _initialPosition.Value;
-
-                _stream = null!;
             }
         }
     }
