@@ -225,6 +225,14 @@ public static partial class FileIO
         return Strategy.GetLength(file);
     }
 
+    public static void SetLength([Borrow] SafeFileHandle file, long length)
+    {
+        Strategy.ValidateFileHandle(file);
+        Strategy.ValidateLength(length);
+
+        Strategy.SetLength(file, length);
+    }
+
         [return: OwnershipTransferWhen(nameof(ownsHandle))]
     public static CheckedFileStream CreateFileStream(
         [OwnershipTransferWhen(nameof(ownsHandle))] SafeFileHandle file,

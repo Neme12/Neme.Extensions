@@ -52,6 +52,8 @@ internal abstract class FileIOStrategy
 
     public abstract long GetLength([Borrow] SafeFileHandle file);
 
+    public abstract void SetLength([Borrow] SafeFileHandle file, long length);
+
     internal void ValidateFileName(string? fileName, bool optional = false, [CallerArgumentExpression(nameof(fileName))] string? paramName = null)
     {
         if (optional && fileName is null)
@@ -91,6 +93,12 @@ internal abstract class FileIOStrategy
             Throw.ArgumentException(fileId, "File ID must be valid.", paramName);
     }
 
+    internal void ValidateLength(long length, [CallerArgumentExpression(nameof(length))] string? paramName = null)
+    {
+        if (!IsValidLength(length))
+            Throw.ArgumentException(length, "Length must be non-negative.", paramName);
+    }
+
     protected bool IsValidFileName(string? fileName) =>
         fileName is not null && fileName.Length <= MaxFileNameLength;
 
@@ -102,4 +110,7 @@ internal abstract class FileIOStrategy
 
     protected static bool IsValidFileId(PersistentFileId fileId) =>
         fileId != default;
+
+    protected static bool IsValidLength(long length) =>
+        length >= 0;
 }

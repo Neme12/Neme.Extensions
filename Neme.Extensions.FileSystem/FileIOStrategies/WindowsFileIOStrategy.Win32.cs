@@ -251,6 +251,23 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
         return fileInfo.EndOfFile;
     }
 
+    public override unsafe void SetLength([Borrow] SafeFileHandle file, long length)
+    {
+        ref var fileInfo = ref AllocateFileInfo<FILE_END_OF_FILE_INFO>(
+            stackalloc byte[sizeof(FILE_END_OF_FILE_INFO)],
+            out var fileInfoBuffer);
+
+        fileInfo.EndOfFile = length;
+
+        if (!Win32PInvoke.SetFileInformationByHandle(
+            file,
+            FILE_INFO_BY_HANDLE_CLASS.FileEndOfFileInfo,
+            fileInfoBuffer))
+        {
+            throw Win32Marshal.GetExceptionForLastWin32Error();
+        }
+    }
+
     private static Instant InstantFromFileTime(long fileTime)
     {
         if (fileTime == 0)

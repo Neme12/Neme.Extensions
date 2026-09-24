@@ -34,6 +34,14 @@ public static class SafeFileHandleExtensions
                 return FileIO.GetLength(file);
 #endif
             }
+            set
+            {
+#if NET7_0_OR_GREATER
+                RandomAccess.SetLength(file, value);
+#else
+                FileIO.SetLength(file, value);
+#endif
+            }
         }
     }
 }
