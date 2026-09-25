@@ -52,7 +52,7 @@ public static class SafeFileHandleExtensions
             }
         }
 
-        public string? SourcePath
+        public string? OpenedPath
         {
             get
             {

@@ -456,10 +456,10 @@ public sealed class SafeFileHandleExtensionsTests
     }
 
     [Collection(nameof(FileIOTestCollection))]
-    public sealed class SourcePath
+    public sealed class OpenedPath
     {
         [Fact]
-        public void ValidFileHandle_ReturnsExpectedSourcePath()
+        public void ValidFileHandle_ReturnsExpectedOpenedPath()
         {
             // Arrange
             var expected = $"{System.IO.Path.GetTempPath()}{nameof(SafeFileHandleExtensionsTests)}_{Guid.NewGuid():N}.tmp";
@@ -471,7 +471,7 @@ public sealed class SafeFileHandleExtensionsTests
                 using (var handle = FileIO.OpenHandle(expected, FileOpenRequest.Open(FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete)))
                 {
                     // Act
-                    result = handle.SourcePath;
+                    result = handle.OpenedPath;
                 }
             }
 
