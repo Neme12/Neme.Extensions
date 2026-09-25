@@ -1150,16 +1150,15 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
     public override unsafe FileAccess GetAccess([Borrow] SafeFileHandle file)
     {
-        OpenFlags flags = 0;
         int result;
 
         using (var handleScope = file.CreateScope())
-            result = Syscall.fcntl((int)handleScope.Handle, FcntlCommand.F_GETFL, (nint)(&flags));
+            result = Syscall.fcntl((int)handleScope.Handle, FcntlCommand.F_GETFL);
 
         if (result < 0)
             throw UnixMarshal.GetExceptionForLastStdlibError();
 
-        return FileAccess.FromUnix(flags);
+        return FileAccess.FromUnix((OpenFlags)result);
     }
 
     private sealed record HandleMetadata(FileSystemAccess Access);
