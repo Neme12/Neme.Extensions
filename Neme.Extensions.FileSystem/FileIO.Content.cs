@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using Neme.Extensions.Contracts;
+using Neme.Extensions.FileSystem.SafeHandles;
 using Neme.Extensions.InteropServices;
 using Neme.Extensions.IO;
 using Neme.Extensions.Ownership;

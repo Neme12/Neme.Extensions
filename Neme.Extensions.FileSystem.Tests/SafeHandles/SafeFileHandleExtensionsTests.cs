@@ -1,6 +1,6 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using Neme.Extensions.FileSystem.SafeHandles;
-using static Neme.Extensions.IO.StreamExtensions;
+using Neme.Extensions.IO;
 
 namespace Neme.Extensions.FileSystem.Tests.SafeHandles;
 
