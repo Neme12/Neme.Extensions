@@ -80,8 +80,11 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
 
         while (true)
         {
-            charsWritten = PInvoke.GetFinalPathNameByHandle(file, bufferLease.Buffer,
-                GETFINALPATHNAMEBYHANDLE_FLAGS.VOLUME_NAME_DOS);
+            charsWritten = PInvoke.GetFinalPathNameByHandle(
+                file,
+                bufferLease.Buffer,
+                GETFINALPATHNAMEBYHANDLE_FLAGS.VOLUME_NAME_DOS |
+                GETFINALPATHNAMEBYHANDLE_FLAGS.FILE_NAME_OPENED);
             if (charsWritten != bufferLease.Length)
                 break;
 
