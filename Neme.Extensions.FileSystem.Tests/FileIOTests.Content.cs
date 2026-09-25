@@ -816,6 +816,7 @@ public sealed partial class FileIOTests
                 {
                     initialStream.Position = initialStream.Length;
                     expectedPosition = initialStream.Position;
+                    _ = initialStream.SafeFileHandle; // To make the stream write the new position through to the file handle.
                 }
 
                 // Act
@@ -878,6 +879,7 @@ public sealed partial class FileIOTests
                 {
                     initialStream.Position = initialStream.Length;
                     expectedPosition = initialStream.Position;
+                    _ = initialStream.SafeFileHandle; // To make the stream write the new position through to the file handle.
                 }
 
                 // Act
