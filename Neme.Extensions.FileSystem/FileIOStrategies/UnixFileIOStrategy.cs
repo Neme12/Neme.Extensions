@@ -213,7 +213,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             fixed (byte* bufferPointer = bufferLease.Buffer)
                 result = Interop.MacOS.FcntlGetPath(file, bufferPointer);
 
-            if (result != 0)
+            if (result < 0)
                 throw UnixMarshal.GetExceptionForLastUnixError();
 
             var indexOfNullTerminator = bufferLease.Buffer.IndexOf((byte)0); // F_GETPATH returns a null-terminated string
@@ -290,7 +290,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
                 overwrite ? Interop.Linux.RenameAt2Flags.None : Interop.Linux.RenameAt2Flags.RENAME_NOREPLACE);
         }
 
-        if (result != 0)
+        if (result < 0)
             throw UnixMarshal.GetExceptionForLastUnixError(destFileName);
     }
 
@@ -307,7 +307,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         {
             int result = Syscall.unlinkat(file, "", AtFlags.AT_EMPTY_PATH);
 
-            if (result == 0)
+            if (result >= 0)
                 return;
 
             var error = Stdlib.GetLastError();
@@ -323,7 +323,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
         int result2 = Syscall.unlinkat(parentDirectoryHandle, fileName, 0);
 
-        if (result2 != 0)
+        if (result2 < 0)
             throw UnixMarshal.GetExceptionForLastStdlibError();
     }
 
@@ -380,7 +380,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             bool hidden = (attributes & FileAttributes.Hidden) != 0;
 
             int result = Interop.MacOS.FStat(file, out var statInfo);
-            if (result != 0)
+            if (result < 0)
                 throw UnixMarshal.GetExceptionForLastUnixError();
 
             var flags = statInfo.Flags;
@@ -393,14 +393,14 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
                     : flags & ~Interop.MacOS.FileFlags.UF_HIDDEN;
 
                 int result2 = Interop.MacOS.FChFlags(file, newFlags);
-                if (result2 != 0)
+                if (result2 < 0)
                     throw UnixMarshal.GetExceptionForLastUnixError();
             }
         }
 
         var result3 = Syscall.fstat(file, out var status);
 
-        if (result3 != 0)
+        if (result3 < 0)
             throw UnixMarshal.GetExceptionForLastStdlibError();
 
         // The only thing we can reasonably change is whether the file object is readonly by changing permissions.
@@ -423,7 +423,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         {
             int result4 = Syscall.fchmod(file, (FilePermissions)newMode);
 
-            if (result4 != 0)
+            if (result4 < 0)
                 throw UnixMarshal.GetExceptionForLastStdlibError();
         }
     }
@@ -435,7 +435,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             var result = Interop.MacOS.FStat(file, out var statInfoValue);
-            if (result != 0)
+            if (result < 0)
                 throw UnixMarshal.GetExceptionForLastUnixError();
 
             statInfo = statInfoValue;
@@ -454,7 +454,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     {
         var result = Syscall.fstat(file, out var status);
 
-        if (result != 0)
+        if (result < 0)
             throw UnixMarshal.GetExceptionForLastStdlibError();
 
         Interop.MacOS.FileFlags? flags = statInfo?.Flags;
@@ -563,7 +563,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             var result = Interop.MacOS.FStat(file, out var statInfo);
-            if (result != 0)
+            if (result < 0)
                 throw UnixMarshal.GetExceptionForLastUnixError();
 
             return new FileBasicInfo
@@ -579,7 +579,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
             var result2 = Interop.Linux.StatX(file, "", Interop.Linux.StatXFlags.AT_EMPTY_PATH, Interop.Linux.StatXMask.All, out var statInfo);
-            if (result2 != 0)
+            if (result2 < 0)
                 throw UnixMarshal.GetExceptionForLastUnixError();
 
             Instant? creationTime =
@@ -600,7 +600,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         else
         {
             var result3 = Syscall.fstat(file, out var status);
-            if (result3 != 0)
+            if (result3 < 0)
                 throw UnixMarshal.GetExceptionForLastStdlibError();
 
             return new FileBasicInfo
@@ -618,7 +618,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
     public override FileId GetId([Borrow] SafeFileHandle file)
     {
         var result = Syscall.fstat(file, out var stat);
-        if (result != 0)
+        if (result < 0)
             throw UnixMarshal.GetExceptionForLastStdlibError();
 
         var unixId = new FileId.UnixId(stat.st_dev, stat.st_ino);
@@ -647,7 +647,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
                 fileHeader.handle_bytes = (uint)size;
 
                 var result = Interop.Linux.NameToHandleAt(file, "", ref fileHeader, out mountId, Interop.Linux.NameToHandleAtFlags.AT_EMPTY_PATH);
-                if (result != 0)
+                if (result < 0)
                 {
                     var error = (Errno)Marshal.GetLastPInvokeError();
                     if (error == Errno.EOVERFLOW)
@@ -1022,7 +1022,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
                 result = Syscall.stat(path.NotNull(), out pathStatus);
             }
 
-            if (result != 0)
+            if (result < 0)
             {
                 // If the file was removed, re-open.
                 // Otherwise throw the error 'stat' gave us (assuming this is the
@@ -1068,7 +1068,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         {
             int result = Syscall.posix_fadvise(handle, 0, 0, fadv);
 
-            if (result != 0 && Stdlib.GetLastError() is var error and not Errno.ENOSYS) // just a hint.
+            if (result < 0 && Stdlib.GetLastError() is var error and not Errno.ENOSYS) // just a hint.
                 throw UnixMarshal.GetExceptionForUnixError(error, path);
         }
 
@@ -1078,7 +1078,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             // if opened successfully.
 
             int truncateResult = Syscall.ftruncate(handle, 0);
-            if (truncateResult != 0)
+            if (truncateResult < 0)
             {
                 var error = Stdlib.GetLastError();
                 if (error is not (Errno.EBADF or Errno.EINVAL))
@@ -1095,7 +1095,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         {
             int result = Syscall.posix_fallocate(handle, 0, (ulong)preallocationSize);
 
-            if (result != 0)
+            if (result < 0)
             {
                 var error = Stdlib.GetLastError();
 
@@ -1141,7 +1141,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         {
             int result = Syscall.fstat(handle, out status);
 
-            if (result != 0)
+            if (result < 0)
                 throw UnixMarshal.GetExceptionForLastStdlibError(path);
 
             statusHasValue = true;
@@ -1156,7 +1156,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
         using (var handleScope = file.CreateScope())
             result = Syscall.fcntl((int)handleScope.Handle, FcntlCommand.F_GETFL, (nint)(&flags));
 
-        if (result != 0)
+        if (result < 0)
             throw UnixMarshal.GetExceptionForLastStdlibError();
 
         return FileAccess.FromUnix(flags);
