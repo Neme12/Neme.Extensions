@@ -27,11 +27,9 @@ public sealed partial class FileIOTests
                 Assert.Equal(".tmp", Path.GetExtension(createdPath));
                 Assert.True(Guid.TryParse(Path.GetFileNameWithoutExtension(createdPath), out _));
 
-                var expectedDirectory = Path.GetTempPath().TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-                var actualDirectory = Path.GetDirectoryName(createdPath)!.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-                var comparison = Path.DirectorySeparatorChar == '\\' ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-
-                Assert.True(string.Equals(expectedDirectory, PathUtilities.Normalize(actualDirectory), comparison));
+                var expectedDirectory = Path.GetTempPath();
+                var actualDirectory = Path.GetDirectoryName(createdPath)!;
+                PathUtilities.AssertPathsEqual(expectedDirectory, actualDirectory);
             }
 
             Assert.NotNull(createdPath);

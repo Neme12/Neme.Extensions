@@ -2,6 +2,7 @@
 using Neme.Extensions.FileSystem.SafeHandles;
 using Neme.Extensions.FileSystem.Tests.TestUtilities;
 using Neme.Extensions.IO;
+using System.Runtime.InteropServices;
 using IOPath = System.IO.Path;
 
 namespace Neme.Extensions.FileSystem.Tests.SafeHandles;
@@ -29,7 +30,7 @@ public sealed class SafeFileHandleExtensionsTests
             }
 
             // Assert
-            Assert.Equal(expected, PathUtilities.Normalize(result));
+            PathUtilities.AssertPathsEqual(expected, result);
         }
 
         [Fact]
