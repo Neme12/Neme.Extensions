@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using Neme.Extensions.FileSystem.SafeHandles;
+using static Neme.Extensions.IO.StreamExtensions;
 
 namespace Neme.Extensions.FileSystem.Tests.SafeHandles;
 
@@ -12,37 +13,31 @@ public sealed class SafeFileHandleExtensionsTests
         public void ValidFileHandle_ReturnsFullPath()
         {
             // Arrange
-            var expected = System.IO.Path.GetFullPath(System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"{nameof(SafeFileHandleExtensionsTests)}_{Guid.NewGuid():N}.tmp"));
-            File.WriteAllText(expected, "test");
-
-            try
+            var expected = $"{System.IO.Path.GetTempPath()}{nameof(SafeFileHandleExtensionsTests)}_{Guid.NewGuid():N}.tmp";
+            string result;
+            using (var tempFile = FileIO.OpenHandle(expected, FileOpenRequest.CreateNew(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete, FileOptions.DeleteOnClose, FileAttributes.Temporary)))
             {
-                using (SafeFileHandle handle = FileIO.OpenHandle(expected, FileOpenRequest.Open(FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete)))
+                FileIO.WriteAllBytes(tempFile, "test"u8.ToArray());
+
+                using (var handle = FileIO.OpenHandle(expected, FileOpenRequest.Open(FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete)))
                 {
                     // Act
-                    var result = handle.Path;
+                    result = handle.Path;
+                }
+            }
 
-                    // Assert
-                    Assert.Equal(expected, result);
-                }
-            }
-            finally
-            {
-                if (File.Exists(expected))
-                {
-                    File.Delete(expected);
-                }
-            }
+            // Assert
+            Assert.Equal(expected, result);
         }
 
         [Fact]
         public void NullHandle_ThrowsArgumentNullException()
         {
             // Arrange
-            SafeFileHandle handle = null!;
+            var handle = (SafeFileHandle)null!;
 
             // Act
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() =>
+            var exception = Assert.Throws<ArgumentNullException>(() =>
             {
                 _ = handle.Path;
             });
@@ -55,11 +50,11 @@ public sealed class SafeFileHandleExtensionsTests
         public void ClosedHandle_ThrowsArgumentException()
         {
             // Arrange
-            SafeFileHandle handle = FileIO.CreateTempFileHandle(FileSystemAccess.Read);
+            var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Read);
             handle.Dispose();
 
             // Act
-            ArgumentException exception = Assert.Throws<ArgumentException>(() =>
+            var exception = Assert.Throws<ArgumentException>(() =>
             {
                 _ = handle.Path;
             });
@@ -72,10 +67,10 @@ public sealed class SafeFileHandleExtensionsTests
         public void InvalidHandle_ThrowsArgumentException()
         {
             // Arrange
-            using (SafeFileHandle handle = new((nint)(-1), ownsHandle: false))
+            using (var handle = new SafeFileHandle((nint)(-1), ownsHandle: false))
             {
                 // Act
-                ArgumentException exception = Assert.Throws<ArgumentException>(() =>
+                var exception = Assert.Throws<ArgumentException>(() =>
                 {
                     _ = handle.Path;
                 });
@@ -93,66 +88,58 @@ public sealed class SafeFileHandleExtensionsTests
         public void ReadOnlyHandle_ReturnsRead()
         {
             // Arrange
-            using (SafeFileHandle handle = FileIO.CreateTempFileHandle(FileSystemAccess.Read))
-            {
-                // Act
-                FileAccess result = handle.Access;
+            FileAccess result;
+            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Read))
+                result = handle.Access;
 
-                // Assert
-                Assert.Equal(FileAccess.Read, result);
-            }
+            // Assert
+            Assert.Equal(FileAccess.Read, result);
         }
 
         [Fact]
         public void WriteOnlyHandle_ReturnsWrite()
         {
             // Arrange
-            using (SafeFileHandle handle = FileIO.CreateTempFileHandle(FileSystemAccess.Write))
-            {
-                // Act
-                FileAccess result = handle.Access;
+            FileAccess result;
+            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Write))
+                result = handle.Access;
 
-                // Assert
-                Assert.Equal(FileAccess.Write, result);
-            }
+            // Assert
+            Assert.Equal(FileAccess.Write, result);
         }
 
         [Fact]
         public void ReadWriteHandle_ReturnsReadWrite()
         {
             // Arrange
-            using (SafeFileHandle handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite))
-            {
-                // Act
-                FileAccess result = handle.Access;
+            FileAccess result;
+            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite))
+                result = handle.Access;
 
-                // Assert
-                Assert.Equal(FileAccess.ReadWrite, result);
-            }
+            // Assert
+            Assert.Equal(FileAccess.ReadWrite, result);
         }
 
         [Fact]
         public void DeleteOnlyHandle_ReturnsNone()
         {
             // Arrange
-            using (SafeFileHandle handle = FileIO.CreateTempFileHandle(FileSystemAccess.Delete))
-            {
-                // Act
-                FileAccess result = handle.Access;
+            FileAccess result;
+            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Delete))
+                result = handle.Access;
 
-                // Assert
-                Assert.Equal(FileAccess.None, result);
-            }
+            // Assert
+            Assert.Equal(FileAccess.None, result);
         }
 
         [Fact]
         public void NullHandle_ThrowsArgumentNullException()
         {
             // Arrange
-            SafeFileHandle handle = null!;
+            var handle = (SafeFileHandle)null!;
 
             // Act
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() =>
+            var exception = Assert.Throws<ArgumentNullException>(() =>
             {
                 _ = handle.Access;
             });
@@ -165,11 +152,11 @@ public sealed class SafeFileHandleExtensionsTests
         public void ClosedHandle_ThrowsArgumentException()
         {
             // Arrange
-            SafeFileHandle handle = FileIO.CreateTempFileHandle(FileSystemAccess.Read);
+            var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Read);
             handle.Dispose();
 
             // Act
-            ArgumentException exception = Assert.Throws<ArgumentException>(() =>
+            var exception = Assert.Throws<ArgumentException>(() =>
             {
                 _ = handle.Access;
             });
@@ -182,10 +169,10 @@ public sealed class SafeFileHandleExtensionsTests
         public void InvalidHandle_ThrowsArgumentException()
         {
             // Arrange
-            using (SafeFileHandle handle = new((nint)(-1), ownsHandle: false))
+            using (var handle = new SafeFileHandle((nint)(-1), ownsHandle: false))
             {
                 // Act
-                ArgumentException exception = Assert.Throws<ArgumentException>(() =>
+                var exception = Assert.Throws<ArgumentException>(() =>
                 {
                     _ = handle.Access;
                 });
@@ -203,56 +190,48 @@ public sealed class SafeFileHandleExtensionsTests
         public void ReadOnlyHandle_ReturnsTrue()
         {
             // Arrange
-            using (SafeFileHandle handle = FileIO.CreateTempFileHandle(FileSystemAccess.Read))
-            {
-                // Act
-                bool result = handle.CanRead;
+            bool result;
+            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Read))
+                result = handle.CanRead;
 
-                // Assert
-                Assert.True(result);
-            }
+            // Assert
+            Assert.True(result);
         }
 
         [Fact]
         public void WriteOnlyHandle_ReturnsFalse()
         {
             // Arrange
-            using (SafeFileHandle handle = FileIO.CreateTempFileHandle(FileSystemAccess.Write))
-            {
-                // Act
-                bool result = handle.CanRead;
+            bool result;
+            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Write))
+                result = handle.CanRead;
 
-                // Assert
-                Assert.False(result);
-            }
+            // Assert
+            Assert.False(result);
         }
 
         [Fact]
         public void ReadWriteHandle_ReturnsTrue()
         {
             // Arrange
-            using (SafeFileHandle handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite))
-            {
-                // Act
-                bool result = handle.CanRead;
+            bool result;
+            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite))
+                result = handle.CanRead;
 
-                // Assert
-                Assert.True(result);
-            }
+            // Assert
+            Assert.True(result);
         }
 
         [Fact]
         public void DeleteOnlyHandle_ReturnsFalse()
         {
             // Arrange
-            using (SafeFileHandle handle = FileIO.CreateTempFileHandle(FileSystemAccess.Delete))
-            {
-                // Act
-                bool result = handle.CanRead;
+            bool result;
+            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Delete))
+                result = handle.CanRead;
 
-                // Assert
-                Assert.False(result);
-            }
+            // Assert
+            Assert.False(result);
         }
     }
 
@@ -263,56 +242,48 @@ public sealed class SafeFileHandleExtensionsTests
         public void ReadOnlyHandle_ReturnsFalse()
         {
             // Arrange
-            using (SafeFileHandle handle = FileIO.CreateTempFileHandle(FileSystemAccess.Read))
-            {
-                // Act
-                bool result = handle.CanWrite;
+            bool result;
+            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Read))
+                result = handle.CanWrite;
 
-                // Assert
-                Assert.False(result);
-            }
+            // Assert
+            Assert.False(result);
         }
 
         [Fact]
         public void WriteOnlyHandle_ReturnsTrue()
         {
             // Arrange
-            using (SafeFileHandle handle = FileIO.CreateTempFileHandle(FileSystemAccess.Write))
-            {
-                // Act
-                bool result = handle.CanWrite;
+            bool result;
+            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Write))
+                result = handle.CanWrite;
 
-                // Assert
-                Assert.True(result);
-            }
+            // Assert
+            Assert.True(result);
         }
 
         [Fact]
         public void ReadWriteHandle_ReturnsTrue()
         {
             // Arrange
-            using (SafeFileHandle handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite))
-            {
-                // Act
-                bool result = handle.CanWrite;
+            bool result;
+            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite))
+                result = handle.CanWrite;
 
-                // Assert
-                Assert.True(result);
-            }
+            // Assert
+            Assert.True(result);
         }
 
         [Fact]
         public void DeleteOnlyHandle_ReturnsFalse()
         {
             // Arrange
-            using (SafeFileHandle handle = FileIO.CreateTempFileHandle(FileSystemAccess.Delete))
-            {
-                // Act
-                bool result = handle.CanWrite;
+            bool result;
+            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Delete))
+                result = handle.CanWrite;
 
-                // Assert
-                Assert.False(result);
-            }
+            // Assert
+            Assert.False(result);
         }
     }
 
@@ -323,39 +294,38 @@ public sealed class SafeFileHandleExtensionsTests
         public void RegularFileHandle_ReturnsTrue()
         {
             // Arrange
-            using (SafeFileHandle handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All))
-            {
-                // Act
-                bool result = handle.CanSeek;
+            bool result;
+            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All))
+                result = handle.CanSeek;
 
-                // Assert
-                Assert.True(result);
-            }
+            // Assert
+            Assert.True(result);
         }
 
         [Fact]
         public void AnonymousPipeHandle_ReturnsFalse()
         {
             // Arrange
+            bool result;
             using (var pipe = new System.IO.Pipes.AnonymousPipeServerStream(System.IO.Pipes.PipeDirection.Out, System.IO.HandleInheritability.None))
-            using (SafeFileHandle handle = new(pipe.SafePipeHandle.DangerousGetHandle(), ownsHandle: false))
+            using (var handle = new SafeFileHandle(pipe.SafePipeHandle.DangerousGetHandle(), ownsHandle: false))
             {
                 // Act
-                bool result = handle.CanSeek;
-
-                // Assert
-                Assert.False(result);
+                result = handle.CanSeek;
             }
+
+            // Assert
+            Assert.False(result);
         }
 
         [Fact]
         public void NullHandle_ThrowsArgumentNullException()
         {
             // Arrange
-            SafeFileHandle handle = null!;
+            var handle = (SafeFileHandle)null!;
 
             // Act
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() =>
+            var exception = Assert.Throws<ArgumentNullException>(() =>
             {
                 _ = handle.CanSeek;
             });
@@ -368,11 +338,11 @@ public sealed class SafeFileHandleExtensionsTests
         public void ClosedHandle_ThrowsArgumentException()
         {
             // Arrange
-            SafeFileHandle handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
+            var handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             handle.Dispose();
 
             // Act
-            ArgumentException exception = Assert.Throws<ArgumentException>(() =>
+            var exception = Assert.Throws<ArgumentException>(() =>
             {
                 _ = handle.CanSeek;
             });
@@ -385,10 +355,10 @@ public sealed class SafeFileHandleExtensionsTests
         public void InvalidHandle_ThrowsArgumentException()
         {
             // Arrange
-            using (SafeFileHandle handle = new((nint)(-1), ownsHandle: false))
+            using (var handle = new SafeFileHandle((nint)(-1), ownsHandle: false))
             {
                 // Act
-                ArgumentException exception = Assert.Throws<ArgumentException>(() =>
+                var exception = Assert.Throws<ArgumentException>(() =>
                 {
                     _ = handle.CanSeek;
                 });
@@ -406,23 +376,24 @@ public sealed class SafeFileHandleExtensionsTests
         public void SettingPosition_UpdatesCurrentOffset()
         {
             // Arrange
-            byte[] contents = [10, 20, 30, 40];
+            var contents = new byte[] { 10, 20, 30, 40 };
             const long expectedPosition = 2;
-            using (SafeFileHandle handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All))
+            long result;
+            int nextByte;
+            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All))
             {
                 FileIO.WriteAllBytes(handle, contents);
 
                 // Act
                 handle.Position = expectedPosition;
-                long result = handle.Position;
-
-                // Assert
-                Assert.Equal(expectedPosition, result);
-                using (FileStream stream = FileIO.CreateFileStream(handle, FileAccess.Read))
-                {
-                    Assert.Equal(contents[(int)expectedPosition], stream.ReadByte());
-                }
+                result = handle.Position;
+                using (var stream = FileIO.CreateFileStream(handle, FileAccess.Read))
+                    nextByte = stream.ReadByte();
             }
+
+            // Assert
+            Assert.Equal(expectedPosition, result);
+            Assert.Equal(contents[(int)expectedPosition], nextByte);
         }
     }
 
@@ -433,54 +404,54 @@ public sealed class SafeFileHandleExtensionsTests
         public void ExtendingFile_UpdatesLengthAndZeroFillsNewBytes()
         {
             // Arrange
-            byte[] initialContents = [1, 2, 3];
-            byte[] expectedContents = [1, 2, 3, 0, 0];
-            using (SafeFileHandle handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All))
+            var initialContents = new byte[] { 1, 2, 3 };
+            var expectedContents = new byte[] { 1, 2, 3, 0, 0 };
+            long result;
+            byte[] actualContents;
+            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All))
             {
                 FileIO.WriteAllBytes(handle, initialContents);
 
                 // Act
                 handle.Length = expectedContents.Length;
-                long result = handle.Length;
-
-                // Assert
-                Assert.Equal(expectedContents.LongLength, result);
-                using (FileStream stream = FileIO.CreateFileStream(handle, FileAccess.Read))
+                result = handle.Length;
+                using (var stream = FileIO.CreateFileStream(handle, FileAccess.Read))
                 {
                     stream.Position = 0;
-                    byte[] actualContents = new byte[expectedContents.Length];
-                    int bytesRead = stream.Read(actualContents, 0, actualContents.Length);
-                    Assert.Equal(expectedContents.Length, bytesRead);
-                    Assert.Equal(expectedContents, actualContents);
+                    actualContents = stream.ReadToEnd();
                 }
             }
+
+            // Assert
+            Assert.Equal(expectedContents.LongLength, result);
+            Assert.Equal(expectedContents, actualContents);
         }
 
         [Fact]
         public void TruncatingFile_ReducesLengthAndPreservesLeadingBytes()
         {
             // Arrange
-            byte[] initialContents = [1, 2, 3, 4, 5];
-            byte[] expectedContents = [1, 2];
-            using (SafeFileHandle handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All))
+            var initialContents = new byte[] { 1, 2, 3, 4, 5 };
+            var expectedContents = new byte[] { 1, 2 };
+            long result;
+            byte[] actualContents;
+            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All))
             {
                 FileIO.WriteAllBytes(handle, initialContents);
 
                 // Act
                 handle.Length = expectedContents.Length;
-                long result = handle.Length;
-
-                // Assert
-                Assert.Equal(expectedContents.LongLength, result);
-                using (FileStream stream = FileIO.CreateFileStream(handle, FileAccess.Read))
+                result = handle.Length;
+                using (var stream = FileIO.CreateFileStream(handle, FileAccess.Read))
                 {
                     stream.Position = 0;
-                    byte[] actualContents = new byte[expectedContents.Length];
-                    int bytesRead = stream.Read(actualContents, 0, actualContents.Length);
-                    Assert.Equal(expectedContents.Length, bytesRead);
-                    Assert.Equal(expectedContents, actualContents);
+                    actualContents = stream.ReadToEnd();
                 }
             }
+
+            // Assert
+            Assert.Equal(expectedContents.LongLength, result);
+            Assert.Equal(expectedContents, actualContents);
         }
     }
 
@@ -491,31 +462,25 @@ public sealed class SafeFileHandleExtensionsTests
         public void ValidFileHandle_ReturnsExpectedSourcePath()
         {
             // Arrange
-            string expected = System.IO.Path.GetFullPath(System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"{nameof(SafeFileHandleExtensionsTests)}_{Guid.NewGuid():N}.tmp"));
-            File.WriteAllText(expected, "test");
-
-            try
+            var expected = $"{System.IO.Path.GetTempPath()}{nameof(SafeFileHandleExtensionsTests)}_{Guid.NewGuid():N}.tmp";
+            string? result;
+            using (var tempFile = FileIO.OpenHandle(expected, FileOpenRequest.CreateNew(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete, FileOptions.DeleteOnClose, FileAttributes.Temporary)))
             {
-                using (SafeFileHandle handle = FileIO.OpenHandle(expected, FileOpenRequest.Open(FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete)))
+                FileIO.WriteAllBytes(tempFile, "test"u8.ToArray());
+
+                using (var handle = FileIO.OpenHandle(expected, FileOpenRequest.Open(FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete)))
                 {
                     // Act
-                    string? result = handle.SourcePath;
+                    result = handle.SourcePath;
+                }
+            }
 
-                    // Assert
+            // Assert
 #if NET6_0_OR_GREATER
-                    Assert.Equal(expected, result);
+            Assert.Equal(expected, result);
 #else
-                    Assert.Null(result);
+            Assert.Null(result);
 #endif
-                }
-            }
-            finally
-            {
-                if (File.Exists(expected))
-                {
-                    File.Delete(expected);
-                }
-            }
         }
     }
 
