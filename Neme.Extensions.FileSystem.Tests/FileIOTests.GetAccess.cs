@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32.SafeHandles;
+using System.Runtime.InteropServices;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
@@ -82,7 +83,9 @@ public sealed partial class FileIOTests
             var result = FileIO.GetAccess(handle);
 
             // Assert
-            Assert.Equal(FileAccess.None, result);
+            // macOS doesn't support opening a file with neither Read or Write access.
+            var expected = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? FileAccess.Read : FileAccess.None;
+            Assert.Equal(expected, result);
         }
 
         [Fact]
@@ -95,7 +98,9 @@ public sealed partial class FileIOTests
             var result = FileIO.GetAccess(handle);
 
             // Assert
-            Assert.Equal(FileAccess.None, result);
+            // macOS doesn't support opening a file with neither Read or Write access.
+            var expected = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? FileAccess.Read : FileAccess.None;
+            Assert.Equal(expected, result);
         }
 
         [Fact]

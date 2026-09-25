@@ -62,7 +62,7 @@ internal static class FileSystemAccessExtensions
                     ? OpenFlags.O_RDONLY
                     : RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
                         ? OpenFlags.O_PATH
-                        : default;
+                        : OpenFlags.O_RDONLY;
             }
         }
 #endif
