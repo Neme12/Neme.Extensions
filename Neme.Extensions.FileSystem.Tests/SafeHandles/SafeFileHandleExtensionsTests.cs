@@ -15,7 +15,7 @@ public sealed class SafeFileHandleExtensionsTests
         public void ValidFileHandle_ReturnsFullPath()
         {
             // Arrange
-            var expected = $"{PathUtilities.Normalize(IOPath.GetTempPath())}{nameof(SafeFileHandleExtensionsTests)}_{Guid.NewGuid():N}.tmp";
+            var expected = $"{IOPath.GetTempPath()}{nameof(SafeFileHandleExtensionsTests)}_{Guid.NewGuid():N}.tmp";
             string result;
             using (var tempFile = FileIO.OpenHandle(expected, FileOpenRequest.CreateNew(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete, FileOptions.DeleteOnClose, FileAttributes.Temporary)))
             {
@@ -29,7 +29,7 @@ public sealed class SafeFileHandleExtensionsTests
             }
 
             // Assert
-            Assert.Equal(expected, result);
+            Assert.Equal(expected, PathUtilities.Normalize(result));
         }
 
         [Fact]

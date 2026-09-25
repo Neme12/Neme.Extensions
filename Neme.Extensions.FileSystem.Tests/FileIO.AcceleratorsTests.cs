@@ -1,4 +1,6 @@
-﻿namespace Neme.Extensions.FileSystem.Tests;
+﻿using Neme.Extensions.FileSystem.Tests.TestUtilities;
+
+namespace Neme.Extensions.FileSystem.Tests;
 
 public sealed partial class FileIOTests
 {
@@ -29,7 +31,7 @@ public sealed partial class FileIOTests
                 var actualDirectory = Path.GetDirectoryName(createdPath)!.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
                 var comparison = Path.DirectorySeparatorChar == '\\' ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 
-                Assert.True(string.Equals(expectedDirectory, actualDirectory, comparison));
+                Assert.True(string.Equals(expectedDirectory, PathUtilities.Normalize(actualDirectory), comparison));
             }
 
             Assert.NotNull(createdPath);
