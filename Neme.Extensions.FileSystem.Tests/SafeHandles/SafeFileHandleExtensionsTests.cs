@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using Neme.Extensions.FileSystem.SafeHandles;
 using Neme.Extensions.IO;
+using IOPath = System.IO.Path;
 
 namespace Neme.Extensions.FileSystem.Tests.SafeHandles;
 
@@ -13,7 +14,7 @@ public sealed class SafeFileHandleExtensionsTests
         public void ValidFileHandle_ReturnsFullPath()
         {
             // Arrange
-            var expected = $"{System.IO.Path.GetTempPath()}{nameof(SafeFileHandleExtensionsTests)}_{Guid.NewGuid():N}.tmp";
+            var expected =  IOPath.GetFullPath($"{System.IO.Path.GetTempPath()}{nameof(SafeFileHandleExtensionsTests)}_{Guid.NewGuid():N}.tmp");
             string result;
             using (var tempFile = FileIO.OpenHandle(expected, FileOpenRequest.CreateNew(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete, FileOptions.DeleteOnClose, FileAttributes.Temporary)))
             {
