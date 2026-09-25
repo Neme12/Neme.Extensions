@@ -84,7 +84,7 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
                 file,
                 bufferLease.Buffer,
                 GETFINALPATHNAMEBYHANDLE_FLAGS.VOLUME_NAME_DOS |
-                GETFINALPATHNAMEBYHANDLE_FLAGS.FILE_NAME_OPENED);
+                GETFINALPATHNAMEBYHANDLE_FLAGS.FILE_NAME_NORMALIZED);
             if (charsWritten != bufferLease.Length)
                 break;
 
