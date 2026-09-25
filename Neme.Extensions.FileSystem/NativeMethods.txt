@@ -25,3 +25,4 @@ STATUS_NO_SUCH_FILE
 NtQueryInformationFile
 FILE_ACCESS_INFORMATION
 SetFilePointerEx
+GetFileType

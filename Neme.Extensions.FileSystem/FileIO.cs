@@ -233,7 +233,14 @@ public static partial class FileIO
         Strategy.SetLength(file, length);
     }
 
-        [return: OwnershipTransferWhen(nameof(ownsHandle))]
+    public static bool CanSeek([Borrow] SafeFileHandle file)
+    {
+        Strategy.ValidateFileHandle(file);
+
+        return Strategy.CanSeek(file);
+    }
+
+    [return: OwnershipTransferWhen(nameof(ownsHandle))]
     public static CheckedFileStream CreateFileStream(
         [OwnershipTransferWhen(nameof(ownsHandle))] SafeFileHandle file,
         FileAccess access,

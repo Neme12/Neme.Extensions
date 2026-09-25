@@ -708,6 +708,12 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             throw UnixMarshal.GetExceptionForLastStdlibError();
     }
 
+    public override bool CanSeek([Borrow] SafeFileHandle file)
+    {
+        using (var handleScope = file.CreateScope())
+            return Syscall.lseek((int)handleScope.Handle, 0, SeekFlags.SEEK_CUR) >= 0;
+    }
+
     private static unsafe ref T AllocateFileInfo<T>(Span<byte> buffer, out Span<byte> fileInfoBuffer) where T : unmanaged
     {
         Debug.Assert(buffer.Length >= sizeof(T));

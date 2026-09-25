@@ -54,6 +54,8 @@ internal abstract class FileIOStrategy
 
     public abstract void SetLength([Borrow] SafeFileHandle file, long length);
 
+    public abstract bool CanSeek([Borrow] SafeFileHandle file);
+
     internal void ValidateFileName(string? fileName, bool optional = false, [CallerArgumentExpression(nameof(fileName))] string? paramName = null)
     {
         if (optional && fileName is null)

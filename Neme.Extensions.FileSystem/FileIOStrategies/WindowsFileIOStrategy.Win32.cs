@@ -269,6 +269,11 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
         }
     }
 
+    public override bool CanSeek([Borrow] SafeFileHandle file)
+    {
+        return Win32PInvoke.GetFileType(file) == FILE_TYPE.FILE_TYPE_DISK;
+    }
+
     private static Instant InstantFromFileTime(long fileTime)
     {
         if (fileTime == 0)
