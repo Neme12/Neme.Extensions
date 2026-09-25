@@ -86,6 +86,19 @@ public sealed partial class FileIOTests
         }
 
         [Fact]
+        public void ReadAttributesOnlyHandle_ReturnsNone()
+        {
+            // Arrange
+            using var handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadAttributes);
+
+            // Act
+            var result = FileIO.GetAccess(handle);
+
+            // Assert
+            Assert.Equal(FileAccess.None, result);
+        }
+
+        [Fact]
         public void NullHandle_ThrowsArgumentNullException()
         {
             // Arrange, Act & Assert
