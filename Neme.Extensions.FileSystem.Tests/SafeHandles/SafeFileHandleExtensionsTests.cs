@@ -131,7 +131,9 @@ public sealed class SafeFileHandleExtensionsTests
                 result = handle.Access;
 
             // Assert
-            Assert.Equal(FileAccess.None, result);
+            // macOS doesn't support opening a file with neither Read or Write access.
+            var expected = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? FileAccess.Read : FileAccess.None;
+            Assert.Equal(expected, result);
         }
 
         [Fact]
@@ -233,7 +235,9 @@ public sealed class SafeFileHandleExtensionsTests
                 result = handle.CanRead;
 
             // Assert
-            Assert.False(result);
+            // macOS doesn't support opening a file with neither Read or Write access.
+            var expected = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+            Assert.Equal(expected, result);
         }
     }
 
