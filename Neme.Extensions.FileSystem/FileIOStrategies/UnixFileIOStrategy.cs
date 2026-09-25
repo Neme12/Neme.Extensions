@@ -829,6 +829,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
         // O_PATH cannot be combined with O_CREAT on Linux (the kernel ignores O_CREAT when O_PATH is set).
         // When both are requested, create the file first with a write-only open, then reopen with O_PATH.
+        SafeFileHandle? firstOpenHandle = null;
         if ((openFlags & OpenFlags.O_PATH) != 0 && (openFlags & OpenFlags.O_CREAT) != 0)
         {
             var createFlags = OpenFlags.O_WRONLY | (openFlags & (OpenFlags.O_CREAT | OpenFlags.O_EXCL));
@@ -840,7 +841,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
                     createError = Errno.EACCES;
                 throw UnixMarshal.GetExceptionForUnixError(createError, fullPath);
             }
-            using (new SafeFileHandle((nint)createRawHandle, ownsHandle: true)) { }
+            firstOpenHandle = new SafeFileHandle((nint)createRawHandle, ownsHandle: true);
             openFlags &= ~(OpenFlags.O_CREAT | OpenFlags.O_EXCL);
         }
 
@@ -849,8 +850,20 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
         while (true)
         {
-            var rawHandle = Syscall.open(fullPath!, openFlags, (FilePermissions)openPermissions);
-            handle.SetValue(new SafeFileHandle((nint)rawHandle, ownsHandle: true));
+            SafeFileHandle safeHandle;
+            if (firstOpenHandle is not null)
+            {
+                fullPath = GetFdLinkPath(firstOpenHandle);
+                safeHandle = Syscall.open_handle(fullPath, openFlags, (FilePermissions)openPermissions);
+                firstOpenHandle.Dispose();
+                firstOpenHandle = null;
+            }
+            else
+            {
+                var rawHandle = Syscall.open(fullPath!, openFlags, (FilePermissions)openPermissions);
+                safeHandle = new SafeFileHandle((nint)rawHandle, ownsHandle: true);
+            }
+            handle.SetValue(safeHandle);
 
 #if NET8_0_OR_GREATER
             SafeFileHandleAccessors.Path(handle.Value!) = fullPath;
@@ -944,9 +957,19 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             }
             else
             {
-                path = GetFdLinkPath(rootHandle!);
-                rootHandle = null;
-                rawHandle = Syscall.open_handle(path, openFlags, (FilePermissions)openPermissions);
+                if (firstOpenHandle is not null)
+                {
+                    path = GetFdLinkPath(firstOpenHandle);
+                    rawHandle = Syscall.open_handle(path, openFlags, (FilePermissions)openPermissions);
+                    firstOpenHandle.Dispose();
+                    firstOpenHandle = null;
+                }
+                else
+                {
+                    path = GetFdLinkPath(rootHandle!);
+                    rootHandle = null;
+                    rawHandle = Syscall.open_handle(path, openFlags, (FilePermissions)openPermissions);
+                }
             }
 
             handle.SetValue(rawHandle);
