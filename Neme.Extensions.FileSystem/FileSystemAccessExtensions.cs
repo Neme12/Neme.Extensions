@@ -60,7 +60,9 @@ internal static class FileSystemAccessExtensions
             {
                 return ((rawAccess & RawFileSystemAccess.WriteAttributes) != 0)
                     ? OpenFlags.O_RDONLY
-                    : OpenFlags.O_PATH;
+                    : RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+                        ? OpenFlags.O_PATH
+                        : default;
             }
         }
 #endif
