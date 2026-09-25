@@ -1,9 +1,8 @@
 ﻿#if !NETFRAMEWORK
 using Mono.Unix.Native;
+#endif
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-
-#endif
 using Windows.Win32.Storage.FileSystem;
 
 namespace Neme.Extensions.FileSystem;
@@ -14,24 +13,27 @@ internal static class FileSystemAccessExtensions
     {
         public FILE_ACCESS_RIGHTS ToWin32()
         {
-            FILE_ACCESS_RIGHTS desiredAccess = 0;
+            var rawAccess = (RawFileSystemAccess)access;
 
-            if ((access & FileSystemAccess.ReadAttributes) != 0)
+            var desiredAccess =
+                FILE_ACCESS_RIGHTS.SYNCHRONIZE;
+
+            if (rawAccess.HasFlag(RawFileSystemAccess.ReadAttributes))
                 desiredAccess |= FILE_ACCESS_RIGHTS.FILE_READ_ATTRIBUTES;
 
-            if ((access & FileSystemAccess.WriteAttributes) != 0)
+            if (rawAccess.HasFlag(RawFileSystemAccess.WriteAttributes))
                 desiredAccess |= FILE_ACCESS_RIGHTS.FILE_WRITE_ATTRIBUTES;
 
-            if ((access & FileSystemAccess.Read) != 0)
+            if (rawAccess.HasFlag(RawFileSystemAccess.Read))
                 desiredAccess |= FILE_ACCESS_RIGHTS.FILE_GENERIC_READ;
 
-            if ((access & FileSystemAccess.Write) != 0)
+            if (rawAccess.HasFlag(RawFileSystemAccess.Write))
                 desiredAccess |= FILE_ACCESS_RIGHTS.FILE_GENERIC_WRITE;
 
-            if ((access & FileSystemAccess.Delete) != 0)
+            if (rawAccess.HasFlag(RawFileSystemAccess.Delete))
                 desiredAccess |= FILE_ACCESS_RIGHTS.DELETE;
 
-            if ((access & FileSystemAccess.Execute) != 0)
+            if (rawAccess.HasFlag(RawFileSystemAccess.Execute))
                 desiredAccess |= FILE_ACCESS_RIGHTS.FILE_GENERIC_EXECUTE;
 
 
