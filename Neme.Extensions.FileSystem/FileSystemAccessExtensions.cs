@@ -15,8 +15,7 @@ internal static class FileSystemAccessExtensions
         {
             var rawAccess = (RawFileSystemAccess)access;
 
-            var desiredAccess =
-                FILE_ACCESS_RIGHTS.SYNCHRONIZE;
+            var desiredAccess = FILE_ACCESS_RIGHTS.SYNCHRONIZE;
 
             if (rawAccess.HasFlag(RawFileSystemAccess.ReadAttributes))
                 desiredAccess |= FILE_ACCESS_RIGHTS.FILE_READ_ATTRIBUTES;
