@@ -31,6 +31,9 @@ public static class FileAccessExtensions
         [UnsupportedOSPlatform("windows")]
         internal static FileAccess FromUnix(OpenFlags flags)
         {
+            if ((flags & OpenFlags.O_PATH) != 0)
+                return FileAccess.None;
+
             return (flags & (OpenFlags.O_RDONLY | OpenFlags.O_WRONLY | OpenFlags.O_RDWR)) switch
             {
                 OpenFlags.O_RDONLY => FileAccess.Read,
