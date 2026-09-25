@@ -835,6 +835,12 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             var rawHandle = Syscall.open(fullPath!, openFlags, (FilePermissions)openPermissions);
             handle.SetValue(new SafeFileHandle((nint)rawHandle, ownsHandle: true));
 
+#if NET8_0_OR_GREATER
+            SafeFileHandleAccessors.Path(handle.Value!) = fullPath;
+#else
+            SafeFileHandleAccessors.PathField?.SetValue(handle.Value!, fullPath);
+#endif
+
             if (handle.Value!.IsInvalid)
             {
                 handle.Dispose();
@@ -986,8 +992,8 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             // SafeFileHandle disposal unlocks the file unconditionally.
 #if NET8_0_OR_GREATER
             SafeFileHandleAccessors.IsLocked(handle) = true;
-#elif NET6_0_OR_GREATER
-            SafeFileHandleAccessors.IsLockedField.SetValue(handle, true);
+#else
+            SafeFileHandleAccessors.IsLockedField?.SetValue(handle, true);
 #endif
         }
 
@@ -1045,8 +1051,8 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             // FileStream disposal.
 #if NET8_0_OR_GREATER
             SafeFileHandleAccessors.DeleteOnClose(handle) = true;
-#elif NET6_0_OR_GREATER
-            SafeFileHandleAccessors.DeleteOnCloseField.SetValue(handle, true);
+#else
+            SafeFileHandleAccessors.DeleteOnCloseField?.SetValue(handle, true);
 #endif
         }
 
@@ -1158,7 +1164,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
     private sealed record HandleMetadata(FileSystemAccess Access);
 
-    private static class SafeFileHandleAccessors
+    private new sealed class SafeFileHandleAccessors : FileIOStrategy.SafeFileHandleAccessors
     {
 #if NET8_0_OR_GREATER && !NET11_0_OR_GREATER
         [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_IsAsync")]
@@ -1184,18 +1190,22 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
         [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_deleteOnClose")]
         public static extern ref bool DeleteOnClose(SafeFileHandle handle);
-#elif NET6_0_OR_GREATER
-        public static readonly FieldInfo IsLockedField =
-            typeof(SafeFileHandle).GetField(
+#else
+        public static readonly FieldInfo? IsLockedField =
+            RuntimeInformation.IsNetCoreVersionOrGreater(6, 0)
+            ? typeof(SafeFileHandle).GetField(
                 "_isLocked",
                 BindingFlags.NonPublic | BindingFlags.Instance)
-            .NotNull();
+                .NotNull()
+            : null;
 
-        public static readonly FieldInfo DeleteOnCloseField =
-            typeof(SafeFileHandle).GetField(
+        public static readonly FieldInfo? DeleteOnCloseField =
+            RuntimeInformation.IsNetCoreVersionOrGreater(6, 0)
+            ? typeof(SafeFileHandle).GetField(
                 "_deleteOnClose",
                 BindingFlags.NonPublic | BindingFlags.Instance)
-            .NotNull();
+                .NotNull()
+            : null;
 #endif
     }
 }

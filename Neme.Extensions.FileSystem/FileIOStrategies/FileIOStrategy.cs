@@ -1,7 +1,11 @@
 ﻿using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.Contracts;
+using Neme.Extensions.InteropServices;
 using Neme.Extensions.Ownership;
 using Neme.Utilities.Contracts;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
 namespace Neme.Extensions.FileSystem.FileIOStrategies;
@@ -115,4 +119,20 @@ internal abstract class FileIOStrategy
 
     protected static bool IsValidLength(long length) =>
         length >= 0;
+
+    protected abstract class SafeFileHandleAccessors
+    {
+#if NET8_0_OR_GREATER
+        [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_path")]
+        public static extern ref string? Path(SafeFileHandle handle);
+#else
+        public static readonly FieldInfo? PathField =
+            RuntimeInformation.IsNetCoreVersionOrGreater(6, 0)
+            ? typeof(SafeFileHandle).GetField(
+                "_path",
+                BindingFlags.NonPublic | BindingFlags.Instance)
+                .NotNull()
+            : null;
+#endif
+    }
 }

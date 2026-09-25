@@ -38,6 +38,12 @@ internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
         if (handle.IsInvalid)
             throw Win32Marshal.GetExceptionForLastWin32Error(path);
 
+#if NET8_0_OR_GREATER
+        SafeFileHandleAccessors.Path(handle) = path;
+#else
+        SafeFileHandleAccessors.PathField?.SetValue(handle, path);
+#endif
+
         return handle;
     }
 
