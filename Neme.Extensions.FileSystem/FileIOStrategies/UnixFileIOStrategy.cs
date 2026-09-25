@@ -905,20 +905,20 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
         // O_PATH cannot be combined with O_CREAT on Linux (the kernel ignores O_CREAT when O_PATH is set).
         // When both are requested, create the file first with a write-only open, then reopen with O_PATH.
+        SafeFileHandle? firstOpenHandle = null;
         if ((openFlags & OpenFlags.O_PATH) != 0 && (openFlags & OpenFlags.O_CREAT) != 0)
         {
             var createRootHandle = rootHandle ?? Interop.Libc.AT_FDCWD_HANDLE;
             var createPath = path ?? GetFdLinkPath(rootHandle!);
             var createFlags = OpenFlags.O_WRONLY | (openFlags & (OpenFlags.O_CREAT | OpenFlags.O_EXCL));
-            using (var createHandle = Syscall.openat(createRootHandle, createPath, createFlags, (FilePermissions)openPermissions))
+            firstOpenHandle = Syscall.openat(createRootHandle, createPath, createFlags, (FilePermissions)openPermissions);
+            if (firstOpenHandle.IsInvalid)
             {
-                if (createHandle.IsInvalid)
-                {
-                    var createError = Stdlib.GetLastError();
-                    if (createError == Errno.EISDIR)
-                        createError = Errno.EACCES;
-                    throw UnixMarshal.GetExceptionForUnixError(createError, path);
-                }
+                firstOpenHandle.Dispose();
+                var createError = Stdlib.GetLastError();
+                if (createError == Errno.EISDIR)
+                    createError = Errno.EACCES;
+                throw UnixMarshal.GetExceptionForUnixError(createError, path);
             }
             openFlags &= ~(OpenFlags.O_CREAT | OpenFlags.O_EXCL);
         }
@@ -932,7 +932,15 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
             if (path is not null)
             {
-                rawHandle = Syscall.openat(rootHandle ?? Interop.Libc.AT_FDCWD_HANDLE, path ?? "", openFlags, (FilePermissions)openPermissions);
+                if (firstOpenHandle is not null)
+                {
+                    path = GetFdLinkPath(firstOpenHandle);
+                    rawHandle = Syscall.open_handle(path, openFlags, (FilePermissions)openPermissions);
+                    firstOpenHandle.Dispose();
+                    firstOpenHandle = null;
+                }
+                else
+                    rawHandle = Syscall.openat(rootHandle ?? Interop.Libc.AT_FDCWD_HANDLE, path, openFlags, (FilePermissions)openPermissions);
             }
             else
             {
