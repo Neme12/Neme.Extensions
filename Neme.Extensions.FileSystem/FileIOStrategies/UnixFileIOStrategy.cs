@@ -827,13 +827,43 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             share.ToUnix() |
             options.ToUnix();
 
+        // O_PATH cannot be combined with O_CREAT on Linux (the kernel ignores O_CREAT when O_PATH is set).
+        // When both are requested, create the file first with a write-only open, then reopen with O_PATH.
+        SafeFileHandle? firstOpenHandle = null;
+        if ((openFlags & OpenFlags.O_PATH) != 0 && (openFlags & OpenFlags.O_CREAT) != 0)
+        {
+            var createFlags = OpenFlags.O_WRONLY | (openFlags & (OpenFlags.O_CREAT | OpenFlags.O_EXCL));
+            var createRawHandle = Syscall.open(fullPath!, createFlags, (FilePermissions)openPermissions);
+            if (createRawHandle == -1)
+            {
+                var createError = Stdlib.GetLastError();
+                if (createError == Errno.EISDIR)
+                    createError = Errno.EACCES;
+                throw UnixMarshal.GetExceptionForUnixError(createError, fullPath);
+            }
+            firstOpenHandle = new SafeFileHandle((nint)createRawHandle, ownsHandle: true);
+            openFlags &= ~(OpenFlags.O_CREAT | OpenFlags.O_EXCL);
+        }
+
         using OwnedOrBorrowed<SafeFileHandle?> handle =
             OwnedOrBorrowed.Create<SafeFileHandle?>(null);
 
         while (true)
         {
-            var rawHandle = Syscall.open(fullPath!, openFlags, (FilePermissions)openPermissions);
-            handle.SetValue(new SafeFileHandle((nint)rawHandle, ownsHandle: true));
+            SafeFileHandle safeHandle;
+            if (firstOpenHandle is not null)
+            {
+                fullPath = GetFdLinkPath(firstOpenHandle);
+                safeHandle = Syscall.open_handle(fullPath, openFlags, (FilePermissions)openPermissions);
+                firstOpenHandle.Dispose();
+                firstOpenHandle = null;
+            }
+            else
+            {
+                var rawHandle = Syscall.open(fullPath!, openFlags, (FilePermissions)openPermissions);
+                safeHandle = new SafeFileHandle((nint)rawHandle, ownsHandle: true);
+            }
+            handle.SetValue(safeHandle);
 
 #if NET8_0_OR_GREATER
             SafeFileHandleAccessors.Path(handle.Value!) = fullPath;
@@ -886,6 +916,26 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
             share.ToUnix() |
             options.ToUnix();
 
+        // O_PATH cannot be combined with O_CREAT on Linux (the kernel ignores O_CREAT when O_PATH is set).
+        // When both are requested, create the file first with a write-only open, then reopen with O_PATH.
+        SafeFileHandle? firstOpenHandle = null;
+        if ((openFlags & OpenFlags.O_PATH) != 0 && (openFlags & OpenFlags.O_CREAT) != 0)
+        {
+            var createRootHandle = rootHandle ?? Interop.Libc.AT_FDCWD_HANDLE;
+            var createPath = path ?? GetFdLinkPath(rootHandle!);
+            var createFlags = OpenFlags.O_WRONLY | (openFlags & (OpenFlags.O_CREAT | OpenFlags.O_EXCL));
+            firstOpenHandle = Syscall.openat(createRootHandle, createPath, createFlags, (FilePermissions)openPermissions);
+            if (firstOpenHandle.IsInvalid)
+            {
+                firstOpenHandle.Dispose();
+                var createError = Stdlib.GetLastError();
+                if (createError == Errno.EISDIR)
+                    createError = Errno.EACCES;
+                throw UnixMarshal.GetExceptionForUnixError(createError, path);
+            }
+            openFlags &= ~(OpenFlags.O_CREAT | OpenFlags.O_EXCL);
+        }
+
         using OwnedOrBorrowed<SafeFileHandle?> handle =
             OwnedOrBorrowed.Create<SafeFileHandle?>(null);
 
@@ -895,13 +945,31 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
             if (path is not null)
             {
-                rawHandle = Syscall.openat(rootHandle ?? Interop.Libc.AT_FDCWD_HANDLE, path ?? "", openFlags, (FilePermissions)openPermissions);
+                if (firstOpenHandle is not null)
+                {
+                    path = GetFdLinkPath(firstOpenHandle);
+                    rawHandle = Syscall.open_handle(path, openFlags, (FilePermissions)openPermissions);
+                    firstOpenHandle.Dispose();
+                    firstOpenHandle = null;
+                }
+                else
+                    rawHandle = Syscall.openat(rootHandle ?? Interop.Libc.AT_FDCWD_HANDLE, path, openFlags, (FilePermissions)openPermissions);
             }
             else
             {
-                path = GetFdLinkPath(rootHandle!);
-                rootHandle = null;
-                rawHandle = Syscall.open_handle(path, openFlags, (FilePermissions)openPermissions);
+                if (firstOpenHandle is not null)
+                {
+                    path = GetFdLinkPath(firstOpenHandle);
+                    rawHandle = Syscall.open_handle(path, openFlags, (FilePermissions)openPermissions);
+                    firstOpenHandle.Dispose();
+                    firstOpenHandle = null;
+                }
+                else
+                {
+                    path = GetFdLinkPath(rootHandle!);
+                    rootHandle = null;
+                    rawHandle = Syscall.open_handle(path, openFlags, (FilePermissions)openPermissions);
+                }
             }
 
             handle.SetValue(rawHandle);
