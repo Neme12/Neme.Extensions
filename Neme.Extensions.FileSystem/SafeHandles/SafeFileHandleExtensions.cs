@@ -65,10 +65,10 @@ public static class SafeFileHandleExtensions
             }
         }
 
-        public PositionScope CreatePositionScope(long? initialPosition = null)
+        public PositionScope CreatePositionScope(long? initialPosition = null, bool allowNonSeekable = false)
         {
             Require.ArgumentNotNull(file);
-            return new PositionScope(file, initialPosition);
+            return new PositionScope(file, initialPosition, allowNonSeekable);
         }
     }
 
@@ -97,7 +97,7 @@ public static class SafeFileHandleExtensions
         private SafeFileHandle _handle;
         private readonly long? _originalPosition;
 
-        internal PositionScope(SafeFileHandle handle, long? initialPosition)
+        internal PositionScope(SafeFileHandle handle, long? initialPosition, bool allowNonSeekable)
         {
             _handle = handle;
 
@@ -107,6 +107,11 @@ public static class SafeFileHandleExtensions
 
                 if (initialPosition is not null)
                     handle.Position = initialPosition.Value;
+            }
+            else
+            {
+                if (!allowNonSeekable)
+                    throw new NotSupportedException("The handle is not seekable.");
             }
         }
 

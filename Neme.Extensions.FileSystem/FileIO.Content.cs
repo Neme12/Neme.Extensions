@@ -18,7 +18,7 @@ public static partial class FileIO
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        using (file.CreatePositionScope(0))
+        using (file.CreatePositionScope(0, allowNonSeekable: true))
         using (var stream = CreateFileStream(file, FileAccess.Read))
         using (var streamReader = new StreamReader(stream, encoding ?? Encoding.UTF8, detectEncodingFromByteOrderMarks: true))
         {
@@ -37,7 +37,7 @@ public static partial class FileIO
 
         static async Task<string> CoreAsync([Borrow] SafeFileHandle file, Encoding? encoding, CancellationToken cancellationToken)
         {
-            using (file.CreatePositionScope(0))
+            using (file.CreatePositionScope(0, allowNonSeekable: true))
             await using (CreateFileStream(file, FileAccess.Read).AsAsyncDisposable(out var stream))
             using (var streamReader = new StreamReader(stream, encoding ?? Encoding.UTF8, detectEncodingFromByteOrderMarks: true))
             {
@@ -55,7 +55,7 @@ public static partial class FileIO
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        using (file.CreatePositionScope(0))
+        using (file.CreatePositionScope(0, allowNonSeekable: true))
         using (var stream = CreateFileStream(file, FileAccess.Write))
         using (var streamWriter = new StreamWriter(stream, encoding ?? UTF8NoBOM, FileStream.DefaultBufferSize, leaveOpen: true))
         {
@@ -78,7 +78,7 @@ public static partial class FileIO
 
         static async Task CoreAsync([Borrow] SafeFileHandle file, ReadOnlyMemory<char> contents, Encoding? encoding, CancellationToken cancellationToken = default)
         {
-            using (file.CreatePositionScope(0))
+            using (file.CreatePositionScope(0, allowNonSeekable: true))
             await using (CreateFileStream(file, FileAccess.Write).AsAsyncDisposable(out var stream))
             using (var streamWriter = new StreamWriter(stream, encoding ?? UTF8NoBOM, FileStream.DefaultBufferSize, leaveOpen: true))
             {
@@ -140,7 +140,7 @@ public static partial class FileIO
 
         var lines = new List<string>();
 
-        using (file.CreatePositionScope(0))
+        using (file.CreatePositionScope(0, allowNonSeekable: true))
         using (var stream = CreateFileStream(file, FileAccess.Read))
         using (var streamReader = new StreamReader(stream, encoding ?? Encoding.UTF8, true, StreamReader.DefaultBufferSize, leaveOpen: true))
         {
@@ -170,7 +170,7 @@ public static partial class FileIO
         {
             var lines = new List<string>();
 
-            using (file.CreatePositionScope(0))
+            using (file.CreatePositionScope(0, allowNonSeekable: true))
             await using (CreateFileStream(file, FileAccess.Read).AsAsyncDisposable(out var stream))
             using (var streamReader = new StreamReader(stream, encoding ?? Encoding.UTF8, true, StreamReader.DefaultBufferSize, leaveOpen: true))
             {
@@ -197,7 +197,7 @@ public static partial class FileIO
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        using (file.CreatePositionScope(0))
+        using (file.CreatePositionScope(0, allowNonSeekable: true))
         using (var stream = CreateFileStream(file, FileAccess.Write))
         using (var streamWriter = new StreamWriter(stream, encoding ?? UTF8NoBOM, StreamWriter.DefaultBufferSize, leaveOpen: true))
         {
@@ -227,7 +227,7 @@ public static partial class FileIO
 
         static async Task CoreAsync([Borrow] SafeFileHandle file, IEnumerable<string> contents, Encoding? encoding = null, CancellationToken cancellationToken = default)
         {
-            using (file.CreatePositionScope(0))
+            using (file.CreatePositionScope(0, allowNonSeekable: true))
             await using (CreateFileStream(file, FileAccess.Write).AsAsyncDisposable(out var stream))
             using (var streamWriter = new StreamWriter(stream, encoding ?? UTF8NoBOM, StreamWriter.DefaultBufferSize, leaveOpen: true))
             {
@@ -249,7 +249,7 @@ public static partial class FileIO
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        using (file.CreatePositionScope(0))
+        using (file.CreatePositionScope(0, allowNonSeekable: true))
         using (var stream = CreateFileStream(file, FileAccess.Read))
         {
             return stream.ReadToEnd(cancellationToken);
@@ -267,7 +267,7 @@ public static partial class FileIO
 
         static async Task<byte[]> CoreAsync([Borrow] SafeFileHandle file, CancellationToken cancellationToken = default)
         {
-            using (file.CreatePositionScope(0))
+            using (file.CreatePositionScope(0, allowNonSeekable: true))
             await using (CreateFileStream(file, FileAccess.Read).AsAsyncDisposable(out var stream))
             {
                 return await stream.ReadToEndAsync(cancellationToken);
@@ -284,7 +284,7 @@ public static partial class FileIO
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        using (file.CreatePositionScope(0))
+        using (file.CreatePositionScope(0, allowNonSeekable: true))
         using (var stream = CreateFileStream(file, FileAccess.Write))
         {
             stream.WriteBuffered(bytes, cancellationToken);
@@ -305,7 +305,7 @@ public static partial class FileIO
 
         static async Task CoreAsync([Borrow] SafeFileHandle file, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken = default)
         {
-            using (file.CreatePositionScope(0))
+            using (file.CreatePositionScope(0, allowNonSeekable: true))
             await using (CreateFileStream(file, FileAccess.Write).AsAsyncDisposable(out var stream))
             {
                 await stream.WriteBufferedAsync(bytes, cancellationToken);
