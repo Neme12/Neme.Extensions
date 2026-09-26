@@ -1,6 +1,20 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace Neme.Extensions.InteropServices;
+
+#if NEME_EXTENSIONS
+public
+#else
+internal
+#endif
+enum FrameworkKind
+{
+    Unknown,
+    NetCore,
+    NetFramework,
+}
 
 #if NEME_EXTENSIONS
 public
@@ -12,63 +26,64 @@ static class RuntimeInformationExtensions
     extension(RuntimeInformation)
     {
         public static bool IsNetCore =>
-            GetRuntimeKindAndPrefixLength(RuntimeInformation.FrameworkDescription).runtimeKind == RuntimeKind.NetCore;
+            GetTargetFramework().frameworkKind == FrameworkKind.NetCore;
 
         public static bool IsNetFramework =>
-            GetRuntimeKindAndPrefixLength(RuntimeInformation.FrameworkDescription).runtimeKind == RuntimeKind.NetFramework;
+            GetTargetFramework().frameworkKind == FrameworkKind.NetFramework;
+
+        public static bool IsFramework(FrameworkKind framework) =>
+            GetTargetFramework().frameworkKind == framework;
 
         public static bool IsNetCoreVersionOrGreater(int major, int minor)
         {
-            var (runtimeKind, versionMajor, versionMinor) = GetTargetRuntime(RuntimeInformation.FrameworkDescription);
-
-            if (runtimeKind != RuntimeKind.NetCore)
-                return false;
-
-            return new Version(versionMajor, versionMinor) >= new Version(major, minor);
+            var (frameworkKind, frameworkVersion) = GetTargetFramework();
+            return frameworkKind == FrameworkKind.NetCore && frameworkVersion >= new Version(major, minor);
         }
-
 
         public static bool IsNetFrameworkVersionOrGreater(int major, int minor)
         {
-            var (runtimeKind, versionMajor, versionMinor) = GetTargetRuntime(RuntimeInformation.FrameworkDescription);
+            var (frameworkKind, frameworkVersion) = GetTargetFramework();
+            return frameworkKind == FrameworkKind.NetFramework && frameworkVersion >= new Version(major, minor);
+        }
 
-            if (runtimeKind != RuntimeKind.NetFramework)
-                return false;
-
-            return new Version(versionMajor, versionMinor) >= new Version(major, minor);
+        public static bool IsFrameworkVersionOrGreater(FrameworkKind framework, int major, int minor)
+        {
+            var (frameworkKind, frameworkVersion) = GetTargetFramework();
+            return frameworkKind == framework && frameworkVersion >= new Version(major, minor);
         }
     }
 
-    private const string NetFrameworkPrefix = ".NET Framework ";
-    private const string NetCorePrefix = ".NET Core";
-    private const string NetPrefix = ".NET";
+    private const string NetFrameworkDescriptionPrefix = ".NET Framework ";
+    private const string NetFrameworkIdentifier = ".NETFramework";
+    private const string NetCoreIdentifier = ".NETCoreApp";
 
-    private enum RuntimeKind
+    private static (FrameworkKind frameworkKind, Version? frameworkVersion) GetTargetFramework()
     {
-        NetCore,
-        NetFramework,
-    }
+        var bclAssembly = typeof(object).Assembly;
 
-    private static (RuntimeKind runtimeKind, int versionMajor, int versionMinor) GetTargetRuntime(string frameworkDescription)
-    {
-        var (runtimeKind, prefixLength) = GetRuntimeKindAndPrefixLength(frameworkDescription);
+        var targetFrameworkAttribute = bclAssembly.GetCustomAttribute<TargetFrameworkAttribute>();
+        if (targetFrameworkAttribute is null)
+        {
+            var frameworkDescription = RuntimeInformation.FrameworkDescription;
+            if (frameworkDescription.StartsWith(NetFrameworkDescriptionPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                var versionText = frameworkDescription.Substring(NetFrameworkDescriptionPrefix.Length);
+                if (Version.TryParse(versionText, out var version))
+                    return (FrameworkKind.NetFramework, version);
+            }
 
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
-        var versionText = frameworkDescription.AsSpan(prefixLength);
-#else
-        var versionText = frameworkDescription.Substring(prefixLength);
-#endif
+            return (FrameworkKind.Unknown, null);
+        }
 
-        var version = Version.Parse(versionText);
-        return (runtimeKind, version.Major, version.Minor);
-    }
+        var frameworkName = new FrameworkName(targetFrameworkAttribute.FrameworkName);
+       
+        var frameworkKind = frameworkName.Identifier switch
+        {
+            NetCoreIdentifier => FrameworkKind.NetCore,
+            NetFrameworkIdentifier => FrameworkKind.NetFramework,
+            _ => FrameworkKind.Unknown,
+        };
 
-    private static (RuntimeKind runtimeKind, int prefixLength) GetRuntimeKindAndPrefixLength(string frameworkDescription)
-    {
-        return
-            frameworkDescription.StartsWith(NetFrameworkPrefix, StringComparison.Ordinal) ? (RuntimeKind.NetFramework, NetFrameworkPrefix.Length) :
-            frameworkDescription.StartsWith(NetCorePrefix, StringComparison.Ordinal) ? (RuntimeKind.NetCore, NetCorePrefix.Length) :
-            frameworkDescription.StartsWith(NetPrefix, StringComparison.Ordinal) ? (RuntimeKind.NetCore, NetPrefix.Length) :
-            throw new PlatformNotSupportedException($"Unknown framework description: {frameworkDescription}");
+        return (frameworkKind, frameworkName.Version);
     }
 }
