@@ -500,8 +500,8 @@ public sealed partial class FileIOTests
 
                 // Assert
                 Assert.False(handle.IsClosed);
+                handle.Position = 0;
                 using var stream = FileIO.CreateFileStream(handle, FileAccess.Read, bufferSize: 128);
-                stream.Position = 0;
                 var actualBytes = new byte[stream.Length];
                 _ = stream.Read(actualBytes, 0, actualBytes.Length);
                 Assert.Equal(expectedBytes, actualBytes);
@@ -533,8 +533,8 @@ public sealed partial class FileIOTests
                 // Act & Assert
                 Assert.ThrowsAny<OperationCanceledException>(() => FileIO.AppendAllBytes(handle, appendedBytes.AsSpan(), cancellationTokenSource.Token));
                 Assert.False(handle.IsClosed);
+                handle.Position = 0;
                 using var stream = FileIO.CreateFileStream(handle, FileAccess.Read, bufferSize: 128);
-                stream.Position = 0;
                 var actualBytes = new byte[stream.Length];
                 _ = stream.Read(actualBytes, 0, actualBytes.Length);
                 Assert.Equal(originalBytes, actualBytes);
@@ -582,8 +582,8 @@ public sealed partial class FileIOTests
 
                 // Assert
                 Assert.False(handle.IsClosed);
+                handle.Position = 0;
                 using var stream = FileIO.CreateFileStream(handle, FileAccess.Read, bufferSize: 128);
-                stream.Position = 0;
                 var actualBytes = new byte[stream.Length];
                 _ = await stream.ReadAsync(actualBytes, 0, actualBytes.Length);
                 Assert.Equal(expectedBytes, actualBytes);
@@ -622,8 +622,8 @@ public sealed partial class FileIOTests
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
                 Assert.True(task.IsCanceled);
                 Assert.False(handle.IsClosed);
+                handle.Position = 0;
                 using var stream = FileIO.CreateFileStream(handle, FileAccess.Read, bufferSize: 128);
-                stream.Position = 0;
                 var actualBytes = new byte[stream.Length];
                 _ = await stream.ReadAsync(actualBytes, 0, actualBytes.Length);
                 Assert.Equal(originalBytes, actualBytes);
@@ -690,8 +690,8 @@ public sealed partial class FileIOTests
 
                 // Assert
                 Assert.False(handle.IsClosed);
+                handle.Position = 0;
                 using var stream = FileIO.CreateFileStream(handle, FileAccess.Read, bufferSize: 128);
-                stream.Position = 0;
                 using var reader = new StreamReader(stream, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false), detectEncodingFromByteOrderMarks: true, bufferSize: 128, leaveOpen: true);
                 Assert.Equal(expectedContents, reader.ReadToEnd());
             }
@@ -714,8 +714,8 @@ public sealed partial class FileIOTests
 
                 // Assert
                 Assert.False(handle.IsClosed);
+                handle.Position = 0;
                 using var stream = FileIO.CreateFileStream(handle, FileAccess.Read, bufferSize: 128);
-                stream.Position = 0;
                 var actualBytes = new byte[stream.Length];
                 _ = stream.Read(actualBytes, 0, actualBytes.Length);
                 Assert.Equal(System.Text.Encoding.ASCII.GetBytes(expectedContents), actualBytes);
@@ -747,8 +747,8 @@ public sealed partial class FileIOTests
                 // Act & Assert
                 Assert.ThrowsAny<OperationCanceledException>(() => FileIO.AppendAllText(handle, appendedContents.AsSpan(), encoding: null, cancellationTokenSource.Token));
                 Assert.False(handle.IsClosed);
+                handle.Position = 0;
                 using var stream = FileIO.CreateFileStream(handle, FileAccess.Read, bufferSize: 128);
-                stream.Position = 0;
                 using var reader = new StreamReader(stream, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false), detectEncodingFromByteOrderMarks: true, bufferSize: 128, leaveOpen: true);
                 Assert.Equal(originalContents, reader.ReadToEnd());
             }
@@ -806,13 +806,8 @@ public sealed partial class FileIOTests
                 var options = FileOpenRequest.Open(FileSystemAccess.Read, FileShare.All);
                 using var handle = FileIO.ReopenHandle(tempFile, options);
 
-                long expectedPosition;
-                using (var initialStream = FileIO.CreateFileStream(handle, FileAccess.Read, bufferSize: 128))
-                {
-                    initialStream.Position = initialStream.Length;
-                    expectedPosition = initialStream.Position;
-                    _ = initialStream.SafeFileHandle; // To make the stream write the new position through to the file handle.
-                }
+                handle.Position = handle.Length;
+                long expectedPosition = handle.Position;
 
                 // Act
                 string[] result = FileIO.ReadAllLines(handle, System.Text.Encoding.ASCII);
@@ -820,8 +815,7 @@ public sealed partial class FileIOTests
                 // Assert
                 Assert.Equal(expected, result);
                 Assert.False(handle.IsClosed);
-                using var verificationStream = FileIO.CreateFileStream(handle, FileAccess.Read, bufferSize: 128);
-                Assert.Equal(expectedPosition, verificationStream.Position);
+                Assert.Equal(expectedPosition, handle.Position);
             }
 
             [Fact]
@@ -869,13 +863,8 @@ public sealed partial class FileIOTests
                 var options = FileOpenRequest.Open(FileSystemAccess.Read, FileShare.All);
                 using var handle = FileIO.ReopenHandle(tempFile, options);
 
-                long expectedPosition;
-                using (var initialStream = FileIO.CreateFileStream(handle, FileAccess.Read, bufferSize: 128))
-                {
-                    initialStream.Position = initialStream.Length;
-                    expectedPosition = initialStream.Position;
-                    _ = initialStream.SafeFileHandle; // To make the stream write the new position through to the file handle.
-                }
+                handle.Position = handle.Length;
+                long expectedPosition = handle.Position;
 
                 // Act
                 string[] result = await FileIO.ReadAllLinesAsync(handle, System.Text.Encoding.UTF8);
@@ -883,8 +872,7 @@ public sealed partial class FileIOTests
                 // Assert
                 Assert.Equal(expected, result);
                 Assert.False(handle.IsClosed);
-                using var verificationStream = FileIO.CreateFileStream(handle, FileAccess.Read, bufferSize: 128);
-                Assert.Equal(expectedPosition, verificationStream.Position);
+                Assert.Equal(expectedPosition, handle.Position);
             }
 
             [Fact]
@@ -937,12 +925,8 @@ public sealed partial class FileIOTests
                 var options = FileOpenRequest.Open(FileSystemAccess.ReadWrite, FileShare.All);
                 using var handle = FileIO.ReopenHandle(tempFile, options);
 
-                long expectedPosition;
-                using (var initialStream = FileIO.CreateFileStream(handle, FileAccess.Read, bufferSize: 128))
-                {
-                    initialStream.Position = 7;
-                    expectedPosition = initialStream.Position;
-                }
+                handle.Position = 7;
+                long expectedPosition = handle.Position;
 
                 // Act
                 FileIO.WriteAllLines(handle, contents);
@@ -950,8 +934,7 @@ public sealed partial class FileIOTests
                 // Assert
                 Assert.False(handle.IsClosed);
                 Assert.Equal(expectedBytes, FileIO.ReadAllBytes(handle));
-                using var verificationStream = FileIO.CreateFileStream(handle, FileAccess.Read, bufferSize: 128);
-                Assert.Equal(expectedPosition, verificationStream.Position);
+                Assert.Equal(expectedPosition, handle.Position);
             }
 
             [Fact]
@@ -1016,12 +999,8 @@ public sealed partial class FileIOTests
                 var options = FileOpenRequest.Open(FileSystemAccess.ReadWrite, FileShare.All);
                 using var handle = FileIO.ReopenHandle(tempFile, options);
 
-                long expectedPosition;
-                using (var initialStream = FileIO.CreateFileStream(handle, FileAccess.ReadWrite, bufferSize: 128))
-                {
-                    initialStream.Position = 7;
-                    expectedPosition = initialStream.Position;
-                }
+                handle.Position = 7;
+                long expectedPosition = handle.Position;
 
                 // Act
                 await FileIO.WriteAllLinesAsync(handle, contents);
@@ -1029,8 +1008,7 @@ public sealed partial class FileIOTests
                 // Assert
                 Assert.False(handle.IsClosed);
                 Assert.Equal(expectedBytes, FileIO.ReadAllBytes(handle));
-                using var verificationStream = FileIO.CreateFileStream(handle, FileAccess.Read, bufferSize: 128);
-                Assert.Equal(expectedPosition, verificationStream.Position);
+                Assert.Equal(expectedPosition, handle.Position);
             }
 
             [Fact]
