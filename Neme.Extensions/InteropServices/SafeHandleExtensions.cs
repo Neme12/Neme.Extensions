@@ -1,4 +1,5 @@
-﻿using Roslyn.Utilities;
+﻿using Neme.Extensions.Contracts;
+using Roslyn.Utilities;
 using System.Runtime.InteropServices;
 
 namespace Neme.Extensions.InteropServices;
@@ -8,20 +9,21 @@ public static class SafeHandleExtensions
     extension<THandle>(THandle handle)
         where THandle : SafeHandle
     {
-        public Scope<THandle> CreateScope()
+        public Scope CreateScope()
         {
-            return new Scope<THandle>(handle);
+            Require.ArgumentNotNull(handle);
+            return new Scope(handle);
         }
     }
 
+    [NonDefaultable]
     [NonCopyable]
-    public struct Scope<THandle> : IDisposable
-        where THandle : SafeHandle
+    public struct Scope : IDisposable
     {
-        private THandle _handle;
+        private SafeHandle _handle;
         private readonly bool _succeeded;
 
-        internal Scope(THandle handle)
+        internal Scope(SafeHandle handle)
         {
             bool success = false;
 

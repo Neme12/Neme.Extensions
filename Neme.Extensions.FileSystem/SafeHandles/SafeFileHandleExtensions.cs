@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using Neme.Extensions.Contracts;
 using Neme.Extensions.InteropServices;
+using Roslyn.Utilities;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -63,6 +64,12 @@ public static class SafeFileHandleExtensions
 #endif
             }
         }
+
+        public PositionScope CreatePositionScope(long? initialPosition = null)
+        {
+            Require.ArgumentNotNull(file);
+            return new PositionScope(file, initialPosition);
+        }
     }
 
     private static class SafeFileHandleAccessors
@@ -81,5 +88,37 @@ public static class SafeFileHandleExtensions
 
         public delegate string? PathDelegate(SafeFileHandle handle);
 #endif
+    }
+
+    [NonDefaultable]
+    [NonCopyable]
+    public struct PositionScope : IDisposable
+    {
+        private SafeFileHandle _handle;
+        private readonly long? _originalPosition;
+
+        internal PositionScope(SafeFileHandle handle, long? initialPosition)
+        {
+            _handle = handle;
+
+            if (handle.CanSeek)
+            {
+                _originalPosition = handle.Position;
+
+                if (initialPosition is not null)
+                    handle.Position = initialPosition.Value;
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_handle is not null)
+            {
+                if (_originalPosition is not null)
+                    _handle.Position = _originalPosition.Value;
+
+                _handle = null!;
+            }
+        }
     }
 }

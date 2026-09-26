@@ -18,7 +18,12 @@
 		<InternalsVisibleTo Include="Neme.Extensions.FileSystem.Tests" />
 	</ItemGroup>
 
-	<ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Neme.Extensions\Internal\NonCopyableAttribute.cs" Link="Internal\NonCopyableAttribute.cs" />
+    <Compile Include="..\Neme.Extensions\Internal\NonDefaultableAttribute.cs" Link="Internal\NonDefaultableAttribute.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
 		<Using Include="Neme.Extensions.InterpolatedString" Static="true" />
 		<Using Include="Windows.Win32.PInvoke" Alias="Win32PInvoke" />
 		<Using Include="Windows.Wdk.PInvoke" Alias="WinNTPInvoke" />

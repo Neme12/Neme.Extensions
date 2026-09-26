@@ -18,9 +18,9 @@ public static partial class FileIO
 
         cancellationToken.ThrowIfCancellationRequested();
 
+        using (file.CreatePositionScope(0))
         using (var stream = CreateFileStream(file, FileAccess.Read))
         using (var streamReader = new StreamReader(stream, encoding ?? Encoding.UTF8, detectEncodingFromByteOrderMarks: true))
-        using (stream.CreatePositionScope(0))
         {
             return streamReader.ReadToEnd(cancellationToken);
         }
@@ -37,9 +37,9 @@ public static partial class FileIO
 
         static async Task<string> CoreAsync([Borrow] SafeFileHandle file, Encoding? encoding, CancellationToken cancellationToken)
         {
+            using (file.CreatePositionScope(0))
             await using (CreateFileStream(file, FileAccess.Read).AsAsyncDisposable(out var stream))
             using (var streamReader = new StreamReader(stream, encoding ?? Encoding.UTF8, detectEncodingFromByteOrderMarks: true))
-            using (stream.CreatePositionScope(0))
             {
                 return await streamReader.ReadToEndAsync(cancellationToken);
             }
@@ -55,9 +55,9 @@ public static partial class FileIO
 
         cancellationToken.ThrowIfCancellationRequested();
 
+        using (file.CreatePositionScope(0))
         using (var stream = CreateFileStream(file, FileAccess.Write))
         using (var streamWriter = new StreamWriter(stream, encoding ?? UTF8NoBOM, FileStream.DefaultBufferSize, leaveOpen: true))
-        using (stream.CreatePositionScope(0))
         {
             streamWriter.WriteBuffered(contents, cancellationToken);
             streamWriter.Flush();
@@ -78,9 +78,9 @@ public static partial class FileIO
 
         static async Task CoreAsync([Borrow] SafeFileHandle file, ReadOnlyMemory<char> contents, Encoding? encoding, CancellationToken cancellationToken = default)
         {
+            using (file.CreatePositionScope(0))
             await using (CreateFileStream(file, FileAccess.Write).AsAsyncDisposable(out var stream))
             using (var streamWriter = new StreamWriter(stream, encoding ?? UTF8NoBOM, FileStream.DefaultBufferSize, leaveOpen: true))
-            using (stream.CreatePositionScope(0))
             {
                 await streamWriter.WriteBufferedAsync(contents, cancellationToken);
                 await streamWriter.FlushAsync(cancellationToken);
@@ -140,9 +140,9 @@ public static partial class FileIO
 
         var lines = new List<string>();
 
+        using (file.CreatePositionScope(0))
         using (var stream = CreateFileStream(file, FileAccess.Read))
         using (var streamReader = new StreamReader(stream, encoding ?? Encoding.UTF8, true, StreamReader.DefaultBufferSize, leaveOpen: true))
-        using (stream.CreatePositionScope(0))
         {
             string? line;
             while ((line = streamReader.ReadLine()) != null)
@@ -170,9 +170,9 @@ public static partial class FileIO
         {
             var lines = new List<string>();
 
+            using (file.CreatePositionScope(0))
             await using (CreateFileStream(file, FileAccess.Read).AsAsyncDisposable(out var stream))
             using (var streamReader = new StreamReader(stream, encoding ?? Encoding.UTF8, true, StreamReader.DefaultBufferSize, leaveOpen: true))
-            using (stream.CreatePositionScope(0))
             {
                 string? line;
                 while ((line = await streamReader.ReadLineAsync(cancellationToken)) != null)
@@ -197,9 +197,9 @@ public static partial class FileIO
 
         cancellationToken.ThrowIfCancellationRequested();
 
+        using (file.CreatePositionScope(0))
         using (var stream = CreateFileStream(file, FileAccess.Write))
         using (var streamWriter = new StreamWriter(stream, encoding ?? UTF8NoBOM, StreamWriter.DefaultBufferSize, leaveOpen: true))
-        using (stream.CreatePositionScope(0))
         {
             foreach (var line in contents)
             {
@@ -227,9 +227,9 @@ public static partial class FileIO
 
         static async Task CoreAsync([Borrow] SafeFileHandle file, IEnumerable<string> contents, Encoding? encoding = null, CancellationToken cancellationToken = default)
         {
+            using (file.CreatePositionScope(0))
             await using (CreateFileStream(file, FileAccess.Write).AsAsyncDisposable(out var stream))
             using (var streamWriter = new StreamWriter(stream, encoding ?? UTF8NoBOM, StreamWriter.DefaultBufferSize, leaveOpen: true))
-            using (stream.CreatePositionScope(0))
             {
                 foreach (string line in contents)
                 {
@@ -249,8 +249,8 @@ public static partial class FileIO
 
         cancellationToken.ThrowIfCancellationRequested();
 
+        using (file.CreatePositionScope(0))
         using (var stream = CreateFileStream(file, FileAccess.Read))
-        using (stream.CreatePositionScope(0))
         {
             return stream.ReadToEnd(cancellationToken);
         }
@@ -267,8 +267,8 @@ public static partial class FileIO
 
         static async Task<byte[]> CoreAsync([Borrow] SafeFileHandle file, CancellationToken cancellationToken = default)
         {
+            using (file.CreatePositionScope(0))
             await using (CreateFileStream(file, FileAccess.Read).AsAsyncDisposable(out var stream))
-            using (stream.CreatePositionScope(0))
             {
                 return await stream.ReadToEndAsync(cancellationToken);
             }
@@ -284,8 +284,8 @@ public static partial class FileIO
 
         cancellationToken.ThrowIfCancellationRequested();
 
+        using (file.CreatePositionScope(0))
         using (var stream = CreateFileStream(file, FileAccess.Write))
-        using (stream.CreatePositionScope(0))
         {
             stream.WriteBuffered(bytes, cancellationToken);
         }
@@ -305,8 +305,8 @@ public static partial class FileIO
 
         static async Task CoreAsync([Borrow] SafeFileHandle file, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken = default)
         {
+            using (file.CreatePositionScope(0))
             await using (CreateFileStream(file, FileAccess.Write).AsAsyncDisposable(out var stream))
-            using (stream.CreatePositionScope(0))
             {
                 await stream.WriteBufferedAsync(bytes, cancellationToken);
             }

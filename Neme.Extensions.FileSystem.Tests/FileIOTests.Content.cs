@@ -915,7 +915,7 @@ public sealed partial class FileIOTests
         [Collection(nameof(FileIOTestCollection))]
         public sealed class WriteAllLines
         {
-            [NetFrameworkOnlyFact("Potential bug in .NET Core")]
+            [Fact]
             public void WithMultipleLines_WritesUtf8WithoutByteOrderMarkAndRestoresPosition()
             {
                 // Arrange
@@ -989,7 +989,7 @@ public sealed partial class FileIOTests
         [Collection(nameof(FileIOTestCollection))]
         public sealed class WriteAllLinesAsync
         {
-            [NetFrameworkOnlyFact("Potential bug in .NET Core")]
+            [Fact]
             public async Task WithMultipleLines_WritesUtf8WithoutByteOrderMarkAndRestoresPosition()
             {
                 // Arrange
