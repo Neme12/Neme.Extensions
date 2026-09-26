@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.FileSystem.SafeHandles;
 using Neme.Extensions.FileSystem.Tests.TestUtilities;
 
 namespace Neme.Extensions.FileSystem.Tests;
@@ -7,12 +8,6 @@ public sealed partial class FileIOTests
 {
     public sealed class Content
     {
-        private static void SetTempFileLength(SafeFileHandle file, long length)
-        {
-            using (var stream = FileIO.CreateFileStream(file, FileAccess.ReadWrite))
-                stream.SetLength(length);
-        }
-
         [Collection(nameof(FileIOTestCollection))]
         public sealed class ReadAllBytesAsync
         {
@@ -65,7 +60,7 @@ public sealed partial class FileIOTests
             {
                 // Arrange
                 using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
-                SetTempFileLength(tempFile, (long)Array.MaxLength + 1);
+                tempFile.Length = (long)Array.MaxLength + 1;
 
                 var options = FileOpenRequest.Open(FileSystemAccess.Read, FileShare.All);
                 using var handle = FileIO.ReopenHandle(tempFile, options);
@@ -144,7 +139,7 @@ public sealed partial class FileIOTests
             {
                 // Arrange
                 using var tempFile = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
-                SetTempFileLength(tempFile, (long)Array.MaxLength + 1);
+                tempFile.Length = (long)Array.MaxLength + 1;
 
                 var options = FileOpenRequest.Open(FileSystemAccess.Read, FileShare.All);
                 using var handle = FileIO.ReopenHandle(tempFile, options);
