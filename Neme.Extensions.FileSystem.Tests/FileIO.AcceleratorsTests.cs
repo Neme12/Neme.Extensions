@@ -1,4 +1,5 @@
 ﻿using Neme.Extensions.FileSystem.Tests.TestUtilities;
+using Neme.Extensions.IO;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
@@ -75,8 +76,8 @@ public sealed partial class FileIOTests
             }
             finally
             {
-                if (createdPath is not null && File.Exists(createdPath))
-                    File.Delete(createdPath);
+                if (createdPath is not null)
+                    File.DeleteIfExists(createdPath);
             }
         }
     }

@@ -71,13 +71,8 @@ public static class DirectoryExtensions
                 }
             }
 
-            switch (exceptions.Count)
-            {
-                case > 1:
-                    throw new AggregateException(exceptions);
-                case 1:
-                    throw exceptions[0];
-            }
+            if (exceptions.Count > 0)
+                throw AggregateException.SingleOrAggregate(exceptions);
         }
 
         public static void CopyContent(string sourcePath, string destPath, bool overwrite = false)

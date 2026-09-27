@@ -1,4 +1,6 @@
-﻿namespace Neme.Extensions.FileSystem.Tests;
+﻿using Neme.Extensions.IO;
+
+namespace Neme.Extensions.FileSystem.Tests;
 
 [Collection(nameof(FileIOTestCollection))]
 public sealed class PartialFileTests
@@ -33,7 +35,7 @@ public sealed class PartialFileTests
         }
         finally
         {
-            DeleteDirectoryIfExists(tempDirectory);
+            Directory.DeleteIfExists(tempDirectory, recursive: true);
         }
     }
 
@@ -59,7 +61,7 @@ public sealed class PartialFileTests
         }
         finally
         {
-            DeleteDirectoryIfExists(tempDirectory);
+            Directory.DeleteIfExists(tempDirectory, recursive: true);
         }
     }
 
@@ -82,7 +84,7 @@ public sealed class PartialFileTests
         }
         finally
         {
-            DeleteDirectoryIfExists(tempDirectory);
+            Directory.DeleteIfExists(tempDirectory, recursive: true);
         }
     }
 
@@ -107,7 +109,7 @@ public sealed class PartialFileTests
         finally
         {
             sut.Dispose();
-            DeleteDirectoryIfExists(tempDirectory);
+            Directory.DeleteIfExists(tempDirectory, recursive: true);
         }
     }
 
@@ -133,7 +135,7 @@ public sealed class PartialFileTests
         }
         finally
         {
-            DeleteDirectoryIfExists(tempDirectory);
+            Directory.DeleteIfExists(tempDirectory, recursive: true);
         }
     }
 
@@ -155,7 +157,7 @@ public sealed class PartialFileTests
         }
         finally
         {
-            DeleteDirectoryIfExists(tempDirectory);
+            Directory.DeleteIfExists(tempDirectory, recursive: true);
         }
     }
 
@@ -178,7 +180,7 @@ public sealed class PartialFileTests
         finally
         {
             sut.Dispose();
-            DeleteDirectoryIfExists(tempDirectory);
+            Directory.DeleteIfExists(tempDirectory, recursive: true);
         }
     }
 
@@ -210,7 +212,7 @@ public sealed class PartialFileTests
         }
         finally
         {
-            DeleteDirectoryIfExists(tempDirectory);
+            Directory.DeleteIfExists(tempDirectory, recursive: true);
         }
     }
 
@@ -238,7 +240,7 @@ public sealed class PartialFileTests
         }
         finally
         {
-            DeleteDirectoryIfExists(tempDirectory);
+            Directory.DeleteIfExists(tempDirectory, recursive: true);
         }
     }
 
@@ -262,7 +264,7 @@ public sealed class PartialFileTests
         }
         finally
         {
-            DeleteDirectoryIfExists(tempDirectory);
+            Directory.DeleteIfExists(tempDirectory, recursive: true);
         }
     }
 
@@ -285,7 +287,7 @@ public sealed class PartialFileTests
         finally
         {
             sut.Dispose();
-            DeleteDirectoryIfExists(tempDirectory);
+            Directory.DeleteIfExists(tempDirectory, recursive: true);
         }
     }
 
@@ -321,7 +323,7 @@ public sealed class PartialFileTests
         finally
         {
             sut.Dispose();
-            DeleteDirectoryIfExists(tempDirectory);
+            Directory.DeleteIfExists(tempDirectory, recursive: true);
         }
     }
 
@@ -344,7 +346,7 @@ public sealed class PartialFileTests
         }
         finally
         {
-            DeleteDirectoryIfExists(tempDirectory);
+            Directory.DeleteIfExists(tempDirectory, recursive: true);
         }
     }
 
@@ -367,7 +369,7 @@ public sealed class PartialFileTests
         finally
         {
             sut.Dispose();
-            DeleteDirectoryIfExists(tempDirectory);
+            Directory.DeleteIfExists(tempDirectory, recursive: true);
         }
     }
 
@@ -394,7 +396,7 @@ public sealed class PartialFileTests
         finally
         {
             sut.Dispose();
-            DeleteDirectoryIfExists(tempDirectory);
+            Directory.DeleteIfExists(tempDirectory, recursive: true);
         }
     }
 
@@ -420,7 +422,7 @@ public sealed class PartialFileTests
         }
         finally
         {
-            DeleteDirectoryIfExists(tempDirectory);
+            Directory.DeleteIfExists(tempDirectory, recursive: true);
         }
     }
 
@@ -453,7 +455,7 @@ public sealed class PartialFileTests
         }
         finally
         {
-            DeleteDirectoryIfExists(tempDirectory);
+            Directory.DeleteIfExists(tempDirectory, recursive: true);
         }
     }
 
@@ -465,11 +467,5 @@ public sealed class PartialFileTests
     private static string CreateTempDirectoryPath()
     {
         return Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-    }
-
-    private static void DeleteDirectoryIfExists(string path)
-    {
-        if (Directory.Exists(path))
-            Directory.Delete(path, recursive: true);
     }
 }

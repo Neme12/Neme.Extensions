@@ -1,4 +1,5 @@
-﻿using Neme.Extensions.Tests.Utilities;
+﻿using Neme.Extensions.IO;
+using Neme.Extensions.Tests.Utilities;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
@@ -29,8 +30,7 @@ public sealed partial class FileIOTests
             }
             finally
             {
-                if (File.Exists(tempFile))
-                    File.Delete(tempFile);
+                File.DeleteIfExists(tempFile);
             }
         }
 
@@ -58,8 +58,7 @@ public sealed partial class FileIOTests
             }
             finally
             {
-                if (File.Exists(tempFile))
-                    File.Delete(tempFile);
+                File.DeleteIfExists(tempFile);
             }
         }
 
@@ -79,8 +78,7 @@ public sealed partial class FileIOTests
             }
             finally
             {
-                if (File.Exists(tempFile))
-                    File.Delete(tempFile);
+                File.DeleteIfExists(tempFile);
             }
         }
     }

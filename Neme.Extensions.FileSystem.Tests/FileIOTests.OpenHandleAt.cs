@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.IO;
 using Neme.Extensions.Tests.Utilities;
 
 namespace Neme.Extensions.FileSystem.Tests;
@@ -68,8 +69,7 @@ public sealed partial class FileIOTests
             }
             finally
             {
-                if (Directory.Exists(tempDir))
-                    Directory.Delete(tempDir, recursive: true);
+                Directory.DeleteIfExists(tempDir, recursive: true);
             }
         }
 
@@ -106,8 +106,7 @@ public sealed partial class FileIOTests
             }
             finally
             {
-                if (Directory.Exists(tempDir))
-                    Directory.Delete(tempDir, recursive: true);
+                Directory.DeleteIfExists(tempDir, recursive: true);
             }
         }
 
@@ -144,8 +143,7 @@ public sealed partial class FileIOTests
             }
             finally
             {
-                if (Directory.Exists(tempDir))
-                    Directory.Delete(tempDir, recursive: true);
+                Directory.DeleteIfExists(tempDir, recursive: true);
             }
         }
 
@@ -176,8 +174,7 @@ public sealed partial class FileIOTests
             }
             finally
             {
-                if (Directory.Exists(tempDir))
-                    Directory.Delete(tempDir, recursive: true);
+                Directory.DeleteIfExists(tempDir, recursive: true);
             }
         }
 
@@ -207,8 +204,7 @@ public sealed partial class FileIOTests
             }
             finally
             {
-                if (Directory.Exists(tempDir))
-                    Directory.Delete(tempDir, recursive: true);
+                Directory.DeleteIfExists(tempDir, recursive: true);
             }
         }
 
@@ -235,8 +231,7 @@ public sealed partial class FileIOTests
             }
             finally
             {
-                if (Directory.Exists(tempDir))
-                    Directory.Delete(tempDir, recursive: true);
+                Directory.DeleteIfExists(tempDir, recursive: true);
             }
         }
 
@@ -498,8 +493,7 @@ public sealed partial class FileIOTests
             }
             finally
             {
-                if (Directory.Exists(tempDir))
-                    Directory.Delete(tempDir, recursive: true);
+                Directory.DeleteIfExists(tempDir, recursive: true);
             }
         }
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.IO;
 using Neme.Extensions.Tests.Utilities;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -42,19 +43,8 @@ public sealed partial class FileIOTests
             _tempFileHandle?.Dispose();
             _tempDisposable?.Dispose();
 
-            try
-            {
-                if (File.Exists(_tempFilePath))
-                    File.Delete(_tempFilePath);
-            }
-            catch { }
-
-            try
-            {
-                if (Directory.Exists(_tempDirectoryPath))
-                    Directory.Delete(_tempDirectoryPath, recursive: true);
-            }
-            catch { }
+            File.DeleteIfExists(_tempFilePath);
+            Directory.DeleteIfExists(_tempDirectoryPath, recursive: true);
         }
 
         private SafeFileHandle OpenDirectoryHandle()

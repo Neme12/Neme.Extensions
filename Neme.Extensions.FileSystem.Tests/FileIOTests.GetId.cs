@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.IO;
 using Neme.Extensions.Tests.Utilities;
 using System.Runtime.Versioning;
 
@@ -38,12 +39,7 @@ public sealed partial class FileIOTests
             _tempFileHandle?.Dispose();
             _tempDisposable?.Dispose();
 
-            try
-            {
-                if (File.Exists(_tempFilePath))
-                    File.Delete(_tempFilePath);
-            }
-            catch { }
+            File.DeleteIfExists(_tempFilePath);
         }
 
         [PlatformOnlyFact(Platform.Windows, Platform.Linux)]
