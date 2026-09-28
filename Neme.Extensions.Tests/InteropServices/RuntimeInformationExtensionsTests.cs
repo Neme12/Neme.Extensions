@@ -5,7 +5,10 @@ namespace Neme.Extensions.Tests.InteropServices;
 
 public sealed class RuntimeInformationExtensionsTests
 {
-#if NET10_0
+#if NET11_0
+    private const int CurrentNetMajor = 11;
+    private const int CurrentNetMinor = 0;
+#elif NET10_0
     private const int CurrentNetMajor = 10;
     private const int CurrentNetMinor = 0;
 #elif NET8_0
