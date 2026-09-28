@@ -287,10 +287,11 @@ public static class DebugAssertExtensions
            T value,
            T lowerInclusive,
            T upperInclusive,
+           IComparer<T>? comparer = null,
            string? message = null)
-            where T : IComparable<T>
         {
-            if (value.CompareTo(lowerInclusive) < 0 || value.CompareTo(upperInclusive) > 0)
+            comparer ??= Comparer<T>.Default;
+            if (comparer.Compare(value, lowerInclusive) < 0 || comparer.Compare(value, upperInclusive) > 0)
                 Fail(message);
         }
 

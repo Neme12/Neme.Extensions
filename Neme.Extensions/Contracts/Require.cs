@@ -410,11 +410,12 @@ public static class Require
         T argument,
         T lowerInclusive,
         T upperInclusive,
+        IComparer<T>? comparer = null,
         string? message = null,
         [CallerArgumentExpression(nameof(argument))] string? paramName = null)
-        where T : IComparable<T>
     {
-        if (argument.CompareTo(lowerInclusive) < 0 || argument.CompareTo(upperInclusive) > 0)
+        comparer ??= Comparer<T>.Default;
+        if (comparer.Compare(argument, lowerInclusive) < 0 || comparer.Compare(argument, upperInclusive) > 0)
             ThrowArgumentOutOfRangeException(paramName, message);
     }
 
