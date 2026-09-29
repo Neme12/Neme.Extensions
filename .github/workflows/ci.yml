@@ -39,6 +39,7 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '11.0.x'
+        dotnet-quality: 'preview'
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v4
@@ -113,10 +114,10 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Setup .NET SDK
+    - name: Setup .NET 11 SDK
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '10.0.x'
+        dotnet-version: '11.0.x'
         dotnet-quality: 'preview'
 
     - name: Pack
@@ -157,10 +158,10 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Setup .NET SDK
+    - name: Setup .NET 11 SDK
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '10.0.x'
+        dotnet-version: '11.0.x'
         dotnet-quality: 'preview'
 
     - name: Pack
