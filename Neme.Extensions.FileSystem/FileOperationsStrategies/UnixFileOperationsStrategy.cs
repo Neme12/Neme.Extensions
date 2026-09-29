@@ -26,10 +26,10 @@ using System.Runtime.Versioning;
 using System.Text;
 using Windows.Win32;
 
-namespace Neme.Extensions.FileSystem.FileIOStrategies;
+namespace Neme.Extensions.FileSystem.FileOperationsStrategies;
 
 [UnsupportedOSPlatform("windows")]
-internal sealed class UnixFileIOStrategy : FileIOStrategy
+internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
 {
     protected override int MaxFileNameLength => 255;
     protected override int MaxPathLength => 4096;
@@ -1231,7 +1231,7 @@ internal sealed class UnixFileIOStrategy : FileIOStrategy
 
     private sealed record HandleMetadata(FileSystemAccess Access);
 
-    private new sealed class SafeFileHandleAccessors : FileIOStrategy.SafeFileHandleAccessors
+    private new sealed class SafeFileHandleAccessors : FileOperationsStrategy.SafeFileHandleAccessors
     {
 #if NET8_0_OR_GREATER && !NET11_0_OR_GREATER
         [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_IsAsync")]

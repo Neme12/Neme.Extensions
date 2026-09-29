@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.FileSystem.SafeHandles;
 using Neme.Extensions.IO;
 using Neme.Extensions.Ownership;
 using System.Diagnostics;
@@ -71,7 +72,7 @@ public sealed class FileSession : IDisposable
 
     [return: OwnershipTransfer]
     public static FileSession Open(string path, FileOpenRequest request) =>
-        new(FileIO.OpenHandle(path, request), request.HandleOptions);
+        new(FileOperations.OpenHandle(path, request), request.HandleOptions);
 
     public static bool TryOpen(
         string path,
@@ -79,7 +80,7 @@ public sealed class FileSession : IDisposable
         [NotNullWhen(true)][OwnershipTransfer] out FileSession? file,
         bool ignoreMissingDirectory = false)
     {
-        file = FileIO.TryOpenHandle(path, request, out var fileHandle, ignoreMissingDirectory)
+        file = FileOperations.TryOpenHandle(path, request, out var fileHandle, ignoreMissingDirectory)
             ? new(fileHandle, request.HandleOptions)
             : null;
         return file is not null;
@@ -92,7 +93,7 @@ public sealed class FileSession : IDisposable
         PersistentFileId fileId,
         FileOpenRequest request)
     {
-        return new(FileIO.OpenHandle(fileId, request), request.HandleOptions);
+        return new(FileOperations.OpenHandle(fileId, request), request.HandleOptions);
     }
 
     [SupportedOSPlatform("windows")]
@@ -103,7 +104,7 @@ public sealed class FileSession : IDisposable
         [NotNullWhen(true)][OwnershipTransfer] out FileSession? file,
         bool ignoreMissingDirectory = false)
     {
-        file = FileIO.TryOpenHandle(fileId, request, out var fileHandle, ignoreMissingDirectory)
+        file = FileOperations.TryOpenHandle(fileId, request, out var fileHandle, ignoreMissingDirectory)
             ? new(fileHandle, request.HandleOptions)
             : null;
         return file is not null;
@@ -115,7 +116,7 @@ public sealed class FileSession : IDisposable
         string? path,
         FileOpenRequest request)
     {
-        return new(FileIO.OpenHandleAt(rootDirectory, path, request), request.HandleOptions);
+        return new(FileOperations.OpenHandleAt(rootDirectory, path, request), request.HandleOptions);
     }
 
     public static bool TryOpenAt(
@@ -125,7 +126,7 @@ public sealed class FileSession : IDisposable
         [NotNullWhen(true)][OwnershipTransfer] out FileSession? file,
         bool ignoreMissingDirectory = false)
     {
-        file = FileIO.TryOpenHandleAt(rootDirectory, path, request, out var fileHandle, ignoreMissingDirectory)
+        file = FileOperations.TryOpenHandleAt(rootDirectory, path, request, out var fileHandle, ignoreMissingDirectory)
             ? new(fileHandle, request.HandleOptions)
             : null;
         return file is not null;
@@ -135,12 +136,12 @@ public sealed class FileSession : IDisposable
     public static FileSession Reopen([Borrow] FileSession file, FileOpenRequest? request = null)
     {
         var openRequest = request ?? FileOpenRequest.Open(file.Options);
-        return new(FileIO.OpenHandleAt(file.Handle, null, openRequest), openRequest.HandleOptions);
+        return new(FileOperations.OpenHandleAt(file.Handle, null, openRequest), openRequest.HandleOptions);
     }
 
     [return: OwnershipTransfer]
     public static FileSession Duplicate([Borrow] FileSession file) =>
-        new(FileIO.DuplicateHandle(file.Handle), file.Options);
+        new(FileOperations.DuplicateHandle(file.Handle), file.Options);
 
     [return: OwnershipTransfer]
     public static FileSession CreateTempFile(FileSystemAccess access) =>
@@ -153,20 +154,20 @@ public sealed class FileSession : IDisposable
         FileOptions options = FileOptions.DeleteOnClose,
         FileAttributes attributes = FileAttributes.Temporary)
     {
-        var (path, request) = FileIO.GetTempFilePathAndRequest(access, share, options, attributes);
+        var (path, request) = FileOperations.GetTempFilePathAndRequest(access, share, options, attributes);
         return Open(path, request);
     }
 
     public string GetPath()
     {
         ObjectDisposedException.ThrowIf(_handle is null, this);
-        return FileIO.GetPath(_handle);
+        return FileOperations.GetPath(_handle);
     }
 
     public FileId GetId()
     {
         ObjectDisposedException.ThrowIf(_handle is null, this);
-        return FileIO.GetId(_handle);
+        return FileOperations.GetId(_handle);
     }
 
     [SupportedOSPlatform("windows")]
@@ -174,37 +175,37 @@ public sealed class FileSession : IDisposable
     public PersistentFileId GetPersistentId()
     {
         ObjectDisposedException.ThrowIf(_handle is null, this);
-        return FileIO.GetPersistentId(_handle);
+        return FileOperations.GetPersistentId(_handle);
     }
 
     public FileAttributes GetAttributes()
     {
         ObjectDisposedException.ThrowIf(_handle is null, this);
-        return FileIO.GetAttributes(_handle);
+        return FileOperations.GetAttributes(_handle);
     }
 
     public void SetAttributes(FileAttributes attributes)
     {
         ObjectDisposedException.ThrowIf(_handle is null, this);
-        FileIO.SetAttributes(_handle, attributes);
+        FileOperations.SetAttributes(_handle, attributes);
     }
 
     public FileBasicInfo GetBasicInfo()
     {
         ObjectDisposedException.ThrowIf(_handle is null, this);
-        return FileIO.GetBasicInfo(_handle);
+        return FileOperations.GetBasicInfo(_handle);
     }
 
     public void Move(string destFileName, bool overwrite = false)
     {
         ObjectDisposedException.ThrowIf(_handle is null, this);
-        FileIO.Move(_handle, destFileName, overwrite);
+        FileOperations.Move(_handle, destFileName, overwrite);
     }
 
     public void Delete()
     {
         ObjectDisposedException.ThrowIf(_handle is null, this);
-        FileIO.Delete(_handle);
+        FileOperations.Delete(_handle);
     }
 
     [return: OwnershipTransferWhen(nameof(ownsHandle))]
@@ -215,7 +216,7 @@ public sealed class FileSession : IDisposable
             GC.SuppressFinalize(this);
 
         ObjectDisposedException.ThrowIf(_handle is null, this);
-        return FileIO.CreateFileStream(_handle, _options.Access.ToFileAccess(), ownsHandle, bufferSize);
+        return _handle.CreateFileStream(_options.Access.ToFileAccess(), ownsHandle, bufferSize);
     }
 
     [return: OwnershipTransfer]

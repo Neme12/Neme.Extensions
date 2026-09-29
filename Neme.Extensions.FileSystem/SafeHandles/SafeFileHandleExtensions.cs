@@ -1,6 +1,9 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using Neme.Extensions.Contracts;
+using Neme.Extensions.FileSystem.Internal;
 using Neme.Extensions.InteropServices;
+using Neme.Extensions.IO;
+using Neme.Extensions.Ownership;
 using Roslyn.Utilities;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -13,24 +16,24 @@ public static class SafeFileHandleExtensions
     extension(SafeFileHandle file)
     {
         public string Path =>
-            FileIO.GetPath(file);
+            FileOperations.GetPath(file);
 
         public FileAccess Access =>
-            FileIO.GetAccess(file);
+            FileOperations.GetAccess(file);
 
         public bool CanRead =>
-            FileIO.GetAccess(file).HasFlag(FileAccess.Read);
+            FileOperations.GetAccess(file).HasFlag(FileAccess.Read);
 
         public bool CanWrite =>
-            FileIO.GetAccess(file).HasFlag(FileAccess.Write);
+            FileOperations.GetAccess(file).HasFlag(FileAccess.Write);
 
         public bool CanSeek =>
-            FileIO.CanSeek(file);
+            FileOperations.CanSeek(file);
 
         public long Position
         {
-            get => FileIO.Seek(file, 0, SeekOrigin.Current);
-            set => FileIO.Seek(file, value, SeekOrigin.Begin);
+            get => FileOperations.Seek(file, 0, SeekOrigin.Current);
+            set => FileOperations.Seek(file, value, SeekOrigin.Begin);
         }
 
         public long Length
@@ -40,7 +43,7 @@ public static class SafeFileHandleExtensions
 #if NET6_0_OR_GREATER
                 return RandomAccess.GetLength(file);
 #else
-                return FileIO.GetLength(file);
+                return FileOperations.GetLength(file);
 #endif
             }
             set
@@ -48,7 +51,7 @@ public static class SafeFileHandleExtensions
 #if NET7_0_OR_GREATER
                 RandomAccess.SetLength(file, value);
 #else
-                FileIO.SetLength(file, value);
+                FileOperations.SetLength(file, value);
 #endif
             }
         }
@@ -69,6 +72,30 @@ public static class SafeFileHandleExtensions
         {
             Require.ArgumentNotNull(file);
             return new PositionScope(file, initialPosition, allowNonSeekable);
+        }
+
+        [return: OwnershipTransferWhen(nameof(ownsHandle))]
+        public CheckedFileStream CreateFileStream(
+            FileAccess access,
+            bool ownsHandle = false,
+            int bufferSize = FileStreamExtensions.DefaultBufferSize)
+        {
+            Require.ArgumentNotNull(file);
+            Require.ArgumentValid(file, !file.IsInvalid && !file.IsClosed);
+            Require.ArgumentInRange(access, FileAccess.None, FileAccess.ReadWrite);
+            Require.ArgumentNotNegative(bufferSize);
+
+            return ownsHandle
+                ? new CheckedFileStream(
+                    file,
+                    access,
+                    bufferSize,
+                    isAsync: file.IsAsync)
+                : new LeaveOpenFileStream(
+                    file,
+                    access,
+                    bufferSize,
+                    isAsync: file.IsAsync);
         }
     }
 

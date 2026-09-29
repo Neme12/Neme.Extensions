@@ -13,10 +13,10 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
 
-namespace Neme.Extensions.FileSystem.FileIOStrategies;
+namespace Neme.Extensions.FileSystem.FileOperationsStrategies;
 
 [SupportedOSPlatform("windows6.0.6000")]
-internal sealed partial class WindowsFileIOStrategy : FileIOStrategy
+internal sealed partial class WindowsFileOperationsStrategy : FileOperationsStrategy
 {
     protected override int MaxFileNameLength => 255;
     protected override int MaxPathLength => short.MaxValue - 4; // 4 for the \\?\ prefix.

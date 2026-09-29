@@ -1,15 +1,15 @@
-using System.Diagnostics.Tracing;
+﻿using System.Diagnostics.Tracing;
 using System.Runtime.Versioning;
 
 namespace Neme.Extensions.FileSystem;
 
-[EventSource(Name = "Neme-Extensions-FileSystem-FileIO")]
+[EventSource(Name = "Neme-Extensions-FileSystem-FileOperations")]
 [SupportedOSPlatform("windows6.0.6000")]
-internal sealed class FileIOEventSource : EventSource
+internal sealed class FileOperationsEventSource : EventSource
 {
-    public static readonly FileIOEventSource Log = new();
+    public static readonly FileOperationsEventSource Log = new();
 
-    private FileIOEventSource() { }
+    private FileOperationsEventSource() { }
 
     [Event(1, Level = EventLevel.Verbose, Message = "Enumerating volumes to find serial number 0x{0:X16}")]
     public void EnumeratingVolumes(ulong volumeSerialNumber)

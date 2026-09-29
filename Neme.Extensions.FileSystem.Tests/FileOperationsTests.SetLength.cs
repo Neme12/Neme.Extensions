@@ -1,10 +1,11 @@
 ﻿using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.FileSystem.SafeHandles;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
-public sealed partial class FileIOTests
+public sealed partial class FileOperationsTests
 {
-    [Collection(nameof(FileIOTestCollection))]
+    [Collection(nameof(FileOperationsTestCollection))]
     public sealed class SetLength
     {
         [Fact]
@@ -13,15 +14,15 @@ public sealed partial class FileIOTests
             // Arrange
             byte[] initialContents = [1, 2, 3];
             byte[] expectedContents = [1, 2, 3, 0, 0];
-            using var handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
+            using var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             FileIO.WriteAllBytes(handle, initialContents);
 
             // Act
-            FileIO.SetLength(handle, expectedContents.Length);
+            FileOperations.SetLength(handle, expectedContents.Length);
 
             // Assert
-            Assert.Equal(expectedContents.Length, FileIO.GetLength(handle));
-            using var stream = FileIO.CreateFileStream(handle, FileAccess.Read);
+            Assert.Equal(expectedContents.Length, FileOperations.GetLength(handle));
+            using var stream = handle.CreateFileStream(FileAccess.Read);
             stream.Position = 0;
             byte[] actualContents = new byte[expectedContents.Length];
             int bytesRead = stream.Read(actualContents, 0, actualContents.Length);
@@ -35,15 +36,15 @@ public sealed partial class FileIOTests
             // Arrange
             byte[] initialContents = [1, 2, 3, 4, 5];
             byte[] expectedContents = [1, 2];
-            using var handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
+            using var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             FileIO.WriteAllBytes(handle, initialContents);
 
             // Act
-            FileIO.SetLength(handle, expectedContents.Length);
+            FileOperations.SetLength(handle, expectedContents.Length);
 
             // Assert
-            Assert.Equal(expectedContents.Length, FileIO.GetLength(handle));
-            using var stream = FileIO.CreateFileStream(handle, FileAccess.Read);
+            Assert.Equal(expectedContents.Length, FileOperations.GetLength(handle));
+            using var stream = handle.CreateFileStream(FileAccess.Read);
             stream.Position = 0;
             byte[] actualContents = new byte[expectedContents.Length];
             int bytesRead = stream.Read(actualContents, 0, actualContents.Length);
@@ -57,16 +58,16 @@ public sealed partial class FileIOTests
             // Arrange
             byte[] initialContents = [1, 2, 3, 4];
             const long invalidLength = -1;
-            using var handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
+            using var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             FileIO.WriteAllBytes(handle, initialContents);
 
             // Act
-            ArgumentException exception = Assert.Throws<ArgumentException>(() => FileIO.SetLength(handle, invalidLength));
+            ArgumentException exception = Assert.Throws<ArgumentException>(() => FileOperations.SetLength(handle, invalidLength));
 
             // Assert
             Assert.Equal("length", exception.ParamName);
-            Assert.Equal(initialContents.Length, FileIO.GetLength(handle));
-            using var stream = FileIO.CreateFileStream(handle, FileAccess.Read);
+            Assert.Equal(initialContents.Length, FileOperations.GetLength(handle));
+            using var stream = handle.CreateFileStream(FileAccess.Read);
             stream.Position = 0;
             byte[] actualContents = new byte[initialContents.Length];
             int bytesRead = stream.Read(actualContents, 0, actualContents.Length);
@@ -78,7 +79,7 @@ public sealed partial class FileIOTests
         public void NullHandle_ThrowsArgumentNullException()
         {
             // Act
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() => FileIO.SetLength(null!, 0));
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() => FileOperations.SetLength(null!, 0));
 
             // Assert
             Assert.Equal("file", exception.ParamName);
@@ -88,11 +89,11 @@ public sealed partial class FileIOTests
         public void ClosedHandle_ThrowsArgumentException()
         {
             // Arrange
-            var handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
+            var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             handle.Dispose();
 
             // Act
-            ArgumentException exception = Assert.Throws<ArgumentException>(() => FileIO.SetLength(handle, 0));
+            ArgumentException exception = Assert.Throws<ArgumentException>(() => FileOperations.SetLength(handle, 0));
 
             // Assert
             Assert.Equal("file", exception.ParamName);
@@ -105,7 +106,7 @@ public sealed partial class FileIOTests
             using var handle = new SafeFileHandle((nint)(-1), ownsHandle: false);
 
             // Act
-            ArgumentException exception = Assert.Throws<ArgumentException>(() => FileIO.SetLength(handle, 0));
+            ArgumentException exception = Assert.Throws<ArgumentException>(() => FileOperations.SetLength(handle, 0));
 
             // Assert
             Assert.Equal("file", exception.ParamName);

@@ -3,9 +3,9 @@ using Neme.Extensions.IO;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
-public sealed partial class FileIOTests
+public sealed partial class FileOperationsTests
 {
-    [Collection(nameof(FileIOTestCollection))]
+    [Collection(nameof(FileOperationsTestCollection))]
     public sealed class GetAttributes
     {
         [Fact]
@@ -15,7 +15,7 @@ public sealed partial class FileIOTests
             var handle = (SafeFileHandle)null!;
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => FileIO.GetAttributes(handle));
+            Assert.Throws<ArgumentNullException>(() => FileOperations.GetAttributes(handle));
         }
 
         [Fact]
@@ -25,7 +25,7 @@ public sealed partial class FileIOTests
             using var handle = new SafeFileHandle((nint)(-1), ownsHandle: false);
 
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => FileIO.GetAttributes(handle));
+            Assert.Throws<ArgumentException>(() => FileOperations.GetAttributes(handle));
         }
 
         [Fact]
@@ -37,10 +37,10 @@ public sealed partial class FileIOTests
             try
             {
                 var options = FileOpenRequest.Open(FileSystemAccess.ReadAttributes, FileShare.All, 0, FileAttributes.Directory);
-                using var handle = FileIO.OpenHandle(tempDirectory, options);
+                using var handle = FileOperations.OpenHandle(tempDirectory, options);
 
                 // Act
-                var attributes = FileIO.GetAttributes(handle);
+                var attributes = FileOperations.GetAttributes(handle);
 
                 // Assert
                 Assert.True(attributes.HasFlag(FileAttributes.Directory));

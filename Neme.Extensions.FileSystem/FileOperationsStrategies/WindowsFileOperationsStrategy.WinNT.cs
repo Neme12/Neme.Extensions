@@ -11,10 +11,10 @@ using Windows.Wdk.Storage.FileSystem;
 using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
 
-namespace Neme.Extensions.FileSystem.FileIOStrategies;
+namespace Neme.Extensions.FileSystem.FileOperationsStrategies;
 
 [SupportedOSPlatform("windows6.0.6000")]
-internal sealed partial class WindowsFileIOStrategy
+internal sealed partial class WindowsFileOperationsStrategy
 {
     // Cache of volume serial numbers (full 64-bit) to volume handles
     // This avoids repeatedly enumerating all volumes for file ID operations
@@ -27,7 +27,7 @@ internal sealed partial class WindowsFileIOStrategy
 
         var windowsFileId = fileId.WindowsFileId;
 
-        FileIOEventSource.Log.OpeningFileById(windowsFileId.VolumeSerialNumber, windowsFileId.FileIdLow, windowsFileId.FileIdHigh);
+        FileOperationsEventSource.Log.OpeningFileById(windowsFileId.VolumeSerialNumber, windowsFileId.FileIdLow, windowsFileId.FileIdHigh);
 
         // Find and open the volume with the matching serial number
         // Do not dispose of the volume handle itself as it's from a cache
@@ -75,7 +75,7 @@ internal sealed partial class WindowsFileIOStrategy
             throw WinNtMarshal.GetExceptionForNtStatus(status);
         }
 
-        FileIOEventSource.Log.FileOpenedById(windowsFileId.VolumeSerialNumber, windowsFileId.FileIdLow, windowsFileId.FileIdHigh);
+        FileOperationsEventSource.Log.FileOpenedById(windowsFileId.VolumeSerialNumber, windowsFileId.FileIdLow, windowsFileId.FileIdHigh);
 
         return new SafeFileHandle(handle, ownsHandle: true);
     }
@@ -175,16 +175,16 @@ internal sealed partial class WindowsFileIOStrategy
         // for a given serial number, even under concurrent access
         return s_volumeHandleCache.GetOrAdd(volumeSerialNumber, static serialNumber =>
         {
-            FileIOEventSource.Log.VolumeHandleCacheMiss(serialNumber);
+            FileOperationsEventSource.Log.VolumeHandleCacheMiss(serialNumber);
             var handle = EnumerateAndOpenVolume(serialNumber);
-            FileIOEventSource.Log.VolumeHandleCached(serialNumber);
+            FileOperationsEventSource.Log.VolumeHandleCached(serialNumber);
             return handle;
         });
     }
 
     private static unsafe SafeFileHandle EnumerateAndOpenVolume(ulong targetSerial)
     {
-        FileIOEventSource.Log.EnumeratingVolumes(targetSerial);
+        FileOperationsEventSource.Log.EnumeratingVolumes(targetSerial);
 
         char* volumeNameBuffer = stackalloc char[50]; // Volume GUID paths are typically 49 chars
         Span<char> volumeName = new(volumeNameBuffer, 50);
@@ -222,7 +222,7 @@ internal sealed partial class WindowsFileIOStrategy
                     // Lower 32 bits match - try to open and verify full 64-bit serial
                     if (serialNumberLower32 == unchecked((uint)targetSerial))
                     {
-                        FileIOEventSource.Log.VolumePartialMatch(serialNumberLower32);
+                        FileOperationsEventSource.Log.VolumePartialMatch(serialNumberLower32);
                         var volumePathWithSlash = volumeName[..(volumePathLength + 1)].ToString();
                         if (TryOpenAndVerifyVolume(volumePathWithSlash, targetSerial, out var handle))
                             return handle;
@@ -232,13 +232,13 @@ internal sealed partial class WindowsFileIOStrategy
                 {
                     // GetVolumeInformation failed - volume might not be accessible
                     var error = new Win32Exception();
-                    FileIOEventSource.Log.VolumeInformationFailed(volumePath.ToString(), error.NativeErrorCode, error.Message);
+                    FileOperationsEventSource.Log.VolumeInformationFailed(volumePath.ToString(), error.NativeErrorCode, error.Message);
                 }
             }
         }
         while (Win32PInvoke.FindNextVolume((HANDLE)findHandleScope.Handle, volumeName));
 
-        FileIOEventSource.Log.VolumeNotFound(targetSerial);
+        FileOperationsEventSource.Log.VolumeNotFound(targetSerial);
         throw new DirectoryNotFoundException(Invariant($"No volume found with serial number 0x{targetSerial:X8}"));
     }
 
@@ -259,7 +259,7 @@ internal sealed partial class WindowsFileIOStrategy
         if (volumeHandle.Value.IsInvalid)
         {
             var error = new Win32Exception();
-            FileIOEventSource.Log.VolumeHandleOpenFailed(volumePath, error.NativeErrorCode, error.Message);
+            FileOperationsEventSource.Log.VolumeHandleOpenFailed(volumePath, error.NativeErrorCode, error.Message);
             handle = null;
             return false;
         }
@@ -278,21 +278,21 @@ internal sealed partial class WindowsFileIOStrategy
             if (fileIdInfo.VolumeSerialNumber == targetSerial)
             {
                 // Full match confirmed
-                FileIOEventSource.Log.VolumeVerified(targetSerial);
+                FileOperationsEventSource.Log.VolumeVerified(targetSerial);
                 handle = volumeHandle.Move();
                 return true;
             }
             else
             {
                 // Serial number mismatch
-                FileIOEventSource.Log.VolumeSerialMismatch(targetSerial, fileIdInfo.VolumeSerialNumber);
+                FileOperationsEventSource.Log.VolumeSerialMismatch(targetSerial, fileIdInfo.VolumeSerialNumber);
             }
         }
         else
         {
             // Failed to get file information
             var error = new Win32Exception();
-            FileIOEventSource.Log.GetFileInformationFailed(volumePath, error.NativeErrorCode, error.Message);
+            FileOperationsEventSource.Log.GetFileInformationFailed(volumePath, error.NativeErrorCode, error.Message);
         }
 
         // Not a match or couldn't get info - close handle and return false

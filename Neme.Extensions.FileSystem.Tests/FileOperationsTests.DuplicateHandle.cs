@@ -1,11 +1,12 @@
 ﻿using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.FileSystem.SafeHandles;
 using System.Runtime.InteropServices;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
-public sealed partial class FileIOTests
+public sealed partial class FileOperationsTests
 {
-    [Collection(nameof(FileIOTestCollection))]
+    [Collection(nameof(FileOperationsTestCollection))]
     public sealed class DuplicateHandle
     {
         [Fact]
@@ -15,7 +16,7 @@ public sealed partial class FileIOTests
             var handle = (SafeFileHandle)null!;
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => FileIO.DuplicateHandle(handle, access: null));
+            Assert.Throws<ArgumentNullException>(() => FileOperations.DuplicateHandle(handle, access: null));
         }
 
         [Fact]
@@ -25,7 +26,7 @@ public sealed partial class FileIOTests
             using var handle = new SafeFileHandle((nint)(-1), ownsHandle: false);
 
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => FileIO.DuplicateHandle(handle, access: null));
+            Assert.Throws<ArgumentException>(() => FileOperations.DuplicateHandle(handle, access: null));
         }
 
         [Fact]
@@ -38,12 +39,12 @@ public sealed partial class FileIOTests
 
             try
             {
-                using var originalHandle = FileIO.OpenHandle(tempFile, options);
-                using var duplicatedHandle = FileIO.DuplicateHandle(originalHandle, access: null);
+                using var originalHandle = FileOperations.OpenHandle(tempFile, options);
+                using var duplicatedHandle = FileOperations.DuplicateHandle(originalHandle, access: null);
                 originalHandle.Dispose();
 
                 // Act
-                using var stream = FileIO.CreateFileStream(duplicatedHandle, FileAccess.Read);
+                using var stream = duplicatedHandle.CreateFileStream(FileAccess.Read);
                 using var reader = new StreamReader(stream);
                 var result = reader.ReadToEnd();
 
@@ -67,15 +68,15 @@ public sealed partial class FileIOTests
 
             try
             {
-                using var originalHandle = FileIO.OpenHandle(tempFile, originalOptions);
+                using var originalHandle = FileOperations.OpenHandle(tempFile, originalOptions);
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     var duplicatedOptions = FileOpenRequest.Open(FileSystemAccess.Write, FileShare.All);
-                    using var duplicatedHandle = FileIO.DuplicateHandle(originalHandle, FileSystemAccess.Write);
+                    using var duplicatedHandle = FileOperations.DuplicateHandle(originalHandle, FileSystemAccess.Write);
                     originalHandle.Dispose();
 
-                    using (var stream = FileIO.CreateFileStream(duplicatedHandle, FileAccess.Write))
+                    using (var stream = duplicatedHandle.CreateFileStream(FileAccess.Write))
                     {
                         stream.WriteByte(42);
                     }
@@ -92,7 +93,7 @@ public sealed partial class FileIOTests
                 else
                 {
                     // Act & Assert
-                    Assert.Throws<PlatformNotSupportedException>(() => FileIO.DuplicateHandle(originalHandle, FileSystemAccess.Read));
+                    Assert.Throws<PlatformNotSupportedException>(() => FileOperations.DuplicateHandle(originalHandle, FileSystemAccess.Read));
                 }
             }
             finally

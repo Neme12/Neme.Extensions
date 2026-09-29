@@ -3,9 +3,9 @@ using Neme.Extensions.IO;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
-public sealed partial class FileIOTests
+public sealed partial class FileOperationsTests
 {
-    [Collection(nameof(FileIOTestCollection))]
+    [Collection(nameof(FileOperationsTestCollection))]
     public sealed class Move
     {
         [Fact]
@@ -16,7 +16,7 @@ public sealed partial class FileIOTests
             var destinationFile = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => FileIO.Move(sourceFile, destinationFile));
+            Assert.Throws<ArgumentNullException>(() => FileOperations.Move(sourceFile, destinationFile));
         }
 
         [Fact]
@@ -28,10 +28,10 @@ public sealed partial class FileIOTests
 
             try
             {
-                using var handle = FileIO.OpenHandle(tempFile, options);
+                using var handle = FileOperations.OpenHandle(tempFile, options);
 
                 // Act & Assert
-                Assert.Throws<ArgumentException>(() => FileIO.Move(handle, string.Empty));
+                Assert.Throws<ArgumentException>(() => FileOperations.Move(handle, string.Empty));
             }
             finally
             {
@@ -52,10 +52,10 @@ public sealed partial class FileIOTests
 
             try
             {
-                using (var handle = FileIO.OpenHandle(sourceFile, options))
+                using (var handle = FileOperations.OpenHandle(sourceFile, options))
                 {
                     // Act
-                    FileIO.Move(handle, destinationFile);
+                    FileOperations.Move(handle, destinationFile);
                 }
 
                 // Assert
@@ -83,10 +83,10 @@ public sealed partial class FileIOTests
 
             try
             {
-                using (var handle = FileIO.OpenHandle(sourceFile, options))
+                using (var handle = FileOperations.OpenHandle(sourceFile, options))
                 {
                     // Act
-                    FileIO.Move(handle, destinationFile, overwrite: true);
+                    FileOperations.Move(handle, destinationFile, overwrite: true);
                 }
 
                 // Assert
@@ -115,9 +115,9 @@ public sealed partial class FileIOTests
 
             try
             {
-                using (var handle = FileIO.OpenHandle(sourceFile, options))
+                using (var handle = FileOperations.OpenHandle(sourceFile, options))
                 {
-                    Assert.ThrowsAny<IOException>(() => FileIO.Move(handle, destinationFile, overwrite: false));
+                    Assert.ThrowsAny<IOException>(() => FileOperations.Move(handle, destinationFile, overwrite: false));
                 }
 
                 // Assert
@@ -146,10 +146,10 @@ public sealed partial class FileIOTests
             try
             {
                 var options = FileOpenRequest.Open(FileSystemAccess.ReadWrite, FileShare.All);
-                using var handle = FileIO.OpenHandle(sourceFile, options);
+                using var handle = FileOperations.OpenHandle(sourceFile, options);
 
                 // Act & Assert
-                Assert.Throws<UnauthorizedAccessException>(() => FileIO.Move(handle, destinationFile));
+                Assert.Throws<UnauthorizedAccessException>(() => FileOperations.Move(handle, destinationFile));
                 Assert.True(File.Exists(sourceFile));
                 Assert.False(File.Exists(destinationFile));
             }

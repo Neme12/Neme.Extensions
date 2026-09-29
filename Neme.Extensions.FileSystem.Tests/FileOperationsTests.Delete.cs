@@ -1,11 +1,12 @@
-﻿using Neme.Extensions.IO;
+﻿using Neme.Extensions.FileSystem.SafeHandles;
+using Neme.Extensions.IO;
 using Neme.Extensions.Tests.Utilities;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
-public sealed partial class FileIOTests
+public sealed partial class FileOperationsTests
 {
-    [Collection(nameof(FileIOTestCollection))]
+    [Collection(nameof(FileOperationsTestCollection))]
     public sealed class Delete
     {
         [Fact]
@@ -17,10 +18,10 @@ public sealed partial class FileIOTests
             {
                 var options = FileOpenRequest.Open(FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.All);
 
-                using (var handle = FileIO.OpenHandle(tempFile, options))
+                using (var handle = FileOperations.OpenHandle(tempFile, options))
                 {
                     // Act
-                    FileIO.Delete(handle);
+                    FileOperations.Delete(handle);
                 }
 
                 // Assert
@@ -42,13 +43,13 @@ public sealed partial class FileIOTests
             try
             {
                 var options = FileOpenRequest.Open(FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.All);
-                using var handle = FileIO.OpenHandle(tempFile, options);
+                using var handle = FileOperations.OpenHandle(tempFile, options);
 
                 // Act
-                FileIO.Delete(handle);
+                FileOperations.Delete(handle);
 
                 // Assert
-                using (var stream = FileIO.CreateFileStream(handle, FileAccess.ReadWrite, bufferSize: 128))
+                using (var stream = handle.CreateFileStream(FileAccess.ReadWrite, bufferSize: 128))
                 {
                     stream.WriteByte(123);
                     stream.Position = 0;
@@ -70,10 +71,10 @@ public sealed partial class FileIOTests
             try
             {
                 var options = FileOpenRequest.Open(FileSystemAccess.ReadWrite, FileShare.All);
-                using var handle = FileIO.OpenHandle(tempFile, options);
+                using var handle = FileOperations.OpenHandle(tempFile, options);
 
                 // Act & Assert
-                Assert.Throws<UnauthorizedAccessException>(() => FileIO.Delete(handle));
+                Assert.Throws<UnauthorizedAccessException>(() => FileOperations.Delete(handle));
                 Assert.True(File.Exists(tempFile));
             }
             finally

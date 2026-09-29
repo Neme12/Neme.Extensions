@@ -3,19 +3,19 @@ using System.Runtime.InteropServices;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
-public sealed partial class FileIOTests
+public sealed partial class FileOperationsTests
 {
-    [Collection(nameof(FileIOTestCollection))]
+    [Collection(nameof(FileOperationsTestCollection))]
     public sealed class GetAccess
     {
         [Fact]
         public void ReadOnlyHandle_ReturnsRead()
         {
             // Arrange
-            using var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Read);
+            using var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.Read);
 
             // Act
-            var result = FileIO.GetAccess(handle);
+            var result = FileOperations.GetAccess(handle);
 
             // Assert
             Assert.Equal(FileAccess.Read, result);
@@ -25,10 +25,10 @@ public sealed partial class FileIOTests
         public void WriteOnlyHandle_ReturnsWrite()
         {
             // Arrange
-            using var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Write);
+            using var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.Write);
 
             // Act
-            var result = FileIO.GetAccess(handle);
+            var result = FileOperations.GetAccess(handle);
 
             // Assert
             Assert.Equal(FileAccess.Write, result);
@@ -38,10 +38,10 @@ public sealed partial class FileIOTests
         public void ReadWriteHandle_ReturnsReadWrite()
         {
             // Arrange
-            using var handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite);
+            using var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.ReadWrite);
 
             // Act
-            var result = FileIO.GetAccess(handle);
+            var result = FileOperations.GetAccess(handle);
 
             // Assert
             Assert.Equal(FileAccess.ReadWrite, result);
@@ -51,10 +51,10 @@ public sealed partial class FileIOTests
         public void WriteHandleWithDelete_ReturnsWrite()
         {
             // Arrange
-            using var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Write | FileSystemAccess.Delete);
+            using var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.Write | FileSystemAccess.Delete);
 
             // Act
-            var result = FileIO.GetAccess(handle);
+            var result = FileOperations.GetAccess(handle);
 
             // Assert
             Assert.Equal(FileAccess.Write, result);
@@ -64,10 +64,10 @@ public sealed partial class FileIOTests
         public void ReadWriteHandleWithAdditionalFlags_ReturnsReadWrite()
         {
             // Arrange
-            using var handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite | FileSystemAccess.Delete | FileSystemAccess.ReadAttributes);
+            using var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.ReadWrite | FileSystemAccess.Delete | FileSystemAccess.ReadAttributes);
 
             // Act
-            var result = FileIO.GetAccess(handle);
+            var result = FileOperations.GetAccess(handle);
 
             // Assert
             Assert.Equal(FileAccess.ReadWrite, result);
@@ -77,10 +77,10 @@ public sealed partial class FileIOTests
         public void DeleteOnlyHandle_ReturnsNone()
         {
             // Arrange
-            using var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Delete);
+            using var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.Delete);
 
             // Act
-            var result = FileIO.GetAccess(handle);
+            var result = FileOperations.GetAccess(handle);
 
             // Assert
             // macOS doesn't support opening a file with neither Read or Write access.
@@ -92,10 +92,10 @@ public sealed partial class FileIOTests
         public void ReadAttributesOnlyHandle_ReturnsNone()
         {
             // Arrange
-            using var handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadAttributes);
+            using var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.ReadAttributes);
 
             // Act
-            var result = FileIO.GetAccess(handle);
+            var result = FileOperations.GetAccess(handle);
 
             // Assert
             // macOS doesn't support opening a file with neither Read or Write access.
@@ -107,18 +107,18 @@ public sealed partial class FileIOTests
         public void NullHandle_ThrowsArgumentNullException()
         {
             // Arrange, Act & Assert
-            Assert.Throws<ArgumentNullException>(() => FileIO.GetAccess((SafeFileHandle)null!));
+            Assert.Throws<ArgumentNullException>(() => FileOperations.GetAccess((SafeFileHandle)null!));
         }
 
         [Fact]
         public void ClosedHandle_ThrowsArgumentException()
         {
             // Arrange
-            var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Read);
+            var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.Read);
             handle.Dispose();
 
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => FileIO.GetAccess(handle));
+            Assert.Throws<ArgumentException>(() => FileOperations.GetAccess(handle));
         }
 
         [Fact]
@@ -128,7 +128,7 @@ public sealed partial class FileIOTests
             using var handle = new SafeFileHandle((nint)(-1), ownsHandle: false);
 
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => FileIO.GetAccess(handle));
+            Assert.Throws<ArgumentException>(() => FileOperations.GetAccess(handle));
         }
     }
 }

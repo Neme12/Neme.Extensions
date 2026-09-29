@@ -1,11 +1,12 @@
-﻿using Neme.Extensions.FileSystem.Tests.TestUtilities;
+﻿using Neme.Extensions.FileSystem.SafeHandles;
+using Neme.Extensions.FileSystem.Tests.TestUtilities;
 using Neme.Extensions.IO;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
-public sealed partial class FileIOTests
+public sealed partial class FileOperationsTests
 {
-    [Collection(nameof(FileIOTestCollection))]
+    [Collection(nameof(FileOperationsTestCollection))]
     public sealed class CreateTempFileHandle
     {
         [Fact]
@@ -17,9 +18,9 @@ public sealed partial class FileIOTests
             var share = FileShare.All;
 
             // Act
-            using (var handle = FileIO.CreateTempFileHandle(access, share))
+            using (var handle = FileOperations.CreateTempFileHandle(access, share))
             {
-                createdPath = FileIO.GetPath(handle);
+                createdPath = FileOperations.GetPath(handle);
 
                 // Assert
                 Assert.False(handle.IsInvalid);
@@ -50,11 +51,11 @@ public sealed partial class FileIOTests
 
             try
             {
-                using (var handle = FileIO.CreateTempFileHandle(access, share, options, attributes))
+                using (var handle = FileOperations.CreateTempFileHandle(access, share, options, attributes))
                 {
-                    createdPath = FileIO.GetPath(handle);
+                    createdPath = FileOperations.GetPath(handle);
                     var fileOptions = FileOpenRequest.Open(access, share, options, attributes);
-                    using var stream = FileIO.CreateFileStream(handle, FileAccess.ReadWrite, bufferSize: 128);
+                    using var stream = handle.CreateFileStream(FileAccess.ReadWrite, bufferSize: 128);
 
                     // Act
                     stream.Write(expected, 0, expected.Length);

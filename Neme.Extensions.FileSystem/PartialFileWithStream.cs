@@ -176,7 +176,7 @@ public sealed class PartialFileWithStream :
         if (_state != State.Open)
             throw new InvalidOperationException("File must be open to commit.");
 
-        FileIO.Move(FileStream.SafeFileHandle, FinalPath, overwrite);
+        FileOperations.Move(FileStream.SafeFileHandle, FinalPath, overwrite);
         _state = State.Committed;
     }
 
@@ -188,7 +188,7 @@ public sealed class PartialFileWithStream :
         if (_state != State.Committed)
         {
             if (_state == State.Open)
-                FileIO.Delete(FileStream.SafeFileHandle);
+                FileOperations.Delete(FileStream.SafeFileHandle);
             else
                 File.Delete(CurrentPath);
         }
@@ -208,7 +208,7 @@ public sealed class PartialFileWithStream :
         if (_state != State.Committed)
         {
             if (_state == State.Open)
-                FileIO.Delete(FileStream.SafeFileHandle);
+                FileOperations.Delete(FileStream.SafeFileHandle);
             else
                 File.Delete(CurrentPath);
         }

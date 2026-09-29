@@ -9,7 +9,6 @@ namespace Neme.Extensions.FileSystem.Tests.SafeHandles;
 
 public sealed class SafeFileHandleExtensionsTests
 {
-    [Collection(nameof(FileIOTestCollection))]
     public sealed class Path
     {
         [Fact]
@@ -18,11 +17,11 @@ public sealed class SafeFileHandleExtensionsTests
             // Arrange
             var expected = $"{IOPath.GetTempPath()}{nameof(SafeFileHandleExtensionsTests)}_{Guid.NewGuid():N}.tmp";
             string result;
-            using (var tempFile = FileIO.OpenHandle(expected, FileOpenRequest.CreateNew(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete, FileOptions.DeleteOnClose, FileAttributes.Temporary)))
+            using (var tempFile = FileOperations.OpenHandle(expected, FileOpenRequest.CreateNew(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete, FileOptions.DeleteOnClose, FileAttributes.Temporary)))
             {
                 FileIO.WriteAllBytes(tempFile, "test"u8.ToArray());
 
-                using (var handle = FileIO.OpenHandle(expected, FileOpenRequest.Open(FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete)))
+                using (var handle = FileOperations.OpenHandle(expected, FileOpenRequest.Open(FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete)))
                 {
                     // Act
                     result = handle.Path;
@@ -53,7 +52,7 @@ public sealed class SafeFileHandleExtensionsTests
         public void ClosedHandle_ThrowsArgumentException()
         {
             // Arrange
-            var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Read);
+            var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.Read);
             handle.Dispose();
 
             // Act
@@ -84,7 +83,6 @@ public sealed class SafeFileHandleExtensionsTests
         }
     }
 
-    [Collection(nameof(FileIOTestCollection))]
     public sealed class Access
     {
         [Fact]
@@ -92,7 +90,7 @@ public sealed class SafeFileHandleExtensionsTests
         {
             // Arrange
             FileAccess result;
-            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Read))
+            using (var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.Read))
                 result = handle.Access;
 
             // Assert
@@ -104,7 +102,7 @@ public sealed class SafeFileHandleExtensionsTests
         {
             // Arrange
             FileAccess result;
-            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Write))
+            using (var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.Write))
                 result = handle.Access;
 
             // Assert
@@ -116,7 +114,7 @@ public sealed class SafeFileHandleExtensionsTests
         {
             // Arrange
             FileAccess result;
-            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite))
+            using (var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.ReadWrite))
                 result = handle.Access;
 
             // Assert
@@ -128,7 +126,7 @@ public sealed class SafeFileHandleExtensionsTests
         {
             // Arrange
             FileAccess result;
-            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Delete))
+            using (var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.Delete))
                 result = handle.Access;
 
             // Assert
@@ -157,7 +155,7 @@ public sealed class SafeFileHandleExtensionsTests
         public void ClosedHandle_ThrowsArgumentException()
         {
             // Arrange
-            var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Read);
+            var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.Read);
             handle.Dispose();
 
             // Act
@@ -188,7 +186,6 @@ public sealed class SafeFileHandleExtensionsTests
         }
     }
 
-    [Collection(nameof(FileIOTestCollection))]
     public sealed class CanRead
     {
         [Fact]
@@ -196,7 +193,7 @@ public sealed class SafeFileHandleExtensionsTests
         {
             // Arrange
             bool result;
-            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Read))
+            using (var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.Read))
                 result = handle.CanRead;
 
             // Assert
@@ -208,7 +205,7 @@ public sealed class SafeFileHandleExtensionsTests
         {
             // Arrange
             bool result;
-            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Write))
+            using (var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.Write))
                 result = handle.CanRead;
 
             // Assert
@@ -220,7 +217,7 @@ public sealed class SafeFileHandleExtensionsTests
         {
             // Arrange
             bool result;
-            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite))
+            using (var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.ReadWrite))
                 result = handle.CanRead;
 
             // Assert
@@ -232,7 +229,7 @@ public sealed class SafeFileHandleExtensionsTests
         {
             // Arrange
             bool result;
-            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Delete))
+            using (var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.Delete))
                 result = handle.CanRead;
 
             // Assert
@@ -242,7 +239,6 @@ public sealed class SafeFileHandleExtensionsTests
         }
     }
 
-    [Collection(nameof(FileIOTestCollection))]
     public sealed class CanWrite
     {
         [Fact]
@@ -250,7 +246,7 @@ public sealed class SafeFileHandleExtensionsTests
         {
             // Arrange
             bool result;
-            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Read))
+            using (var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.Read))
                 result = handle.CanWrite;
 
             // Assert
@@ -262,7 +258,7 @@ public sealed class SafeFileHandleExtensionsTests
         {
             // Arrange
             bool result;
-            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Write))
+            using (var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.Write))
                 result = handle.CanWrite;
 
             // Assert
@@ -274,7 +270,7 @@ public sealed class SafeFileHandleExtensionsTests
         {
             // Arrange
             bool result;
-            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite))
+            using (var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.ReadWrite))
                 result = handle.CanWrite;
 
             // Assert
@@ -286,7 +282,7 @@ public sealed class SafeFileHandleExtensionsTests
         {
             // Arrange
             bool result;
-            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.Delete))
+            using (var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.Delete))
                 result = handle.CanWrite;
 
             // Assert
@@ -294,7 +290,6 @@ public sealed class SafeFileHandleExtensionsTests
         }
     }
 
-    [Collection(nameof(FileIOTestCollection))]
     public sealed class CanSeek
     {
         [Fact]
@@ -302,7 +297,7 @@ public sealed class SafeFileHandleExtensionsTests
         {
             // Arrange
             bool result;
-            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All))
+            using (var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All))
                 result = handle.CanSeek;
 
             // Assert
@@ -345,7 +340,7 @@ public sealed class SafeFileHandleExtensionsTests
         public void ClosedHandle_ThrowsArgumentException()
         {
             // Arrange
-            var handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
+            var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             handle.Dispose();
 
             // Act
@@ -376,7 +371,6 @@ public sealed class SafeFileHandleExtensionsTests
         }
     }
 
-    [Collection(nameof(FileIOTestCollection))]
     public sealed class Position
     {
         [Fact]
@@ -387,14 +381,14 @@ public sealed class SafeFileHandleExtensionsTests
             const long expectedPosition = 2;
             long result;
             int nextByte;
-            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All))
+            using (var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All))
             {
                 FileIO.WriteAllBytes(handle, contents);
 
                 // Act
                 handle.Position = expectedPosition;
                 result = handle.Position;
-                using (var stream = FileIO.CreateFileStream(handle, FileAccess.Read))
+                using (var stream = handle.CreateFileStream(FileAccess.Read))
                     nextByte = stream.ReadByte();
             }
 
@@ -404,7 +398,6 @@ public sealed class SafeFileHandleExtensionsTests
         }
     }
 
-    [Collection(nameof(FileIOTestCollection))]
     public sealed class Length
     {
         [Fact]
@@ -415,14 +408,14 @@ public sealed class SafeFileHandleExtensionsTests
             var expectedContents = new byte[] { 1, 2, 3, 0, 0 };
             long result;
             byte[] actualContents;
-            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All))
+            using (var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All))
             {
                 FileIO.WriteAllBytes(handle, initialContents);
 
                 // Act
                 handle.Length = expectedContents.Length;
                 result = handle.Length;
-                using (var stream = FileIO.CreateFileStream(handle, FileAccess.Read))
+                using (var stream = handle.CreateFileStream(FileAccess.Read))
                 {
                     stream.Position = 0;
                     actualContents = stream.ReadToEnd();
@@ -442,14 +435,14 @@ public sealed class SafeFileHandleExtensionsTests
             var expectedContents = new byte[] { 1, 2 };
             long result;
             byte[] actualContents;
-            using (var handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All))
+            using (var handle = FileOperations.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All))
             {
                 FileIO.WriteAllBytes(handle, initialContents);
 
                 // Act
                 handle.Length = expectedContents.Length;
                 result = handle.Length;
-                using (var stream = FileIO.CreateFileStream(handle, FileAccess.Read))
+                using (var stream = handle.CreateFileStream(FileAccess.Read))
                 {
                     stream.Position = 0;
                     actualContents = stream.ReadToEnd();
@@ -462,7 +455,6 @@ public sealed class SafeFileHandleExtensionsTests
         }
     }
 
-    [Collection(nameof(FileIOTestCollection))]
     public sealed class OpenedPath
     {
         [Fact]
@@ -471,11 +463,11 @@ public sealed class SafeFileHandleExtensionsTests
             // Arrange
             var expected = $"{System.IO.Path.GetTempPath()}{nameof(SafeFileHandleExtensionsTests)}_{Guid.NewGuid():N}.tmp";
             string? result;
-            using (var tempFile = FileIO.OpenHandle(expected, FileOpenRequest.CreateNew(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete, FileOptions.DeleteOnClose, FileAttributes.Temporary)))
+            using (var tempFile = FileOperations.OpenHandle(expected, FileOpenRequest.CreateNew(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete, FileOptions.DeleteOnClose, FileAttributes.Temporary)))
             {
                 FileIO.WriteAllBytes(tempFile, "test"u8.ToArray());
 
-                using (var handle = FileIO.OpenHandle(expected, FileOpenRequest.Open(FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete)))
+                using (var handle = FileOperations.OpenHandle(expected, FileOpenRequest.Open(FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete)))
                 {
                     // Act
                     result = handle.OpenedPath;
@@ -491,5 +483,111 @@ public sealed class SafeFileHandleExtensionsTests
         }
     }
 
+    public sealed class CreateFileStream
+    {
+        [Fact]
+        public void OwnsHandleTrue_CreatesReadWriteAsyncStreamAndClosesHandle()
+        {
+            // Arrange
+            var tempFile = IOPath.GetTempFileName();
+            try
+            {
+                var options = FileOpenRequest.Open(FileSystemAccess.ReadWrite, FileShare.None, FileOptions.Asynchronous);
+                using var handle = FileOperations.OpenHandle(tempFile, options);
 
+                // Act
+                using (var stream = handle.CreateFileStream(FileAccess.ReadWrite, ownsHandle: true, bufferSize: 128))
+                {
+                    stream.WriteByte(123);
+                    stream.Position = 0;
+                    var result = stream.ReadByte();
+
+                    // Assert
+                    Assert.True(stream.CanRead);
+                    Assert.True(stream.CanWrite);
+                    Assert.True(stream.IsAsync);
+                    Assert.Equal(123, result);
+                }
+
+                Assert.True(handle.IsClosed);
+            }
+            finally
+            {
+                File.Delete(tempFile);
+            }
+        }
+
+        [Fact]
+        public void OwnsHandleFalse_LeavesOriginalHandleOpen()
+        {
+            // Arrange
+            var tempFile = IOPath.GetTempFileName();
+            try
+            {
+                File.WriteAllBytes(tempFile, [42]);
+                var options = FileOpenRequest.Open(FileSystemAccess.Read);
+                using var handle = FileOperations.OpenHandle(tempFile, options);
+
+                // Act
+                using (var stream = handle.CreateFileStream(FileAccess.Read, bufferSize: 128))
+                {
+                    var result = stream.ReadByte();
+
+                    // Assert
+                    Assert.True(stream.CanRead);
+                    Assert.False(stream.CanWrite);
+                    Assert.False(stream.IsAsync);
+                    Assert.Equal(42, result);
+                }
+
+                Assert.False(handle.IsClosed);
+                Assert.False(handle.IsInvalid);
+            }
+            finally
+            {
+                File.Delete(tempFile);
+            }
+        }
+
+        [Fact]
+        public void WriteOnlyOptions_CreatesWriteOnlyStream()
+        {
+            // Arrange
+            var tempFile = IOPath.GetTempFileName();
+            try
+            {
+                var options = FileOpenRequest.Open(FileSystemAccess.ReadWrite);
+                using var handle = FileOperations.OpenHandle(tempFile, options);
+
+                // Act
+                using (var stream = handle.CreateFileStream(FileAccess.Write, bufferSize: 128))
+                {
+                    stream.WriteByte(99);
+
+                    // Assert
+                    Assert.False(stream.CanRead);
+                    Assert.True(stream.CanWrite);
+                    Assert.False(stream.IsAsync);
+                }
+
+                Assert.Equal([99], FileIO.ReadAllBytes(handle));
+                Assert.False(handle.IsClosed);
+            }
+            finally
+            {
+                File.Delete(tempFile);
+            }
+        }
+
+        [Fact]
+        public void InvalidHandle_ThrowsArgumentException()
+        {
+            // Arrange
+            var handle = new SafeFileHandle((nint)(-1), ownsHandle: false);
+            var options = FileOpenRequest.Open(FileSystemAccess.Read);
+
+            // Act & Assert
+            Assert.Throws<Contracts.ArgumentInvalidException>(() => handle.CreateFileStream(FileAccess.Read));
+        }
+    }
 }

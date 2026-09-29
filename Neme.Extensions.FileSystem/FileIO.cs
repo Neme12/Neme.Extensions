@@ -1,264 +1,358 @@
 ﻿using Microsoft.Win32.SafeHandles;
-using Neme.Extensions.FileSystem.FileIOStrategies;
-using Neme.Extensions.FileSystem.Internal;
+using Neme.Extensions.Contracts;
+using Neme.Extensions.FileSystem.SafeHandles;
+using Neme.Extensions.InteropServices;
+using Neme.Extensions.IO;
 using Neme.Extensions.Ownership;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
+using System.Text;
 
 namespace Neme.Extensions.FileSystem;
 
-public static partial class FileIO
+public static class FileIO
 {
-    private static FileIOStrategy? _strategyLazy;
+    private static Encoding UTF8NoBOM =>
+        field ??= new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
-#pragma warning disable CA1416 // Old Windows versions are not supported
-#pragma warning disable RS0042
-    private static FileIOStrategy Strategy => LazyInitializer.EnsureInitialized(ref _strategyLazy, () =>
-#if NETFRAMEWORK
-        new WindowsFileIOStrategy())!;
-#else
-        RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? new WindowsFileIOStrategy()
-            : new UnixFileIOStrategy())!;
-#endif
-#pragma warning restore RS0042
-#pragma warning restore CA1416
-
-    [return: OwnershipTransfer]
-    public static SafeFileHandle OpenHandle(string path, FileOpenRequest request)
+    public static string ReadAllText([Borrow] SafeFileHandle file, Encoding? encoding = null, CancellationToken cancellationToken = default)
     {
-        Strategy.ValidatePath(path);
+        ArgumentNullException.ThrowIfNull(file);
 
-        return Strategy.OpenHandle(path, request);
-    }
+        cancellationToken.ThrowIfCancellationRequested();
 
-    public static bool TryOpenHandle(
-        string path,
-        FileOpenRequest request,
-        [NotNullWhen(true)][OwnershipTransfer] out SafeFileHandle? handle,
-        bool ignoreMissingDirectory = false)
-    {
-        try
+        using (file.CreatePositionScope(0, allowNonSeekable: true))
+        using (var stream = file.CreateFileStream(FileAccess.Read))
+        using (var streamReader = new StreamReader(stream, encoding ?? Encoding.UTF8, detectEncodingFromByteOrderMarks: true))
         {
-            handle = OpenHandle(path, request);
-            return true;
-
-        }
-        catch (Exception e) when (e is FileNotFoundException || ignoreMissingDirectory && e is DirectoryNotFoundException)
-        {
-            handle = null;
-            return false;
+            return streamReader.ReadToEnd(cancellationToken);
         }
     }
 
-    [SupportedOSPlatform("windows")]
-    [SupportedOSPlatform("linux")]
-    [return: OwnershipTransfer]
-    public static SafeFileHandle OpenHandle(
-        PersistentFileId fileId,
-        FileOpenRequest request)
+    public static Task<string> ReadAllTextAsync([Borrow] SafeFileHandle file, Encoding? encoding = null, CancellationToken cancellationToken = default)
     {
-        Strategy.ValidateFileId(fileId);
+        ArgumentNullException.ThrowIfNull(file);
 
-        return Strategy.OpenHandle(fileId, request);
-    }
+        if (cancellationToken.IsCancellationRequested)
+            return Task.FromCanceled<string>(cancellationToken);
 
-    [SupportedOSPlatform("windows")]
-    [SupportedOSPlatform("linux")]
-    public static bool TryOpenHandle(
-        PersistentFileId fileId,
-        FileOpenRequest request,
-        [NotNullWhen(true)][OwnershipTransfer] out SafeFileHandle? handle,
-        bool ignoreMissingDirectory = false)
-    {
-        try
+        return CoreAsync(file, encoding, cancellationToken);
+
+        static async Task<string> CoreAsync([Borrow] SafeFileHandle file, Encoding? encoding, CancellationToken cancellationToken)
         {
-            handle = OpenHandle(fileId, request);
-            return true;
-        }
-        catch (Exception e) when (e is FileNotFoundException || ignoreMissingDirectory && e is DirectoryNotFoundException)
-        {
-            handle = null;
-            return false;
+            using (file.CreatePositionScope(0, allowNonSeekable: true))
+            await using (file.CreateFileStream(FileAccess.Read).AsAsyncDisposable(out var stream))
+            using (var streamReader = new StreamReader(stream, encoding ?? Encoding.UTF8, detectEncodingFromByteOrderMarks: true))
+            {
+                return await streamReader.ReadToEndAsync(cancellationToken);
+            }
         }
     }
 
-    [return: OwnershipTransfer]
-    public static SafeFileHandle OpenHandleAt(
-        [Borrow] SafeFileHandle? rootDirectory,
-        string? path,
-        FileOpenRequest request)
+    public static void WriteAllText([Borrow] SafeFileHandle file, string? contents, Encoding? encoding = null, CancellationToken cancellationToken = default) =>
+        WriteAllText(file, contents.AsSpan(), encoding, cancellationToken);
+
+    public static void WriteAllText([Borrow] SafeFileHandle file, ReadOnlySpan<char> contents, Encoding? encoding = null, CancellationToken cancellationToken = default)
     {
-        if (rootDirectory is null && path is null)
-            throw new ArgumentException($"Either {nameof(rootDirectory)} or {nameof(path)} must be provided.");
+        ArgumentNullException.ThrowIfNull(file);
 
-        Strategy.ValidateFileHandle(rootDirectory, optional: true);
-        Strategy.ValidatePath(path, optional: true);
+        cancellationToken.ThrowIfCancellationRequested();
 
-        return Strategy.OpenHandleAt(rootDirectory, path, request);
-    }
-
-    public static bool TryOpenHandleAt(
-        [Borrow] SafeFileHandle? rootDirectory,
-        string? path,
-        FileOpenRequest request,
-        [NotNullWhen(true)][OwnershipTransfer] out SafeFileHandle? file,
-        bool ignoreMissingDirectory = false)
-    {
-        try
+        using (file.CreatePositionScope(0, allowNonSeekable: true))
+        using (var stream = file.CreateFileStream(FileAccess.Write))
+        using (var streamWriter = new StreamWriter(stream, encoding ?? UTF8NoBOM, FileStream.DefaultBufferSize, leaveOpen: true))
         {
-            file = OpenHandleAt(rootDirectory, path, request);
-            return true;
-        }
-        catch (Exception e) when (e is FileNotFoundException || ignoreMissingDirectory && e is DirectoryNotFoundException)
-        {
-            file = null;
-            return false;
+            streamWriter.WriteBuffered(contents, cancellationToken);
+            streamWriter.Flush();
         }
     }
 
-    [return: OwnershipTransfer]
-    public static SafeFileHandle ReopenHandle([Borrow] SafeFileHandle file, FileOpenRequest request)
-    {
-        Strategy.ValidateFileHandle(file);
+    public static Task WriteAllTextAsync([Borrow] SafeFileHandle file, string? contents, Encoding? encoding = null, CancellationToken cancellationToken = default) =>
+        WriteAllTextAsync(file, contents.AsMemory(), encoding, cancellationToken);
 
-        return Strategy.OpenHandleAt(file, null, request);
+    public static Task WriteAllTextAsync([Borrow] SafeFileHandle file, ReadOnlyMemory<char> contents, Encoding? encoding = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(file);
+
+        if (cancellationToken.IsCancellationRequested)
+            return Task.FromCanceled(cancellationToken);
+
+        return CoreAsync(file, contents, encoding, cancellationToken);
+
+        static async Task CoreAsync([Borrow] SafeFileHandle file, ReadOnlyMemory<char> contents, Encoding? encoding, CancellationToken cancellationToken = default)
+        {
+            using (file.CreatePositionScope(0, allowNonSeekable: true))
+            await using (file.CreateFileStream(FileAccess.Write).AsAsyncDisposable(out var stream))
+            using (var streamWriter = new StreamWriter(stream, encoding ?? UTF8NoBOM, FileStream.DefaultBufferSize, leaveOpen: true))
+            {
+                await streamWriter.WriteBufferedAsync(contents, cancellationToken);
+                await streamWriter.FlushAsync(cancellationToken);
+            }
+        }
     }
 
-    [return: OwnershipTransfer]
-    public static SafeFileHandle DuplicateHandle([Borrow] SafeFileHandle file, FileSystemAccess? access = null)
-    {
-        Strategy.ValidateFileHandle(file);
+    public static void AppendAllText([Borrow] SafeFileHandle file, string? contents, Encoding? encoding, CancellationToken cancellationToken = default) =>
+        AppendAllText(file, contents.AsSpan(), encoding, cancellationToken);
 
-        return Strategy.DuplicateHandle(file, access);
+    public static void AppendAllText([Borrow] SafeFileHandle file, ReadOnlySpan<char> contents, Encoding? encoding, CancellationToken cancellationToken = default)
+    {
+        Require.ArgumentNotNull(file);
+        Require.ArgumentValid(file, !file.IsInvalid && !file.IsClosed && file.CanSeek);
+        Require.ArgumentValid(file, file.CanSeek);
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        using (var stream = file.CreateFileStream(FileAccess.Write))
+        using (var streamWriter = new StreamWriter(stream, encoding ?? UTF8NoBOM, FileStream.DefaultBufferSize, leaveOpen: true))
+        {
+            stream.Position = stream.Length;
+            streamWriter.WriteBuffered(contents, cancellationToken);
+        }
     }
 
-    public static string GetPath([Borrow] SafeFileHandle file)
-    {
-        Strategy.ValidateFileHandle(file);
+    public static Task AppendAllTextAsync([Borrow] SafeFileHandle file, string? contents, Encoding? encoding = null, CancellationToken cancellationToken = default) =>
+        AppendAllTextAsync(file, contents.AsMemory(), encoding, cancellationToken);
 
-        return Strategy.GetPath(file);
+    public static Task AppendAllTextAsync([Borrow] SafeFileHandle file, ReadOnlyMemory<char> contents, Encoding? encoding = null, CancellationToken cancellationToken = default)
+    {
+        Require.ArgumentNotNull(file);
+        Require.ArgumentValid(file, !file.IsInvalid && !file.IsClosed && file.CanSeek);
+        Require.ArgumentValid(file, file.CanSeek);
+
+        if (cancellationToken.IsCancellationRequested)
+            return Task.FromCanceled(cancellationToken);
+
+        return CoreAsync(file, contents, encoding, cancellationToken);
+
+        static async Task CoreAsync([Borrow] SafeFileHandle file, ReadOnlyMemory<char> contents, Encoding? encoding, CancellationToken cancellationToken = default)
+        {
+            await using (file.CreateFileStream(FileAccess.Write).AsAsyncDisposable(out var stream))
+            using (var streamWriter = new StreamWriter(stream, encoding ?? UTF8NoBOM, FileStream.DefaultBufferSize, leaveOpen: true))
+            {
+                stream.Position = stream.Length;
+                await streamWriter.WriteBufferedAsync(contents, cancellationToken);
+            }
+        }
     }
 
-    public static FileAccess GetAccess([Borrow] SafeFileHandle file)
+    public static string[] ReadAllLines([Borrow] SafeFileHandle file, Encoding? encoding = null, CancellationToken cancellationToken = default)
     {
-        Strategy.ValidateFileHandle(file);
+        Require.ArgumentNotNull(file);
 
-        return Strategy.GetAccess(file);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var lines = new List<string>();
+
+        using (file.CreatePositionScope(0, allowNonSeekable: true))
+        using (var stream = file.CreateFileStream(FileAccess.Read))
+        using (var streamReader = new StreamReader(stream, encoding ?? Encoding.UTF8, true, StreamReader.DefaultBufferSize, leaveOpen: true))
+        {
+            string? line;
+            while ((line = streamReader.ReadLine()) != null)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                lines.Add(line);
+            }
+        }
+
+        return lines.ToArray();
+
     }
 
-    [SupportedOSPlatform("windows")]
-    [SupportedOSPlatform("linux")]
-    public static string GetPath(PersistentFileId fileId)
+    public static Task<string[]> ReadAllLinesAsync([Borrow] SafeFileHandle file, Encoding? encoding = null, CancellationToken cancellationToken = default)
     {
-        Strategy.ValidateFileId(fileId);
+        Require.ArgumentNotNull(file);
 
-        var request = new FileOpenRequest(FileMode.Open, FileSystemAccess.ReadAttributes, FileShare.ReadWrite | FileShare.Delete);
-        using (var handle = Strategy.OpenHandle(fileId, request))
-            return Strategy.GetPath(handle);
+        if (cancellationToken.IsCancellationRequested)
+            return Task.FromCanceled<string[]>(cancellationToken);
+
+        return CoreAsync(file, encoding, cancellationToken);
+
+        static async Task<string[]> CoreAsync([Borrow] SafeFileHandle file, Encoding? encoding = null, CancellationToken cancellationToken = default)
+        {
+            var lines = new List<string>();
+
+            using (file.CreatePositionScope(0, allowNonSeekable: true))
+            await using (file.CreateFileStream(FileAccess.Read).AsAsyncDisposable(out var stream))
+            using (var streamReader = new StreamReader(stream, encoding ?? Encoding.UTF8, true, StreamReader.DefaultBufferSize, leaveOpen: true))
+            {
+                string? line;
+                while ((line = await streamReader.ReadLineAsync(cancellationToken)) != null)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    lines.Add(line);
+                }
+            }
+
+            return lines.ToArray();
+        }
     }
 
-    public static void Move([Borrow] SafeFileHandle sourceFile, string destFileName, bool overwrite = false)
-    {
-        Strategy.ValidateFileHandle(sourceFile);
-        Strategy.ValidatePath(destFileName);
+    public static void WriteAllLines([Borrow] SafeFileHandle file, string[] contents, Encoding? encoding = null, CancellationToken cancellationToken = default) =>
+        WriteAllLines(file, (IEnumerable<string>)contents, encoding, cancellationToken);
 
-        Strategy.Move(sourceFile, destFileName, overwrite);
+    public static void WriteAllLines([Borrow] SafeFileHandle file, IEnumerable<string> contents, Encoding? encoding = null, CancellationToken cancellationToken = default)
+    {
+        Require.ArgumentNotNull(file);
+        Require.ArgumentNotNull(contents);
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        using (file.CreatePositionScope(0, allowNonSeekable: true))
+        using (var stream = file.CreateFileStream(FileAccess.Write))
+        using (var streamWriter = new StreamWriter(stream, encoding ?? UTF8NoBOM, StreamWriter.DefaultBufferSize, leaveOpen: true))
+        {
+            foreach (var line in contents)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                streamWriter.WriteLine(line);
+            }
+
+            streamWriter.Flush();
+        }
     }
 
-    public static void Delete([Borrow] SafeFileHandle file)
-    {
-        Strategy.ValidateFileHandle(file);
+    public static Task WriteAllLinesAsync([Borrow] SafeFileHandle file, string[] contents, Encoding? encoding = null, CancellationToken cancellationToken = default) =>
+        WriteAllLinesAsync(file, (IEnumerable<string>)contents, encoding, cancellationToken);
 
-        Strategy.Delete(file);
+    public static Task WriteAllLinesAsync([Borrow] SafeFileHandle file, IEnumerable<string> contents, Encoding? encoding = null, CancellationToken cancellationToken = default)
+    {
+        Require.ArgumentNotNull(file);
+        Require.ArgumentNotNull(contents);
+        
+        if (cancellationToken.IsCancellationRequested)
+            return Task.FromCanceled(cancellationToken);
+
+        return CoreAsync(file, contents, encoding, cancellationToken);
+
+        static async Task CoreAsync([Borrow] SafeFileHandle file, IEnumerable<string> contents, Encoding? encoding = null, CancellationToken cancellationToken = default)
+        {
+            using (file.CreatePositionScope(0, allowNonSeekable: true))
+            await using (file.CreateFileStream(FileAccess.Write).AsAsyncDisposable(out var stream))
+            using (var streamWriter = new StreamWriter(stream, encoding ?? UTF8NoBOM, StreamWriter.DefaultBufferSize, leaveOpen: true))
+            {
+                foreach (string line in contents)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    await streamWriter.WriteLineAsync(line.AsMemory(), cancellationToken);
+                }
+
+                await streamWriter.FlushAsync(cancellationToken);
+            }
+        }
     }
 
-    public static void SetAttributes([Borrow] SafeFileHandle file, FileAttributes attributes)
+    public static byte[] ReadAllBytes([Borrow] SafeFileHandle file, CancellationToken cancellationToken = default)
     {
-        Strategy.ValidateFileHandle(file);
+        ArgumentNullException.ThrowIfNull(file);
 
-        Strategy.SetAttributes(file, attributes);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        using (file.CreatePositionScope(0, allowNonSeekable: true))
+        using (var stream = file.CreateFileStream(FileAccess.Read))
+        {
+            return stream.ReadToEnd(cancellationToken);
+        }
     }
 
-    public static FileAttributes GetAttributes([Borrow] SafeFileHandle file)
+    public static Task<byte[]> ReadAllBytesAsync([Borrow] SafeFileHandle file, CancellationToken cancellationToken = default)
     {
-        Strategy.ValidateFileHandle(file);
+        ArgumentNullException.ThrowIfNull(file);
 
-        return Strategy.GetAttributes(file);
+        if (cancellationToken.IsCancellationRequested)
+            return Task.FromCanceled<byte[]>(cancellationToken);
+
+        return CoreAsync(file, cancellationToken);
+
+        static async Task<byte[]> CoreAsync([Borrow] SafeFileHandle file, CancellationToken cancellationToken = default)
+        {
+            using (file.CreatePositionScope(0, allowNonSeekable: true))
+            await using (file.CreateFileStream(FileAccess.Read).AsAsyncDisposable(out var stream))
+            {
+                return await stream.ReadToEndAsync(cancellationToken);
+            }
+        }
     }
 
-    public static FileBasicInfo GetBasicInfo([Borrow] SafeFileHandle file)
-    {
-        Strategy.ValidateFileHandle(file);
+    public static void WriteAllBytes([Borrow] SafeFileHandle file, byte[] bytes, CancellationToken cancellationToken = default) =>
+        WriteAllBytes(file, bytes.AsSpan(), cancellationToken);
 
-        return Strategy.GetBasicInfo(file);
+    public static void WriteAllBytes([Borrow] SafeFileHandle file, ReadOnlySpan<byte> bytes, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(file);
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        using (file.CreatePositionScope(0, allowNonSeekable: true))
+        using (var stream = file.CreateFileStream(FileAccess.Write))
+        {
+            stream.WriteBuffered(bytes, cancellationToken);
+        }
     }
 
-    public static FileId GetId([Borrow] SafeFileHandle file)
-    {
-        Strategy.ValidateFileHandle(file);
+    public static Task WriteAllBytesAsync([Borrow] SafeFileHandle file, byte[] bytes, CancellationToken cancellationToken = default) =>
+        WriteAllBytesAsync(file, bytes.AsMemory(), cancellationToken);
 
-        return Strategy.GetId(file);
+    public static Task WriteAllBytesAsync([Borrow] SafeFileHandle file, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(file);
+
+        if (cancellationToken.IsCancellationRequested)
+            return Task.FromCanceled<byte[]>(cancellationToken);
+
+        return CoreAsync(file, bytes, cancellationToken);
+
+        static async Task CoreAsync([Borrow] SafeFileHandle file, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken = default)
+        {
+            using (file.CreatePositionScope(0, allowNonSeekable: true))
+            await using (file.CreateFileStream(FileAccess.Write).AsAsyncDisposable(out var stream))
+            {
+                await stream.WriteBufferedAsync(bytes, cancellationToken);
+            }
+        }
     }
 
-    [SupportedOSPlatform("windows")]
-    [SupportedOSPlatform("linux")]
-    public static PersistentFileId GetPersistentId([Borrow] SafeFileHandle file)
-    {
-        Strategy.ValidateFileHandle(file);
+    public static void AppendAllBytes([Borrow] SafeFileHandle file, byte[] bytes, CancellationToken cancellationToken = default) =>
+        AppendAllBytes(file, bytes.AsSpan(), cancellationToken);
 
-        return Strategy.GetPersistentId(file);
+    public static void AppendAllBytes([Borrow] SafeFileHandle file, ReadOnlySpan<byte> bytes, CancellationToken cancellationToken = default)
+    {
+        Require.ArgumentNotNull(file);
+        Require.ArgumentValid(file, !file.IsInvalid && !file.IsClosed && file.CanSeek);
+        Require.ArgumentValid(file, file.CanSeek);
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        using (var stream = file.CreateFileStream(FileAccess.Write))
+        {
+            stream.Position = stream.Length;
+            stream.WriteBuffered(bytes, cancellationToken);
+        }
     }
 
-    public static long Seek([Borrow] SafeFileHandle file, long offset, SeekOrigin origin)
+    public static Task AppendAllBytesAsync([Borrow] SafeFileHandle file, byte[] bytes, CancellationToken cancellationToken = default) =>
+        AppendAllBytesAsync(file, bytes.AsMemory(), cancellationToken);
+
+    public static Task AppendAllBytesAsync([Borrow] SafeFileHandle file, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken = default)
     {
-        Strategy.ValidateFileHandle(file);
+        Require.ArgumentNotNull(file);
+        Require.ArgumentValid(file, !file.IsInvalid && !file.IsClosed);
+        Require.ArgumentValid(file, file.CanSeek);
 
-        return Strategy.Seek(file, offset, origin);
-    }
+        if (cancellationToken.IsCancellationRequested)
+            return Task.FromCanceled<byte[]>(cancellationToken);
 
-    public static long GetLength([Borrow] SafeFileHandle file)
-    {
-        Strategy.ValidateFileHandle(file);
+        return CoreAsync(file, bytes, cancellationToken);
 
-        return Strategy.GetLength(file);
-    }
-
-    public static void SetLength([Borrow] SafeFileHandle file, long length)
-    {
-        Strategy.ValidateFileHandle(file);
-        Strategy.ValidateLength(length);
-
-        Strategy.SetLength(file, length);
-    }
-
-    public static bool CanSeek([Borrow] SafeFileHandle file)
-    {
-        Strategy.ValidateFileHandle(file);
-
-        return Strategy.CanSeek(file);
-    }
-
-    [return: OwnershipTransferWhen(nameof(ownsHandle))]
-    public static CheckedFileStream CreateFileStream(
-        [OwnershipTransferWhen(nameof(ownsHandle))] SafeFileHandle file,
-        FileAccess access,
-        bool ownsHandle = false,
-        int bufferSize = 4096)
-    {
-        Strategy.ValidateFileHandle(file);
-
-        return ownsHandle
-            ? new CheckedFileStream(
-                file,
-                access,
-                bufferSize,
-                isAsync: file.IsAsync)
-            : new LeaveOpenFileStream(
-                file,
-                access,
-                bufferSize,
-                isAsync: file.IsAsync);
+        static async Task CoreAsync([Borrow] SafeFileHandle file, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken = default)
+        {
+            await using (file.CreateFileStream(FileAccess.Write).AsAsyncDisposable(out var stream))
+            {
+                stream.Position = stream.Length;
+                await stream.WriteBufferedAsync(bytes, cancellationToken);
+            }
+        }
     }
 }

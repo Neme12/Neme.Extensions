@@ -1,11 +1,10 @@
-﻿#if !NETFRAMEWORK
-using Mono.Unix.Native;
-using Neme.Extensions.FileSystem.FileIOStrategies;
-using System.Runtime.Versioning;
-
-#endif
-using Windows.Wdk.Storage.FileSystem;
+﻿using Windows.Wdk.Storage.FileSystem;
 using Windows.Win32.Storage.FileSystem;
+#if !NETFRAMEWORK
+using Mono.Unix.Native;
+using Neme.Extensions.FileSystem.FileOperationsStrategies;
+using System.Runtime.Versioning;
+#endif
 
 namespace Neme.Extensions.FileSystem;
 
@@ -50,10 +49,10 @@ internal static class FileModeExtensions
                 // if we don't lock the file, we can truncate it when opening
                 // otherwise we truncate the file after getting the lock
                 FileMode.CreateNew => OpenFlags.O_CREAT | OpenFlags.O_EXCL,
-                FileMode.Create => OpenFlags.O_CREAT | (UnixFileIOStrategy.DisableFileLocking ? OpenFlags.O_TRUNC : 0),
+                FileMode.Create => OpenFlags.O_CREAT | (UnixFileOperationsStrategy.DisableFileLocking ? OpenFlags.O_TRUNC : 0),
                 FileMode.Open => default,
                 FileMode.OpenOrCreate => OpenFlags.O_CREAT,
-                FileMode.Truncate => UnixFileIOStrategy.DisableFileLocking ? OpenFlags.O_TRUNC : 0,
+                FileMode.Truncate => UnixFileOperationsStrategy.DisableFileLocking ? OpenFlags.O_TRUNC : 0,
                 FileMode.Append => OpenFlags.O_CREAT,
                 _ => throw new ArgumentOutOfRangeException(nameof(mode), "Invalid FileMode value."),
             };

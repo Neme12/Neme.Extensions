@@ -4,9 +4,9 @@ using Neme.Extensions.Tests.Utilities;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
-public sealed partial class FileIOTests
+public sealed partial class FileOperationsTests
 {
-    [Collection(nameof(FileIOTestCollection))]
+    [Collection(nameof(FileOperationsTestCollection))]
     public sealed class GetPath_SafeFileHandle
     {
         [Fact]
@@ -20,7 +20,7 @@ public sealed partial class FileIOTests
                 var handle = fileStream.SafeFileHandle;
 
                 // Act
-                var result = FileIO.GetPath(handle);
+                var result = FileOperations.GetPath(handle);
 
                 // Assert
                 Assert.NotNull(result);
@@ -37,7 +37,7 @@ public sealed partial class FileIOTests
         public void GetPath_WithNullHandle_ThrowsArgumentNullException()
         {
             // Arrange, Act & Assert
-            Assert.Throws<ArgumentNullException>(() => FileIO.GetPath((SafeFileHandle)null!));
+            Assert.Throws<ArgumentNullException>(() => FileOperations.GetPath((SafeFileHandle)null!));
         }
 
         [Fact]
@@ -54,7 +54,7 @@ public sealed partial class FileIOTests
             try
             {
                 // Act & Assert
-                Assert.Throws<ArgumentException>(() => FileIO.GetPath(handle));
+                Assert.Throws<ArgumentException>(() => FileOperations.GetPath(handle));
             }
             finally
             {
@@ -69,7 +69,7 @@ public sealed partial class FileIOTests
             var handle = new SafeFileHandle((nint)(-1), false);
 
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => FileIO.GetPath(handle));
+            Assert.Throws<ArgumentException>(() => FileOperations.GetPath(handle));
         }
 
         [Fact]
@@ -83,7 +83,7 @@ public sealed partial class FileIOTests
                 var handle = fileStream.SafeFileHandle;
 
                 // Act
-                var result = FileIO.GetPath(handle);
+                var result = FileOperations.GetPath(handle);
 
                 // Assert
                 Assert.DoesNotContain(@"\\?\", result);
@@ -112,7 +112,7 @@ public sealed partial class FileIOTests
                 var handle = fileStream.SafeFileHandle;
 
                 // Act
-                var result = FileIO.GetPath(handle);
+                var result = FileOperations.GetPath(handle);
 
                 // Assert
                 Assert.NotNull(result);

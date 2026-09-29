@@ -2,7 +2,7 @@
 
 namespace Neme.Extensions.FileSystem.Tests;
 
-[Collection(nameof(FileIOTestCollection))]
+[Collection(nameof(FileOperationsTestCollection))]
 public sealed class PartialFileWithStreamTests
 {
     [Fact]

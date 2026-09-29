@@ -8,9 +8,9 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
-namespace Neme.Extensions.FileSystem.FileIOStrategies;
+namespace Neme.Extensions.FileSystem.FileOperationsStrategies;
 
-internal abstract class FileIOStrategy
+internal abstract class FileOperationsStrategy
 {
     protected abstract int MaxFileNameLength { get; }
     protected abstract int MaxPathLength { get; }

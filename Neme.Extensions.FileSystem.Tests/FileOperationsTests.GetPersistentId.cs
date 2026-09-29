@@ -5,12 +5,12 @@ using System.Runtime.Versioning;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
-public sealed partial class FileIOTests
+public sealed partial class FileOperationsTests
 {
     [SupportedOSPlatform("windows")]
     [SupportedOSPlatform("linux")]
-    [Collection(nameof(FileIOTestCollection))]
-    public sealed class GetId : IDisposable
+    [Collection(nameof(FileOperationsTestCollection))]
+    public sealed class GetPersistentId : IDisposable
     {
         private readonly string _tempFilePath;
 
@@ -22,7 +22,7 @@ public sealed partial class FileIOTests
 
         private readonly SafeFileHandle _tempFileHandle;
 
-        public GetId()
+        public GetPersistentId()
         {
             _tempFilePath = Path.GetTempFileName();
 #if NET6_0_OR_GREATER
@@ -46,7 +46,7 @@ public sealed partial class FileIOTests
         public void WithValidFileHandle_ReturnsFileId()
         {
             // Act
-            var result = FileIO.GetId(_tempFileHandle);
+            var result = FileOperations.GetPersistentId(_tempFileHandle);
 
             // Assert - FsFileId is a struct, so just verify it's created
             Assert.True(true);
@@ -57,7 +57,7 @@ public sealed partial class FileIOTests
         {
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() =>
-                FileIO.GetId(null!));
+                FileOperations.GetPersistentId(null!));
         }
 
         [PlatformOnlyFact(Platform.Windows, Platform.Linux)]
@@ -71,7 +71,7 @@ public sealed partial class FileIOTests
 
             // Act & Assert
             Assert.Throws<ArgumentException>(() =>
-                FileIO.GetId(fileHandle));
+                FileOperations.GetPersistentId(fileHandle));
         }
 
         [PlatformOnlyFact(Platform.Windows, Platform.Linux)]
@@ -82,14 +82,14 @@ public sealed partial class FileIOTests
 
             // Act & Assert
             Assert.Throws<ArgumentException>(() =>
-                FileIO.GetId(fileHandle));
+                FileOperations.GetPersistentId(fileHandle));
         }
 
         [PlatformOnlyFact(Platform.Windows, Platform.Linux)]
         public void WithValidFileHandle_PopulatesId()
         {
             // Act
-            var result = FileIO.GetId(_tempFileHandle);
+            var result = FileOperations.GetPersistentId(_tempFileHandle);
 
             // Assert
             Assert.NotEqual(default, result);
@@ -103,8 +103,8 @@ public sealed partial class FileIOTests
             using var fileStream2 = new FileStream(tempFile2, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.DeleteOnClose);
 
             // Act
-            var result1 = FileIO.GetId(_tempFileHandle);
-            var result2 = FileIO.GetId(fileStream2.SafeFileHandle);
+            var result1 = FileOperations.GetPersistentId(_tempFileHandle);
+            var result2 = FileOperations.GetPersistentId(fileStream2.SafeFileHandle);
 
             // Assert
             Assert.NotEqual(result1, result2);
@@ -117,8 +117,8 @@ public sealed partial class FileIOTests
             using var fileStream2 = new FileStream(_tempFilePath, FileMode.Open, FileAccess.Read, FileShare.All);
 
             // Act
-            var result1 = FileIO.GetId(_tempFileHandle);
-            var result2 = FileIO.GetId(fileStream2.SafeFileHandle);
+            var result1 = FileOperations.GetPersistentId(_tempFileHandle);
+            var result2 = FileOperations.GetPersistentId(fileStream2.SafeFileHandle);
 
             // Assert
             Assert.Equal(result1, result2);

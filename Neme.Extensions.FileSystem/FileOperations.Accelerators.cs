@@ -3,7 +3,7 @@ using Neme.Extensions.Ownership;
 
 namespace Neme.Extensions.FileSystem;
 
-public static partial class FileIO
+public static partial class FileOperations
 {
     [return: OwnershipTransfer]
     public static SafeFileHandle CreateTempFileHandle(FileSystemAccess access) =>

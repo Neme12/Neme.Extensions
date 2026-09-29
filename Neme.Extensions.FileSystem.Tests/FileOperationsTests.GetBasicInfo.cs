@@ -3,9 +3,9 @@ using NodaTime;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
-public sealed partial class FileIOTests
+public sealed partial class FileOperationsTests
 {
-    [Collection(nameof(FileIOTestCollection))]
+    [Collection(nameof(FileOperationsTestCollection))]
     public sealed class GetBasicInfo
     {
         [Fact]
@@ -17,12 +17,12 @@ public sealed partial class FileIOTests
             {
                 File.WriteAllBytes(tempFile, [1, 2, 3, 4]);
                 var options = FileOpenRequest.Open(FileSystemAccess.ReadAttributes, FileShare.All);
-                using var handle = FileIO.OpenHandle(tempFile, options);
+                using var handle = FileOperations.OpenHandle(tempFile, options);
                 var now = SystemClock.Instance.GetCurrentInstant();
                 var earliestExpectedTime = now - Duration.FromSeconds(5);
 
                 // Act
-                var result = FileIO.GetBasicInfo(handle);
+                var result = FileOperations.GetBasicInfo(handle);
 
                 // Assert
                 Assert.Equal(4, result.Size);
@@ -45,7 +45,7 @@ public sealed partial class FileIOTests
             var handle = (SafeFileHandle)null!;
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => FileIO.GetBasicInfo(handle));
+            Assert.Throws<ArgumentNullException>(() => FileOperations.GetBasicInfo(handle));
         }
 
         [Fact]
@@ -55,7 +55,7 @@ public sealed partial class FileIOTests
             using var handle = new SafeFileHandle((nint)(-1), ownsHandle: false);
 
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => FileIO.GetBasicInfo(handle));
+            Assert.Throws<ArgumentException>(() => FileOperations.GetBasicInfo(handle));
         }
 
         [Fact]
@@ -67,12 +67,12 @@ public sealed partial class FileIOTests
             try
             {
                 var options = FileOpenRequest.Open(FileSystemAccess.ReadAttributes, FileShare.All, 0, FileAttributes.Directory);
-                using var handle = FileIO.OpenHandle(tempDirectory, options);
+                using var handle = FileOperations.OpenHandle(tempDirectory, options);
                 var now = SystemClock.Instance.GetCurrentInstant();
                 var earliestExpectedTime = now - Duration.FromSeconds(5);
 
                 // Act
-                var result = FileIO.GetBasicInfo(handle);
+                var result = FileOperations.GetBasicInfo(handle);
 
                 // Assert
                 Assert.True(result.Attributes.HasFlag(FileAttributes.Directory));

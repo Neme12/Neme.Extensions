@@ -152,7 +152,7 @@ public sealed class PartialFile :
         if (_state != State.Open)
             throw new InvalidOperationException("File must be open to commit.");
 
-        FileIO.Move(File.Handle, FinalPath, overwrite);
+        FileOperations.Move(File.Handle, FinalPath, overwrite);
         _state = State.Committed;
     }
 
@@ -164,7 +164,7 @@ public sealed class PartialFile :
         if (_state != State.Committed)
         {
             if (_state == State.Open)
-                FileIO.Delete(File.Handle);
+                FileOperations.Delete(File.Handle);
             else
                 System.IO.File.Delete(CurrentPath);
         }

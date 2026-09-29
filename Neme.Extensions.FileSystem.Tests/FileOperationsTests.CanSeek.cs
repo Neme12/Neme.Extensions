@@ -2,19 +2,19 @@
 
 namespace Neme.Extensions.FileSystem.Tests;
 
-public sealed partial class FileIOTests
+public sealed partial class FileOperationsTests
 {
-    [Collection(nameof(FileIOTestCollection))]
+    [Collection(nameof(FileOperationsTestCollection))]
     public sealed class CanSeek
     {
         [Fact]
         public void RegularFile_ReturnsTrue()
         {
             // Arrange
-            using (SafeFileHandle handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All))
+            using (SafeFileHandle handle = FileOperations.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All))
             {
                 // Act
-                bool result = FileIO.CanSeek(handle);
+                bool result = FileOperations.CanSeek(handle);
 
                 // Assert
                 Assert.True(result);
@@ -29,7 +29,7 @@ public sealed partial class FileIOTests
             using (SafeFileHandle handle = new(pipe.SafePipeHandle.DangerousGetHandle(), ownsHandle: false))
             {
                 // Act
-                bool result = FileIO.CanSeek(handle);
+                bool result = FileOperations.CanSeek(handle);
 
                 // Assert
                 Assert.False(result);
@@ -40,7 +40,7 @@ public sealed partial class FileIOTests
         public void NullHandle_ThrowsArgumentNullException()
         {
             // Act
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() => FileIO.CanSeek(null!));
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() => FileOperations.CanSeek(null!));
 
             // Assert
             Assert.Equal("file", exception.ParamName);
@@ -50,11 +50,11 @@ public sealed partial class FileIOTests
         public void ClosedHandle_ThrowsArgumentException()
         {
             // Arrange
-            SafeFileHandle handle = FileIO.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
+            SafeFileHandle handle = FileOperations.CreateTempFileHandle(FileSystemAccess.ReadWrite, FileShare.All);
             handle.Dispose();
 
             // Act
-            ArgumentException exception = Assert.Throws<ArgumentException>(() => FileIO.CanSeek(handle));
+            ArgumentException exception = Assert.Throws<ArgumentException>(() => FileOperations.CanSeek(handle));
 
             // Assert
             Assert.Equal("file", exception.ParamName);
@@ -67,7 +67,7 @@ public sealed partial class FileIOTests
             using (SafeFileHandle handle = new((nint)(-1), ownsHandle: false))
             {
                 // Act
-                ArgumentException exception = Assert.Throws<ArgumentException>(() => FileIO.CanSeek(handle));
+                ArgumentException exception = Assert.Throws<ArgumentException>(() => FileOperations.CanSeek(handle));
 
                 // Assert
                 Assert.Equal("file", exception.ParamName);
