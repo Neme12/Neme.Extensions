@@ -155,7 +155,9 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: nuget-packages-release
-        path: ./artifacts/*.*nupkg
+        path: |
+          ./artifacts/*.nupkg
+          ./artifacts/*.snupkg
 
   debug-package:
     name: Package (Debug)
@@ -199,4 +201,6 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: nuget-packages-debug
-        path: ./artifacts/*.*nupkg
+        path: |
+          ./artifacts/*.nupkg
+          ./artifacts/*.snupkg
