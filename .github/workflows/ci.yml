@@ -136,17 +136,11 @@ jobs:
         dotnet pack Neme.Extensions.slnx \
           --configuration Release \
           --version-suffix "CI-${DATE}.${{ github.run_number }}" \
-          --output "./artifacts" \
-          /p:IncludeSymbols=true \
-          /p:SymbolPackageFormat=snupkg
+          --output "./artifacts"
 
     - name: Push to GitHub Packages
       run: |
         dotnet nuget push "./artifacts/*.nupkg" \
-          --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
-          --api-key ${{ secrets.GITHUB_TOKEN }} \
-          --skip-duplicate
-        dotnet nuget push "./artifacts/*.snupkg" \
           --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
           --api-key ${{ secrets.GITHUB_TOKEN }} \
           --skip-duplicate
@@ -157,7 +151,6 @@ jobs:
         name: nuget-packages-release
         path: |
           ./artifacts/*.nupkg
-          ./artifacts/*.snupkg
 
   debug-package:
     name: Package (Debug)
@@ -183,16 +176,10 @@ jobs:
           --configuration Debug \
           --version-suffix "CI-${DATE}.${{ github.run_number }}.debug" \
           --output "./artifacts" \
-          /p:IncludeSymbols=true \
-          /p:SymbolPackageFormat=snupkg
 
     - name: Push to GitHub Packages
       run: |
         dotnet nuget push "./artifacts/*.nupkg" \
-          --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
-          --api-key ${{ secrets.GITHUB_TOKEN }} \
-          --skip-duplicate
-        dotnet nuget push "./artifacts/*.snupkg" \
           --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
           --api-key ${{ secrets.GITHUB_TOKEN }} \
           --skip-duplicate
@@ -203,4 +190,3 @@ jobs:
         name: nuget-packages-debug
         path: |
           ./artifacts/*.nupkg
-          ./artifacts/*.snupkg

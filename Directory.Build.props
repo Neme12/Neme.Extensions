@@ -31,28 +31,29 @@
   </PropertyGroup>
 	
   <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
-	<EnablePreviewFeatures>true</EnablePreviewFeatures>
-	<GenerateRequiresPreviewFeaturesAttribute>false</GenerateRequiresPreviewFeaturesAttribute>
-	<NoWarn>$(NoWarn);CA2252</NoWarn>
+	  <EnablePreviewFeatures>true</EnablePreviewFeatures>
+	  <GenerateRequiresPreviewFeaturesAttribute>false</GenerateRequiresPreviewFeaturesAttribute>
+	  <NoWarn>$(NoWarn);CA2252</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsPackable)' == 'true'">
-	<RepositoryUrl>https://github.com/Neme12/Neme.Extensions</RepositoryUrl>
-	<RepositoryType>git</RepositoryType>
+	  <RepositoryUrl>https://github.com/Neme12/Neme.Extensions</RepositoryUrl>
+	  <RepositoryType>git</RepositoryType>
 
-	<DebugType>portable</DebugType>
-	<DebugSymbols>true</DebugSymbols>
-	<PublishRepositoryUrl>true</PublishRepositoryUrl>
-	<EmbedUntrackedSources>true</EmbedUntrackedSources>
-	<IncludeSymbols>true</IncludeSymbols>
-	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	  <DebugType>portable</DebugType>
+	  <DebugSymbols>true</DebugSymbols>
+	  <PublishRepositoryUrl>true</PublishRepositoryUrl>
+	  <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>
+      $(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb
+    </AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(IsPackable)' == 'true'">
-	<PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.401">
-		<PrivateAssets>all</PrivateAssets>
-		<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-	</PackageReference>
+	  <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.401">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsTestProject)' != 'true'">
