@@ -59,6 +59,16 @@ jobs:
     - name: Build
       run: dotnet build --configuration ${{ matrix.configuration }}
 
+    - name: Test .NET 11
+      shell: pwsh
+      run: |
+        if ($env:RUNNER_OS -eq 'Linux') {
+          sudo -E dotnet test --framework net11.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net11.trx"
+        }
+        else {
+          dotnet test --framework net11.0 --no-build --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test-results-net11.trx"
+        }
+
     - name: Test .NET 10
       shell: pwsh
       run: |
