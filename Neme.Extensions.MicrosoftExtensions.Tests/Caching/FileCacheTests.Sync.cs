@@ -5,6 +5,8 @@ using Neme.Extensions.Tests.Utilities;
 using NodaTime;
 using NodaTime.Testing;
 using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.FileSystem.SafeHandles;
 
 namespace Neme.Extensions.MicrosoftExtensions.Caching.Tests;
 
@@ -654,7 +656,7 @@ public sealed partial class FileCacheTests
 
             // Assert - Handle should be async
             Assert.NotNull(result);
-            Assert.True(result.Handle.IsAsync);
+            Assert.Equal(SafeFileHandle.IsAsyncSupported, result.Handle.IsAsync);
         }
 
         [Fact]

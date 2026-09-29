@@ -68,6 +68,23 @@ public static class SafeFileHandleExtensions
             }
         }
 
+        public static bool IsAsyncSupported
+        {
+            get
+            {
+#if !NETFRAMEWORK
+                if (RuntimeInformation.IsNetCoreVersionOrGreater(11, 0) &&
+                    !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    // Since .NET 11, on Unix, IsAsync may be false even when the FileOptions.Asynchronous flag was specified.
+                    return false;
+                }
+#endif
+
+                return true;
+            }
+        }
+
         public PositionScope CreatePositionScope(long? initialPosition = null, bool allowNonSeekable = false)
         {
             Require.ArgumentNotNull(file);

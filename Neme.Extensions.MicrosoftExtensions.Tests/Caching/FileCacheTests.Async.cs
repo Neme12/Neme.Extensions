@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Neme.Extensions.Tests.Utilities;
+using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.FileSystem.SafeHandles;
 using NodaTime;
 using NodaTime.Testing;
 using System.Runtime.InteropServices;
@@ -757,7 +758,7 @@ public sealed partial class FileCacheTests
 
             // Assert - Handle should be async
             Assert.NotNull(result);
-            Assert.True(result.Handle.IsAsync);
+            Assert.Equal(SafeFileHandle.IsAsyncSupported, result.Handle.IsAsync);
         }
 
         [Fact]

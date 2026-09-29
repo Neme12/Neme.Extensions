@@ -1,4 +1,5 @@
-﻿using Neme.Extensions.FileSystem.SafeHandles;
+﻿using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.FileSystem.SafeHandles;
 using Neme.Extensions.FileSystem.Tests.TestUtilities;
 using Neme.Extensions.IO;
 
@@ -66,7 +67,7 @@ public sealed partial class FileOperationsTests
                     // Assert
                     Assert.True(stream.CanRead);
                     Assert.True(stream.CanWrite);
-                    Assert.True(stream.IsAsync);
+                    Assert.Equal(SafeFileHandle.IsAsyncSupported, stream.IsAsync);
                     Assert.Equal(expected.Length, bytesRead);
                     Assert.Equal(expected, actual);
                 }

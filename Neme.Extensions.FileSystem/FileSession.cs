@@ -17,7 +17,7 @@ public sealed class FileSession : IDisposable
     internal FileSession([OwnershipTransfer] SafeFileHandle handle, FileHandleOptions options)
     {
         Debug.Assert(handle is { IsClosed: false, IsInvalid: false });
-        Debug.Assert(handle.IsAsync == ((options.Flags & FileOptions.Asynchronous) != 0));
+        Debug.Assert(handle.IsAsync <= ((options.Flags & FileOptions.Asynchronous) != 0));
 
         _handle = handle;
         _options = options;

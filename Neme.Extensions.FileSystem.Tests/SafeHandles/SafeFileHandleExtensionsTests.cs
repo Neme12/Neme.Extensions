@@ -505,7 +505,7 @@ public sealed class SafeFileHandleExtensionsTests
                     // Assert
                     Assert.True(stream.CanRead);
                     Assert.True(stream.CanWrite);
-                    Assert.True(stream.IsAsync);
+                    Assert.Equal(SafeFileHandle.IsAsyncSupported, stream.IsAsync);
                     Assert.Equal(123, result);
                 }
 
