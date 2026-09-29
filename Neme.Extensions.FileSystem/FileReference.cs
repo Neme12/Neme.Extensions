@@ -6,7 +6,7 @@ using System.Runtime.Versioning;
 
 namespace Neme.Extensions.FileSystem;
 
-public sealed class FileReference : IDisposable
+public sealed class FileReference : IFileObject, IDisposable
 {
     [Owned]
     private SafeFileHandle _handle;

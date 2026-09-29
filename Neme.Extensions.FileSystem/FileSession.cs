@@ -8,7 +8,7 @@ using System.Runtime.Versioning;
 
 namespace Neme.Extensions.FileSystem;
 
-public sealed class FileSession : IDisposable
+public sealed class FileSession : IFileObject, IDisposable
 {
     [Owned]
     private SafeFileHandle _handle;
@@ -69,6 +69,9 @@ public sealed class FileSession : IDisposable
 
     public bool CanWrite =>
         ((RawFileSystemAccess)_options.Access & RawFileSystemAccess.Write) != 0;
+
+    public string? OpenedPath =>
+        _handle.OpenedPath;
 
     [return: OwnershipTransfer]
     public static FileSession Open(string path, FileOpenRequest request) =>
@@ -238,5 +241,17 @@ public sealed class FileSession : IDisposable
             _handle.Dispose();
             _handle = null!;
         }
+    }
+
+    public long GetLength()
+    {
+        ObjectDisposedException.ThrowIf(_handle is null, this);
+        return FileOperations.GetLength(_handle);
+    }
+
+    public void SetLength(long length)
+    {
+        ObjectDisposedException.ThrowIf(_handle is null, this);
+        FileOperations.SetLength(_handle, length);
     }
 }
