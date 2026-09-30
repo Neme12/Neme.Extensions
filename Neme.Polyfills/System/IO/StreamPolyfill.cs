@@ -73,6 +73,15 @@ public static class StreamPolyfill
     extension<TStream>(TStream stream)
         where TStream : Stream
     {
+        public IAsyncDisposable AsAsyncDisposable()
+        {
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            return stream;
+#else
+            return new StreamAsyncDisposable(stream);
+#endif
+        }
+
         public IAsyncDisposable AsAsyncDisposable(out TStream streamOut)
         {
             streamOut = stream;

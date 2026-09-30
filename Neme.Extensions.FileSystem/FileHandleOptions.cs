@@ -1,10 +1,14 @@
-﻿using System.Runtime.InteropServices;
-
-namespace Neme.Extensions.FileSystem;
+﻿namespace Neme.Extensions.FileSystem;
 
 public readonly record struct FileHandleOptions
 {
     private readonly AllOptions _allOptions;
+
+    public FileHandleOptions(
+        FileSystemAccess access)
+    {
+        _allOptions = ToAllOptions(access, FileOpenRequest.GetDefaultFileShare(access) , FileOptions.None);
+    }
 
     public FileHandleOptions(
         FileSystemAccess access,
