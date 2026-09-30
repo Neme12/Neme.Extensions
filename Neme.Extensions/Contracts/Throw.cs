@@ -6,7 +6,7 @@ namespace Neme.Utilities.Contracts;
 public static class Throw
 {
     [DoesNotReturn]
-    public static void InvalidOperationException()
+    public static void InvalidOperationException(string? message = null)
     {
         throw new InvalidOperationException();
     }

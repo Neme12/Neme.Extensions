@@ -1,6 +1,8 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using Neme.Extensions.Contracts;
 using Neme.Extensions.Ownership;
+using Neme.Utilities.Contracts;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
@@ -12,6 +14,7 @@ public sealed class FileReference : IFileObject, IDisposable
     private SafeFileHandle _handle;
     private readonly string _openedPath;
     private readonly FileReferenceFlags _flags;
+    private State _state;
 
     private FileReference(
         [OwnershipTransfer] SafeFileHandle handle,
@@ -21,38 +24,64 @@ public sealed class FileReference : IFileObject, IDisposable
         _handle = handle;
         _openedPath = path;
         _flags = options.Flags;
+        _state = State.Open;
     }
 
-    public string OpenedPath =>
-        _openedPath;
+    public string OpenedPath
+    {
+        get
+        {
+            RequireNotDisposed();
+            return _openedPath;
+        }
+    }
 
-    public FileReferenceFlags Flags =>
-        _flags;
+    public FileReferenceFlags Flags
+    {
+        get
+        {
+            RequireNotDisposed();
+            return _flags;
+        }
+    }
 
-    public bool IsClosed =>
-        _handle is null or { IsClosed: true };
+    public bool IsClosed
+    {
+        get
+        {
+            RequireNotDisposed();
+            return _state == State.Closed;
+        }
+    }
 
     public string GetPath()
     {
-        Require.NotDisposed(_handle is null, this);    
+        RequireNotDisposed();
+        RequireOpen();
+
         return FileOperations.GetPath(_handle);
     }
 
     public FileId GetId()
     {
-        Require.NotDisposed(_handle is null, this);
+        RequireNotDisposed();
+        RequireOpen();
+
         return FileOperations.GetId(_handle);
     }
 
     public FileAttributes GetAttributes()
     {
-        Require.NotDisposed(_handle is null, this);
+        RequireNotDisposed();
+        RequireOpen();
+
         return FileOperations.GetAttributes(_handle);
     }
 
     public void SetAttributes(FileAttributes attributes)
     {
-        Require.NotDisposed(_handle is null, this);
+        RequireNotDisposed();
+        RequireOpen();
 
         using (var handle = FileOperations.ReopenHandle(_handle, FileOpenRequest.Open(FileSystemAccess.WriteAttributes, FileShare.All)))
             FileOperations.SetAttributes(handle, attributes);
@@ -60,13 +89,16 @@ public sealed class FileReference : IFileObject, IDisposable
 
     public FileBasicInfo GetBasicInfo()
     {
-        Require.NotDisposed(_handle is null, this);
+        RequireNotDisposed();
+        RequireOpen();
+
         return FileOperations.GetBasicInfo(_handle);
     }
 
     public void Move(string destFileName, bool overwrite = false)
     {
-        Require.NotDisposed(_handle is null, this);
+        RequireNotDisposed();
+        RequireOpen();
 
         using (var handle = FileOperations.ReopenHandle(_handle, FileOpenRequest.Open(FileSystemAccess.Delete, FileShare.All)))
             FileOperations.Move(handle, destFileName, overwrite);
@@ -74,7 +106,8 @@ public sealed class FileReference : IFileObject, IDisposable
 
     public void Delete()
     {
-        Require.NotDisposed(_handle is null, this);
+        RequireNotDisposed();
+        RequireOpen();
 
         using (var handle = FileOperations.ReopenHandle(_handle, FileOpenRequest.Open(FileSystemAccess.Delete, FileShare.All)))
             FileOperations.Delete(handle);
@@ -84,20 +117,25 @@ public sealed class FileReference : IFileObject, IDisposable
     [SupportedOSPlatform("linux")]
     public PersistentFileId GetPersistentId()
     {
-        Require.NotDisposed(_handle is null, this);
+        RequireNotDisposed();
+        RequireOpen();
+
         return FileOperations.GetPersistentId(_handle);
     }
 
     public long GetLength()
     {
-        Require.NotDisposed(_handle is null, this);
+        RequireNotDisposed();
+        RequireOpen();
 
         return FileOperations.GetLength(_handle);
     }
 
     public void SetLength(long length)
     {
-        Require.NotDisposed(_handle is null, this);
+        RequireNotDisposed();
+        RequireOpen();
+
         Require.ArgumentNotNegative(length);
 
         using (var handle = FileOperations.ReopenHandle(_handle, FileOpenRequest.Open(FileSystemAccess.Write, FileShare.All)))
@@ -106,13 +144,9 @@ public sealed class FileReference : IFileObject, IDisposable
 
     public static FileReference Create(string path, FileReferenceOptions options = default)
     {
-        var request = new FileOpenRequest(
-            options.Mode.ToFileMode(),
-            FileSystemAccess.ReadAttributes,
-            FileShare.All,
-            options.Flags.HasFlag(FileReferenceFlags.DeleteOnClose) ? FileOptions.DeleteOnClose : FileOptions.None,
-            options.CreationOptions.Attributes)
+        var request = GetFileOpenRequest(options.Mode, options.Flags) with
         {
+            Attributes = options.CreationOptions.Attributes,
             PreallocationSize = options.CreationOptions.PreallocationSize,
         };
 
@@ -125,18 +159,88 @@ public sealed class FileReference : IFileObject, IDisposable
 
     public FileSession OpenSession(FileHandleOptions options)
     {
-        Require.NotDisposed(_handle is null, this);
+        RequireNotDisposed();
+        RequireOpen();
 
         var handle = FileOperations.ReopenHandle(_handle, FileOpenRequest.Open(options));
         return new FileSession(handle, options);
     }
 
-    public void Dispose()
+    public void Close()
     {
-        if (_handle is null)
-            return;
+        RequireNotDisposed();
+        RequireOpen();
+
+        Debug.AssertNotNull(_handle);
 
         _handle.Dispose();
         _handle = null!;
+        _state = State.Closed;
+    }
+
+    public void Reopen()
+    {
+        RequireNotDisposed();
+        RequireClosed();
+
+        Debug.AssertNull(_handle);
+
+        var request = GetFileOpenRequest(FileReferenceMode.Open, _flags);
+
+        _handle = FileOperations.OpenHandle(_openedPath, request);
+        _state = State.Open;
+    }
+
+    public void Dispose()
+    {
+        if (_state == State.Disposed)
+            return;
+
+        if (_state != State.Closed)
+        {
+            Debug.AssertNotNull(_handle);
+
+            _handle.Dispose();
+            _handle = null!;
+        }
+
+        _state = State.Disposed;
+    }
+
+    private static FileOpenRequest GetFileOpenRequest(
+        FileReferenceMode mode,
+        FileReferenceFlags flags)
+    {
+        return new FileOpenRequest(
+            mode.ToFileMode(),
+            FileSystemAccess.ReadAttributes,
+            FileShare.All,
+            flags.HasFlag(FileReferenceFlags.DeleteOnClose)
+                ? FileOptions.DeleteOnClose
+                : FileOptions.None);
+    }
+
+    private void RequireNotDisposed()
+    {
+        Require.NotDisposed(_state == State.Disposed, this);
+    }
+
+    private void RequireOpen()
+    {
+        if (_state != State.Open)
+            Throw.InvalidOperationException("File is closed.");
+    }
+
+    private void RequireClosed()
+    {
+        if (_state != State.Closed)
+            Throw.InvalidOperationException("File is not closed");
+    }
+
+    private enum State : byte
+    {
+        Open,
+        Closed,
+        Disposed,
     }
 }
