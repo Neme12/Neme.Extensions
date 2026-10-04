@@ -9,7 +9,7 @@
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
-    <LangVersion>14</LangVersion>
+    <LangVersion>15</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
@@ -19,12 +19,12 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsTestProject)' == 'false'">
-    <AnalysisLevel>10</AnalysisLevel>
+    <AnalysisLevel>11</AnalysisLevel>
     <AnalysisMode>All</AnalysisMode>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
-    <AnalysisLevel>10</AnalysisLevel>
+    <AnalysisLevel>11</AnalysisLevel>
     <AnalysisMode>None</AnalysisMode>
     <IsPackable>false</IsPackable>
     <VSTestUseVsixExtensions>false</VSTestUseVsixExtensions>
