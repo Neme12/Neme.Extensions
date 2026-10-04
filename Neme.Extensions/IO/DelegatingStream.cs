@@ -53,7 +53,7 @@ public abstract class DelegatingStream<TStream> : Stream
         set => _innerStream.WriteTimeout = value;
     }
 
-#if NETCOREAPP
+#if NETCOREAPP2_0_OR_GREATER
     public override void CopyTo(Stream destination, int bufferSize) =>
         _innerStream.CopyTo(destination, bufferSize);
 #endif
