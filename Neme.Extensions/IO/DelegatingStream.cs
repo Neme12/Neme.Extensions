@@ -61,12 +61,18 @@ public abstract class DelegatingStream<TStream> : Stream
     public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken) =>
         _innerStream.CopyToAsync(destination, bufferSize, cancellationToken);
 
-    public override void Close() =>
+    public override void Close()
+    {
+        GC.SuppressFinalize(this);
         _innerStream.Close();
+    }
 
 #if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-    public override ValueTask DisposeAsync() =>
-        _innerStream.DisposeAsync();
+    public override async ValueTask DisposeAsync()
+    {
+        GC.SuppressFinalize(this);
+        await _innerStream.DisposeAsync();
+    }
 #endif
 
     public override void Flush() =>

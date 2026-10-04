@@ -88,10 +88,12 @@ public class DelegatingFileStream : FileStream
         _innerFileStream.Flush(flushToDisk);
 
     public override bool CanRead =>
-        _innerFileStream.CanRead;
+        // On .NET Framework, CanRead is checked in the constructor before the inner stream is assigned.
+        _innerFileStream is null || _innerFileStream.CanRead;
 
     public override bool CanWrite =>
-        _innerFileStream.CanWrite;
+        // On .NET Framework, CanWrite is checked in the constructor before the inner stream is assigned.
+        _innerFileStream is null || _innerFileStream.CanWrite;
 
     public override void SetLength(long value) =>
         _innerFileStream.SetLength(value);
@@ -110,8 +112,11 @@ public class DelegatingFileStream : FileStream
     public override long Length =>
         _innerFileStream.Length;
 
-    public override long Position =>
-        _innerFileStream.Position;
+    public override long Position
+    {
+        get => _innerFileStream.Position;
+        set => _innerFileStream.Position = value;
+    }
 
     public override int ReadByte() =>
         _innerFileStream.ReadByte();
@@ -119,9 +124,18 @@ public class DelegatingFileStream : FileStream
     public override void WriteByte(byte value) =>
         _innerFileStream.WriteByte(value);
 
+    public override void Close()
+    {
+        GC.SuppressFinalize(this);
+        _innerFileStream.Close();
+    }
+
 #if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-    public override ValueTask DisposeAsync() =>
-        _innerFileStream.DisposeAsync();
+    public override async ValueTask DisposeAsync()
+    {
+        GC.SuppressFinalize(this);
+        await _innerFileStream.DisposeAsync();
+    }
 #endif
 
 #if NET9_0_OR_GREATER
