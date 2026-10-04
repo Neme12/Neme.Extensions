@@ -27,6 +27,10 @@ public sealed class FileReference : IFileObject, IDisposable
         _state = State.Open;
     }
 
+    [Owned]
+    internal SafeFileHandle Handle =>
+        _handle;
+
     public string OpenedPath
     {
         get
