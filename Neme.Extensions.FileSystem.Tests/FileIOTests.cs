@@ -169,10 +169,10 @@ public sealed class FileIOTests
         }
 
         [Fact]
-        public void WithNullHandle_ThrowsArgumentNullException()
+        public void WithDefaultFile_ThrowsArgumentException()
         {
             // Act
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() => FileIO.ReadAllText(null!, System.Text.Encoding.UTF8));
+            ArgumentException exception = Assert.ThrowsAny<ArgumentException>(() => FileIO.ReadAllText(default(FileSource), System.Text.Encoding.UTF8));
 
             // Assert
             Assert.Equal("file", exception.ParamName);
@@ -221,13 +221,13 @@ public sealed class FileIOTests
         }
 
         [Fact]
-        public void WithNullHandle_ThrowsArgumentNullException()
+        public void WithDefaultFile_ThrowsArgumentException()
         {
             // Arrange
-            void Act() => _ = FileIO.ReadAllTextAsync(null!, System.Text.Encoding.UTF8);
+            void Act() => _ = FileIO.ReadAllTextAsync(default(FileSource), System.Text.Encoding.UTF8);
 
             // Act
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(Act);
+            ArgumentException exception = Assert.ThrowsAny<ArgumentException>(Act);
 
             // Assert
             Assert.Equal("file", exception.ParamName);
@@ -277,10 +277,10 @@ public sealed class FileIOTests
         }
 
         [Fact]
-        public void WithNullHandle_ThrowsArgumentNullException()
+        public void WithDefaultFile_ThrowsArgumentException()
         {
             // Act
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() => FileIO.WriteAllText(null!, "test".AsSpan(), System.Text.Encoding.UTF8));
+            ArgumentException exception = Assert.ThrowsAny<ArgumentException>(() => FileIO.WriteAllText(default(FileSource), "test".AsSpan(), System.Text.Encoding.UTF8));
 
             // Assert
             Assert.Equal("file", exception.ParamName);
@@ -327,13 +327,13 @@ public sealed class FileIOTests
         }
 
         [Fact]
-        public void WithNullHandle_ThrowsArgumentNullException()
+        public void WithDefaultFile_ThrowsArgumentException()
         {
             // Arrange
-            void Act() => _ = FileIO.WriteAllTextAsync(null!, "test".AsMemory(), System.Text.Encoding.UTF8);
+            void Act() => _ = FileIO.WriteAllTextAsync(default(FileSource), "test".AsMemory(), System.Text.Encoding.UTF8);
 
             // Act
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(Act);
+            ArgumentException exception = Assert.ThrowsAny<ArgumentException>(Act);
 
             // Assert
             Assert.Equal("file", exception.ParamName);
@@ -383,10 +383,10 @@ public sealed class FileIOTests
         }
 
         [Fact]
-        public void WithNullHandle_ThrowsArgumentNullException()
+        public void WithDefaultFile_ThrowsArgumentException()
         {
             // Act
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() => FileIO.WriteAllBytes(null!, new byte[] { 1 }.AsSpan()));
+            ArgumentException exception = Assert.ThrowsAny<ArgumentException>(() => FileIO.WriteAllBytes(default(FileSource), new byte[] { 1 }.AsSpan()));
 
             // Assert
             Assert.Equal("file", exception.ParamName);
@@ -432,13 +432,13 @@ public sealed class FileIOTests
         }
 
         [Fact]
-        public void WithNullHandle_ThrowsArgumentNullException()
+        public void WithDefaultFile_ThrowsArgumentException()
         {
             // Arrange
-            void Act() => _ = FileIO.WriteAllBytesAsync(null!, new byte[] { 1 }.AsMemory());
+            void Act() => _ = FileIO.WriteAllBytesAsync(default(FileSource), new byte[] { 1 }.AsMemory());
 
             // Act
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(Act);
+            ArgumentException exception = Assert.ThrowsAny<ArgumentException>(Act);
 
             // Assert
             Assert.Equal("file", exception.ParamName);
@@ -495,10 +495,10 @@ public sealed class FileIOTests
         }
 
         [Fact]
-        public void WithNullHandle_ThrowsArgumentNullException()
+        public void WithDefaultFile_ThrowsArgumentException()
         {
             // Act
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() => FileIO.AppendAllBytes(null!, new byte[] { 1 }.AsSpan()));
+            ArgumentException exception = Assert.ThrowsAny<ArgumentException>(() => FileIO.AppendAllBytes(default(FileSource), new byte[] { 1 }.AsSpan()));
 
             // Assert
             Assert.Equal("file", exception.ParamName);
@@ -576,13 +576,13 @@ public sealed class FileIOTests
         }
 
         [Fact]
-        public void WithNullHandle_ThrowsArgumentNullException()
+        public void WithDefaultFile_ThrowsArgumentException()
         {
             // Arrange
-            void Act() => _ = FileIO.AppendAllBytesAsync(null!, new byte[] { 1 }.AsMemory());
+            void Act() => _ = FileIO.AppendAllBytesAsync(default(FileSource), new byte[] { 1 }.AsMemory());
 
             // Act
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(Act);
+            ArgumentException exception = Assert.ThrowsAny<ArgumentException>(Act);
 
             // Assert
             Assert.Equal("file", exception.ParamName);
@@ -707,10 +707,10 @@ public sealed class FileIOTests
         }
 
         [Fact]
-        public void WithNullHandle_ThrowsArgumentNullException()
+        public void WithDefaultFile_ThrowsArgumentException()
         {
             // Act
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() => FileIO.AppendAllText(null!, "test".AsSpan(), System.Text.Encoding.UTF8));
+            ArgumentException exception = Assert.ThrowsAny<ArgumentException>(() => FileIO.AppendAllText(default(FileSource), "test".AsSpan(), System.Text.Encoding.UTF8));
 
             // Assert
             Assert.Equal("file", exception.ParamName);
@@ -801,10 +801,10 @@ public sealed class FileIOTests
         }
 
         [Fact]
-        public void WithNullHandle_ThrowsArgumentNullException()
+        public void WithDefaultFile_ThrowsArgumentException()
         {
             // Act
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() => FileIO.ReadAllLines(null!, System.Text.Encoding.UTF8));
+            ArgumentException exception = Assert.ThrowsAny<ArgumentException>(() => FileIO.ReadAllLines(default(FileSource), System.Text.Encoding.UTF8));
 
             // Assert
             Assert.Equal("file", exception.ParamName);
@@ -856,13 +856,13 @@ public sealed class FileIOTests
         }
 
         [Fact]
-        public void WithNullHandle_ThrowsArgumentNullException()
+        public void WithDefaultFile_ThrowsArgumentException()
         {
             // Arrange
-            void Act() => _ = FileIO.ReadAllLinesAsync(null!, System.Text.Encoding.UTF8);
+            void Act() => _ = FileIO.ReadAllLinesAsync(default(FileSource), System.Text.Encoding.UTF8);
 
             // Act
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(Act);
+            ArgumentException exception = Assert.ThrowsAny<ArgumentException>(Act);
 
             // Assert
             Assert.Equal("file", exception.ParamName);
@@ -917,13 +917,13 @@ public sealed class FileIOTests
         }
 
         [Fact]
-        public void WithNullHandle_ThrowsArgumentNullException()
+        public void WithDefaultFile_ThrowsArgumentException()
         {
             // Arrange
             IEnumerable<string> contents = new[] { "line" };
 
             // Act
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() => FileIO.WriteAllLines(null!, contents, System.Text.Encoding.UTF8));
+            ArgumentException exception = Assert.ThrowsAny<ArgumentException>(() => FileIO.WriteAllLines(default(FileSource), contents, System.Text.Encoding.UTF8));
 
             // Assert
             Assert.Equal("file", exception.ParamName);
@@ -991,13 +991,13 @@ public sealed class FileIOTests
         }
 
         [Fact]
-        public void WithNullHandle_ThrowsArgumentNullException()
+        public void WithDefaultFile_ThrowsArgumentException()
         {
             // Arrange
-            void Act() => _ = FileIO.WriteAllLinesAsync(null!, ["line"], System.Text.Encoding.UTF8);
+            void Act() => _ = FileIO.WriteAllLinesAsync(default(FileSource), ["line"], System.Text.Encoding.UTF8);
 
             // Act
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(Act);
+            ArgumentException exception = Assert.ThrowsAny<ArgumentException>(Act);
 
             // Assert
             Assert.Equal("file", exception.ParamName);
