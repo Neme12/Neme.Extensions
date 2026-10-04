@@ -7,6 +7,10 @@
     <AspNetCoreTestTargetFrameworks>net11.0;net10.0;net8.0;net6.0</AspNetCoreTestTargetFrameworks>
     <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
   </PropertyGroup>
+
+  <PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
+    <Features>$(Features);runtime-async=on</Features>
+  </PropertyGroup>
   
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
     <LangVersion>15</LangVersion>
