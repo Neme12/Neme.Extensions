@@ -7,7 +7,7 @@ public static partial class FileOperations
 {
     [return: OwnershipTransfer]
     public static SafeFileHandle CreateTempFileHandle(FileSystemAccess access) =>
-        CreateTempFileHandle(access, FileHandleRequest.GetDefaultFileShare(access));
+        CreateTempFileHandle(access, FileHandleOptions.GetDefaultFileShare(access));
 
     [return: OwnershipTransfer]
     public static SafeFileHandle CreateTempFileHandle(

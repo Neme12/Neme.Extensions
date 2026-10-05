@@ -7,7 +7,7 @@ public readonly record struct FileHandleOptions
     public FileHandleOptions(
         FileSystemAccess access)
     {
-        _allOptions = ToAllOptions(access, FileHandleRequest.GetDefaultFileShare(access) , FileOptions.None);
+        _allOptions = ToAllOptions(access, GetDefaultFileShare(access) , FileOptions.None);
     }
 
     public FileHandleOptions(
@@ -16,6 +16,21 @@ public readonly record struct FileHandleOptions
         FileOptions flags = FileOptions.None)
     {
         _allOptions = ToAllOptions(access, share, flags);
+    }
+
+    internal static FileShare GetDefaultFileShare(FileSystemAccess access)
+    {
+        var rawAccess = (RawFileSystemAccess)access;
+
+        if ((rawAccess & RawFileSystemAccess.Write) != 0 ||
+            (rawAccess & RawFileSystemAccess.Delete) != 0)
+            return FileShare.None;
+
+        if ((rawAccess & RawFileSystemAccess.Read) != 0 ||
+            (rawAccess & RawFileSystemAccess.Execute) != 0)
+            return FileShare.Read;
+
+        return FileShare.ReadWrite | FileShare.Delete;
     }
 
     public FileSystemAccess Access

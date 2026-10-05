@@ -12,9 +12,7 @@ public readonly record struct FileHandleRequest
 
     public FileHandleRequest(FileMode mode, FileSystemAccess access)
     {
-        _allOptions = ToAllOptions(mode, access, (access & FileSystemAccess.Write) != 0 || (access & FileSystemAccess.Delete) != 0
-            ? FileShare.None
-            : FileShare.Read, 0, 0, null);
+        _allOptions = ToAllOptions(mode, access, FileHandleOptions.GetDefaultFileShare(access), 0, 0, null);
     }
 
     public FileHandleRequest(FileMode mode, FileSystemAccess access, FileShare share, FileOptions flags = FileOptions.None, FileAttributes attributes = 0)
@@ -28,7 +26,7 @@ public readonly record struct FileHandleRequest
     }
 
     public static FileHandleRequest Create(FileSystemAccess access) =>
-        new(FileMode.Create, access, GetDefaultFileShare(access));
+        new(FileMode.Create, access, FileHandleOptions.GetDefaultFileShare(access));
 
     public static FileHandleRequest Create(
         FileSystemAccess access,
@@ -47,7 +45,7 @@ public readonly record struct FileHandleRequest
     }
 
     public static FileHandleRequest CreateNew(FileSystemAccess access) =>
-        new(FileMode.CreateNew, access, GetDefaultFileShare(access));
+        new(FileMode.CreateNew, access, FileHandleOptions.GetDefaultFileShare(access));
 
     public static FileHandleRequest CreateNew(
         FileSystemAccess access,
@@ -66,7 +64,7 @@ public readonly record struct FileHandleRequest
     }
 
     public static FileHandleRequest Open(FileSystemAccess access) =>
-        new(FileMode.Open, access, GetDefaultFileShare(access));
+        new(FileMode.Open, access, FileHandleOptions.GetDefaultFileShare(access));
 
     public static FileHandleRequest Open(
         FileSystemAccess access,
@@ -85,7 +83,7 @@ public readonly record struct FileHandleRequest
     }
 
     public static FileHandleRequest OpenOrCreate(FileSystemAccess access) =>
-        new(FileMode.OpenOrCreate, access, GetDefaultFileShare(access));
+        new(FileMode.OpenOrCreate, access, FileHandleOptions.GetDefaultFileShare(access));
 
     public static FileHandleRequest OpenOrCreate(
         FileSystemAccess access,
@@ -104,7 +102,7 @@ public readonly record struct FileHandleRequest
     }
 
     public static FileHandleRequest Append(FileSystemAccess access = FileSystemAccess.Write) =>
-        new(FileMode.Append, access, GetDefaultFileShare(access));
+        new(FileMode.Append, access, FileHandleOptions.GetDefaultFileShare(access));
 
     public static FileHandleRequest Append(
         FileSystemAccess access = FileSystemAccess.Write,
@@ -192,20 +190,6 @@ public readonly record struct FileHandleRequest
         }
     }
 
-    internal static FileShare GetDefaultFileShare(FileSystemAccess access)
-    {
-        var rawAccess = (RawFileSystemAccess)access;
-
-        if ((rawAccess & RawFileSystemAccess.Write) != 0 ||
-            (rawAccess & RawFileSystemAccess.Delete) != 0)
-            return FileShare.None;
-
-        if ((rawAccess & RawFileSystemAccess.Read) != 0 ||
-            (rawAccess & RawFileSystemAccess.Execute) != 0)
-            return FileShare.Read;
-
-        return FileShare.ReadWrite | FileShare.Delete;
-    }
 
 #if NET6_0_OR_GREATER
     public static FileHandleRequest FromFileStreamOptions(FileStreamOptions options)

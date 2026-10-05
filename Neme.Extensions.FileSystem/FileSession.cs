@@ -148,7 +148,7 @@ public sealed class FileSession : IFileObject, IDisposable
 
     [return: OwnershipTransfer]
     public static FileSession CreateTempFile(FileSystemAccess access) =>
-        CreateTempFile(access, FileHandleRequest.GetDefaultFileShare(access));
+        CreateTempFile(access, FileHandleOptions.GetDefaultFileShare(access));
 
     [return: OwnershipTransfer]
     public static FileSession CreateTempFile(
