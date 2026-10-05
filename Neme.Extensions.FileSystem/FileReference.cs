@@ -211,6 +211,12 @@ public sealed class FileReference : IFileObject, IDisposable
         _state = State.Disposed;
     }
 
+    public ValueTask DisposeAsync()
+    {
+        Dispose();
+        return default;
+    }
+
     private static FileOpenRequest GetFileOpenRequest(
         FileReferenceMode mode,
         FileReferenceFlags flags)

@@ -1,4 +1,6 @@
-﻿namespace Neme.Extensions.FileSystem;
+﻿using Neme.Extensions.FileSystem.Internal;
+
+namespace Neme.Extensions.FileSystem;
 
 public static class PartialFile
 {
@@ -26,8 +28,9 @@ public static class PartialFile
         var file = FileSession.Open(partialPath, request);
         return new PartialFile<FileSession>(
             file,
+            file => file,
             finalPath,
-            finalPath => FileSession.Open(finalPath, FileOpenRequest.Open(request.HandleOptions)));
+            finalPath => FileSession.Open(finalPath + PartialExtension, request with { Mode = FileMode.Open}));
     }
 
     /// <summary>
@@ -52,7 +55,38 @@ public static class PartialFile
         var file = FileReference.Create(partialPath, options);
         return new PartialFile<FileReference>(
             file,
+            file => file,
             finalPath,
-            finalPath => FileReference.Create(finalPath, options));
+            finalPath => FileReference.Create(finalPath + PartialExtension, options with { Mode = FileReferenceMode.Open}));
+    }
+
+    /// <summary>
+    /// Creates a new temporary file at <paramref name="finalPath"/> with the <c>.part</c> suffix.
+    /// </summary>
+    /// <param name="finalPath">The final destination path that will be used by <see cref="Commit(bool)"/>.</param>
+    /// <param name="request">The options used to open the temporary file. Delete access is required so the temporary file can be cleaned up.</param>
+    /// <param name="createDirectory"><see langword="true"/> to create the destination directory if it does not already exist.</param>
+    /// <returns>A <see cref="PartialFileWithStream"/> for writing the temporary file.</returns>
+    public static PartialFile<FileStream> CreateFileStream(
+        string finalPath,
+        FileOpenRequest request,
+        bool createDirectory = false)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(finalPath);
+
+        if ((request.Access & FileSystemAccess.Delete) == 0)
+            throw new ArgumentException("Options must include delete access.", nameof(request));
+
+        var partialPath = finalPath + PartialExtension;
+
+        if (createDirectory)
+            Directory.CreateDirectory(Path.GetDirectoryName(finalPath)!);
+
+        var fileStream = FileSession.Open(partialPath, request).CreateFileStream(ownsHandle: true);
+        return new PartialFile<FileStream>(
+            fileStream,
+            file => new FileStreamAdapter(file),
+            finalPath,
+            finalPath => FileSession.Open(finalPath + PartialExtension, request with { Mode = FileMode.Open }).CreateFileStream(ownsHandle: true));
     }
 }

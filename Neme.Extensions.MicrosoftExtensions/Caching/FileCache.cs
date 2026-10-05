@@ -662,17 +662,17 @@ public sealed partial class FileCache : IFileCache, IDisposable
             SlidingExpiration = options.IsSlidingExpiration ? options.Expiration : null,
         };
 
-        using (var file = OwnedOrBorrowed.Create(PartialFileWithStream.Create(filePath, FileWriteOptions<TAsync>() with { Options = options.FileOptions, Attributes = options.FileAttributes }, createDirectory: true)))
+        using (var file = OwnedOrBorrowed.Create(PartialFile.CreateFileStream(filePath, FileWriteOptions<TAsync>() with { Options = options.FileOptions, Attributes = options.FileAttributes }, createDirectory: true)))
         {
             if (TAsync.IsAsync)
             {
-                await writeData(file.Value.FileStream, cancellationToken);
-                await file.Value.FileStream.FlushAsync(cancellationToken);
+                await writeData(file.Value.File, cancellationToken);
+                await file.Value.File.FlushAsync(cancellationToken);
             }
             else
             {
-                writeData(file.Value.FileStream, cancellationToken).GetAwaiter().GetCompletedResult();
-                file.Value.FileStream.Flush();
+                writeData(file.Value.File, cancellationToken).GetAwaiter().GetCompletedResult();
+                file.Value.File.Flush();
             }
 
             await WriteMetadataAsync<TAsync>(file.Value.FinalPath, metadata, cancellationToken);

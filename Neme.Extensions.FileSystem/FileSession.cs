@@ -243,6 +243,12 @@ public sealed class FileSession : IFileObject, IDisposable
         }
     }
 
+    public ValueTask DisposeAsync()
+    {
+        Dispose();
+        return default;
+    }
+
     public long GetLength()
     {
         ObjectDisposedException.ThrowIf(_handle is null, this);
