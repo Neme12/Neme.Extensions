@@ -2,7 +2,7 @@
 
 namespace Neme.Extensions.FileSystem;
 
-internal interface IFileObject : IDisposable
+public interface IFileObject : IDisposable
 {
     public string? OpenedPath { get; }
 

@@ -14,7 +14,7 @@ public sealed class PartialFileTests
         var options = CreateOptions();
 
         // Act & Assert
-        var exception = Assert.ThrowsAny<ArgumentException>(() => PartialFile.Create(finalPath!, options));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => PartialFile.CreateSessionFile(finalPath!, options));
         Assert.Equal("finalPath", exception.ParamName);
     }
 
@@ -29,7 +29,7 @@ public sealed class PartialFileTests
         try
         {
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => PartialFile.Create(finalPath, options));
+            var exception = Assert.Throws<ArgumentException>(() => PartialFile.CreateSessionFile(finalPath, options));
             Assert.Equal("request", exception.ParamName);
             Assert.Contains("Options must include delete access.", exception.Message, StringComparison.Ordinal);
         }
@@ -50,7 +50,7 @@ public sealed class PartialFileTests
         try
         {
             // Act
-            using var sut = PartialFile.Create(finalPath, options, createDirectory: true);
+            using var sut = PartialFile.CreateSessionFile(finalPath, options, createDirectory: true);
 
             // Assert
             Assert.True(Directory.Exists(Path.GetDirectoryName(finalPath)!));
@@ -75,7 +75,7 @@ public sealed class PartialFileTests
 
         try
         {
-            using var sut = PartialFile.Create(finalPath, options, createDirectory: true);
+            using var sut = PartialFile.CreateSessionFile(finalPath, options, createDirectory: true);
             sut.Close();
 
             // Act & Assert
@@ -95,7 +95,7 @@ public sealed class PartialFileTests
         var tempDirectory = CreateTempDirectoryPath();
         var finalPath = Path.Combine(tempDirectory, "file.txt");
         var options = CreateOptions();
-        var sut = PartialFile.Create(finalPath, options, createDirectory: true);
+        var sut = PartialFile.CreateSessionFile(finalPath, options, createDirectory: true);
 
         try
         {
@@ -123,7 +123,7 @@ public sealed class PartialFileTests
 
         try
         {
-            using var sut = PartialFile.Create(finalPath, options, createDirectory: true);
+            using var sut = PartialFile.CreateSessionFile(finalPath, options, createDirectory: true);
 
             // Act
             sut.Commit();
@@ -149,7 +149,7 @@ public sealed class PartialFileTests
 
         try
         {
-            using var sut = PartialFile.Create(finalPath, options, createDirectory: true);
+            using var sut = PartialFile.CreateSessionFile(finalPath, options, createDirectory: true);
 
             // Act & Assert
             var exception = Assert.Throws<InvalidOperationException>(() => sut.Reopen());
@@ -168,7 +168,7 @@ public sealed class PartialFileTests
         var tempDirectory = CreateTempDirectoryPath();
         var finalPath = Path.Combine(tempDirectory, "file.txt");
         var options = CreateOptions();
-        var sut = PartialFile.Create(finalPath, options, createDirectory: true);
+        var sut = PartialFile.CreateSessionFile(finalPath, options, createDirectory: true);
 
         try
         {
@@ -194,7 +194,7 @@ public sealed class PartialFileTests
 
         try
         {
-            using var sut = PartialFile.Create(finalPath, options, createDirectory: true);
+            using var sut = PartialFile.CreateSessionFile(finalPath, options, createDirectory: true);
             var originalFile = sut.File;
             sut.Close();
 
@@ -227,7 +227,7 @@ public sealed class PartialFileTests
 
         try
         {
-            using var sut = PartialFile.Create(finalPath, options, createDirectory: true);
+            using var sut = PartialFile.CreateSessionFile(finalPath, options, createDirectory: true);
             var handle = sut.File.Handle;
 
             // Act
@@ -255,7 +255,7 @@ public sealed class PartialFileTests
 
         try
         {
-            using var sut = PartialFile.Create(finalPath, options, createDirectory: true);
+            using var sut = PartialFile.CreateSessionFile(finalPath, options, createDirectory: true);
             sut.Close();
 
             // Act & Assert
@@ -275,7 +275,7 @@ public sealed class PartialFileTests
         var tempDirectory = CreateTempDirectoryPath();
         var finalPath = Path.Combine(tempDirectory, "file.txt");
         var options = CreateOptions();
-        var sut = PartialFile.Create(finalPath, options, createDirectory: true);
+        var sut = PartialFile.CreateSessionFile(finalPath, options, createDirectory: true);
 
         try
         {
@@ -301,7 +301,7 @@ public sealed class PartialFileTests
         Directory.CreateDirectory(tempDirectory);
         File.WriteAllBytes(finalPath, [1]);
 
-        var sut = PartialFile.Create(finalPath, options);
+        var sut = PartialFile.CreateSessionFile(finalPath, options);
 
         try
         {
@@ -337,7 +337,7 @@ public sealed class PartialFileTests
 
         try
         {
-            using var sut = PartialFile.Create(finalPath, options, createDirectory: true);
+            using var sut = PartialFile.CreateSessionFile(finalPath, options, createDirectory: true);
             sut.Close();
 
             // Act & Assert
@@ -357,7 +357,7 @@ public sealed class PartialFileTests
         var tempDirectory = CreateTempDirectoryPath();
         var finalPath = Path.Combine(tempDirectory, "file.txt");
         var options = CreateOptions();
-        var sut = PartialFile.Create(finalPath, options, createDirectory: true);
+        var sut = PartialFile.CreateSessionFile(finalPath, options, createDirectory: true);
 
         try
         {
@@ -380,7 +380,7 @@ public sealed class PartialFileTests
         var tempDirectory = CreateTempDirectoryPath();
         var finalPath = Path.Combine(tempDirectory, "file.txt");
         var options = CreateOptions();
-        var sut = PartialFile.Create(finalPath, options, createDirectory: true);
+        var sut = PartialFile.CreateSessionFile(finalPath, options, createDirectory: true);
         var handle = sut.File.Handle;
 
         try
@@ -407,7 +407,7 @@ public sealed class PartialFileTests
         var tempDirectory = CreateTempDirectoryPath();
         var finalPath = Path.Combine(tempDirectory, "file.txt");
         var options = CreateOptions();
-        var sut = PartialFile.Create(finalPath, options, createDirectory: true);
+        var sut = PartialFile.CreateSessionFile(finalPath, options, createDirectory: true);
         sut.Close();
 
         try
@@ -436,7 +436,7 @@ public sealed class PartialFileTests
 
         try
         {
-            using var sut = PartialFile.Create(finalPath, options, createDirectory: true);
+            using var sut = PartialFile.CreateSessionFile(finalPath, options, createDirectory: true);
             using var stream = sut.File.CreateFileStream();
             stream.WriteByte(7);
             stream.Flush();

@@ -95,7 +95,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
         }
 
         if (IsMetadataPath(key) || IsPartialPath(key))
-            throw new ArgumentException($"Cache keys must not end with '{MetadataExtension}' or '{PartialFile.Extension}'.", paramName);
+            throw new ArgumentException($"Cache keys must not end with '{MetadataExtension}' or '{PartialFile.PartialExtension}'.", paramName);
     }
 
     /// <summary>
@@ -736,7 +736,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
         path.EndsWith(MetadataExtension, StringComparison.OrdinalIgnoreCase);
 
     private static bool IsPartialPath(string path) =>
-        path.EndsWith(PartialFile.Extension, StringComparison.OrdinalIgnoreCase);
+        path.EndsWith(PartialFile.PartialExtension, StringComparison.OrdinalIgnoreCase);
 
     private ResolvedEntryOptions GetResolvedEntryOptions<TAsync>(FileCacheEntryOptions options)
         where TAsync : IAsyncState
@@ -783,7 +783,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
     {
         var metadataPath = filePath + MetadataExtension;
 
-        using (var file = PartialFile.Create(metadataPath, FileWriteOptions<TAsync>()))
+        using (var file = PartialFile.CreateSessionFile(metadataPath, FileWriteOptions<TAsync>()))
         {
             if (TAsync.IsAsync)
             {
