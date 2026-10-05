@@ -8,7 +8,7 @@ namespace Neme.Extensions.FileSystem;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Use <see cref="Create(string, FileOpenRequest, bool)"/> to create the temporary file, write the contents through <see cref="File"/>,
+/// Use <see cref="Create(string, FileHandleRequest, bool)"/> to create the temporary file, write the contents through <see cref="File"/>,
 /// and then call <see cref="Commit(bool)"/> to move the file to <see cref="FinalPath"/> without exposing a partially written file at the
 /// destination.
 /// </para>

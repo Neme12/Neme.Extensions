@@ -7,7 +7,7 @@ public readonly record struct FileHandleOptions
     public FileHandleOptions(
         FileSystemAccess access)
     {
-        _allOptions = ToAllOptions(access, FileOpenRequest.GetDefaultFileShare(access) , FileOptions.None);
+        _allOptions = ToAllOptions(access, FileHandleRequest.GetDefaultFileShare(access) , FileOptions.None);
     }
 
     public FileHandleOptions(

@@ -19,7 +19,7 @@ public sealed class FileReference : IFileObject, IDisposable
     private FileReference(
         [OwnershipTransfer] SafeFileHandle handle,
         string path,
-        FileReferenceOptions options)
+        FileReferenceRequest options)
     {
         _handle = handle;
         _openedPath = path;
@@ -87,7 +87,7 @@ public sealed class FileReference : IFileObject, IDisposable
         RequireNotDisposed();
         RequireOpen();
 
-        using (var handle = FileOperations.ReopenHandle(_handle, FileOpenRequest.Open(FileSystemAccess.WriteAttributes, FileShare.All)))
+        using (var handle = FileOperations.ReopenHandle(_handle, FileHandleRequest.Open(FileSystemAccess.WriteAttributes, FileShare.All)))
             FileOperations.SetAttributes(handle, attributes);
     }
 
@@ -104,7 +104,7 @@ public sealed class FileReference : IFileObject, IDisposable
         RequireNotDisposed();
         RequireOpen();
 
-        using (var handle = FileOperations.ReopenHandle(_handle, FileOpenRequest.Open(FileSystemAccess.Delete, FileShare.All)))
+        using (var handle = FileOperations.ReopenHandle(_handle, FileHandleRequest.Open(FileSystemAccess.Delete, FileShare.All)))
             FileOperations.Move(handle, destFileName, overwrite);
     }
 
@@ -113,7 +113,7 @@ public sealed class FileReference : IFileObject, IDisposable
         RequireNotDisposed();
         RequireOpen();
 
-        using (var handle = FileOperations.ReopenHandle(_handle, FileOpenRequest.Open(FileSystemAccess.Delete, FileShare.All)))
+        using (var handle = FileOperations.ReopenHandle(_handle, FileHandleRequest.Open(FileSystemAccess.Delete, FileShare.All)))
             FileOperations.Delete(handle);
     }
 
@@ -142,11 +142,11 @@ public sealed class FileReference : IFileObject, IDisposable
 
         Require.ArgumentNotNegative(length);
 
-        using (var handle = FileOperations.ReopenHandle(_handle, FileOpenRequest.Open(FileSystemAccess.Write, FileShare.All)))
+        using (var handle = FileOperations.ReopenHandle(_handle, FileHandleRequest.Open(FileSystemAccess.Write, FileShare.All)))
             FileOperations.SetLength(handle, length);
     }
 
-    public static FileReference Create(string path, FileReferenceOptions options = default)
+    public static FileReference Create(string path, FileReferenceRequest options = default)
     {
         var request = GetFileOpenRequest(options.Mode, options.Flags) with
         {
@@ -166,7 +166,7 @@ public sealed class FileReference : IFileObject, IDisposable
         RequireNotDisposed();
         RequireOpen();
 
-        var handle = FileOperations.ReopenHandle(_handle, FileOpenRequest.Open(options));
+        var handle = FileOperations.ReopenHandle(_handle, FileHandleRequest.Open(options));
         return new FileSession(handle, options);
     }
 
@@ -217,11 +217,11 @@ public sealed class FileReference : IFileObject, IDisposable
         return default;
     }
 
-    private static FileOpenRequest GetFileOpenRequest(
+    private static FileHandleRequest GetFileOpenRequest(
         FileReferenceMode mode,
         FileReferenceFlags flags)
     {
-        return new FileOpenRequest(
+        return new FileHandleRequest(
             mode.ToFileMode(),
             FileSystemAccess.ReadAttributes,
             FileShare.All,

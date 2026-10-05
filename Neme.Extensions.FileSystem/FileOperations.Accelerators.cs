@@ -7,7 +7,7 @@ public static partial class FileOperations
 {
     [return: OwnershipTransfer]
     public static SafeFileHandle CreateTempFileHandle(FileSystemAccess access) =>
-        CreateTempFileHandle(access, FileOpenRequest.GetDefaultFileShare(access));
+        CreateTempFileHandle(access, FileHandleRequest.GetDefaultFileShare(access));
 
     [return: OwnershipTransfer]
     public static SafeFileHandle CreateTempFileHandle(
@@ -20,13 +20,13 @@ public static partial class FileOperations
         return OpenHandle(path, request);
     }
 
-    internal static (string path, FileOpenRequest request) GetTempFilePathAndRequest(
+    internal static (string path, FileHandleRequest request) GetTempFilePathAndRequest(
         FileSystemAccess access,
         FileShare share,
         FileOptions options,
         FileAttributes attributes)
     {
-        var fileOptions = FileOpenRequest.CreateNew(access, share, options, attributes);
+        var fileOptions = FileHandleRequest.CreateNew(access, share, options, attributes);
         var fileName = Invariant($"{Guid.NewGuid()}.tmp");
         return (Path.GetTempPath() + fileName, fileOptions);
     }

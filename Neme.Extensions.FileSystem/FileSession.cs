@@ -74,12 +74,12 @@ public sealed class FileSession : IFileObject, IDisposable
         _handle.OpenedPath;
 
     [return: OwnershipTransfer]
-    public static FileSession Open(string path, FileOpenRequest request) =>
+    public static FileSession Open(string path, FileHandleRequest request) =>
         new(FileOperations.OpenHandle(path, request), request.HandleOptions);
 
     public static bool TryOpen(
         string path,
-        FileOpenRequest request,
+        FileHandleRequest request,
         [NotNullWhen(true)][OwnershipTransfer] out FileSession? file,
         bool ignoreMissingDirectory = false)
     {
@@ -94,7 +94,7 @@ public sealed class FileSession : IFileObject, IDisposable
     [return: OwnershipTransfer]
     public static FileSession Open(
         PersistentFileId fileId,
-        FileOpenRequest request)
+        FileHandleRequest request)
     {
         return new(FileOperations.OpenHandle(fileId, request), request.HandleOptions);
     }
@@ -103,7 +103,7 @@ public sealed class FileSession : IFileObject, IDisposable
     [SupportedOSPlatform("linux")]
     public static bool TryOpen(
         PersistentFileId fileId,
-        FileOpenRequest request,
+        FileHandleRequest request,
         [NotNullWhen(true)][OwnershipTransfer] out FileSession? file,
         bool ignoreMissingDirectory = false)
     {
@@ -117,7 +117,7 @@ public sealed class FileSession : IFileObject, IDisposable
     public static FileSession OpenAt(
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
-        FileOpenRequest request)
+        FileHandleRequest request)
     {
         return new(FileOperations.OpenHandleAt(rootDirectory, path, request), request.HandleOptions);
     }
@@ -125,7 +125,7 @@ public sealed class FileSession : IFileObject, IDisposable
     public static bool TryOpenAt(
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
-        FileOpenRequest request,
+        FileHandleRequest request,
         [NotNullWhen(true)][OwnershipTransfer] out FileSession? file,
         bool ignoreMissingDirectory = false)
     {
@@ -136,9 +136,9 @@ public sealed class FileSession : IFileObject, IDisposable
     }
 
     [return: OwnershipTransfer]
-    public static FileSession Reopen([Borrow] FileSession file, FileOpenRequest? request = null)
+    public static FileSession Reopen([Borrow] FileSession file, FileHandleRequest? request = null)
     {
-        var openRequest = request ?? FileOpenRequest.Open(file.Options);
+        var openRequest = request ?? FileHandleRequest.Open(file.Options);
         return new(FileOperations.OpenHandleAt(file.Handle, null, openRequest), openRequest.HandleOptions);
     }
 
@@ -148,7 +148,7 @@ public sealed class FileSession : IFileObject, IDisposable
 
     [return: OwnershipTransfer]
     public static FileSession CreateTempFile(FileSystemAccess access) =>
-        CreateTempFile(access, FileOpenRequest.GetDefaultFileShare(access));
+        CreateTempFile(access, FileHandleRequest.GetDefaultFileShare(access));
 
     [return: OwnershipTransfer]
     public static FileSession CreateTempFile(

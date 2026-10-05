@@ -55,7 +55,7 @@ public sealed partial class FileOperationsTests
                 using (var handle = FileOperations.CreateTempFileHandle(access, share, options, attributes))
                 {
                     createdPath = FileOperations.GetPath(handle);
-                    var fileOptions = FileOpenRequest.Open(access, share, options, attributes);
+                    var fileOptions = FileHandleRequest.Open(access, share, options, attributes);
                     using var stream = handle.CreateFileStream(FileAccess.ReadWrite, bufferSize: 128);
 
                     // Act

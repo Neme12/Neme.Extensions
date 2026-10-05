@@ -56,17 +56,17 @@ public sealed partial class FileCache : IFileCache, IDisposable
 
     private const string MetadataExtension = ".metadata";
 
-    private static readonly FileOpenRequest s_fileSyncReadOptions =
-        FileOpenRequest.Open(FileSystemAccess.Read, FileShare.Read, FileOptions.SequentialScan);
+    private static readonly FileHandleRequest s_fileSyncReadOptions =
+        FileHandleRequest.Open(FileSystemAccess.Read, FileShare.Read, FileOptions.SequentialScan);
 
-    private static readonly FileOpenRequest s_fileAsyncReadOptions =
-        FileOpenRequest.Open(FileSystemAccess.Read, FileShare.Read, FileOptions.SequentialScan | FileOptions.Asynchronous);
+    private static readonly FileHandleRequest s_fileAsyncReadOptions =
+        FileHandleRequest.Open(FileSystemAccess.Read, FileShare.Read, FileOptions.SequentialScan | FileOptions.Asynchronous);
 
-    private static readonly FileOpenRequest s_fileSyncWriteOptions =
-        FileOpenRequest.Create(FileSystemAccess.ReadWriteDelete, FileShare.All, FileOptions.SequentialScan);
+    private static readonly FileHandleRequest s_fileSyncWriteOptions =
+        FileHandleRequest.Create(FileSystemAccess.ReadWriteDelete, FileShare.All, FileOptions.SequentialScan);
 
-    private static readonly FileOpenRequest s_fileAsyncWriteOptions =
-        FileOpenRequest.Create(FileSystemAccess.ReadWriteDelete, FileShare.All, FileOptions.SequentialScan | FileOptions.Asynchronous);
+    private static readonly FileHandleRequest s_fileAsyncWriteOptions =
+        FileHandleRequest.Create(FileSystemAccess.ReadWriteDelete, FileShare.All, FileOptions.SequentialScan | FileOptions.Asynchronous);
 
     public FileCache(
         IOptions<FileCacheOptions> optionsAccessor,
@@ -601,13 +601,13 @@ public sealed partial class FileCache : IFileCache, IDisposable
         }
     }
 
-    private static FileOpenRequest FileReadOptions<TAsync>()
+    private static FileHandleRequest FileReadOptions<TAsync>()
         where TAsync : IAsyncState
     {
         return TAsync.IsAsync ? s_fileAsyncReadOptions : s_fileSyncReadOptions;
     }
 
-    private static FileOpenRequest FileWriteOptions<TAsync>()
+    private static FileHandleRequest FileWriteOptions<TAsync>()
         where TAsync : IAsyncState
     {
         return TAsync.IsAsync ? s_fileAsyncWriteOptions : s_fileSyncWriteOptions;

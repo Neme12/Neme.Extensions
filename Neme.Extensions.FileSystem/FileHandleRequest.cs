@@ -1,37 +1,36 @@
 ﻿using Neme.Extensions.Contracts;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
 namespace Neme.Extensions.FileSystem;
 
 [StructLayout(LayoutKind.Auto)]
-public readonly record struct FileOpenRequest
+public readonly record struct FileHandleRequest
 {
     private readonly AllOptions _allOptions;
     private readonly long _preallocationSize;
 
-    public FileOpenRequest(FileMode mode, FileSystemAccess access)
+    public FileHandleRequest(FileMode mode, FileSystemAccess access)
     {
         _allOptions = ToAllOptions(mode, access, (access & FileSystemAccess.Write) != 0 || (access & FileSystemAccess.Delete) != 0
             ? FileShare.None
             : FileShare.Read, 0, 0, null);
     }
 
-    public FileOpenRequest(FileMode mode, FileSystemAccess access, FileShare share, FileOptions flags = FileOptions.None, FileAttributes attributes = 0)
+    public FileHandleRequest(FileMode mode, FileSystemAccess access, FileShare share, FileOptions flags = FileOptions.None, FileAttributes attributes = 0)
     {
         _allOptions = ToAllOptions(mode, access, share, flags, attributes, null);
     }
 
-    public FileOpenRequest(FileMode mode, FileHandleOptions options, FileAttributes attributes = 0)
+    public FileHandleRequest(FileMode mode, FileHandleOptions options, FileAttributes attributes = 0)
     {
         _allOptions = ToAllOptions(mode, options.Access, options.Share, options.Flags, attributes, null);
     }
 
-    public static FileOpenRequest Create(FileSystemAccess access) =>
+    public static FileHandleRequest Create(FileSystemAccess access) =>
         new(FileMode.Create, access, GetDefaultFileShare(access));
 
-    public static FileOpenRequest Create(
+    public static FileHandleRequest Create(
         FileSystemAccess access,
         FileShare share,
         FileOptions flags = FileOptions.None,
@@ -40,17 +39,17 @@ public readonly record struct FileOpenRequest
         return new(FileMode.Create, access, share, flags, attributes);
     }
 
-    public static FileOpenRequest Create(
+    public static FileHandleRequest Create(
         FileHandleOptions options,
         FileAttributes attributes = 0)
     {
         return new(FileMode.Create, options.Access, options.Share, options.Flags, attributes);
     }
 
-    public static FileOpenRequest CreateNew(FileSystemAccess access) =>
+    public static FileHandleRequest CreateNew(FileSystemAccess access) =>
         new(FileMode.CreateNew, access, GetDefaultFileShare(access));
 
-    public static FileOpenRequest CreateNew(
+    public static FileHandleRequest CreateNew(
         FileSystemAccess access,
         FileShare share,
         FileOptions flags = FileOptions.None,
@@ -59,17 +58,17 @@ public readonly record struct FileOpenRequest
         return new(FileMode.CreateNew, access, share, flags, attributes);
     }
 
-    public static FileOpenRequest CreateNew(
+    public static FileHandleRequest CreateNew(
         FileHandleOptions options,
         FileAttributes attributes = 0)
     {
         return new(FileMode.CreateNew, options.Access, options.Share, options.Flags, attributes);
     }
 
-    public static FileOpenRequest Open(FileSystemAccess access) =>
+    public static FileHandleRequest Open(FileSystemAccess access) =>
         new(FileMode.Open, access, GetDefaultFileShare(access));
 
-    public static FileOpenRequest Open(
+    public static FileHandleRequest Open(
         FileSystemAccess access,
         FileShare share,
         FileOptions flags = FileOptions.None,
@@ -78,17 +77,17 @@ public readonly record struct FileOpenRequest
         return new(FileMode.Open, access, share, flags, attributes);
     }
 
-    public static FileOpenRequest Open(
+    public static FileHandleRequest Open(
         FileHandleOptions options,
         FileAttributes attributes = 0)
     {
         return new(FileMode.Open, options.Access, options.Share, options.Flags, attributes);
     }
 
-    public static FileOpenRequest OpenOrCreate(FileSystemAccess access) =>
+    public static FileHandleRequest OpenOrCreate(FileSystemAccess access) =>
         new(FileMode.OpenOrCreate, access, GetDefaultFileShare(access));
 
-    public static FileOpenRequest OpenOrCreate(
+    public static FileHandleRequest OpenOrCreate(
         FileSystemAccess access,
         FileShare share,
         FileOptions flags = FileOptions.None,
@@ -97,17 +96,17 @@ public readonly record struct FileOpenRequest
         return new(FileMode.OpenOrCreate, access, share, flags, attributes);
     }
 
-    public static FileOpenRequest OpenOrCreate(
+    public static FileHandleRequest OpenOrCreate(
         FileHandleOptions options,
         FileAttributes attributes = 0)
     {
         return new(FileMode.OpenOrCreate, options.Access, options.Share, options.Flags, attributes);
     }
 
-    public static FileOpenRequest Append(FileSystemAccess access = FileSystemAccess.Write) =>
+    public static FileHandleRequest Append(FileSystemAccess access = FileSystemAccess.Write) =>
         new(FileMode.Append, access, GetDefaultFileShare(access));
 
-    public static FileOpenRequest Append(
+    public static FileHandleRequest Append(
         FileSystemAccess access = FileSystemAccess.Write,
         FileShare share = FileShare.None,
         FileOptions flags = FileOptions.None,
@@ -116,7 +115,7 @@ public readonly record struct FileOpenRequest
         return new(FileMode.Append, access, share, flags, attributes);
     }
 
-    public static FileOpenRequest Append(
+    public static FileHandleRequest Append(
         FileHandleOptions options,
         FileAttributes attributes = 0)
     {
@@ -209,13 +208,13 @@ public readonly record struct FileOpenRequest
     }
 
 #if NET6_0_OR_GREATER
-    public static FileOpenRequest FromFileStreamOptions(FileStreamOptions options)
+    public static FileHandleRequest FromFileStreamOptions(FileStreamOptions options)
     {
 #if NET7_0_OR_GREATER
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 #endif
         {
-            return new FileOpenRequest
+            return new FileHandleRequest
             {
                 Mode = options.Mode,
                 Access = FileSystemAccess.FromFileAccess(options.Access),
@@ -226,7 +225,7 @@ public readonly record struct FileOpenRequest
 #if NET7_0_OR_GREATER
         else
         {
-            return new FileOpenRequest
+            return new FileHandleRequest
             {
                 Mode = options.Mode,
                 Access = FileSystemAccess.FromFileAccess(options.Access),
@@ -238,7 +237,7 @@ public readonly record struct FileOpenRequest
 #endif
     }
 
-    public static implicit operator FileOpenRequest(FileStreamOptions options) =>
+    public static implicit operator FileHandleRequest(FileStreamOptions options) =>
         FromFileStreamOptions(options);
 #endif
 

@@ -1,8 +1,8 @@
 ﻿namespace Neme.Extensions.FileSystem;
 
-public readonly record struct FileReferenceOptions
+public readonly record struct FileReferenceRequest
 {
-    public FileReferenceOptions(
+    public FileReferenceRequest(
         FileReferenceMode mode,
         FileReferenceFlags flags,
         FileCreationOptions creationOptions)
@@ -12,28 +12,28 @@ public readonly record struct FileReferenceOptions
         CreationOptions = creationOptions;
     }
 
-    public static FileReferenceOptions CreateNew(
+    public static FileReferenceRequest CreateNew(
         FileReferenceFlags flags = FileReferenceFlags.None,
         FileCreationOptions creationOptions = default)
     {
         return new(FileReferenceMode.CreateNew, flags, creationOptions);
     }
 
-    public static FileReferenceOptions Create(
+    public static FileReferenceRequest Create(
         FileReferenceFlags flags = FileReferenceFlags.None,
         FileCreationOptions creationOptions = default)
     {
         return new(FileReferenceMode.Create, flags, creationOptions);
     }
 
-    public static FileReferenceOptions Open(
+    public static FileReferenceRequest Open(
         FileReferenceFlags flags = FileReferenceFlags.None,
         FileCreationOptions creationOptions = default)
     {
         return new(FileReferenceMode.Open, flags, creationOptions);
     }
 
-    public static FileReferenceOptions OpenOrCreate(
+    public static FileReferenceRequest OpenOrCreate(
         FileReferenceFlags flags = FileReferenceFlags.None,
         FileCreationOptions creationOptions = default)
     {

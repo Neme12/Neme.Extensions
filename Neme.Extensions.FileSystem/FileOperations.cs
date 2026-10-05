@@ -25,7 +25,7 @@ public static partial class FileOperations
 #pragma warning restore CA1416
 
     [return: OwnershipTransfer]
-    public static SafeFileHandle OpenHandle(string path, FileOpenRequest request)
+    public static SafeFileHandle OpenHandle(string path, FileHandleRequest request)
     {
         Strategy.ValidatePath(path);
 
@@ -34,7 +34,7 @@ public static partial class FileOperations
 
     public static bool TryOpenHandle(
         string path,
-        FileOpenRequest request,
+        FileHandleRequest request,
         [NotNullWhen(true)][OwnershipTransfer] out SafeFileHandle? handle,
         bool ignoreMissingDirectory = false)
     {
@@ -56,7 +56,7 @@ public static partial class FileOperations
     [return: OwnershipTransfer]
     public static SafeFileHandle OpenHandle(
         PersistentFileId fileId,
-        FileOpenRequest request)
+        FileHandleRequest request)
     {
         Strategy.ValidateFileId(fileId);
 
@@ -67,7 +67,7 @@ public static partial class FileOperations
     [SupportedOSPlatform("linux")]
     public static bool TryOpenHandle(
         PersistentFileId fileId,
-        FileOpenRequest request,
+        FileHandleRequest request,
         [NotNullWhen(true)][OwnershipTransfer] out SafeFileHandle? handle,
         bool ignoreMissingDirectory = false)
     {
@@ -87,7 +87,7 @@ public static partial class FileOperations
     public static SafeFileHandle OpenHandleAt(
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
-        FileOpenRequest request)
+        FileHandleRequest request)
     {
         if (rootDirectory is null && path is null)
             throw new ArgumentException($"Either {nameof(rootDirectory)} or {nameof(path)} must be provided.");
@@ -101,7 +101,7 @@ public static partial class FileOperations
     public static bool TryOpenHandleAt(
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
-        FileOpenRequest request,
+        FileHandleRequest request,
         [NotNullWhen(true)][OwnershipTransfer] out SafeFileHandle? file,
         bool ignoreMissingDirectory = false)
     {
@@ -118,7 +118,7 @@ public static partial class FileOperations
     }
 
     [return: OwnershipTransfer]
-    public static SafeFileHandle ReopenHandle([Borrow] SafeFileHandle file, FileOpenRequest request)
+    public static SafeFileHandle ReopenHandle([Borrow] SafeFileHandle file, FileHandleRequest request)
     {
         Strategy.ValidateFileHandle(file);
 
@@ -153,7 +153,7 @@ public static partial class FileOperations
     {
         Strategy.ValidateFileId(fileId);
 
-        var request = new FileOpenRequest(FileMode.Open, FileSystemAccess.ReadAttributes, FileShare.ReadWrite | FileShare.Delete);
+        var request = new FileHandleRequest(FileMode.Open, FileSystemAccess.ReadAttributes, FileShare.ReadWrite | FileShare.Delete);
         using (var handle = Strategy.OpenHandle(fileId, request))
             return Strategy.GetPath(handle);
     }

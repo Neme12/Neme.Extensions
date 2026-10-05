@@ -21,7 +21,7 @@ internal sealed partial class WindowsFileOperationsStrategy
     private static readonly ConcurrentDictionary<ulong, SafeFileHandle> s_volumeHandleCache = new();
 
     [return: OwnershipTransfer]
-    public override unsafe SafeFileHandle OpenHandle(PersistentFileId fileId, FileOpenRequest request)
+    public override unsafe SafeFileHandle OpenHandle(PersistentFileId fileId, FileHandleRequest request)
     {
         Debug.Assert(IsValidFileId(fileId));
 
@@ -81,7 +81,7 @@ internal sealed partial class WindowsFileOperationsStrategy
     }
 
     [return: OwnershipTransfer]
-    public override unsafe SafeFileHandle OpenHandleAt([Borrow] SafeFileHandle? rootDirectory, string? path, FileOpenRequest request)
+    public override unsafe SafeFileHandle OpenHandleAt([Borrow] SafeFileHandle? rootDirectory, string? path, FileHandleRequest request)
 #pragma warning disable RS0042
     {
         Debug.Assert(rootDirectory is not null || path is not null);

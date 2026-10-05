@@ -24,7 +24,7 @@ public sealed partial class FileOperationsTests
         {
             // Arrange
             var tempFile = Path.GetTempFileName();
-            var options = FileOpenRequest.Open(FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.All);
+            var options = FileHandleRequest.Open(FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.All);
 
             try
             {
@@ -48,7 +48,7 @@ public sealed partial class FileOperationsTests
             var sourceFile = Path.Combine(tempDir, "source.txt");
             var destinationFile = Path.Combine(tempDir, "destination.txt");
             File.WriteAllText(sourceFile, "content");
-            var options = FileOpenRequest.Open(FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.All);
+            var options = FileHandleRequest.Open(FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.All);
 
             try
             {
@@ -79,7 +79,7 @@ public sealed partial class FileOperationsTests
             var destinationFile = Path.Combine(tempDir, "destination.txt");
             File.WriteAllText(sourceFile, "source content");
             File.WriteAllText(destinationFile, "destination content");
-            var options = FileOpenRequest.Open(FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.All);
+            var options = FileHandleRequest.Open(FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.All);
 
             try
             {
@@ -111,7 +111,7 @@ public sealed partial class FileOperationsTests
             var destinationFile = Path.Combine(tempDir, "destination.txt");
             File.WriteAllText(sourceFile, "source content");
             File.WriteAllText(destinationFile, "destination content");
-            var options = FileOpenRequest.Open(FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.All);
+            var options = FileHandleRequest.Open(FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.All);
 
             try
             {
@@ -145,7 +145,7 @@ public sealed partial class FileOperationsTests
 
             try
             {
-                var options = FileOpenRequest.Open(FileSystemAccess.ReadWrite, FileShare.All);
+                var options = FileHandleRequest.Open(FileSystemAccess.ReadWrite, FileShare.All);
                 using var handle = FileOperations.OpenHandle(sourceFile, options);
 
                 // Act & Assert

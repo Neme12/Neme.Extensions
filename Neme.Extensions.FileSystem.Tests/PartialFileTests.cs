@@ -24,7 +24,7 @@ public sealed class PartialFileTests
         // Arrange
         var tempDirectory = CreateTempDirectoryPath();
         var finalPath = Path.Combine(tempDirectory, "file.txt");
-        var options = FileOpenRequest.CreateNew(FileSystemAccess.ReadWrite, FileShare.All);
+        var options = FileHandleRequest.CreateNew(FileSystemAccess.ReadWrite, FileShare.All);
         
         try
         {
@@ -459,9 +459,9 @@ public sealed class PartialFileTests
         }
     }
 
-    private static FileOpenRequest CreateOptions(FileMode mode = FileMode.CreateNew)
+    private static FileHandleRequest CreateOptions(FileMode mode = FileMode.CreateNew)
     {
-        return new FileOpenRequest(mode, FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.All);
+        return new FileHandleRequest(mode, FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.All);
     }
 
     private static string CreateTempDirectoryPath()

@@ -13,7 +13,7 @@ public static class PartialFile
     /// <param name="request">The options used to open the temporary file. Delete access is required so the temporary file can be cleaned up.</param>
     /// <param name="createDirectory"><see langword="true"/> to create the destination directory if it does not already exist.</param>
     /// <returns>A <see cref="PartialFile"/> for writing the temporary file.</returns>
-    public static PartialFile<FileSession> CreateSessionFile(string finalPath, FileOpenRequest request, bool createDirectory = false)
+    public static PartialFile<FileSession> CreateSessionFile(string finalPath, FileHandleRequest request, bool createDirectory = false)
     {
         ArgumentException.ThrowIfNullOrEmpty(finalPath);
 
@@ -42,7 +42,7 @@ public static class PartialFile
     /// <returns>A <see cref="PartialFile"/> for writing the temporary file.</returns>
     public static PartialFile<FileReference> CreateReferenceFile(
         string finalPath,
-        FileReferenceOptions options,
+        FileReferenceRequest options,
         bool createDirectory = false)
     {
         ArgumentException.ThrowIfNullOrEmpty(finalPath);
@@ -69,7 +69,7 @@ public static class PartialFile
     /// <returns>A <see cref="PartialFileWithStream"/> for writing the temporary file.</returns>
     public static PartialFile<FileStream> CreateFileStream(
         string finalPath,
-        FileOpenRequest request,
+        FileHandleRequest request,
         bool createDirectory = false)
     {
         ArgumentException.ThrowIfNullOrEmpty(finalPath);

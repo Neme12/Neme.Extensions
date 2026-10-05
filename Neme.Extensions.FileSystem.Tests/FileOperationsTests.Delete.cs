@@ -16,7 +16,7 @@ public sealed partial class FileOperationsTests
             var tempFile = Path.GetTempFileName();
             try
             {
-                var options = FileOpenRequest.Open(FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.All);
+                var options = FileHandleRequest.Open(FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.All);
 
                 using (var handle = FileOperations.OpenHandle(tempFile, options))
                 {
@@ -42,7 +42,7 @@ public sealed partial class FileOperationsTests
             var tempFile = Path.GetTempFileName();
             try
             {
-                var options = FileOpenRequest.Open(FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.All);
+                var options = FileHandleRequest.Open(FileSystemAccess.ReadWrite | FileSystemAccess.Delete, FileShare.All);
                 using var handle = FileOperations.OpenHandle(tempFile, options);
 
                 // Act
@@ -70,7 +70,7 @@ public sealed partial class FileOperationsTests
             var tempFile = Path.GetTempFileName();
             try
             {
-                var options = FileOpenRequest.Open(FileSystemAccess.ReadWrite, FileShare.All);
+                var options = FileHandleRequest.Open(FileSystemAccess.ReadWrite, FileShare.All);
                 using var handle = FileOperations.OpenHandle(tempFile, options);
 
                 // Act & Assert

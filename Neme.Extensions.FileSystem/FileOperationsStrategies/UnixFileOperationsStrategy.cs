@@ -73,7 +73,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
     }
 
     [return: OwnershipTransfer]
-    public override SafeFileHandle OpenHandle(string path, FileOpenRequest request)
+    public override SafeFileHandle OpenHandle(string path, FileHandleRequest request)
     {
         Debug.Assert(IsValidPath(path));
 
@@ -94,7 +94,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
 
     [SupportedOSPlatform("linux")]
     [return: OwnershipTransfer]
-    public override unsafe SafeFileHandle OpenHandle(PersistentFileId fileId, FileOpenRequest request)
+    public override unsafe SafeFileHandle OpenHandle(PersistentFileId fileId, FileHandleRequest request)
     {
         Debug.Assert(IsValidFileId(fileId));
 
@@ -163,7 +163,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
     }
 
     [return: OwnershipTransfer]
-    public override SafeFileHandle OpenHandleAt([Borrow] SafeFileHandle? rootDirectory, string? path, FileOpenRequest request)
+    public override SafeFileHandle OpenHandleAt([Borrow] SafeFileHandle? rootDirectory, string? path, FileHandleRequest request)
     {
         Debug.Assert(rootDirectory is not null || path is not null);
         Debug.Assert(rootDirectory is null || IsValidFileHandle(rootDirectory));

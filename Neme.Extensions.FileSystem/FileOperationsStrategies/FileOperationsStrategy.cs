@@ -16,18 +16,18 @@ internal abstract class FileOperationsStrategy
     protected abstract int MaxPathLength { get; }
 
     [return: OwnershipTransfer]
-    public abstract SafeFileHandle OpenHandle(string path, FileOpenRequest request);
+    public abstract SafeFileHandle OpenHandle(string path, FileHandleRequest request);
 
     [SupportedOSPlatform("windows")]
     [SupportedOSPlatform("linux")]
     [return: OwnershipTransfer]
-    public abstract SafeFileHandle OpenHandle(PersistentFileId fileId, FileOpenRequest request);
+    public abstract SafeFileHandle OpenHandle(PersistentFileId fileId, FileHandleRequest request);
 
     [return: OwnershipTransfer]
     public abstract SafeFileHandle OpenHandleAt(
         [Borrow] SafeFileHandle? rootDirectory,
         string? path,
-        FileOpenRequest request);
+        FileHandleRequest request);
 
     [return: OwnershipTransfer]
     public abstract SafeFileHandle DuplicateHandle([Borrow] SafeFileHandle file, FileSystemAccess? access);

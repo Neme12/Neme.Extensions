@@ -16,7 +16,7 @@ public sealed partial class FileOperationsTests
             try
             {
                 File.WriteAllBytes(tempFile, [1, 2, 3, 4]);
-                var options = FileOpenRequest.Open(FileSystemAccess.ReadAttributes, FileShare.All);
+                var options = FileHandleRequest.Open(FileSystemAccess.ReadAttributes, FileShare.All);
                 using var handle = FileOperations.OpenHandle(tempFile, options);
                 var now = SystemClock.Instance.GetCurrentInstant();
                 var earliestExpectedTime = now - Duration.FromSeconds(5);
@@ -66,7 +66,7 @@ public sealed partial class FileOperationsTests
             Directory.CreateDirectory(tempDirectory);
             try
             {
-                var options = FileOpenRequest.Open(FileSystemAccess.ReadAttributes, FileShare.All, 0, FileAttributes.Directory);
+                var options = FileHandleRequest.Open(FileSystemAccess.ReadAttributes, FileShare.All, 0, FileAttributes.Directory);
                 using var handle = FileOperations.OpenHandle(tempDirectory, options);
                 var now = SystemClock.Instance.GetCurrentInstant();
                 var earliestExpectedTime = now - Duration.FromSeconds(5);

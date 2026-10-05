@@ -17,11 +17,11 @@ public sealed class SafeFileHandleExtensionsTests
             // Arrange
             var expected = $"{IOPath.GetTempPath()}{nameof(SafeFileHandleExtensionsTests)}_{Guid.NewGuid():N}.tmp";
             string result;
-            using (var tempFile = FileOperations.OpenHandle(expected, FileOpenRequest.CreateNew(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete, FileOptions.DeleteOnClose, FileAttributes.Temporary)))
+            using (var tempFile = FileOperations.OpenHandle(expected, FileHandleRequest.CreateNew(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete, FileOptions.DeleteOnClose, FileAttributes.Temporary)))
             {
                 FileIO.WriteAllBytes(tempFile, "test"u8.ToArray());
 
-                using (var handle = FileOperations.OpenHandle(expected, FileOpenRequest.Open(FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete)))
+                using (var handle = FileOperations.OpenHandle(expected, FileHandleRequest.Open(FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete)))
                 {
                     // Act
                     result = handle.Path;
@@ -463,11 +463,11 @@ public sealed class SafeFileHandleExtensionsTests
             // Arrange
             var expected = $"{System.IO.Path.GetTempPath()}{nameof(SafeFileHandleExtensionsTests)}_{Guid.NewGuid():N}.tmp";
             string? result;
-            using (var tempFile = FileOperations.OpenHandle(expected, FileOpenRequest.CreateNew(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete, FileOptions.DeleteOnClose, FileAttributes.Temporary)))
+            using (var tempFile = FileOperations.OpenHandle(expected, FileHandleRequest.CreateNew(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete, FileOptions.DeleteOnClose, FileAttributes.Temporary)))
             {
                 FileIO.WriteAllBytes(tempFile, "test"u8.ToArray());
 
-                using (var handle = FileOperations.OpenHandle(expected, FileOpenRequest.Open(FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete)))
+                using (var handle = FileOperations.OpenHandle(expected, FileHandleRequest.Open(FileSystemAccess.Read, FileShare.ReadWrite | FileShare.Delete)))
                 {
                     // Act
                     result = handle.OpenedPath;
@@ -492,7 +492,7 @@ public sealed class SafeFileHandleExtensionsTests
             var tempFile = IOPath.GetTempFileName();
             try
             {
-                var options = FileOpenRequest.Open(FileSystemAccess.ReadWrite, FileShare.None, FileOptions.Asynchronous);
+                var options = FileHandleRequest.Open(FileSystemAccess.ReadWrite, FileShare.None, FileOptions.Asynchronous);
                 using var handle = FileOperations.OpenHandle(tempFile, options);
 
                 // Act
@@ -525,7 +525,7 @@ public sealed class SafeFileHandleExtensionsTests
             try
             {
                 File.WriteAllBytes(tempFile, [42]);
-                var options = FileOpenRequest.Open(FileSystemAccess.Read);
+                var options = FileHandleRequest.Open(FileSystemAccess.Read);
                 using var handle = FileOperations.OpenHandle(tempFile, options);
 
                 // Act
@@ -556,7 +556,7 @@ public sealed class SafeFileHandleExtensionsTests
             var tempFile = IOPath.GetTempFileName();
             try
             {
-                var options = FileOpenRequest.Open(FileSystemAccess.ReadWrite);
+                var options = FileHandleRequest.Open(FileSystemAccess.ReadWrite);
                 using var handle = FileOperations.OpenHandle(tempFile, options);
 
                 // Act
@@ -584,7 +584,7 @@ public sealed class SafeFileHandleExtensionsTests
         {
             // Arrange
             var handle = new SafeFileHandle((nint)(-1), ownsHandle: false);
-            var options = FileOpenRequest.Open(FileSystemAccess.Read);
+            var options = FileHandleRequest.Open(FileSystemAccess.Read);
 
             // Act & Assert
             Assert.Throws<Contracts.ArgumentInvalidException>(() => handle.CreateFileStream(FileAccess.Read));
