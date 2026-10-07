@@ -39,7 +39,7 @@
 	<ItemGroup Condition="'$(TargetFramework)' != 'net48'">
 		<PackageReference Include="Openur.Mono.Unix" Version="7.1.0.155" />
 	</ItemGroup>
-
+	
 	<ItemGroup>
 		<ProjectReference Include="..\Neme.Extensions\Neme.Extensions.csproj" />
 	</ItemGroup>

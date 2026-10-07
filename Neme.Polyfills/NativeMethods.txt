@@ -2,3 +2,10 @@ RtlNtStatusToDosError
 NtQueryInformationFile
 NTCREATEFILE_CREATE_OPTIONS
 WIN32_ERROR
+GetFileType
+GetNamedPipeInfo
+GetFileInformationByHandle
+FILE_FLAGS_AND_ATTRIBUTES
+GetFileInformationByHandleEx
+FILE_ATTRIBUTE_TAG_INFO
+IO_REPARSE_TAG_SYMLINK

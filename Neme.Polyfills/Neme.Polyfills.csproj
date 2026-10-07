@@ -14,6 +14,10 @@
     </PackageReference>
   </ItemGroup>
 
+	<ItemGroup Condition="'$(TargetFramework)' != 'net48'">
+		<PackageReference Include="Openur.Mono.Unix" Version="7.1.0.155" />
+	</ItemGroup>
+
   <ItemGroup>
     <Compile Include="..\Neme.Extensions\InteropServices\RuntimeInformationExtensions.cs" Link="InteropServices\RuntimeInformationExtensions.cs" />
     <Compile Include="..\Neme.Extensions\InteropServices\Win32Marshal.cs" Link="InteropServices\Win32Marshal.cs" />
