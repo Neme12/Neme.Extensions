@@ -29,12 +29,25 @@ public readonly record struct FileHandleRequest
         _allOptions = ToAllOptions(mode, access, share, flags, attributes, null);
     }
 
-    public FileHandleRequest(FileMode mode, FileHandleOptions options, FileAttributes attributes = 0)
+    public FileHandleRequest(FileMode mode, FileHandleOptions handleOptions, FileCreationOptions creationOptions = default)
     {
         Require.ArgumentDefined(mode);
-        Require.ArgumentFlagsDefined(attributes);
 
-        _allOptions = ToAllOptions(mode, options.Access, options.Share, options.Flags, attributes, null);
+        _allOptions = ToAllOptions(mode, handleOptions.Access, handleOptions.Share, handleOptions.Flags, creationOptions.Attributes, creationOptions.UnixCreateMode);
+        _preallocationSize = creationOptions.PreallocationSize;
+    }
+
+    public void Deconstruct(out FileMode mode, out FileHandleOptions handleOptions)
+    {
+        mode = Mode;
+        handleOptions = HandleOptions;
+    }
+
+    public void Deconstruct(out FileMode mode, out FileHandleOptions handleOptions, out FileCreationOptions creationOptions)
+    {
+        mode = Mode;
+        handleOptions = HandleOptions;
+        creationOptions = CreationOptions;
     }
 
     public static FileHandleRequest Create(FileSystemAccess access) =>
@@ -182,22 +195,6 @@ public readonly record struct FileHandleRequest
         }
     }
 
-    public FileHandleOptions HandleOptions
-    {
-        get => new(
-            AllOptionsToAccess(_allOptions),
-            AllOptionsToShare(_allOptions),
-            AllOptionsToFlags(_allOptions));
-        init =>
-            _allOptions = ToAllOptions(
-                Mode,
-                value.Access,
-                value.Share,
-                value.Flags,
-                Attributes,
-                UnixCreateMode);
-    }
-
     public UnixFileMode? UnixCreateMode
     {
         get => AllOptionsToUnixFileMode(_allOptions);
@@ -222,6 +219,41 @@ public readonly record struct FileHandleRequest
             Require.ArgumentNotNegative(value);
 
             _preallocationSize = value;
+        }
+    }
+
+    public FileHandleOptions HandleOptions
+    {
+        get => new(
+            AllOptionsToAccess(_allOptions),
+            AllOptionsToShare(_allOptions),
+            AllOptionsToFlags(_allOptions));
+        init =>
+            _allOptions = ToAllOptions(
+                Mode,
+                value.Access,
+                value.Share,
+                value.Flags,
+                Attributes,
+                UnixCreateMode);
+    }
+
+    public FileCreationOptions CreationOptions
+    {
+        get => new(
+            AllOptionsToAttributes(_allOptions),
+            AllOptionsToUnixFileMode(_allOptions),
+            PreallocationSize);
+        init
+        {
+            _allOptions = ToAllOptions(
+                Mode,
+                Access,
+                Share,
+                Options,
+                value.Attributes,
+                value.UnixCreateMode);
+            _preallocationSize = value.PreallocationSize;
         }
     }
 

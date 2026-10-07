@@ -6,12 +6,39 @@ namespace Neme.Extensions.FileSystem;
 
 public readonly record struct FileCreationOptions
 {
+    public FileCreationOptions(
+        FileAttributes attributes,
+        UnixFileMode? unixCreateMode = null,
+        long preallocationSize = 0)
+    {
+        Require.ArgumentFlagsDefined(attributes);
+        if (unixCreateMode is not null)
+            Require.ArgumentFlagsDefined(unixCreateMode.Value);
+        Require.ArgumentNotNegative(preallocationSize);
+    }
+
+    public void Deconstruct(
+        out FileAttributes attributes)
+    {
+        attributes = Attributes;
+    }
+
+    public void Deconstruct(
+        out FileAttributes attributes,
+        out UnixFileMode? unixCreateMode,
+        out long preallocationSize)
+    {
+        attributes = Attributes;
+        unixCreateMode = UnixCreateMode;
+        preallocationSize = PreallocationSize;
+    }
+
     public FileAttributes Attributes
     {
         get;
         init
         {
-            Require.ArgumentDefined(value);
+            Require.ArgumentFlagsDefined(value);
             field = value;
         }
     }
