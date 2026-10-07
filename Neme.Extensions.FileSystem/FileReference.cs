@@ -209,12 +209,22 @@ public sealed class FileReference : IFileObject, IDisposable
         return Create(path, request);
     }
 
+    [return: OwnershipTransfer]
     public FileSession OpenSession(FileHandleOptions options)
     {
         RequireNotDisposed();
 
         var handle = FileOperations.ReopenHandle(_handle, FileHandleRequest.Open(options));
         return new FileSession(handle, options);
+    }
+
+    [return: OwnershipTransfer]
+    public SafeFileHandle OpenHandle(FileHandleOptions options)
+    {
+        RequireNotDisposed();
+
+        var handle = FileOperations.ReopenHandle(_handle, FileHandleRequest.Open(options));
+        return handle;
     }
 
     public void Dispose()
