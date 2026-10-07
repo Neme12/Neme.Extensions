@@ -165,6 +165,19 @@ public sealed class FileSession : IFileObject, IDisposable
         return Open(path, request);
     }
 
+    [return: OwnershipTransfer]
+    public static FileSession CreateTempFile(
+        FileHandleOptions handleOptions,
+        FileCreationOptions creationOptions = default)
+    {
+        handleOptions = handleOptions with { Flags = handleOptions.Flags | FileOptions.DeleteOnClose };
+        creationOptions = creationOptions with { Attributes = creationOptions.Attributes | FileAttributes.Temporary };
+
+        var path = FileOperations.GetTempFilePath();
+        var request = new FileHandleRequest(FileMode.CreateNew, handleOptions, creationOptions);
+        return Open(path, request);
+    }
+
     public string GetPath()
     {
         ObjectDisposedException.ThrowIf(_handle is null, this);

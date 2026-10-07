@@ -196,6 +196,19 @@ public sealed class FileReference : IFileObject, IDisposable
         return Create(path, referenceRequest);
     }
 
+    [return: OwnershipTransfer]
+    public static FileReference CreateTempFile(
+        FileReferenceOptions referenceOptions,
+        FileCreationOptions creationOptions = default)
+    {
+        referenceOptions = referenceOptions with { Flags = referenceOptions.Flags | FileReferenceFlags.DeleteOnClose };
+        creationOptions = creationOptions with { Attributes = creationOptions.Attributes | FileAttributes.Temporary };
+
+        var path = FileOperations.GetTempFilePath();
+        var request = FileReferenceRequest.CreateNew(referenceOptions, creationOptions);
+        return Create(path, request);
+    }
+
     public FileSession OpenSession(FileHandleOptions options)
     {
         RequireNotDisposed();

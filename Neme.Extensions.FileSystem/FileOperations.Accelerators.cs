@@ -21,6 +21,19 @@ public static partial class FileOperations
         return OpenHandle(path, request);
     }
 
+    [return: OwnershipTransfer]
+    public static SafeFileHandle CreateTempFileHandle(
+        FileHandleOptions handleOptions,
+        FileCreationOptions creationOptions = default)
+    {
+        handleOptions = handleOptions with { Flags = handleOptions.Flags | FileOptions.DeleteOnClose };
+        creationOptions = creationOptions with { Attributes = creationOptions.Attributes | FileAttributes.Temporary };
+
+        var path = GetTempFilePath();
+        var request = new FileHandleRequest(FileMode.CreateNew, handleOptions, creationOptions);
+        return OpenHandle(path, request);
+    }
+
     internal static string  GetTempFilePath()
     {
         var fileName = Invariant($"{Guid.NewGuid()}.tmp");
