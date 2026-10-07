@@ -318,11 +318,12 @@ public sealed partial class FileCache : IFileCache, IDisposable
     {
         ArgumentNullException.ThrowIfNull(factory);
 
-        return GetOrCreateMaybeAsync<IAsyncState.Sync>(key, (stream, cancellationToken) =>
+        var result = GetOrCreateResultMaybeAsync<IAsyncState.Sync>(key, (stream, cancellationToken) =>
         {
             factory(stream, cancellationToken);
             return Task.CompletedTask;
-        }, options, cancellationToken).GetAwaiter().GetCompletedResult();
+        }, options, getFileSession: true, cancellationToken).GetAwaiter().GetCompletedResult();
+        return result.FileSession;
     }
 
     /// <summary>
@@ -352,32 +353,8 @@ public sealed partial class FileCache : IFileCache, IDisposable
     {
         ArgumentNullException.ThrowIfNull(factory);
 
-        return await GetOrCreateMaybeAsync<IAsyncState.Async>(key, factory, options, cancellationToken);
-    }
-
-    [return: OwnershipTransfer]
-    private async ValueTask<FileSession> GetOrCreateMaybeAsync<TAsync>(
-        string key,
-        [Borrow] Func<Stream, CancellationToken, Task> factory,
-        FileCacheEntryOptions options,
-        CancellationToken cancellationToken)
-        where TAsync : struct, IAsyncState
-    {
-        ValidateKey(key);
-
-        await WaitForGlobalLockMaybeAsync<TAsync>(cancellationToken);
-
-        using (await GetLock(key).WaitScopeMaybeAsync<TAsync>(cancellationToken))
-        {
-            var resolvedOptions = GetResolvedEntryOptions<TAsync>(options);
-
-            var cached = await GetCoreMaybeAsync<TAsync>(key, resolvedOptions.FileOptions, isGetOrCreate: true, getFileHandle: true, cancellationToken);
-            if (cached is not null)
-                return cached.Value.FileSession;
-
-            await SetCoreMaybeAsync<TAsync>(key, factory, resolvedOptions, cancellationToken);
-            return FileSession.Open(GetFilePath(key), FileReadOptions<TAsync>() with { Flags = resolvedOptions.FileOptions });
-        }
+        var result = await GetOrCreateResultMaybeAsync<IAsyncState.Async>(key, factory, options, getFileSession: true, cancellationToken);
+        return result.FileSession;
     }
 
     /// <summary>
@@ -405,11 +382,12 @@ public sealed partial class FileCache : IFileCache, IDisposable
     {
         ArgumentNullException.ThrowIfNull(factory);
 
-        return GetOrCreatePathMaybeAsync<IAsyncState.Sync>(key, (stream, cancellationToken) =>
+        var result = GetOrCreateResultMaybeAsync<IAsyncState.Sync>(key, (stream, cancellationToken) =>
         {
             factory(stream, cancellationToken);
             return Task.CompletedTask;
-        }, options, cancellationToken).GetAwaiter().GetCompletedResult();
+        }, options, getFileSession: false, cancellationToken).GetAwaiter().GetCompletedResult();
+        return result.FilePath;
     }
 
     /// <summary>
@@ -437,13 +415,15 @@ public sealed partial class FileCache : IFileCache, IDisposable
     {
         ArgumentNullException.ThrowIfNull(factory);
 
-        return await GetOrCreatePathMaybeAsync<IAsyncState.Async>(key, factory, options, cancellationToken);
+        var result = await GetOrCreateResultMaybeAsync<IAsyncState.Async>(key, factory, options, getFileSession: false, cancellationToken);
+        return result.FilePath;
     }
 
-    private async ValueTask<string> GetOrCreatePathMaybeAsync<TAsync>(
+    private async ValueTask<FilePathOrSession> GetOrCreateResultMaybeAsync<TAsync>(
         string key,
         [Borrow] Func<Stream, CancellationToken, Task> factory,
         FileCacheEntryOptions options,
+        bool getFileSession,
         CancellationToken cancellationToken)
         where TAsync : struct, IAsyncState
     {
@@ -455,12 +435,14 @@ public sealed partial class FileCache : IFileCache, IDisposable
         {
             var resolvedOptions = GetResolvedEntryOptions<TAsync>(options);
 
-            var cached = await GetCoreMaybeAsync<TAsync>(key, resolvedOptions.FileOptions, isGetOrCreate: true, getFileHandle: false, cancellationToken);
+            var cached = await GetCoreMaybeAsync<TAsync>(key, resolvedOptions.FileOptions, isGetOrCreate: true, getFileSession, cancellationToken);
             if (cached is not null)
-                return cached.Value.FilePath;
+                return cached.Value;
 
             await SetCoreMaybeAsync<TAsync>(key, factory, resolvedOptions, cancellationToken);
-            return GetFilePath(key);
+            return getFileSession
+                ? FilePathOrSession.FromSession(FileSession.Open(GetFilePath(key), FileReadOptions<TAsync>() with { Flags = resolvedOptions.FileOptions }))
+                : FilePathOrSession.FromPath(GetFilePath(key));
         }
     }
 
