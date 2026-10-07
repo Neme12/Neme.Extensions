@@ -1,4 +1,6 @@
-﻿namespace Neme.Extensions.FileSystem;
+﻿using Neme.Extensions.Contracts;
+
+namespace Neme.Extensions.FileSystem;
 
 public readonly record struct FileReferenceRequest
 {
@@ -7,6 +9,9 @@ public readonly record struct FileReferenceRequest
         FileReferenceFlags flags,
         FileCreationOptions creationOptions)
     {
+        Require.ArgumentDefined(mode);
+        Require.ArgumentFlagsDefined(flags);
+
         Mode = mode;
         Flags = flags;
         CreationOptions = creationOptions;
@@ -40,9 +45,25 @@ public readonly record struct FileReferenceRequest
         return new(FileReferenceMode.OpenOrCreate, flags, creationOptions);
     }
 
-    public FileReferenceMode Mode { get; init; }
+    public FileReferenceMode Mode
+    {
+        get;
+        init
+        {
+            Require.ArgumentDefined(value);
+            field = value;
+        }
+    }
 
-    public FileReferenceFlags Flags { get; init; }
+    public FileReferenceFlags Flags
+    {
+        get;
+        init
+        {
+            Require.ArgumentFlagsDefined(value);
+            field = value;
+        }
+    }
 
     public FileCreationOptions CreationOptions { get; init; }
 }

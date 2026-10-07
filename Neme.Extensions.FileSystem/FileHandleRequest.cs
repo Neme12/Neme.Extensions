@@ -12,16 +12,28 @@ public readonly record struct FileHandleRequest
 
     public FileHandleRequest(FileMode mode, FileSystemAccess access)
     {
+        Require.ArgumentDefined(mode);
+        Require.ArgumentFlagsDefined(access);
+
         _allOptions = ToAllOptions(mode, access, FileHandleOptions.GetDefaultFileShare(access), 0, 0, null);
     }
 
     public FileHandleRequest(FileMode mode, FileSystemAccess access, FileShare share, FileOptions flags = FileOptions.None, FileAttributes attributes = 0)
     {
+        Require.ArgumentDefined(mode);
+        Require.ArgumentFlagsDefined(access);
+        Require.ArgumentFlagsDefined(share);
+        Require.ArgumentFlagsDefined(flags);
+        Require.ArgumentFlagsDefined(attributes);
+
         _allOptions = ToAllOptions(mode, access, share, flags, attributes, null);
     }
 
     public FileHandleRequest(FileMode mode, FileHandleOptions options, FileAttributes attributes = 0)
     {
+        Require.ArgumentDefined(mode);
+        Require.ArgumentFlagsDefined(attributes);
+
         _allOptions = ToAllOptions(mode, options.Access, options.Share, options.Flags, attributes, null);
     }
 
@@ -123,31 +135,51 @@ public readonly record struct FileHandleRequest
     public FileMode Mode
     {
         get => AllOptionsToMode(_allOptions);
-        init => _allOptions = ToAllOptions(value, Access, Share, Options, Attributes, UnixCreateMode);
+        init
+        {
+            Require.ArgumentDefined(value);
+            _allOptions = ToAllOptions(value, Access, Share, Options, Attributes, UnixCreateMode);
+        }
     }
 
     public FileSystemAccess Access
     {
         get => AllOptionsToAccess(_allOptions);
-        init => _allOptions = ToAllOptions(Mode, value, Share, Options, Attributes, UnixCreateMode);
+        init
+        {
+            Require.ArgumentFlagsDefined(value);
+            _allOptions = ToAllOptions(Mode, value, Share, Options, Attributes, UnixCreateMode);
+        }
     }
 
     public FileShare Share
     {
         get => AllOptionsToShare(_allOptions);
-        init => _allOptions = ToAllOptions(Mode, Access, value, Options, Attributes, UnixCreateMode);
+        init
+        {
+            Require.ArgumentFlagsDefined(value);
+            _allOptions = ToAllOptions(Mode, Access, value, Options, Attributes, UnixCreateMode);
+        }
     }
 
     public FileOptions Options
     {
         get => AllOptionsToFlags(_allOptions);
-        init => _allOptions = ToAllOptions(Mode, Access, Share, value, Attributes, UnixCreateMode);
+        init
+        {
+            Require.ArgumentFlagsDefined(value);
+            _allOptions = ToAllOptions(Mode, Access, Share, value, Attributes, UnixCreateMode);
+        }
     }
 
     public FileAttributes Attributes
     {
         get => AllOptionsToAttributes(_allOptions);
-        init => _allOptions = ToAllOptions(Mode, Access, Share, Options, value, UnixCreateMode);
+        init
+        {
+            Require.ArgumentFlagsDefined(value);
+            _allOptions = ToAllOptions(Mode, Access, Share, Options, value, UnixCreateMode);
+        }
     }
 
     public FileHandleOptions HandleOptions
@@ -175,6 +207,9 @@ public readonly record struct FileHandleRequest
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 throw new PlatformNotSupportedException(Strings.PlatformNotSupported_UnixFileMode);
 
+            if (value is not null)
+                Require.ArgumentFlagsDefined(value.Value);
+
             _allOptions = ToAllOptions(Mode, Access, Share, Options, Attributes, value);
         }
     }
@@ -194,31 +229,22 @@ public readonly record struct FileHandleRequest
 #if NET6_0_OR_GREATER
     public static FileHandleRequest FromFileStreamOptions(FileStreamOptions options)
     {
-#if NET7_0_OR_GREATER
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-#endif
+        Require.ArgumentNotNull(options);
+
+        var result = new FileHandleRequest
         {
-            return new FileHandleRequest
-            {
-                Mode = options.Mode,
-                Access = FileSystemAccess.FromFileAccess(options.Access),
-                Share = options.Share,
-                Options = options.Options,
-            };
-        }
+            Mode = options.Mode,
+            Access = FileSystemAccess.FromFileAccess(options.Access),
+            Share = options.Share,
+            Options = options.Options,
+        };
+
 #if NET7_0_OR_GREATER
-        else
-        {
-            return new FileHandleRequest
-            {
-                Mode = options.Mode,
-                Access = FileSystemAccess.FromFileAccess(options.Access),
-                Share = options.Share,
-                Options = options.Options,
-                UnixCreateMode = options.UnixCreateMode,
-            };
-        }
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            result = result with { UnixCreateMode = options.UnixCreateMode };
 #endif
+
+        return result;
     }
 
     public static implicit operator FileHandleRequest(FileStreamOptions options) =>

@@ -27,20 +27,4 @@ public readonly record struct FileReferenceOptions
             _flags = value;
         }
     }
-
-#if NET6_0_OR_GREATER
-    public static FileReferenceOptions FromFileStreamOptions(FileStreamOptions options)
-    {
-        Require.ArgumentNotNull(options);
-
-        var deleteOnClose = options.Options.HasFlag(FileOptions.DeleteOnClose)
-            ? FileReferenceFlags.DeleteOnClose
-            : FileReferenceFlags.None;
-
-        return new FileReferenceOptions
-        {
-            Flags = deleteOnClose,
-        };
-    }
-#endif
 }
