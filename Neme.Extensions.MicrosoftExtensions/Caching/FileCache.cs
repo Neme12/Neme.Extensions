@@ -119,7 +119,8 @@ public sealed partial class FileCache : IFileCache, IDisposable
         FileCacheEntryReadOptions options,
         CancellationToken cancellationToken = default)
     {
-        return GetMaybeAsync<IAsyncState.Sync>(key, options, cancellationToken).GetAwaiter().GetCompletedResult();
+        var result = GetResultMaybeAsync<IAsyncState.Sync>(key, options, getFileSession: true, cancellationToken).GetAwaiter().GetCompletedResult();
+        return result?.FileSession;
     }
 
     /// <summary>
@@ -143,27 +144,8 @@ public sealed partial class FileCache : IFileCache, IDisposable
         FileCacheEntryReadOptions options,
         CancellationToken cancellationToken = default)
     {
-        return await GetMaybeAsync<IAsyncState.Async>(key, options, cancellationToken);
-    }
-
-    [return: OwnershipTransfer]
-    private async ValueTask<FileSession?> GetMaybeAsync<TAsync>(
-        string key,
-        FileCacheEntryReadOptions options,
-        CancellationToken cancellationToken)
-        where TAsync : struct,IAsyncState
-    {
-        ValidateKey(key);
-
-        await WaitForGlobalLockMaybeAsync<TAsync>(cancellationToken);
-
-        using (await GetLock(key).WaitScopeMaybeAsync<TAsync>(cancellationToken))
-        {
-            var fileOptions = options.FileOptions ?? DefaultFileOptions<TAsync>();
-
-            var result = await GetCoreMaybeAsync<TAsync>(key, fileOptions, isGetOrCreate: false, getFileHandle: true, cancellationToken);
-            return result?.FileSession;
-        }
+        var result = await GetResultMaybeAsync<IAsyncState.Async>(key, options, getFileSession: true, cancellationToken);
+        return result?.FileSession;
     }
 
     /// <summary>
@@ -184,7 +166,8 @@ public sealed partial class FileCache : IFileCache, IDisposable
         string key,
         CancellationToken cancellationToken = default)
     {
-        return GetPathMaybeAsync<IAsyncState.Sync>(key, cancellationToken).GetAwaiter().GetCompletedResult();
+        var result = GetResultMaybeAsync<IAsyncState.Sync>(key, null, getFileSession: false, cancellationToken).GetAwaiter().GetCompletedResult();
+        return result?.FilePath;
     }
 
     /// <summary>
@@ -205,11 +188,15 @@ public sealed partial class FileCache : IFileCache, IDisposable
         string key,
         CancellationToken cancellationToken = default)
     {
-        return await GetPathMaybeAsync<IAsyncState.Async>(key, cancellationToken);
+        var result = await GetResultMaybeAsync<IAsyncState.Async>(key, null, getFileSession: false, cancellationToken);
+        return result?.FilePath;
     }
 
-    internal async ValueTask<string?> GetPathMaybeAsync<TAsync>(
+    [return: OwnershipTransfer]
+    private async ValueTask<FilePathOrSession?> GetResultMaybeAsync<TAsync>(
         string key,
+        FileCacheEntryReadOptions? options,
+        bool getFileSession,
         CancellationToken cancellationToken)
         where TAsync : struct, IAsyncState
     {
@@ -219,8 +206,9 @@ public sealed partial class FileCache : IFileCache, IDisposable
 
         using (await GetLock(key).WaitScopeMaybeAsync<TAsync>(cancellationToken))
         {
-            var result = await GetCoreMaybeAsync<TAsync>(key, DefaultFileOptions<TAsync>(), isGetOrCreate: false, getFileHandle: false, cancellationToken);
-            return result?.FilePath;
+            var fileOptions = options?.FileOptions ?? DefaultFileOptions<TAsync>();
+
+            return await GetCoreMaybeAsync<TAsync>(key, fileOptions, isGetOrCreate: false, getFileSession, cancellationToken);
         }
     }
 
