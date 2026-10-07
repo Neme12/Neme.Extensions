@@ -445,17 +445,8 @@ public static class Require
         [CallerArgumentExpression(nameof(argument))] string? paramName = null)
         where T : struct, Enum
     {
-        // TODO: Implement this method.
-        throw new NotImplementedException();
-        //if (!typeof(T).IsDefined(typeof(FlagsAttribute), inherit: false))
-        //    Throw.ArgumentException(default(object?), paramName: nameof(T));
-
-        //var value = Enum.get default(T);
-
-        //foreach (var flag in allFlags)
-        //{
-        //    value |= flag;
-        //}
+        if (!Enum.FlagsDefined(argument))
+            THrowArgumentFlagsDefinedException(paramName, argument, message);
     }
 
     public static void ArgumentValid<T>(
@@ -494,26 +485,37 @@ public static class Require
         throw new ArgumentInvalidException(paramName, actualValue, condition);
 
     [DoesNotReturn]
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void THrowArgumentFlagsDefinedException(string? paramName, object actualValue, string? message) =>
+        throw new ArgumentException2(paramName, actualValue, message ?? "The argument contains undefined flags.");
+
+    [DoesNotReturn]
+    [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowArgumentException(string? paramName, object? actualValue, string? message) =>
         throw new ArgumentException2(paramName, actualValue, message);
 
     [DoesNotReturn]
+    [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowArgumentNullException(string? paramName, string? message) =>
         throw new ArgumentNullException(paramName);
 
     [DoesNotReturn]
+    [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowArgumentOutOfRangeException(string? paramName, string? message) =>
         throw new ArgumentOutOfRangeException(paramName);
 
     [DoesNotReturn]
+    [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowInvalidOperationException(string? message) =>
         throw new InvalidOperationException();
 
     [DoesNotReturn]
+    [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowObjectDisposedException(object instance, string? message) =>
         throw new ObjectDisposedException(instance.GetType().FullName);
 
     [DoesNotReturn]
+    [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowObjectDisposedException(Type type, string? message) =>
         throw new ObjectDisposedException(type.FullName);
 }

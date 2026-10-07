@@ -208,4 +208,23 @@ public static class TypeExtensions
         return type.GetMethod(name, genericParameterCount, bindingAttr, binder: null, types, modifiers: null);
     }
 #endif
+
+    extension(Type type)
+    {
+        public bool IsUnsignedPrimitiveInteger
+        {
+            get
+            {
+                Require.ArgumentNotNull(type);
+
+                return
+                    type == typeof(char) ||
+                    type == typeof(byte) ||
+                    type == typeof(ushort) ||
+                    type == typeof(uint) ||
+                    type == typeof(ulong) ||
+                    type == typeof(nuint);
+            }
+        }
+    }
 }

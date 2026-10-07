@@ -1,4 +1,6 @@
-﻿namespace Neme.Extensions.FileSystem;
+﻿using Neme.Extensions.Contracts;
+
+namespace Neme.Extensions.FileSystem;
 
 public readonly record struct FileHandleOptions
 {
@@ -7,6 +9,8 @@ public readonly record struct FileHandleOptions
     public FileHandleOptions(
         FileSystemAccess access)
     {
+        Require.ArgumentFlagsDefined(access);
+
         _allOptions = ToAllOptions(access, GetDefaultFileShare(access) , FileOptions.None);
     }
 
@@ -15,7 +19,23 @@ public readonly record struct FileHandleOptions
         FileShare share,
         FileOptions flags = FileOptions.None)
     {
+        Require.ArgumentFlagsDefined(access);
+        Require.ArgumentFlagsDefined(share);
+        Require.ArgumentFlagsDefined(flags);
+
         _allOptions = ToAllOptions(access, share, flags);
+    }
+
+    public void Deconstruct(out FileSystemAccess access)
+    {
+        access = Access;
+    }
+
+    public void Deconstruct(out FileSystemAccess access, out FileShare share, out FileOptions flags)
+    {
+        access = Access;
+        share = Share;
+        flags = Flags;
     }
 
     internal static FileShare GetDefaultFileShare(FileSystemAccess access)
@@ -36,19 +56,31 @@ public readonly record struct FileHandleOptions
     public FileSystemAccess Access
     {
         get => AllOptionsToAccess(_allOptions);
-        init => _allOptions = ToAllOptions(value, Share, Flags);
+        init
+        {
+            Require.ArgumentFlagsDefined(value);
+            _allOptions = ToAllOptions(value, Share, Flags);
+        }
     }
 
     public FileShare Share
     {
         get => AllOptionsToShare(_allOptions);
-        init => _allOptions = ToAllOptions(Access, value, Flags);
+        init
+        {
+            Require.ArgumentFlagsDefined(value);
+            _allOptions = ToAllOptions(Access, value, Flags);
+        }
     }
 
     public FileOptions Flags
     {
         get => AllOptionsToFlags(_allOptions);
-        init => _allOptions = ToAllOptions(Access, Share, value);
+        init
+        {
+            Require.ArgumentFlagsDefined(value);
+            _allOptions = ToAllOptions(Access, Share, value);
+        }
     }
 
     private static AllOptions ToAllOptions(
@@ -205,6 +237,8 @@ public readonly record struct FileHandleOptions
 #if NET6_0_OR_GREATER
     public static FileHandleOptions FromFileStreamOptions(FileStreamOptions options)
     {
+        Require.ArgumentNotNull(options);
+
         return new FileHandleOptions
         {
             Access = FileSystemAccess.FromFileAccess(options.Access),

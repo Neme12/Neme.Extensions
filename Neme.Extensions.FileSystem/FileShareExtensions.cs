@@ -13,7 +13,8 @@ public static class FileShareExtensions
 
     extension(FileShare share)
     {
-        public static FileShare All => All;
+        public static FileShare All =>
+            All;
 
         internal FILE_SHARE_MODE ToWin32()
         {
