@@ -82,7 +82,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
             request.Mode,
             request.Access,
             request.Share,
-            request.Options,
+            request.Flags,
             request.Attributes,
             request.UnixCreateMode ?? DefaultCreateMode,
             request.PreallocationSize));
@@ -106,7 +106,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
 
         var linuxFileId = fileId.LinuxFileId;
         var mountPath = linuxFileId.MountPath;
-        var openFlags = GetOpenByHandleFlags(request.Mode, request.Access, request.Share, request.Options);
+        var openFlags = GetOpenByHandleFlags(request.Mode, request.Access, request.Share, request.Flags);
 
         using var mountHandle = OpenMountHandle(mountPath);
         using OwnedOrBorrowed<SafeFileHandle?> handle = OwnedOrBorrowed.Create<SafeFileHandle?>(null);
@@ -151,7 +151,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
                 throw UnixMarshal.GetExceptionForUnixError(error, path: null);
             }
 
-            if (InitHandle(null, handle.Value!, null, request.Mode, request.Access, request.Share, request.Options, request.Attributes, request.PreallocationSize))
+            if (InitHandle(null, handle.Value!, null, request.Mode, request.Access, request.Share, request.Flags, request.Attributes, request.PreallocationSize))
             {
                 _handleMetadataTable.Add(handle.Value, new HandleMetadata(request.Access));
 
@@ -175,7 +175,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
             request.Mode,
             request.Access,
             request.Share,
-            request.Options,
+            request.Flags,
             request.Attributes,
             request.UnixCreateMode ?? DefaultCreateMode,
             request.PreallocationSize));

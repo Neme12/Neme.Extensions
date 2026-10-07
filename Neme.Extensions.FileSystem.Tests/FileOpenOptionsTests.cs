@@ -13,7 +13,7 @@ public sealed class FileOpenOptionsTests
         Assert.Equal(FileMode.CreateNew, sut.Mode);
         Assert.Equal(FileSystemAccess.ReadWrite, sut.Access);
         Assert.Equal(FileShare.All, sut.Share);
-        Assert.Equal(FileOptions.None, sut.Options);
+        Assert.Equal(FileOptions.None, sut.Flags);
         Assert.Equal(default, sut.Attributes);
         Assert.Null(sut.UnixCreateMode);
     }
@@ -52,14 +52,14 @@ public sealed class FileOpenOptionsTests
             Mode = FileMode.Append,
             Access = FileSystemAccess.Delete | FileSystemAccess.Write,
             Share = FileShare.All,
-            Options = expectedOptions,
+            Flags = expectedOptions,
             Attributes = expectedAttributes,
         };
 
         Assert.Equal(FileMode.Append, sut.Mode);
         Assert.Equal(FileSystemAccess.Delete | FileSystemAccess.Write, sut.Access);
         Assert.Equal(FileShare.All, sut.Share);
-        Assert.Equal(expectedOptions, sut.Options);
+        Assert.Equal(expectedOptions, sut.Flags);
         Assert.Equal(expectedAttributes, sut.Attributes);
         Assert.Null(sut.UnixCreateMode);
     }
@@ -120,7 +120,7 @@ public sealed class FileOpenOptionsTests
         Assert.Equal(FileMode.Truncate, sut.Mode);
         Assert.Equal(FileSystemAccess.ReadWrite, sut.Access);
         Assert.Equal(FileShare.Read, sut.Share);
-        Assert.Equal(FileOptions.Asynchronous | FileOptions.WriteThrough | FileOptions.RandomAccess, sut.Options);
+        Assert.Equal(FileOptions.Asynchronous | FileOptions.WriteThrough | FileOptions.RandomAccess, sut.Flags);
         Assert.Equal(default, sut.Attributes);
         Assert.Null(sut.UnixCreateMode);
     }
@@ -162,7 +162,7 @@ public sealed class FileOpenOptionsTests
         Assert.Equal(FileMode.Truncate, sut.Mode);
         Assert.Equal(FileSystemAccess.ReadWrite, sut.Access);
         Assert.Equal(FileShare.Read, sut.Share);
-        Assert.Equal(FileOptions.Asynchronous | FileOptions.WriteThrough | FileOptions.RandomAccess, sut.Options);
+        Assert.Equal(FileOptions.Asynchronous | FileOptions.WriteThrough | FileOptions.RandomAccess, sut.Flags);
         Assert.Equal(default, sut.Attributes);
         Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, sut.UnixCreateMode);
     }

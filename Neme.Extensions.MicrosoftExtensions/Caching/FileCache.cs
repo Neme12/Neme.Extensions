@@ -347,7 +347,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
             };
 
             SetCoreAsync<IAsyncState.Sync>(key, factoryFunc, resolvedOptions, cancellationToken).GetAwaiter().GetCompletedResult();
-            return FileSession.Open(GetFilePath(key), s_fileSyncReadOptions with { Options = resolvedOptions.FileOptions });
+            return FileSession.Open(GetFilePath(key), s_fileSyncReadOptions with { Flags = resolvedOptions.FileOptions });
         }
     }
 
@@ -390,7 +390,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
                 return cached.Value.FileSession;
 
             await SetCoreAsync<IAsyncState.Async>(key, factory, resolvedOptions, cancellationToken);
-            return FileSession.Open(GetFilePath(key), s_fileAsyncReadOptions with { Options = resolvedOptions.FileOptions });
+            return FileSession.Open(GetFilePath(key), s_fileAsyncReadOptions with { Flags = resolvedOptions.FileOptions });
         }
     }
 
@@ -640,7 +640,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
         }
 
         return getFileHandle
-            ? FilePathOrSession.FromSession(FileSession.Open(filePath, FileReadOptions<TAsync>() with { Options = options }))
+            ? FilePathOrSession.FromSession(FileSession.Open(filePath, FileReadOptions<TAsync>() with { Flags = options }))
             : FilePathOrSession.FromPath(filePath);
     }
 
@@ -662,7 +662,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
             SlidingExpiration = options.IsSlidingExpiration ? options.Expiration : null,
         };
 
-        using (var file = OwnedOrBorrowed.Create(PartialFile.CreateFileStream(filePath, FileWriteOptions<TAsync>() with { Options = options.FileOptions, Attributes = options.FileAttributes }, createDirectory: true)))
+        using (var file = OwnedOrBorrowed.Create(PartialFile.CreateFileStream(filePath, FileWriteOptions<TAsync>() with { Flags = options.FileOptions, Attributes = options.FileAttributes }, createDirectory: true)))
         {
             if (TAsync.IsAsync)
             {

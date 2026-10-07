@@ -151,7 +151,7 @@ public readonly record struct FileHandleRequest
         init
         {
             Require.ArgumentDefined(value);
-            _allOptions = ToAllOptions(value, Access, Share, Options, Attributes, UnixCreateMode);
+            _allOptions = ToAllOptions(value, Access, Share, Flags, Attributes, UnixCreateMode);
         }
     }
 
@@ -161,7 +161,7 @@ public readonly record struct FileHandleRequest
         init
         {
             Require.ArgumentFlagsDefined(value);
-            _allOptions = ToAllOptions(Mode, value, Share, Options, Attributes, UnixCreateMode);
+            _allOptions = ToAllOptions(Mode, value, Share, Flags, Attributes, UnixCreateMode);
         }
     }
 
@@ -171,11 +171,11 @@ public readonly record struct FileHandleRequest
         init
         {
             Require.ArgumentFlagsDefined(value);
-            _allOptions = ToAllOptions(Mode, Access, value, Options, Attributes, UnixCreateMode);
+            _allOptions = ToAllOptions(Mode, Access, value, Flags, Attributes, UnixCreateMode);
         }
     }
 
-    public FileOptions Options
+    public FileOptions Flags
     {
         get => AllOptionsToFlags(_allOptions);
         init
@@ -191,7 +191,7 @@ public readonly record struct FileHandleRequest
         init
         {
             Require.ArgumentFlagsDefined(value);
-            _allOptions = ToAllOptions(Mode, Access, Share, Options, value, UnixCreateMode);
+            _allOptions = ToAllOptions(Mode, Access, Share, Flags, value, UnixCreateMode);
         }
     }
 
@@ -207,7 +207,7 @@ public readonly record struct FileHandleRequest
             if (value is not null)
                 Require.ArgumentFlagsDefined(value.Value);
 
-            _allOptions = ToAllOptions(Mode, Access, Share, Options, Attributes, value);
+            _allOptions = ToAllOptions(Mode, Access, Share, Flags, Attributes, value);
         }
     }
 
@@ -250,7 +250,7 @@ public readonly record struct FileHandleRequest
                 Mode,
                 Access,
                 Share,
-                Options,
+                Flags,
                 value.Attributes,
                 value.UnixCreateMode);
             _preallocationSize = value.PreallocationSize;
@@ -268,7 +268,7 @@ public readonly record struct FileHandleRequest
             Mode = options.Mode,
             Access = FileSystemAccess.FromFileAccess(options.Access),
             Share = options.Share,
-            Options = options.Options,
+            Flags = options.Options,
         };
 
 #if NET7_0_OR_GREATER
