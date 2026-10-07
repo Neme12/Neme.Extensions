@@ -13,17 +13,20 @@ public sealed class FileReference : IFileObject, IDisposable
     [Owned]
     private SafeFileHandle _handle;
     private readonly string _openedPath;
-    private readonly FileReferenceFlags _flags;
+    private readonly FileReferenceOptions _options;
     private State _state;
 
     private FileReference(
         [OwnershipTransfer] SafeFileHandle handle,
         string path,
-        FileReferenceRequest options)
+        FileReferenceOptions options)
     {
+        Debug.Assert(handle is { IsClosed: false, IsInvalid: false });
+        Debug.Assert(!handle.IsAsync);
+
         _handle = handle;
         _openedPath = path;
-        _flags = options.Flags;
+        _options = options;
         _state = State.Open;
     }
 
@@ -40,12 +43,12 @@ public sealed class FileReference : IFileObject, IDisposable
         }
     }
 
-    public FileReferenceFlags Flags
+    public FileReferenceOptions Options
     {
         get
         {
             RequireNotDisposed();
-            return _flags;
+            return _options;
         }
     }
 
@@ -146,19 +149,19 @@ public sealed class FileReference : IFileObject, IDisposable
             FileOperations.SetLength(handle, length);
     }
 
-    public static FileReference Create(string path, FileReferenceRequest options = default)
+    public static FileReference Create(string path, FileReferenceRequest request = default)
     {
-        var request = GetFileOpenRequest(options.Mode, options.Flags) with
+        var handleRequest = GetFileOpenRequest(request.Mode, request.ReferenceOptions) with
         {
-            Attributes = options.CreationOptions.Attributes,
-            PreallocationSize = options.CreationOptions.PreallocationSize,
+            Attributes = request.CreationOptions.Attributes,
+            PreallocationSize = request.CreationOptions.PreallocationSize,
         };
 
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            request = request with { UnixCreateMode = options.CreationOptions.UnixCreateMode };
+            handleRequest = handleRequest with { UnixCreateMode = request.CreationOptions.UnixCreateMode };
 
-        var handle = FileOperations.OpenHandle(path, request);
-        return new FileReference(handle, path, options);
+        var handle = FileOperations.OpenHandle(path, handleRequest);
+        return new FileReference(handle, path, request.ReferenceOptions);
     }
 
     public FileSession OpenSession(FileHandleOptions options)
@@ -189,7 +192,7 @@ public sealed class FileReference : IFileObject, IDisposable
 
         Debug.AssertNull(_handle);
 
-        var request = GetFileOpenRequest(FileReferenceMode.Open, _flags);
+        var request = GetFileOpenRequest(FileReferenceMode.Open, _options);
 
         _handle = FileOperations.OpenHandle(_openedPath, request);
         _state = State.Open;
@@ -219,13 +222,13 @@ public sealed class FileReference : IFileObject, IDisposable
 
     private static FileHandleRequest GetFileOpenRequest(
         FileReferenceMode mode,
-        FileReferenceFlags flags)
+        FileReferenceOptions referenceOptions)
     {
         return new FileHandleRequest(
             mode.ToFileMode(),
             FileSystemAccess.ReadAttributes,
             FileShare.All,
-            flags.HasFlag(FileReferenceFlags.DeleteOnClose)
+            referenceOptions.Flags.HasFlag(FileReferenceFlags.DeleteOnClose)
                 ? FileOptions.DeleteOnClose
                 : FileOptions.None);
     }

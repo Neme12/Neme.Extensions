@@ -6,43 +6,58 @@ public readonly record struct FileReferenceRequest
 {
     public FileReferenceRequest(
         FileReferenceMode mode,
-        FileReferenceFlags flags,
-        FileCreationOptions creationOptions)
+        FileReferenceOptions referenceOptions = default,
+        FileCreationOptions creationOptions = default)
     {
         Require.ArgumentDefined(mode);
-        Require.ArgumentFlagsDefined(flags);
 
         Mode = mode;
-        Flags = flags;
+        ReferenceOptions = referenceOptions;
         CreationOptions = creationOptions;
     }
 
+    public void Deconstruct(
+        out FileReferenceMode mode)
+    {
+        mode = Mode;
+    }
+
+    public void Deconstruct(
+        out FileReferenceMode mode,
+        out FileReferenceOptions referenceOptions,
+        out FileCreationOptions creationOptions)
+    {
+        mode = Mode;
+        referenceOptions = ReferenceOptions;
+        creationOptions = CreationOptions;
+    }
+
     public static FileReferenceRequest CreateNew(
-        FileReferenceFlags flags = FileReferenceFlags.None,
+        FileReferenceOptions referenceOptions = default,
         FileCreationOptions creationOptions = default)
     {
-        return new(FileReferenceMode.CreateNew, flags, creationOptions);
+        return new(FileReferenceMode.CreateNew, referenceOptions, creationOptions);
     }
 
     public static FileReferenceRequest Create(
-        FileReferenceFlags flags = FileReferenceFlags.None,
+        FileReferenceOptions referenceOptions = default,
         FileCreationOptions creationOptions = default)
     {
-        return new(FileReferenceMode.Create, flags, creationOptions);
+        return new(FileReferenceMode.Create, referenceOptions, creationOptions);
     }
 
     public static FileReferenceRequest Open(
-        FileReferenceFlags flags = FileReferenceFlags.None,
+        FileReferenceOptions referenceOptions = default,
         FileCreationOptions creationOptions = default)
     {
-        return new(FileReferenceMode.Open, flags, creationOptions);
+        return new(FileReferenceMode.Open, referenceOptions, creationOptions);
     }
 
     public static FileReferenceRequest OpenOrCreate(
-        FileReferenceFlags flags = FileReferenceFlags.None,
+        FileReferenceOptions referenceOptions = default,
         FileCreationOptions creationOptions = default)
     {
-        return new(FileReferenceMode.OpenOrCreate, flags, creationOptions);
+        return new(FileReferenceMode.OpenOrCreate, referenceOptions, creationOptions);
     }
 
     public FileReferenceMode Mode
@@ -55,15 +70,7 @@ public readonly record struct FileReferenceRequest
         }
     }
 
-    public FileReferenceFlags Flags
-    {
-        get;
-        init
-        {
-            Require.ArgumentFlagsDefined(value);
-            field = value;
-        }
-    }
+    public FileReferenceOptions ReferenceOptions { get; init; }
 
     public FileCreationOptions CreationOptions { get; init; }
 }
