@@ -1,4 +1,5 @@
-﻿using NodaTime;
+﻿using Neme.Extensions.FileSystem;
+using NodaTime;
 
 namespace Neme.Extensions.MicrosoftExtensions.Caching;
 
@@ -21,6 +22,6 @@ public sealed class FileCacheOptions
     public FileOptions DefaultAsyncFileOptions { get; set; } =
         FileOptions.Asynchronous | FileOptions.SequentialScan;
 
-    public FileAttributes DefaultFileAttributes { get; set; } =
-        FileAttributes.Normal;
+    public FileCreationOptions DefaultFileCreationOptions { get; set; } =
+        FileCreationOptions.None;
 }

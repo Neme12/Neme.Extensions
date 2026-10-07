@@ -762,7 +762,7 @@ public sealed partial class FileCacheTests
         }
 
         [Fact]
-        public async Task SetAsync_AppliesSpecifiedFileAttributes()
+        public async Task SetAsync_AppliesSpecifiedFileCreationOptions()
         {
             // Arrange
             using var cache = CreateFileCache();
@@ -776,16 +776,22 @@ public sealed partial class FileCacheTests
             }, new FileCacheEntryOptions 
             { 
                 Expiration = Duration.FromHours(1),
-                FileAttributes = FileAttributes.Hidden, 
+                FileCreationOptions = new(FileAttributes.Hidden, UnixFileMode.UserRead | UnixFileMode.GroupExecute), 
             });
 
             // Assert
             var filePath = await cache.GetPathAsync(key);
             Assert.NotNull(filePath);
-            var attributes = File.GetAttributes(filePath);
+
+            var fileInfo = new FileInfo(filePath);
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                Assert.True(attributes.HasFlag(FileAttributes.Hidden));
+                Assert.True(fileInfo.Attributes.HasFlag(FileAttributes.Hidden));
+
+#if NET7_0_OR_GREATER
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                Assert.Equal(UnixFileMode.UserRead | UnixFileMode.GroupExecute, fileInfo.UnixFileMode);
+#endif
         }
 
         [Fact]
@@ -849,11 +855,11 @@ public sealed partial class FileCacheTests
             }, FileCacheEntryOptions.Default);
 
             // Act - Pass FileCacheEntryOptions directly (tests implicit conversion)
-            var entryOptions = new FileCacheEntryOptions 
-            { 
+            var entryOptions = new FileCacheEntryOptions
+            {
                 FileOptions = FileOptions.Asynchronous | FileOptions.DeleteOnClose,
                 Expiration = Duration.FromHours(1), // This should be ignored for Get
-                FileAttributes = FileAttributes.Temporary // This should also be ignored
+                FileCreationOptions = new(FileAttributes.Temporary) // This should also be ignored
             };
             using var result = await cache.GetAsync(key, entryOptions);
 

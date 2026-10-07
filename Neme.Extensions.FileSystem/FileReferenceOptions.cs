@@ -6,6 +6,9 @@ public readonly record struct FileReferenceOptions
 {
     private readonly FileReferenceFlags _flags;
 
+    public static FileReferenceOptions None =>
+        default;
+
     public FileReferenceOptions(FileReferenceFlags flags)
     {
         Require.ArgumentFlagsDefined(flags);

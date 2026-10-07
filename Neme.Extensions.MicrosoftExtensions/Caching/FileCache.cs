@@ -628,7 +628,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
             SlidingExpiration = options.IsSlidingExpiration ? options.Expiration : null,
         };
 
-        using (var file = OwnedOrBorrowed.Create(PartialFile.CreateFileStream(filePath, FileWriteOptions<TAsync>() with { Flags = options.FileOptions, Attributes = options.FileAttributes }, createDirectory: true)))
+        using (var file = OwnedOrBorrowed.Create(PartialFile.CreateFileStream(filePath, FileWriteOptions<TAsync>() with { Flags = options.FileOptions, CreationOptions = options.FileCreationOptions }, createDirectory: true)))
         {
             if (TAsync.IsAsync)
             {
@@ -710,7 +710,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
         return new ResolvedEntryOptions
         {
             FileOptions = options.FileOptions ?? DefaultFileOptions<TAsync>(),
-            FileAttributes = options.FileAttributes ?? _options.DefaultFileAttributes,
+            FileCreationOptions = options.FileCreationOptions ?? _options.DefaultFileCreationOptions,
             Expiration = options.Expiration ?? _options.DefaultExpiration,
             IsSlidingExpiration = options.IsSlidingExpiration ?? _options.IsDefaultSlidingExpiration
         };
@@ -966,7 +966,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
     {
         public FileOptions FileOptions { get; init; }
 
-        public FileAttributes FileAttributes { get; init; }
+        public FileCreationOptions FileCreationOptions { get; init; }
 
         public Duration Expiration { get; init; }
 

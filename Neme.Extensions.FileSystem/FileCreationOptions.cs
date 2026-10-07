@@ -6,6 +6,9 @@ namespace Neme.Extensions.FileSystem;
 
 public readonly record struct FileCreationOptions
 {
+    public static FileCreationOptions None =>
+        default;
+
     public FileCreationOptions(
         FileAttributes attributes,
         UnixFileMode? unixCreateMode = null,
@@ -15,6 +18,11 @@ public readonly record struct FileCreationOptions
         if (unixCreateMode is not null)
             Require.ArgumentFlagsDefined(unixCreateMode.Value);
         Require.ArgumentNotNegative(preallocationSize);
+
+        Attributes = attributes;
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            UnixCreateMode = unixCreateMode;
+        PreallocationSize = preallocationSize;
     }
 
     public void Deconstruct(

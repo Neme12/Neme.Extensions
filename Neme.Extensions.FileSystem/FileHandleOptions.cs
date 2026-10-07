@@ -6,6 +6,9 @@ public readonly record struct FileHandleOptions
 {
     private readonly AllOptions _allOptions;
 
+    public static FileCreationOptions None =>
+        default;
+
     public FileHandleOptions(
         FileSystemAccess access)
     {

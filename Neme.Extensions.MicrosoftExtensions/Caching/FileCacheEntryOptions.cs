@@ -1,4 +1,5 @@
-﻿using NodaTime;
+﻿using Neme.Extensions.FileSystem;
+using NodaTime;
 
 namespace Neme.Extensions.MicrosoftExtensions.Caching;
 
@@ -64,15 +65,15 @@ public readonly record struct FileCacheEntryOptions
     public FileOptions? FileOptions { get; init; }
 
     /// <summary>
-    /// File attributes to apply to the cache file.
+    /// File creation options to apply to the cache file.
     /// </summary>
     /// <remarks>
-    /// <para><strong>Null Behavior:</strong> When <c>null</c>, the cache uses <see cref="FileCacheOptions.DefaultFileAttributes"/>.</para>
+    /// <para><strong>Null Behavior:</strong> When <c>null</c>, the cache uses <see cref="FileCacheOptions.DefaultFileCreationOptions"/>.</para>
     /// <para><strong>Common Values:</strong> <see cref="System.IO.FileAttributes.Normal"/> (default),
     /// <see cref="System.IO.FileAttributes.Temporary"/> (hint for OS to keep in memory),
     /// or <see cref="System.IO.FileAttributes.Hidden"/> (hide from directory listings).</para>
     /// </remarks>
-    public FileAttributes? FileAttributes { get; init; }
+    public FileCreationOptions? FileCreationOptions { get; init; }
 
     /// <summary>
     /// The duration before the cache entry expires.

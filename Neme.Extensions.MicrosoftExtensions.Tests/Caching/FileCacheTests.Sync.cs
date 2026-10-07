@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Neme.Extensions.Tests.Utilities;
 using NodaTime;
 using NodaTime.Testing;
 using System.Runtime.InteropServices;
@@ -660,7 +659,7 @@ public sealed partial class FileCacheTests
         }
 
         [Fact]
-        public void Set_AppliesSpecifiedFileAttributes()
+        public void Set_AppliesSpecifiedFileCreationOptions()
         {
             // Arrange
             using var cache = CreateFileCache();
@@ -674,16 +673,22 @@ public sealed partial class FileCacheTests
             }, new FileCacheEntryOptions 
             { 
                 Expiration = Duration.FromHours(1),
-                FileAttributes = FileAttributes.Hidden,
+                FileCreationOptions = new(FileAttributes.Hidden, UnixFileMode.UserRead | UnixFileMode.GroupExecute),
             });
 
             // Assert
             var filePath = cache.GetPath(key);
             Assert.NotNull(filePath);
-            var attributes = File.GetAttributes(filePath);
+
+            var fileInfo = new FileInfo(filePath);
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                Assert.True(attributes.HasFlag(FileAttributes.Hidden));
+                Assert.True(fileInfo.Attributes.HasFlag(FileAttributes.Hidden));
+
+#if NET7_0_OR_GREATER
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                Assert.Equal(UnixFileMode.UserRead | UnixFileMode.GroupExecute, fileInfo.UnixFileMode);
+#endif
         }
 
         [Fact]
