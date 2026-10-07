@@ -70,6 +70,9 @@ public sealed class FileSession : IFileObject, IDisposable
     public bool CanWrite =>
         ((RawFileSystemAccess)_options.Access & RawFileSystemAccess.Write) != 0;
 
+    public bool CanSeek =>
+        _handle.CanSeek;
+
     public string? OpenedPath =>
         _handle.OpenedPath;
 
@@ -157,7 +160,8 @@ public sealed class FileSession : IFileObject, IDisposable
         FileOptions options = FileOptions.DeleteOnClose,
         FileAttributes attributes = FileAttributes.Temporary)
     {
-        var (path, request) = FileOperations.GetTempFilePathAndRequest(access, share, options, attributes);
+        var path = FileOperations.GetTempFilePath();
+        var request = FileHandleRequest.CreateNew(access, share, options, attributes);
         return Open(path, request);
     }
 

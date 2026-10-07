@@ -16,18 +16,14 @@ public static partial class FileOperations
         FileOptions options = FileOptions.DeleteOnClose,
         FileAttributes attributes = FileAttributes.Temporary)
     {
-        var (path, request) = GetTempFilePathAndRequest(access, share, options, attributes);
+        var path = GetTempFilePath();
+        var request = FileHandleRequest.CreateNew(access, share, options, attributes);
         return OpenHandle(path, request);
     }
 
-    internal static (string path, FileHandleRequest request) GetTempFilePathAndRequest(
-        FileSystemAccess access,
-        FileShare share,
-        FileOptions options,
-        FileAttributes attributes)
+    internal static string  GetTempFilePath()
     {
-        var fileOptions = FileHandleRequest.CreateNew(access, share, options, attributes);
         var fileName = Invariant($"{Guid.NewGuid()}.tmp");
-        return (Path.GetTempPath() + fileName, fileOptions);
+        return Path.GetTempPath() + fileName;
     }
 }

@@ -14,8 +14,8 @@ public readonly union FileSource(FileReference, FileSession, SafeFileHandle)
 
     public bool CanSeek => this switch
     {
-        FileReference reference => reference.Handle.CanSeek,
-        FileSession session => session.Handle.CanSeek,
+        FileReference reference => reference.CanSeek,
+        FileSession session => session.CanSeek,
         SafeFileHandle handle => handle.CanSeek,
     };
 }
