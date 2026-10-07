@@ -119,17 +119,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
         FileCacheEntryReadOptions options,
         CancellationToken cancellationToken = default)
     {
-        ValidateKey(key);
-
-        WaitForGlobalLockAsync<IAsyncState.Sync>(cancellationToken).GetAwaiter().GetCompletedResult();
-
-        using (GetLock(key).WaitScope(cancellationToken))
-        {
-            var fileOptions = options.FileOptions ?? _options.DefaultSyncFileOptions;
-
-            var result = GetCoreAsync<IAsyncState.Sync>(key, fileOptions, isGetOrCreate: false, getFileHandle: true, cancellationToken).GetAwaiter().GetCompletedResult();
-            return result?.FileSession;
-        }
+        return GetMaybeAsync<IAsyncState.Sync>(key, options, cancellationToken).GetAwaiter().GetCompletedResult();
     }
 
     /// <summary>
@@ -153,15 +143,25 @@ public sealed partial class FileCache : IFileCache, IDisposable
         FileCacheEntryReadOptions options,
         CancellationToken cancellationToken = default)
     {
+        return await GetMaybeAsync<IAsyncState.Async>(key, options, cancellationToken);
+    }
+
+    [return: OwnershipTransfer]
+    private async ValueTask<FileSession?> GetMaybeAsync<TAsync>(
+        string key,
+        FileCacheEntryReadOptions options,
+        CancellationToken cancellationToken)
+        where TAsync : struct,IAsyncState
+    {
         ValidateKey(key);
 
-        await WaitForGlobalLockAsync<IAsyncState.Async>(cancellationToken);
+        await WaitForGlobalLockMaybeAsync<TAsync>(cancellationToken);
 
-        using (await GetLock(key).WaitScopeAsync(cancellationToken))
+        using (await GetLock(key).WaitScopeMaybeAsync<TAsync>(cancellationToken))
         {
-            var fileOptions = options.FileOptions ?? _options.DefaultAsyncFileOptions;
+            var fileOptions = options.FileOptions ?? DefaultFileOptions<TAsync>();
 
-            var result = await GetCoreAsync<IAsyncState.Async>(key, fileOptions, isGetOrCreate: false, getFileHandle: true, cancellationToken);
+            var result = await GetCoreMaybeAsync<TAsync>(key, fileOptions, isGetOrCreate: false, getFileHandle: true, cancellationToken);
             return result?.FileSession;
         }
     }
@@ -184,15 +184,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
         string key,
         CancellationToken cancellationToken = default)
     {
-        ValidateKey(key);
-
-        WaitForGlobalLockAsync<IAsyncState.Sync>(cancellationToken).GetAwaiter().GetCompletedResult();
-
-        using (GetLock(key).WaitScope(cancellationToken))
-        {
-            var result = GetCoreAsync<IAsyncState.Sync>(key, _options.DefaultSyncFileOptions, isGetOrCreate: false, getFileHandle: false, cancellationToken).GetAwaiter().GetCompletedResult();
-            return result?.FilePath;
-        }
+        return GetPathMaybeAsync<IAsyncState.Sync>(key, cancellationToken).GetAwaiter().GetCompletedResult();
     }
 
     /// <summary>
@@ -213,13 +205,21 @@ public sealed partial class FileCache : IFileCache, IDisposable
         string key,
         CancellationToken cancellationToken = default)
     {
+        return await GetPathMaybeAsync<IAsyncState.Async>(key, cancellationToken);
+    }
+
+    internal async ValueTask<string?> GetPathMaybeAsync<TAsync>(
+        string key,
+        CancellationToken cancellationToken)
+        where TAsync : struct, IAsyncState
+    {
         ValidateKey(key);
 
-        await WaitForGlobalLockAsync<IAsyncState.Async>(cancellationToken);
+        await WaitForGlobalLockMaybeAsync<TAsync>(cancellationToken);
 
-        using (await GetLock(key).WaitScopeAsync(cancellationToken))
+        using (await GetLock(key).WaitScopeMaybeAsync<TAsync>(cancellationToken))
         {
-            var result = await GetCoreAsync<IAsyncState.Async>(key, _options.DefaultAsyncFileOptions, isGetOrCreate: false, getFileHandle: false, cancellationToken);
+            var result = await GetCoreMaybeAsync<TAsync>(key, DefaultFileOptions<TAsync>(), isGetOrCreate: false, getFileHandle: false, cancellationToken);
             return result?.FilePath;
         }
     }
@@ -247,23 +247,13 @@ public sealed partial class FileCache : IFileCache, IDisposable
         FileCacheEntryOptions options,
         CancellationToken cancellationToken = default)
     {
-        ValidateKey(key);
         ArgumentNullException.ThrowIfNull(writeData);
 
-        WaitForGlobalLockAsync<IAsyncState.Sync>(cancellationToken).GetAwaiter().GetCompletedResult();
-
-        using (GetLock(key).WaitScope(cancellationToken))
+        SetMaybeAsync<IAsyncState.Sync>(key, (stream, cancellationToken) =>
         {
-            var resolvedOptions = GetResolvedEntryOptions<IAsyncState.Sync>(options);
-
-            Func<Stream, CancellationToken, Task> writeDataFunc = (stream, cancellationToken) =>
-            {
-                writeData(stream, cancellationToken);
-                return Task.CompletedTask;
-            };
-
-            SetCoreAsync<IAsyncState.Sync>(key, writeDataFunc, resolvedOptions, cancellationToken).GetAwaiter().GetCompletedResult();
-        }
+            writeData(stream, cancellationToken);
+            return Task.CompletedTask;
+        }, options, cancellationToken).GetAwaiter().GetCompletedResult();
     }
 
     /// <summary>
@@ -289,16 +279,27 @@ public sealed partial class FileCache : IFileCache, IDisposable
         FileCacheEntryOptions options,
         CancellationToken cancellationToken = default)
     {
-        ValidateKey(key);
         ArgumentNullException.ThrowIfNull(writeData);
 
-        await WaitForGlobalLockAsync<IAsyncState.Async>(cancellationToken);
+        await SetMaybeAsync<IAsyncState.Async>(key, writeData, options, cancellationToken);
+    }
 
-        using (await GetLock(key).WaitScopeAsync(cancellationToken))
+    private async ValueTask SetMaybeAsync<TAsync>(
+        string key,
+        [Borrow] Func<Stream, CancellationToken, Task> writeData,
+        FileCacheEntryOptions options,
+        CancellationToken cancellationToken)
+        where TAsync : struct, IAsyncState
+    {
+        ValidateKey(key);
+
+        await WaitForGlobalLockMaybeAsync<TAsync>(cancellationToken);
+
+        using (await GetLock(key).WaitScopeMaybeAsync<TAsync>(cancellationToken))
         {
-            var resolvedOptions = GetResolvedEntryOptions<IAsyncState.Async>(options);
+            var resolvedOptions = GetResolvedEntryOptions<TAsync>(options);
 
-            await SetCoreAsync<IAsyncState.Async>(key, writeData, resolvedOptions, cancellationToken);
+            await SetCoreMaybeAsync<TAsync>(key, writeData, resolvedOptions, cancellationToken);
         }
     }
 
@@ -327,28 +328,13 @@ public sealed partial class FileCache : IFileCache, IDisposable
         FileCacheEntryOptions options,
         CancellationToken cancellationToken = default)
     {
-        ValidateKey(key);
         ArgumentNullException.ThrowIfNull(factory);
 
-        WaitForGlobalLockAsync<IAsyncState.Sync>(cancellationToken).GetAwaiter().GetCompletedResult();
-
-        using (GetLock(key).WaitScope(cancellationToken))
+        return GetOrCreateMaybeAsync<IAsyncState.Sync>(key, (stream, cancellationToken) =>
         {
-            var resolvedOptions = GetResolvedEntryOptions<IAsyncState.Sync>(options);
-
-            var cached = GetCoreAsync<IAsyncState.Sync>(key, resolvedOptions.FileOptions, isGetOrCreate: true, getFileHandle: true, cancellationToken).GetAwaiter().GetCompletedResult();
-            if (cached is not null)
-                return cached.Value.FileSession;
-
-            Func<Stream, CancellationToken, Task> factoryFunc = (stream, cancellationToken) =>
-            {
-                factory(stream, cancellationToken);
-                return Task.CompletedTask;
-            };
-
-            SetCoreAsync<IAsyncState.Sync>(key, factoryFunc, resolvedOptions, cancellationToken).GetAwaiter().GetCompletedResult();
-            return FileSession.Open(GetFilePath(key), s_fileSyncReadOptions with { Flags = resolvedOptions.FileOptions });
-        }
+            factory(stream, cancellationToken);
+            return Task.CompletedTask;
+        }, options, cancellationToken).GetAwaiter().GetCompletedResult();
     }
 
     /// <summary>
@@ -376,21 +362,33 @@ public sealed partial class FileCache : IFileCache, IDisposable
         FileCacheEntryOptions options,
         CancellationToken cancellationToken = default)
     {
-        ValidateKey(key);
         ArgumentNullException.ThrowIfNull(factory);
 
-        await WaitForGlobalLockAsync<IAsyncState.Async>(cancellationToken);
+        return await GetOrCreateMaybeAsync<IAsyncState.Async>(key, factory, options, cancellationToken);
+    }
 
-        using (await GetLock(key).WaitScopeAsync(cancellationToken))
+    [return: OwnershipTransfer]
+    private async ValueTask<FileSession> GetOrCreateMaybeAsync<TAsync>(
+        string key,
+        [Borrow] Func<Stream, CancellationToken, Task> factory,
+        FileCacheEntryOptions options,
+        CancellationToken cancellationToken)
+        where TAsync : struct, IAsyncState
+    {
+        ValidateKey(key);
+
+        await WaitForGlobalLockMaybeAsync<TAsync>(cancellationToken);
+
+        using (await GetLock(key).WaitScopeMaybeAsync<TAsync>(cancellationToken))
         {
-            var resolvedOptions = GetResolvedEntryOptions<IAsyncState.Async>(options);
+            var resolvedOptions = GetResolvedEntryOptions<TAsync>(options);
 
-            var cached = await GetCoreAsync<IAsyncState.Async>(key, resolvedOptions.FileOptions, isGetOrCreate: true, getFileHandle: true, cancellationToken);
+            var cached = await GetCoreMaybeAsync<TAsync>(key, resolvedOptions.FileOptions, isGetOrCreate: true, getFileHandle: true, cancellationToken);
             if (cached is not null)
                 return cached.Value.FileSession;
 
-            await SetCoreAsync<IAsyncState.Async>(key, factory, resolvedOptions, cancellationToken);
-            return FileSession.Open(GetFilePath(key), s_fileAsyncReadOptions with { Flags = resolvedOptions.FileOptions });
+            await SetCoreMaybeAsync<TAsync>(key, factory, resolvedOptions, cancellationToken);
+            return FileSession.Open(GetFilePath(key), FileReadOptions<TAsync>() with { Flags = resolvedOptions.FileOptions });
         }
     }
 
@@ -417,28 +415,13 @@ public sealed partial class FileCache : IFileCache, IDisposable
         FileCacheEntryOptions options,
         CancellationToken cancellationToken = default)
     {
-        ValidateKey(key);
         ArgumentNullException.ThrowIfNull(factory);
 
-        WaitForGlobalLockAsync<IAsyncState.Sync>(cancellationToken).GetAwaiter().GetCompletedResult();
-
-        using (GetLock(key).WaitScope(cancellationToken))
+        return GetOrCreatePathMaybeAsync<IAsyncState.Sync>(key, (stream, cancellationToken) =>
         {
-            var resolvedOptions = GetResolvedEntryOptions<IAsyncState.Sync>(options);
-
-            var cached = GetCoreAsync<IAsyncState.Sync>(key, resolvedOptions.FileOptions, isGetOrCreate: true, getFileHandle: false, cancellationToken).GetAwaiter().GetCompletedResult();
-            if (cached is not null)
-                return cached.Value.FilePath;
-
-            Func<Stream, CancellationToken, Task> factoryFunc = (stream, cancellationToken) =>
-            {
-                factory(stream, cancellationToken);
-                return Task.CompletedTask;
-            };
-
-            SetCoreAsync<IAsyncState.Sync>(key, factoryFunc, resolvedOptions, cancellationToken).GetAwaiter().GetCompletedResult();
-            return GetFilePath(key);
-        }
+            factory(stream, cancellationToken);
+            return Task.CompletedTask;
+        }, options, cancellationToken).GetAwaiter().GetCompletedResult();
     }
 
     /// <summary>
@@ -464,20 +447,31 @@ public sealed partial class FileCache : IFileCache, IDisposable
         FileCacheEntryOptions options,
         CancellationToken cancellationToken = default)
     {
-        ValidateKey(key);
         ArgumentNullException.ThrowIfNull(factory);
 
-        await WaitForGlobalLockAsync<IAsyncState.Async>(cancellationToken);
+        return await GetOrCreatePathMaybeAsync<IAsyncState.Async>(key, factory, options, cancellationToken);
+    }
 
-        using (await GetLock(key).WaitScopeAsync(cancellationToken))
+    private async ValueTask<string> GetOrCreatePathMaybeAsync<TAsync>(
+        string key,
+        [Borrow] Func<Stream, CancellationToken, Task> factory,
+        FileCacheEntryOptions options,
+        CancellationToken cancellationToken)
+        where TAsync : struct, IAsyncState
+    {
+        ValidateKey(key);
+
+        await WaitForGlobalLockMaybeAsync<TAsync>(cancellationToken);
+
+        using (await GetLock(key).WaitScopeMaybeAsync<TAsync>(cancellationToken))
         {
-            var resolvedOptions = GetResolvedEntryOptions<IAsyncState.Async>(options);
+            var resolvedOptions = GetResolvedEntryOptions<TAsync>(options);
 
-            var cached = await GetCoreAsync<IAsyncState.Async>(key, resolvedOptions.FileOptions, isGetOrCreate: true, getFileHandle: false, cancellationToken);
+            var cached = await GetCoreMaybeAsync<TAsync>(key, resolvedOptions.FileOptions, isGetOrCreate: true, getFileHandle: false, cancellationToken);
             if (cached is not null)
                 return cached.Value.FilePath;
 
-            await SetCoreAsync<IAsyncState.Async>(key, factory, resolvedOptions, cancellationToken);
+            await SetCoreMaybeAsync<TAsync>(key, factory, resolvedOptions, cancellationToken);
             return GetFilePath(key);
         }
     }
@@ -493,20 +487,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
     /// </remarks>
     public void Remove(string key, CancellationToken cancellationToken = default)
     {
-        ValidateKey(key);
-
-        var filePath = GetFilePath(key);
-
-        WaitForGlobalLockAsync<IAsyncState.Sync>(cancellationToken).GetAwaiter().GetCompletedResult();
-
-        using (GetLock(key).WaitScope(cancellationToken))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            DeleteFile(filePath);
-            DeleteFile(GetMetadataPath(filePath));
-            Log.RemovedCacheKey(_logger, key);
-        }
+        RemoveMaybeAsync<IAsyncState.Sync>(key, cancellationToken).GetAwaiter().GetCompletedResult();
     }
 
     /// <summary>
@@ -520,13 +501,19 @@ public sealed partial class FileCache : IFileCache, IDisposable
     /// </remarks>
     public async Task RemoveAsync(string key, CancellationToken cancellationToken = default)
     {
+        await RemoveMaybeAsync<IAsyncState.Async>(key, cancellationToken);
+    }
+
+    private async ValueTask RemoveMaybeAsync<TAsync>(string key, CancellationToken cancellationToken)
+        where TAsync : struct, IAsyncState
+    {
         ValidateKey(key);
 
         var filePath = GetFilePath(key);
 
-        await WaitForGlobalLockAsync<IAsyncState.Async>(cancellationToken);
+        await WaitForGlobalLockMaybeAsync<TAsync>(cancellationToken);
 
-        using (await GetLock(key).WaitScopeAsync(cancellationToken))
+        using (await GetLock(key).WaitScopeMaybeAsync<TAsync>(cancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -550,10 +537,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
     /// </remarks>
     public void Clear(CancellationToken cancellationToken = default)
     {
-        using (_globalLock.WaitScope(cancellationToken))
-        {
-            ClearCore(cancellationToken);
-        }
+        ClearMaybeAsync<IAsyncState.Sync>(cancellationToken).GetAwaiter().GetCompletedResult();
     }
 
     /// <summary>
@@ -570,7 +554,13 @@ public sealed partial class FileCache : IFileCache, IDisposable
     /// </remarks>
     public async Task ClearAsync(CancellationToken cancellationToken = default)
     {
-        using (await _globalLock.WaitScopeAsync(cancellationToken))
+        await ClearMaybeAsync<IAsyncState.Async>(cancellationToken);
+    }
+
+    private async ValueTask ClearMaybeAsync<TAsync>(CancellationToken cancellationToken = default)
+        where TAsync : struct, IAsyncState
+    {
+        using (await _globalLock.WaitScopeMaybeAsync<TAsync>(cancellationToken))
         {
             ClearCore(cancellationToken);
         }
@@ -585,7 +575,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
             _clock).Lock;
     }
 
-    private async Task WaitForGlobalLockAsync<TAsync>(CancellationToken cancellationToken)
+    private async Task WaitForGlobalLockMaybeAsync<TAsync>(CancellationToken cancellationToken)
         where TAsync : IAsyncState
     {
         // Check if the global lock is currently held without acquiring it
@@ -601,26 +591,32 @@ public sealed partial class FileCache : IFileCache, IDisposable
         }
     }
 
+    private FileOptions DefaultFileOptions<TAsync>()
+        where TAsync : struct, IAsyncState
+    {
+        return TAsync.IsAsync ? _options.DefaultAsyncFileOptions : _options.DefaultSyncFileOptions;
+    }
+
     private static FileHandleRequest FileReadOptions<TAsync>()
-        where TAsync : IAsyncState
+        where TAsync : struct, IAsyncState
     {
         return TAsync.IsAsync ? s_fileAsyncReadOptions : s_fileSyncReadOptions;
     }
 
     private static FileHandleRequest FileWriteOptions<TAsync>()
-        where TAsync : IAsyncState
+        where TAsync : struct, IAsyncState
     {
         return TAsync.IsAsync ? s_fileAsyncWriteOptions : s_fileSyncWriteOptions;
     }
 
     [return: OwnershipTransfer]
-    private async Task<FilePathOrSession?> GetCoreAsync<TAsync>(
+    private async Task<FilePathOrSession?> GetCoreMaybeAsync<TAsync>(
         string key,
         FileOptions options,
         bool isGetOrCreate,
         bool getFileHandle,
         CancellationToken cancellationToken)
-        where TAsync : IAsyncState
+        where TAsync : struct, IAsyncState
     {
         var filePath = GetFilePath(key);
 
@@ -645,12 +641,12 @@ public sealed partial class FileCache : IFileCache, IDisposable
     }
 
     [return: OwnershipTransfer]
-    private async Task SetCoreAsync<TAsync>(
+    private async Task SetCoreMaybeAsync<TAsync>(
         string key,
         [Borrow] Func<Stream, CancellationToken, Task> writeData,
         ResolvedEntryOptions options,
         CancellationToken cancellationToken)
-        where TAsync : IAsyncState
+        where TAsync : struct, IAsyncState
     {
         var filePath = GetFilePath(key);
 
@@ -739,11 +735,11 @@ public sealed partial class FileCache : IFileCache, IDisposable
         path.EndsWith(PartialFile.PartialExtension, StringComparison.OrdinalIgnoreCase);
 
     private ResolvedEntryOptions GetResolvedEntryOptions<TAsync>(FileCacheEntryOptions options)
-        where TAsync : IAsyncState
+        where TAsync : struct, IAsyncState
     {
         return new ResolvedEntryOptions
         {
-            FileOptions = options.FileOptions ?? (TAsync.IsAsync ? _options.DefaultAsyncFileOptions : _options.DefaultSyncFileOptions),
+            FileOptions = options.FileOptions ?? DefaultFileOptions<TAsync>(),
             FileAttributes = options.FileAttributes ?? _options.DefaultFileAttributes,
             Expiration = options.Expiration ?? _options.DefaultExpiration,
             IsSlidingExpiration = options.IsSlidingExpiration ?? _options.IsDefaultSlidingExpiration
@@ -753,7 +749,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
     private static async Task<FileCacheMetadata?> ReadMetadataAsync<TAsync>(
         string filePath,
         CancellationToken cancellationToken)
-        where TAsync : IAsyncState
+        where TAsync : struct, IAsyncState
     {
         var metadataPath = filePath + MetadataExtension;
 
@@ -779,7 +775,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
         string filePath,
         FileCacheMetadata metadata,
         CancellationToken cancellationToken)
-        where TAsync : IAsyncState
+        where TAsync : struct, IAsyncState
     {
         var metadataPath = filePath + MetadataExtension;
 
@@ -809,7 +805,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
         string filePath,
         FileCacheMetadata metadata,
         CancellationToken cancellationToken)
-        where TAsync : IAsyncState
+        where TAsync : struct, IAsyncState
     {
         if (metadata.SlidingExpiration is null)
             return metadata;
