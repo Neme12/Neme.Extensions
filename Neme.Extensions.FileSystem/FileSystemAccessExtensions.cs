@@ -1,4 +1,6 @@
-﻿namespace Neme.Extensions.FileSystem;
+﻿using Neme.Extensions.FileSystem.Internal;
+
+namespace Neme.Extensions.FileSystem;
 
 public static class FileSystemAccessExtensions
 {

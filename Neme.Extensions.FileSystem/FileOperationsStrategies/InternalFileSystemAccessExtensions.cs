@@ -1,4 +1,6 @@
 ﻿using Windows.Win32.Storage.FileSystem;
+using Neme.Extensions.FileSystem.Internal;
+
 
 #if !NETFRAMEWORK
 using System.Runtime.Versioning;

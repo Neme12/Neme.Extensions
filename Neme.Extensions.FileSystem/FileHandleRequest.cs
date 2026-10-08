@@ -1,4 +1,5 @@
 ﻿using Neme.Extensions.Contracts;
+using Neme.Extensions.FileSystem.Internal;
 using Neme.Extensions.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;

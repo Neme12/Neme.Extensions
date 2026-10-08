@@ -1,4 +1,4 @@
-﻿namespace Neme.Extensions.FileSystem;
+﻿namespace Neme.Extensions.FileSystem.Internal;
 
 /// <summary>
 /// Raw counterpart to <see cref="FileSystemAccess"/> without any combined flags.
