@@ -278,5 +278,6 @@ public sealed class FileReference : IFileObject, IDisposable
     private void RequireNotDisposed()
     {
         Require.NotDisposed(_handle is null, this);
+        Require.NotDisposed(_handle.IsClosed, _handle);
     }
 }

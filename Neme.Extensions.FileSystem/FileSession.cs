@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.Contracts;
 using Neme.Extensions.FileSystem.SafeHandles;
 using Neme.Extensions.IO;
 using Neme.Extensions.Ownership;
@@ -35,7 +36,7 @@ public sealed class FileSession : IFileObject, IDisposable
     {
         get
         {
-            ObjectDisposedException.ThrowIf(_handle is null, this);
+            RequireNotDisposed();
             return _handle;
         }
     }
@@ -44,7 +45,7 @@ public sealed class FileSession : IFileObject, IDisposable
     {
         get
         {
-            ObjectDisposedException.ThrowIf(_handle is null, this);
+            RequireNotDisposed();
             return _options;
         }
     }
@@ -53,7 +54,7 @@ public sealed class FileSession : IFileObject, IDisposable
     {
         get
         {
-            ObjectDisposedException.ThrowIf(_handle is null, this);
+            RequireNotDisposed();
             return _handle.Type;
         }
     }
@@ -62,6 +63,8 @@ public sealed class FileSession : IFileObject, IDisposable
     {
         get
         {
+            RequireNotDisposed();
+
 #if NET6_0_OR_GREATER
             return _handle.IsAsync;
 #else
@@ -73,17 +76,41 @@ public sealed class FileSession : IFileObject, IDisposable
     public bool IsClosed =>
         _handle.IsClosed;
 
-    public bool CanRead =>
-        ((RawFileSystemAccess)_options.Access & RawFileSystemAccess.Read) != 0;
+    public bool CanRead
+    {
+        get
+        {
+            RequireNotDisposed();
+            return ((RawFileSystemAccess)_options.Access & RawFileSystemAccess.Read) != 0;
+        }
+    }
 
-    public bool CanWrite =>
-        ((RawFileSystemAccess)_options.Access & RawFileSystemAccess.Write) != 0;
+    public bool CanWrite
+    {
+        get
+        {
+            RequireNotDisposed();
+            return ((RawFileSystemAccess)_options.Access & RawFileSystemAccess.Write) != 0;
+        }
+    }
 
-    public bool CanSeek =>
-        _handle.CanSeek;
+    public bool CanSeek
+    {
+        get
+        {
+            RequireNotDisposed();
+            return _handle.CanSeek;
+        }
+    }
 
-    public string? OpenedPath =>
-        _handle.OpenedPath;
+    public string? OpenedPath
+    {
+        get
+        {
+            RequireNotDisposed();
+            return _handle.OpenedPath;
+        }
+    }
 
     [return: OwnershipTransfer]
     public static FileSession Open(string path, FileHandleRequest request) =>
@@ -190,13 +217,13 @@ public sealed class FileSession : IFileObject, IDisposable
 
     public string GetPath()
     {
-        ObjectDisposedException.ThrowIf(_handle is null, this);
+        RequireNotDisposed();
         return FileOperations.GetPath(_handle);
     }
 
     public FileId GetId()
     {
-        ObjectDisposedException.ThrowIf(_handle is null, this);
+        RequireNotDisposed();
         return FileOperations.GetId(_handle);
     }
 
@@ -204,37 +231,37 @@ public sealed class FileSession : IFileObject, IDisposable
     [SupportedOSPlatform("linux")]
     public PersistentFileId GetPersistentId()
     {
-        ObjectDisposedException.ThrowIf(_handle is null, this);
+        RequireNotDisposed();
         return FileOperations.GetPersistentId(_handle);
     }
 
     public FileAttributes GetAttributes()
     {
-        ObjectDisposedException.ThrowIf(_handle is null, this);
+        RequireNotDisposed();
         return FileOperations.GetAttributes(_handle);
     }
 
     public void SetAttributes(FileAttributes attributes)
     {
-        ObjectDisposedException.ThrowIf(_handle is null, this);
+        RequireNotDisposed();
         FileOperations.SetAttributes(_handle, attributes);
     }
 
     public FileBasicInfo GetBasicInfo()
     {
-        ObjectDisposedException.ThrowIf(_handle is null, this);
+        RequireNotDisposed();
         return FileOperations.GetBasicInfo(_handle);
     }
 
     public void Move(string destFileName, bool overwrite = false)
     {
-        ObjectDisposedException.ThrowIf(_handle is null, this);
+        RequireNotDisposed();
         FileOperations.Move(_handle, destFileName, overwrite);
     }
 
     public void Delete()
     {
-        ObjectDisposedException.ThrowIf(_handle is null, this);
+        RequireNotDisposed();
         FileOperations.Delete(_handle);
     }
 
@@ -245,14 +272,14 @@ public sealed class FileSession : IFileObject, IDisposable
         if (ownsHandle)
             GC.SuppressFinalize(this);
 
-        ObjectDisposedException.ThrowIf(_handle is null, this);
+        RequireNotDisposed();
         return _handle.CreateFileStream(_options.Access.ToFileAccess(), ownsHandle, bufferSize);
     }
 
     [return: OwnershipTransfer]
     public SafeFileHandle DetachHandle()
     {
-        ObjectDisposedException.ThrowIf(_handle is null, this);
+        RequireNotDisposed();
 
         GC.SuppressFinalize(this);
         var handle = _handle;
@@ -278,13 +305,19 @@ public sealed class FileSession : IFileObject, IDisposable
 
     public long GetLength()
     {
-        ObjectDisposedException.ThrowIf(_handle is null, this);
+        RequireNotDisposed();
         return FileOperations.GetLength(_handle);
     }
 
     public void SetLength(long length)
     {
-        ObjectDisposedException.ThrowIf(_handle is null, this);
+        RequireNotDisposed();
         FileOperations.SetLength(_handle, length);
+    }
+
+    private void RequireNotDisposed()
+    {
+        Require.NotDisposed(_handle is null, this);
+        Require.NotDisposed(_handle.IsClosed, _handle);
     }
 }
