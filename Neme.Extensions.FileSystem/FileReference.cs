@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using Neme.Extensions.Contracts;
 using Neme.Extensions.FileSystem.SafeHandles;
+using Neme.Extensions.IO;
 using Neme.Extensions.Ownership;
 using Neme.Utilities.Contracts;
 using System.Diagnostics;
@@ -235,6 +236,12 @@ public sealed class FileReference : IFileObject, IDisposable
 
         var handle = FileOperations.ReopenHandle(_handle, FileHandleRequest.Open(options));
         return handle;
+    }
+
+    public CheckedFileStream OpenFileStream(FileAccess access, int bufferSize = FileStreamExtensions.DefaultBufferSize)
+    {
+        RequireNotDisposed();
+        return _handle.CreateFileStream(access, ownsHandle: false, bufferSize);
     }
 
     public void Dispose()
