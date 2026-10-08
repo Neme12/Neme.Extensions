@@ -1,14 +1,14 @@
-﻿#if !NETFRAMEWORK
-using Mono.Unix.Native;
-using System.Runtime.Versioning;
-
-#endif
-using Windows.Wdk.Storage.FileSystem;
+﻿using Windows.Wdk.Storage.FileSystem;
 using Windows.Win32.Storage.FileSystem;
 
-namespace Neme.Extensions.FileSystem;
+#if !NETFRAMEWORK
+using Mono.Unix.Native;
+using System.Runtime.Versioning;
+#endif
 
-internal static class FileOptionsExtensions
+namespace Neme.Extensions.FileSystem.FileOperationsStrategies;
+
+internal static class InternalFileOptionsExtensions
 {
     extension(FileOptions options)
     {

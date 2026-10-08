@@ -1,14 +1,14 @@
-﻿using System.Runtime.Versioning;
-using Windows.Win32.Storage.FileSystem;
+﻿using Windows.Win32.Storage.FileSystem;
 using Windows.Wdk.Storage.FileSystem;
 
 #if !NETFRAMEWORK
+using System.Runtime.Versioning;
 using Mono.Unix.Native;
 #endif
 
-namespace Neme.Extensions.FileSystem;
+namespace Neme.Extensions.FileSystem.FileOperationsStrategies;
 
-internal static class FileHandleTypeExtensions
+internal static class InternalFileHandleTypeExtensions
 {
     extension(FileHandleType type)
     {

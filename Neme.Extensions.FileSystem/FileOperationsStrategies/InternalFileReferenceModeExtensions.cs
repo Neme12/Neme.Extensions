@@ -1,9 +1,9 @@
 ﻿using Neme.Extensions.Contracts;
 using System.Diagnostics;
 
-namespace Neme.Extensions.FileSystem;
+namespace Neme.Extensions.FileSystem.FileOperationsStrategies;
 
-internal static class FileReferenceModeExtensions
+internal static class InternalFileReferenceModeExtensions
 {
     extension(FileReferenceMode mode)
     {

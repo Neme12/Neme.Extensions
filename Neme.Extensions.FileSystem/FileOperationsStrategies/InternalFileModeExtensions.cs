@@ -1,14 +1,14 @@
 ﻿using Windows.Wdk.Storage.FileSystem;
 using Windows.Win32.Storage.FileSystem;
+
 #if !NETFRAMEWORK
 using Mono.Unix.Native;
-using Neme.Extensions.FileSystem.FileOperationsStrategies;
 using System.Runtime.Versioning;
 #endif
 
-namespace Neme.Extensions.FileSystem;
+namespace Neme.Extensions.FileSystem.FileOperationsStrategies;
 
-internal static class FileModeExtensions
+internal static class InternalFileModeExtensions
 {
     extension(FileMode mode)
     {

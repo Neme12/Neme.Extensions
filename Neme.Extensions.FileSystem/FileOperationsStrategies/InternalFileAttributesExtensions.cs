@@ -1,8 +1,8 @@
 ﻿using Windows.Win32.Storage.FileSystem;
 
-namespace Neme.Extensions.FileSystem;
+namespace Neme.Extensions.FileSystem.FileOperationsStrategies;
 
-internal static class FileAttributesExtensions
+internal static class InternalFileAttributesExtensions
 {
     extension(FileAttributes attributes)
     {
