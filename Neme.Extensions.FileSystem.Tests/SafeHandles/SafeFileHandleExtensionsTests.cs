@@ -587,7 +587,7 @@ public sealed class SafeFileHandleExtensionsTests
             var options = FileHandleRequest.Open(FileSystemAccess.Read);
 
             // Act & Assert
-            Assert.Throws<Contracts.ArgumentInvalidException>(() => handle.CreateFileStream(FileAccess.Read));
+            Assert.Throws<Contracts.InvalidArgumentException>(() => handle.CreateFileStream(FileAccess.Read));
         }
     }
 }

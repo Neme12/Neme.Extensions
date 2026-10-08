@@ -458,7 +458,23 @@ public static class Require
         where T : struct, Enum
     {
         if (!argument.HasFlag(requiredFlag))
-            THrowArgumentHasFlagException(paramName, argument, requiredFlag, message);
+            ThrowArgumentHasFlagException(paramName, argument, requiredFlag, message);
+    }
+
+    public static void ValueHasFlag<T>(
+        T value,
+        T requiredFlag,
+        string? message = null,
+        [CallerArgumentExpression(nameof(value))] string? valueSource = null)
+        where T : struct, Enum
+    {
+        if (!value.HasFlag(requiredFlag))
+            Throw(valueSource, value, requiredFlag, message);
+
+        [DoesNotReturn]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static void Throw(string? valueSource, object value, object requiredFlag, string? message) =>
+            throw new InvalidValueException(valueSource.NotNull(), value, message ?? "The value does not have the required flag.", $"Required flag: {FormatValue(requiredFlag)}");
     }
 
     public static void ArgumentValid<T>(
@@ -494,7 +510,7 @@ public static class Require
     [DoesNotReturn]
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowArgumentInvalidException(string? paramName, object? actualValue, string? condition) =>
-        throw new ArgumentInvalidException(paramName, actualValue, condition);
+        throw new InvalidArgumentException(paramName, actualValue, condition);
 
     [DoesNotReturn]
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -502,7 +518,7 @@ public static class Require
         throw new ArgumentException2(paramName, actualValue, message ?? "The argument contains undefined flags.");
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void THrowArgumentHasFlagException(string? paramName, object actualValue, object requiredFlag, string? message) =>
+    private static void ThrowArgumentHasFlagException(string? paramName, object actualValue, object requiredFlag, string? message) =>
         throw new ArgumentException2(paramName, actualValue, message ?? $"The argument does not have the required flag.\nRequired flag: {FormatValue(requiredFlag)}");
 
     [DoesNotReturn]

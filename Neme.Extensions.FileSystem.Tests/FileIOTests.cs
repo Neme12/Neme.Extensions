@@ -540,7 +540,7 @@ public sealed class FileIOTests
             handle.Dispose();
 
             // Act
-            var exception = Assert.Throws<Neme.Extensions.Contracts.ArgumentInvalidException>(() => FileIO.AppendAllBytes(handle, appendedBytes.AsSpan()));
+            var exception = Assert.Throws<Neme.Extensions.Contracts.InvalidArgumentException>(() => FileIO.AppendAllBytes(handle, appendedBytes.AsSpan()));
 
             // Assert
             Assert.Equal("file", exception.ParamName);
@@ -631,7 +631,7 @@ public sealed class FileIOTests
             void Act() => _ = FileIO.AppendAllBytesAsync(handle, appendedBytes.AsMemory());
 
             // Act
-            var exception = Assert.Throws<Neme.Extensions.Contracts.ArgumentInvalidException>(Act);
+            var exception = Assert.Throws<Neme.Extensions.Contracts.InvalidArgumentException>(Act);
 
             // Assert
             Assert.Equal("file", exception.ParamName);
@@ -648,7 +648,7 @@ public sealed class FileIOTests
             void Act() => FileIO.AppendAllBytesAsync(handle, new byte[] { 1 }.AsMemory());
 
             // Act
-            var exception = Assert.Throws<Neme.Extensions.Contracts.ArgumentInvalidException>(Act);
+            var exception = Assert.Throws<Neme.Extensions.Contracts.InvalidArgumentException>(Act);
 
             // Assert
             Assert.Equal("file", exception.ParamName);
@@ -750,7 +750,7 @@ public sealed class FileIOTests
             handle.Dispose();
 
             // Act
-            var exception = Assert.Throws<Neme.Extensions.Contracts.ArgumentInvalidException>(() => FileIO.AppendAllText(handle, " more text".AsSpan(), encoding: null));
+            var exception = Assert.Throws<Neme.Extensions.Contracts.InvalidArgumentException>(() => FileIO.AppendAllText(handle, " more text".AsSpan(), encoding: null));
 
             // Assert
             Assert.Equal("file", exception.ParamName);
@@ -768,7 +768,7 @@ public sealed class FileIOTests
             void Act() => FileIO.AppendAllText(handle, "text".AsSpan(), System.Text.Encoding.UTF8);
 
             // Act
-            var exception = Assert.Throws<Neme.Extensions.Contracts.ArgumentInvalidException>(Act);
+            var exception = Assert.Throws<Neme.Extensions.Contracts.InvalidArgumentException>(Act);
 
             // Assert
             Assert.Equal("file", exception.ParamName);

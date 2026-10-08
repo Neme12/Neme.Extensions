@@ -269,7 +269,7 @@ public sealed class FileSession : IFileObject, IDisposable
     public CheckedFileStream CreateFileStream(FileAccess access, bool ownsHandle = false, int bufferSize = FileStreamExtensions.DefaultBufferSize)
     {
         RequireNotDisposed();
-        Require.ArgumentHasFlag(Options.Access.ToFileAccess(), access);
+        Require.ValueHasFlag(Options.Access.ToFileAccess(), access);
 
         // If the disposal will be left to the file stream, we don't need to assert disposal.
         if (ownsHandle)

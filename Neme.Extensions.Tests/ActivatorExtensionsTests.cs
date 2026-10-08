@@ -1,5 +1,5 @@
 ﻿using static Neme.Extensions.Tests.TypeExtensionsTests;
-using ArgumentInvalidException = Neme.Extensions.Contracts.ArgumentInvalidException;
+using InvalidArgumentException = Neme.Extensions.Contracts.InvalidArgumentException;
 
 namespace Neme.Extensions.Tests;
 
@@ -20,7 +20,7 @@ public sealed class ActivatorExtensionsTests
             Assert.Equal('\0', ActivatorExtensions.CreateDefaultValue(typeof(char)));
             Assert.Equal(0, ActivatorExtensions.CreateDefaultValue(typeof(int)));
             Assert.Null(ActivatorExtensions.CreateDefaultValue(typeof(int?)));
-            Assert.Throws<ArgumentInvalidException>("type", () => ActivatorExtensions.CreateDefaultValue(typeof(Nullable<>)));
+            Assert.Throws<InvalidArgumentException>("type", () => ActivatorExtensions.CreateDefaultValue(typeof(Nullable<>)));
             Assert.Null(ActivatorExtensions.CreateDefaultValue(typeof(string)));
             Assert.Null(ActivatorExtensions.CreateDefaultValue(typeof(object)));
         }
@@ -44,7 +44,7 @@ public sealed class ActivatorExtensionsTests
         [Fact]
         public void ByRefTypes()
         {
-            Assert.Throws<ArgumentInvalidException>("type", () => ActivatorExtensions.CreateDefaultValue(typeof(int).MakeByRefType()));
+            Assert.Throws<InvalidArgumentException>("type", () => ActivatorExtensions.CreateDefaultValue(typeof(int).MakeByRefType()));
         }
 
         [Fact]
@@ -60,10 +60,10 @@ public sealed class ActivatorExtensionsTests
         [Fact]
         public void OpenGenericNamedTypes()
         {
-            Assert.Throws<ArgumentInvalidException>("type", () => ActivatorExtensions.CreateDefaultValue(typeof(CustomClass<>)));
-            Assert.Throws<ArgumentInvalidException>("type", () => ActivatorExtensions.CreateDefaultValue(typeof(CustomStruct<>)));
-            Assert.Throws<ArgumentInvalidException>("type", () => ActivatorExtensions.CreateDefaultValue(typeof(ICustomInterface<>)));
-            Assert.Throws<ArgumentInvalidException>("type", () => ActivatorExtensions.CreateDefaultValue(typeof(CustomDelegate<>)));
+            Assert.Throws<InvalidArgumentException>("type", () => ActivatorExtensions.CreateDefaultValue(typeof(CustomClass<>)));
+            Assert.Throws<InvalidArgumentException>("type", () => ActivatorExtensions.CreateDefaultValue(typeof(CustomStruct<>)));
+            Assert.Throws<InvalidArgumentException>("type", () => ActivatorExtensions.CreateDefaultValue(typeof(ICustomInterface<>)));
+            Assert.Throws<InvalidArgumentException>("type", () => ActivatorExtensions.CreateDefaultValue(typeof(CustomDelegate<>)));
         }
 
         [Fact]
@@ -78,7 +78,7 @@ public sealed class ActivatorExtensionsTests
         [Fact]
         public void TypeParameters()
         {
-            Assert.Throws<ArgumentInvalidException>("type", () => ActivatorExtensions.CreateDefaultValue(typeof(Unconstrained<>).GetGenericArguments()[0]));
+            Assert.Throws<InvalidArgumentException>("type", () => ActivatorExtensions.CreateDefaultValue(typeof(Unconstrained<>).GetGenericArguments()[0]));
         }
     }
 }
