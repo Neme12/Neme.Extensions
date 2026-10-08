@@ -9,7 +9,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
-namespace Neme.Extensions.FileSystem;
+namespace Neme.Extensions.FileSystem.References;
 
 public sealed class FileReference : IFileObject, IDisposable
 {

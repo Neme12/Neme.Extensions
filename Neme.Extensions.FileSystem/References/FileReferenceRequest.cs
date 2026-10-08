@@ -1,6 +1,6 @@
 ﻿using Neme.Extensions.Contracts;
 
-namespace Neme.Extensions.FileSystem;
+namespace Neme.Extensions.FileSystem.References;
 
 public readonly record struct FileReferenceRequest
 {

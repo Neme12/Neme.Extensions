@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.FileSystem.References;
 using Neme.Extensions.FileSystem.SafeHandles;
 
 namespace Neme.Extensions.FileSystem;
