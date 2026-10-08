@@ -4,9 +4,8 @@ using Neme.Extensions.FileSystem.FileOperationsStrategies;
 using Neme.Extensions.FileSystem.SafeHandles;
 using Neme.Extensions.IO;
 using Neme.Extensions.Ownership;
-using Neme.Utilities.Contracts;
+using Neme.Extensions.SafeHandles;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
 namespace Neme.Extensions.FileSystem.Resources;
@@ -69,14 +68,11 @@ public sealed class FileReference : IFileResource, IDisposable
         }
     }
 
-    public bool IsClosed
-    {
-        get
-        {
-            RequireNotDisposed();
-            return _handle.IsClosed;
-        }
-    }
+    public bool IsOpen =>
+        _handle is not null && _handle.IsOpen;
+
+    public bool IsClosed =>
+        _handle is null || _handle.IsClosed;
 
     public bool CanSeek
     {

@@ -1,5 +1,7 @@
-﻿using Neme.Extensions.FileSystem.Workflows;
+﻿using Neme.Extensions.Contracts;
+using Neme.Extensions.FileSystem.Workflows;
 using Neme.Extensions.IO;
+using Assert = Xunit.Assert;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
@@ -30,7 +32,7 @@ public sealed class PartialFileTests
         try
         {
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => PartialFile.CreateSessionFile(finalPath, options));
+            var exception = Assert.Throws<InvalidArgumentException>(() => PartialFile.CreateSessionFile(finalPath, options));
             Assert.Equal("request", exception.ParamName);
             Assert.Contains("Options must include delete access.", exception.Message, StringComparison.Ordinal);
         }

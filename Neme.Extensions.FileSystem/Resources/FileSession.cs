@@ -4,6 +4,7 @@ using Neme.Extensions.FileSystem.Internal;
 using Neme.Extensions.FileSystem.SafeHandles;
 using Neme.Extensions.IO;
 using Neme.Extensions.Ownership;
+using Neme.Extensions.SafeHandles;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
@@ -74,8 +75,11 @@ public sealed class FileSession : IFileResource, IDisposable
         }
     }
 
+    public bool IsOpen =>
+        _handle is not null && _handle.IsOpen;
+
     public bool IsClosed =>
-        _handle.IsClosed;
+        _handle is null || _handle.IsClosed;
 
     public bool CanRead
     {

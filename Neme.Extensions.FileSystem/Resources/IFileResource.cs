@@ -6,6 +6,8 @@ public interface IFileResource : IDisposable, IAsyncDisposable
 {
     public string? OpenedPath { get; }
 
+    public bool IsOpen { get; }
+
     public bool IsClosed { get; }
 
     public string GetPath();

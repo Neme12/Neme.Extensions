@@ -630,7 +630,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
             SlidingExpiration = options.IsSlidingExpiration ? options.Expiration : null,
         };
 
-        using (var file = OwnedOrBorrowed.Create(PartialFile.CreateFileStream(filePath, FileWriteOptions<TAsync>() with { Flags = options.FileOptions, CreationOptions = options.FileCreationOptions }, createDirectory: true)))
+        using (var file = OwnedOrBorrowed.Create(PartialFile.CreateStreamFile(filePath, FileWriteOptions<TAsync>() with { Flags = options.FileOptions, CreationOptions = options.FileCreationOptions }, createDirectory: true)))
         {
             if (TAsync.IsAsync)
             {

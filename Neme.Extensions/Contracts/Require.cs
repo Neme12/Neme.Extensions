@@ -169,7 +169,7 @@ public static class Require
             if (argument is null)
                 throw new ArgumentNullException(paramName, message);
             else
-                throw new ArgumentException(paramName, message);
+                throw new ArgumentException2(paramName, argument, message);
         }
 #pragma warning disable CS8777 // Parameter must have a non-null value when exiting.
     }
@@ -480,21 +480,23 @@ public static class Require
     public static void Argument<T>(
         T argument,
         bool isValid,
+        string? message = null,
         [CallerArgumentExpression(nameof(argument))] string? paramName = null,
         [CallerArgumentExpression(nameof(isValid))] string? condition = null)
     {
         if (!isValid)
-            ThrowArgumentInvalidException(paramName, argument, condition);
+            ThrowArgumentInvalidException(paramName, argument, condition, message);
     }
 
     public static void Argument<T>(
         ReadOnlySpan<T> argument,
         bool isValid,
+        string? message = null,
         [CallerArgumentExpression(nameof(argument))] string? paramName = null,
         [CallerArgumentExpression(nameof(isValid))] string? condition = null)
     {
         if (!isValid)
-            ThrowArgumentInvalidException(paramName, argument.ToString(), condition);
+            ThrowArgumentInvalidException(paramName, argument.ToString(), condition, message);
     }
 
     public static void Value<T>(
@@ -516,17 +518,18 @@ public static class Require
     public static void Argument<T>(
         Span<T> argument,
         bool isValid,
+        string? message = null,
         [CallerArgumentExpression(nameof(argument))] string? paramName = null,
         [CallerArgumentExpression(nameof(isValid))] string? condition = null)
     {
         if (!isValid)
-            ThrowArgumentInvalidException(paramName, argument.ToString(), condition);
+            ThrowArgumentInvalidException(paramName, argument.ToString(), condition, message);
     }
 
     [DoesNotReturn]
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void ThrowArgumentInvalidException(string? paramName, object? actualValue, string? condition) =>
-        throw new InvalidArgumentException(paramName, actualValue, condition);
+    private static void ThrowArgumentInvalidException(string? paramName, object? actualValue, string? condition, string? message) =>
+        throw new InvalidArgumentException(paramName, actualValue, condition, message);
 
     [DoesNotReturn]
     [MethodImpl(MethodImplOptions.NoInlining)]

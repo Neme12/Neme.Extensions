@@ -1,6 +1,8 @@
-﻿using Neme.Extensions.Contracts;
+﻿using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.Contracts;
 using Neme.Extensions.FileSystem.Resources;
 using Neme.Extensions.Ownership;
+using Neme.Utilities.Contracts;
 
 namespace Neme.Extensions.FileSystem.Workflows;
 
@@ -22,24 +24,35 @@ public sealed class PartialFile<TFile> : IDisposable, IAsyncDisposable
     where TFile : class
 {
     private TFile? _file;
-    private IFileResource? _fileEntry;
-    private readonly Func<TFile, IFileResource> _fileEntryAdapter;
+    private IFileResource? _fileResource;
+    private readonly Func<TFile, IFileResource> _fileResourceAdapter;
     private readonly string _finalPath;
-    private readonly Func<string, TFile> _reopenFile;
+    private readonly Func<TFile> _reopenFile;
     private State _state;
 
     internal PartialFile(
         TFile partialFile,
-        Func<TFile, IFileResource> fileEntryAdaper,
+        Func<TFile, IFileResource> fileResourceAdapter,
         string finalPath,
-        Func<string, TFile> reopenFile)
+        Func<TFile> reopenFile)
     {
         _file = partialFile;
-        _fileEntry = fileEntryAdaper(partialFile);
-        _fileEntryAdapter = fileEntryAdaper;
+        _fileResource = fileResourceAdapter(partialFile);
+        _fileResourceAdapter = fileResourceAdapter;
         _finalPath = finalPath;
         _reopenFile = reopenFile;
         _state = State.Open;
+    }
+
+    static PartialFile()
+    {
+        if (!(
+            typeof(IFileResource).IsAssignableFrom(typeof(TFile)) ||
+            typeof(TFile) == typeof(SafeFileHandle) ||
+            typeof(TFile) == typeof(FileStream)))
+        {
+            Throw.InvalidOperationException($"The type parameter {typeof(TFile)} must be assignable to {nameof(IFileResource)}.");
+        }
     }
 
     /// <summary>
@@ -100,8 +113,8 @@ public sealed class PartialFile<TFile> : IDisposable, IAsyncDisposable
         if (_state != State.Closed)
             throw new InvalidOperationException("File is not closed.");
 
-        _file = _reopenFile(FinalPath);
-        _fileEntry = _fileEntryAdapter(_file);
+        _file = _reopenFile();
+        _fileResource = _fileResourceAdapter(_file);
         _state = State.Open;
     }
 
@@ -118,8 +131,8 @@ public sealed class PartialFile<TFile> : IDisposable, IAsyncDisposable
         if (_state != State.Open)
             throw new InvalidOperationException("File is not open.");
 
-        _fileEntry!.Dispose();
-        _fileEntry = null;
+        _fileResource!.Dispose();
+        _fileResource = null;
         _file = null;
         _state = State.Closed;
     }
@@ -137,8 +150,8 @@ public sealed class PartialFile<TFile> : IDisposable, IAsyncDisposable
         if (_state != State.Open)
             throw new InvalidOperationException("File is not open.");
 
-        await _fileEntry!.DisposeAsync();
-        _fileEntry = null;
+        await _fileResource!.DisposeAsync();
+        _fileResource = null;
         _file = null;
         _state = State.Closed;
     }
@@ -157,7 +170,7 @@ public sealed class PartialFile<TFile> : IDisposable, IAsyncDisposable
         if (_state != State.Open)
             throw new InvalidOperationException("File must be open to commit.");
 
-        _fileEntry!.Move(FinalPath, overwrite);
+        _fileResource!.Move(FinalPath, overwrite);
         _state = State.Committed;
     }
 
@@ -169,13 +182,13 @@ public sealed class PartialFile<TFile> : IDisposable, IAsyncDisposable
         if (_state != State.Committed)
         {
             if (_state == State.Open)
-                _fileEntry!.Delete();
+                _fileResource!.Delete();
             else
                 System.IO.File.Delete(CurrentPath);
         }
 
         if (_state != State.Closed)
-            _fileEntry!.Dispose();
+            _fileResource!.Dispose();
 
         _state = State.Disposed;
     }
@@ -188,13 +201,13 @@ public sealed class PartialFile<TFile> : IDisposable, IAsyncDisposable
         if (_state != State.Committed)
         {
             if (_state == State.Open)
-                _fileEntry!.Delete();
+                _fileResource!.Delete();
             else
                 System.IO.File.Delete(CurrentPath);
         }
 
         if (_state != State.Closed)
-            await _fileEntry!.DisposeAsync();
+            await _fileResource!.DisposeAsync();
 
         _state = State.Disposed;
     }

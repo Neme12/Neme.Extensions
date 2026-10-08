@@ -1,5 +1,7 @@
-﻿using Neme.Extensions.FileSystem.Workflows;
+﻿using Neme.Extensions.Contracts;
+using Neme.Extensions.FileSystem.Workflows;
 using Neme.Extensions.IO;
+using Assert = Xunit.Assert;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
@@ -17,7 +19,7 @@ public sealed class PartialFileWithStreamTests
         try
         {
             // Act
-            using var sut = PartialFile.CreateFileStream(finalPath, options);
+            using var sut = PartialFile.CreateStreamFile(finalPath, options);
 
             // Assert
             Assert.Equal(finalPath, sut.FinalPath);
@@ -38,7 +40,7 @@ public sealed class PartialFileWithStreamTests
         string? finalPath = null;
 
         // Act & Assert
-        var exception = Assert.Throws<ArgumentNullException>(() => PartialFile.CreateFileStream(finalPath!, CreateOptions()));
+        var exception = Assert.Throws<ArgumentNullException>(() => PartialFile.CreateStreamFile(finalPath!, CreateOptions()));
         Assert.Equal("finalPath", exception.ParamName);
     }
 
@@ -49,7 +51,7 @@ public sealed class PartialFileWithStreamTests
         const string finalPath = "";
 
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => PartialFile.CreateFileStream(finalPath, CreateOptions()));
+        var exception = Assert.Throws<ArgumentException2>(() => PartialFile.CreateStreamFile(finalPath, CreateOptions()));
         Assert.Equal("finalPath", exception.ParamName);
     }
 
@@ -64,7 +66,7 @@ public sealed class PartialFileWithStreamTests
         try
         {
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => PartialFile.CreateFileStream(finalPath, options));
+            var exception = Assert.Throws<InvalidArgumentException>(() => PartialFile.CreateStreamFile(finalPath, options));
             Assert.Equal("request", exception.ParamName);
         }
         finally
@@ -84,7 +86,7 @@ public sealed class PartialFileWithStreamTests
         try
         {
             // Act
-            using var sut = PartialFile.CreateFileStream(finalPath, CreateOptions(), createDirectory: true);
+            using var sut = PartialFile.CreateStreamFile(finalPath, CreateOptions(), createDirectory: true);
 
             // Assert
             Assert.True(Directory.Exists(nestedDirectory));
@@ -106,7 +108,7 @@ public sealed class PartialFileWithStreamTests
 
         try
         {
-            using var sut = PartialFile.CreateFileStream(finalPath, CreateOptions());
+            using var sut = PartialFile.CreateStreamFile(finalPath, CreateOptions());
             sut.Close();
 
             // Act & Assert
@@ -124,7 +126,7 @@ public sealed class PartialFileWithStreamTests
         // Arrange
         var tempDirectory = CreateTempDirectory();
         var finalPath = Path.Combine(tempDirectory, "file.txt");
-        var sut = PartialFile.CreateFileStream(finalPath, CreateOptions());
+        var sut = PartialFile.CreateStreamFile(finalPath, CreateOptions());
 
         try
         {
@@ -145,7 +147,7 @@ public sealed class PartialFileWithStreamTests
         // Arrange
         var tempDirectory = CreateTempDirectory();
         var finalPath = Path.Combine(tempDirectory, "file.txt");
-        var sut = PartialFile.CreateFileStream(finalPath, CreateOptions());
+        var sut = PartialFile.CreateStreamFile(finalPath, CreateOptions());
 
         try
         {
@@ -169,7 +171,7 @@ public sealed class PartialFileWithStreamTests
 
         try
         {
-            using var sut = PartialFile.CreateFileStream(finalPath, CreateOptions());
+            using var sut = PartialFile.CreateStreamFile(finalPath, CreateOptions());
             sut.File.WriteByte(42);
 
             // Act
@@ -192,7 +194,7 @@ public sealed class PartialFileWithStreamTests
         // Arrange
         var tempDirectory = CreateTempDirectory();
         var finalPath = Path.Combine(tempDirectory, "file.txt");
-        var sut = PartialFile.CreateFileStream(finalPath, CreateOptions());
+        var sut = PartialFile.CreateStreamFile(finalPath, CreateOptions());
 
         try
         {
@@ -213,7 +215,7 @@ public sealed class PartialFileWithStreamTests
         // Arrange
         var tempDirectory = CreateTempDirectory();
         var finalPath = Path.Combine(tempDirectory, "file.txt");
-        var sut = PartialFile.CreateFileStream(finalPath, CreateOptions());
+        var sut = PartialFile.CreateStreamFile(finalPath, CreateOptions());
 
         try
         {
@@ -237,7 +239,7 @@ public sealed class PartialFileWithStreamTests
 
         try
         {
-            using var sut = PartialFile.CreateFileStream(finalPath, CreateOptions());
+            using var sut = PartialFile.CreateStreamFile(finalPath, CreateOptions());
 
             // Act & Assert
             Assert.Throws<InvalidOperationException>(() => sut.Reopen());
@@ -257,7 +259,7 @@ public sealed class PartialFileWithStreamTests
 
         try
         {
-            using var sut = PartialFile.CreateFileStream(finalPath, CreateOptions());
+            using var sut = PartialFile.CreateStreamFile(finalPath, CreateOptions());
             var originalStream = sut.File;
             originalStream.Write([1, 2], 0, 2);
             originalStream.Flush();
@@ -297,7 +299,7 @@ public sealed class PartialFileWithStreamTests
 
         try
         {
-            using var sut = PartialFile.CreateFileStream(finalPath, CreateOptions());
+            using var sut = PartialFile.CreateStreamFile(finalPath, CreateOptions());
             sut.File.WriteByte(42);
             sut.File.Flush();
 
@@ -324,7 +326,7 @@ public sealed class PartialFileWithStreamTests
         // Arrange
         var tempDirectory = CreateTempDirectory();
         var finalPath = Path.Combine(tempDirectory, "file.txt");
-        var sut = PartialFile.CreateFileStream(finalPath, CreateOptions());
+        var sut = PartialFile.CreateStreamFile(finalPath, CreateOptions());
 
         try
         {
@@ -348,7 +350,7 @@ public sealed class PartialFileWithStreamTests
 
         try
         {
-            using var sut = PartialFile.CreateFileStream(finalPath, CreateOptions());
+            using var sut = PartialFile.CreateStreamFile(finalPath, CreateOptions());
             sut.Close();
 
             // Act & Assert
@@ -367,7 +369,7 @@ public sealed class PartialFileWithStreamTests
         // Arrange
         var tempDirectory = CreateTempDirectory();
         var finalPath = Path.Combine(tempDirectory, "file.txt");
-        var sut = PartialFile.CreateFileStream(finalPath, CreateOptions());
+        var sut = PartialFile.CreateStreamFile(finalPath, CreateOptions());
 
         try
         {
@@ -391,7 +393,7 @@ public sealed class PartialFileWithStreamTests
 
         try
         {
-            using var sut = PartialFile.CreateFileStream(finalPath, CreateOptions());
+            using var sut = PartialFile.CreateStreamFile(finalPath, CreateOptions());
             sut.Close();
 
             // Act & Assert
@@ -414,7 +416,7 @@ public sealed class PartialFileWithStreamTests
         try
         {
             File.WriteAllText(finalPath, "old");
-            using var sut = PartialFile.CreateFileStream(finalPath, CreateOptions());
+            using var sut = PartialFile.CreateStreamFile(finalPath, CreateOptions());
             var bytes = new byte[] { 1, 2, 3 };
             sut.File.Write(bytes, 0, bytes.Length);
             sut.File.Flush();
@@ -442,7 +444,7 @@ public sealed class PartialFileWithStreamTests
         // Arrange
         var tempDirectory = CreateTempDirectory();
         var finalPath = Path.Combine(tempDirectory, "file.txt");
-        var sut = PartialFile.CreateFileStream(finalPath, CreateOptions());
+        var sut = PartialFile.CreateStreamFile(finalPath, CreateOptions());
         var stream = sut.File;
         stream.WriteByte(42);
         stream.Flush();
@@ -469,7 +471,7 @@ public sealed class PartialFileWithStreamTests
         // Arrange
         var tempDirectory = CreateTempDirectory();
         var finalPath = Path.Combine(tempDirectory, "file.txt");
-        var sut = PartialFile.CreateFileStream(finalPath, CreateOptions());
+        var sut = PartialFile.CreateStreamFile(finalPath, CreateOptions());
 
         try
         {
@@ -494,7 +496,7 @@ public sealed class PartialFileWithStreamTests
         // Arrange
         var tempDirectory = CreateTempDirectory();
         var finalPath = Path.Combine(tempDirectory, "file.txt");
-        var sut = PartialFile.CreateFileStream(finalPath, CreateOptions());
+        var sut = PartialFile.CreateStreamFile(finalPath, CreateOptions());
         sut.File.WriteByte(42);
         sut.File.Flush();
 
@@ -522,7 +524,7 @@ public sealed class PartialFileWithStreamTests
         // Arrange
         var tempDirectory = CreateTempDirectory();
         var finalPath = Path.Combine(tempDirectory, "file.txt");
-        var sut = PartialFile.CreateFileStream(finalPath, CreateOptions());
+        var sut = PartialFile.CreateStreamFile(finalPath, CreateOptions());
 
         try
         {
@@ -547,7 +549,7 @@ public sealed class PartialFileWithStreamTests
         // Arrange
         var tempDirectory = CreateTempDirectory();
         var finalPath = Path.Combine(tempDirectory, "file.txt");
-        var sut = PartialFile.CreateFileStream(finalPath, CreateOptions());
+        var sut = PartialFile.CreateStreamFile(finalPath, CreateOptions());
 
         try
         {
@@ -576,7 +578,7 @@ public sealed class PartialFileWithStreamTests
         // Arrange
         var tempDirectory = CreateTempDirectory();
         var finalPath = Path.Combine(tempDirectory, "file.txt");
-        var sut = PartialFile.CreateFileStream(finalPath, CreateOptions());
+        var sut = PartialFile.CreateStreamFile(finalPath, CreateOptions());
 
         try
         {
@@ -597,7 +599,7 @@ public sealed class PartialFileWithStreamTests
         // Arrange
         var tempDirectory = CreateTempDirectory();
         var finalPath = Path.Combine(tempDirectory, "file.txt");
-        var sut = PartialFile.CreateFileStream(finalPath, CreateOptions());
+        var sut = PartialFile.CreateStreamFile(finalPath, CreateOptions());
 
         try
         {
@@ -620,7 +622,7 @@ public sealed class PartialFileWithStreamTests
         // Arrange
         var tempDirectory = CreateTempDirectory();
         var finalPath = Path.Combine(tempDirectory, "file.txt");
-        var sut = PartialFile.CreateFileStream(finalPath, CreateOptions());
+        var sut = PartialFile.CreateStreamFile(finalPath, CreateOptions());
         var stream = sut.File;
         stream.WriteByte(42);
         await stream.FlushAsync();
@@ -647,7 +649,7 @@ public sealed class PartialFileWithStreamTests
         // Arrange
         var tempDirectory = CreateTempDirectory();
         var finalPath = Path.Combine(tempDirectory, "file.txt");
-        var sut = PartialFile.CreateFileStream(finalPath, CreateOptions());
+        var sut = PartialFile.CreateStreamFile(finalPath, CreateOptions());
 
         try
         {
@@ -672,7 +674,7 @@ public sealed class PartialFileWithStreamTests
         // Arrange
         var tempDirectory = CreateTempDirectory();
         var finalPath = Path.Combine(tempDirectory, "file.txt");
-        var sut = PartialFile.CreateFileStream(finalPath, CreateOptions());
+        var sut = PartialFile.CreateStreamFile(finalPath, CreateOptions());
         sut.File.WriteByte(42);
         await sut.File.FlushAsync();
 
@@ -700,7 +702,7 @@ public sealed class PartialFileWithStreamTests
         // Arrange
         var tempDirectory = CreateTempDirectory();
         var finalPath = Path.Combine(tempDirectory, "file.txt");
-        var sut = PartialFile.CreateFileStream(finalPath, CreateOptions());
+        var sut = PartialFile.CreateStreamFile(finalPath, CreateOptions());
 
         try
         {
