@@ -1,7 +1,7 @@
 ﻿using Neme.Extensions.FileSystem.Internal;
 using Neme.Extensions.FileSystem.References;
 
-namespace Neme.Extensions.FileSystem;
+namespace Neme.Extensions.FileSystem.Workflows;
 
 public static class PartialFile
 {

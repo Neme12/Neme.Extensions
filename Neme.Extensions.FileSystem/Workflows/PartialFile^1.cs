@@ -1,7 +1,7 @@
 ﻿using Neme.Extensions.Contracts;
 using Neme.Extensions.Ownership;
 
-namespace Neme.Extensions.FileSystem;
+namespace Neme.Extensions.FileSystem.Workflows;
 
 /// <summary>
 /// Creates a file by writing to a temporary <c>.part</c> file and atomically moving it to the final path when the write is complete.
