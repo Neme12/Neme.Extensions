@@ -1,6 +1,6 @@
 ﻿using Neme.Extensions.IO;
 
-namespace Neme.Extensions.FileSystem.References;
+namespace Neme.Extensions.FileSystem.Resources;
 
 public enum FileReferenceMode
 {

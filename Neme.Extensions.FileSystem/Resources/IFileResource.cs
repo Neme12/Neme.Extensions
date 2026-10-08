@@ -1,8 +1,8 @@
 ﻿using System.Runtime.Versioning;
 
-namespace Neme.Extensions.FileSystem;
+namespace Neme.Extensions.FileSystem.Resources;
 
-public interface IFileObject : IDisposable, IAsyncDisposable
+public interface IFileResource : IDisposable, IAsyncDisposable
 {
     public string? OpenedPath { get; }
 

@@ -1,10 +1,11 @@
 ﻿using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.FileSystem.Resources;
 using Neme.Extensions.FileSystem.SafeHandles;
 using System.Runtime.Versioning;
 
 namespace Neme.Extensions.FileSystem.Internal;
 
-internal sealed class FileStreamAdapter : IFileObject
+internal sealed class FileStreamAdapter : IFileResource
 {
     private readonly FileStream _fileStream;
     private readonly SafeFileHandle _hahdle;

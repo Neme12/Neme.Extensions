@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Neme.Extensions.FileSystem;
+using Neme.Extensions.FileSystem.Resources;
 using Neme.Extensions.FileSystem.Workflows;
 using Neme.Extensions.IO;
 using Neme.Extensions.Ownership;

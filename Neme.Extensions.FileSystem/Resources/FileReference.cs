@@ -9,9 +9,9 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
-namespace Neme.Extensions.FileSystem.References;
+namespace Neme.Extensions.FileSystem.Resources;
 
-public sealed class FileReference : IFileObject, IDisposable
+public sealed class FileReference : IFileResource, IDisposable
 {
     [Owned]
     private SafeFileHandle _handle;

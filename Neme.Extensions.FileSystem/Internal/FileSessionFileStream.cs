@@ -1,4 +1,5 @@
-﻿using Neme.Extensions.IO;
+﻿using Neme.Extensions.FileSystem.Resources;
+using Neme.Extensions.IO;
 
 namespace Neme.Extensions.FileSystem.Internal;
 

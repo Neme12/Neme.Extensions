@@ -1,5 +1,5 @@
 ﻿using Neme.Extensions.Contracts;
-using Neme.Extensions.FileSystem.References;
+using Neme.Extensions.FileSystem.Resources;
 using System.Diagnostics;
 
 namespace Neme.Extensions.FileSystem.FileOperationsStrategies;

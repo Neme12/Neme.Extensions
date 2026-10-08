@@ -1,4 +1,5 @@
 ﻿using Neme.Extensions.Contracts;
+using Neme.Extensions.FileSystem.Resources;
 using Neme.Extensions.Ownership;
 
 namespace Neme.Extensions.FileSystem.Workflows;
@@ -21,15 +22,15 @@ public sealed class PartialFile<TFile> : IDisposable, IAsyncDisposable
     where TFile : class
 {
     private TFile? _file;
-    private IFileObject? _fileEntry;
-    private readonly Func<TFile, IFileObject> _fileEntryAdapter;
+    private IFileResource? _fileEntry;
+    private readonly Func<TFile, IFileResource> _fileEntryAdapter;
     private readonly string _finalPath;
     private readonly Func<string, TFile> _reopenFile;
     private State _state;
 
     internal PartialFile(
         TFile partialFile,
-        Func<TFile, IFileObject> fileEntryAdaper,
+        Func<TFile, IFileResource> fileEntryAdaper,
         string finalPath,
         Func<string, TFile> reopenFile)
     {

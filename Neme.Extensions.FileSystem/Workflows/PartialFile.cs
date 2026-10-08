@@ -1,5 +1,5 @@
 ﻿using Neme.Extensions.FileSystem.Internal;
-using Neme.Extensions.FileSystem.References;
+using Neme.Extensions.FileSystem.Resources;
 
 namespace Neme.Extensions.FileSystem.Workflows;
 

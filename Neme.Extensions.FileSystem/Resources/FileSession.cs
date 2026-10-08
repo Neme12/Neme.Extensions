@@ -8,9 +8,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 
-namespace Neme.Extensions.FileSystem;
+namespace Neme.Extensions.FileSystem.Resources;
 
-public sealed class FileSession : IFileObject, IDisposable
+public sealed class FileSession : IFileResource, IDisposable
 {
     [Owned]
     private SafeFileHandle _handle;
