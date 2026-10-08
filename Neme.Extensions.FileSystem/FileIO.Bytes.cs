@@ -55,7 +55,7 @@ public static partial class FileIO
     public static byte[] ReadAllBytes(FileSource file, CancellationToken cancellationToken = default)
     {
         Require.ArgumentNotDefault(file);
-        Require.ArgumentValid(file, file.IsValid);
+        Require.Argument(file, file.IsValid);
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -68,7 +68,7 @@ public static partial class FileIO
     public static Task<byte[]> ReadAllBytesAsync(FileSource file, CancellationToken cancellationToken = default)
     {
         Require.ArgumentNotDefault(file);
-        Require.ArgumentValid(file, file.IsValid);
+        Require.Argument(file, file.IsValid);
 
         if (cancellationToken.IsCancellationRequested)
             return Task.FromCanceled<byte[]>(cancellationToken);
@@ -90,7 +90,7 @@ public static partial class FileIO
     public static void WriteAllBytes(FileSource file, ReadOnlySpan<byte> bytes, CancellationToken cancellationToken = default)
     {
         Require.ArgumentNotDefault(file);
-        Require.ArgumentValid(file, file.IsValid);
+        Require.Argument(file, file.IsValid);
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -106,7 +106,7 @@ public static partial class FileIO
     public static Task WriteAllBytesAsync(FileSource file, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken = default)
     {
         Require.ArgumentNotDefault(file);
-        Require.ArgumentValid(file, file.IsValid);
+        Require.Argument(file, file.IsValid);
 
         if (cancellationToken.IsCancellationRequested)
             return Task.FromCanceled<byte[]>(cancellationToken);
@@ -128,8 +128,8 @@ public static partial class FileIO
     public static void AppendAllBytes(FileSource file, ReadOnlySpan<byte> bytes, CancellationToken cancellationToken = default)
     {
         Require.ArgumentNotDefault(file);
-        Require.ArgumentValid(file, file.IsValid);
-        Require.ArgumentValid(file, file.CanSeek);
+        Require.Argument(file, file.IsValid);
+        Require.Argument(file, file.CanSeek);
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -146,8 +146,8 @@ public static partial class FileIO
     public static Task AppendAllBytesAsync(FileSource file, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken = default)
     {
         Require.ArgumentNotDefault(file);
-        Require.ArgumentValid(file, file.IsValid);
-        Require.ArgumentValid(file, file.CanSeek);
+        Require.Argument(file, file.IsValid);
+        Require.Argument(file, file.CanSeek);
 
         if (cancellationToken.IsCancellationRequested)
             return Task.FromCanceled<byte[]>(cancellationToken);

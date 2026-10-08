@@ -98,7 +98,7 @@ public static class SafeFileHandleExtensions
             int bufferSize = FileStreamExtensions.DefaultBufferSize)
         {
             Require.ArgumentNotNull(file);
-            Require.ArgumentValid(file, !file.IsInvalid && !file.IsClosed);
+            Require.Argument(file, !file.IsInvalid && !file.IsClosed);
             Require.ArgumentInRange(access, FileAccess.None, FileAccess.ReadWrite);
             Require.ArgumentNotNegative(bufferSize);
 

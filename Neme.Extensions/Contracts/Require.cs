@@ -469,15 +469,15 @@ public static class Require
         where T : struct, Enum
     {
         if (!value.HasFlag(requiredFlag))
-            Throw(valueSource, value, requiredFlag, message);
+            Throw(value, requiredFlag, message, valueSource);
 
         [DoesNotReturn]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        static void Throw(string? valueSource, object value, object requiredFlag, string? message) =>
+        static void Throw(object value, object requiredFlag, string? message, string? valueSource) =>
             throw new InvalidValueException(valueSource.NotNull(), value, message ?? "The value does not have the required flag.", $"Required flag: {FormatValue(requiredFlag)}");
     }
 
-    public static void ArgumentValid<T>(
+    public static void Argument<T>(
         T argument,
         bool isValid,
         [CallerArgumentExpression(nameof(argument))] string? paramName = null,
@@ -487,7 +487,7 @@ public static class Require
             ThrowArgumentInvalidException(paramName, argument, condition);
     }
 
-    public static void ArgumentValid<T>(
+    public static void Argument<T>(
         ReadOnlySpan<T> argument,
         bool isValid,
         [CallerArgumentExpression(nameof(argument))] string? paramName = null,
@@ -497,7 +497,23 @@ public static class Require
             ThrowArgumentInvalidException(paramName, argument.ToString(), condition);
     }
 
-    public static void ArgumentValid<T>(
+    public static void Value<T>(
+        T value,
+        bool isValid,
+        string? message = null,
+        [CallerArgumentExpression(nameof(value))] string? valueSource = null,
+        [CallerArgumentExpression(nameof(isValid))] string? condition = null)
+    {
+        if (!isValid)
+            Throw(value, message, valueSource, condition);
+
+        [DoesNotReturn]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static void Throw(object? value, string? message, string? valueSource, string? condition) =>
+            throw new InvalidValueException(valueSource.NotNull(), value, message ?? $"The value must satisfy the condition {condition}.", $"Condition: {condition}");
+    }
+
+    public static void Argument<T>(
         Span<T> argument,
         bool isValid,
         [CallerArgumentExpression(nameof(argument))] string? paramName = null,

@@ -9,9 +9,9 @@ public static class ActivatorExtensions
     public static object? CreateDefaultValue(Type type)
     {
         Require.ArgumentNotNull(type);
-        Require.ArgumentValid(type, !type.IsByRef);
-        Require.ArgumentValid(type, !type.IsGenericType || type.IsConstructedGenericType);
-        Require.ArgumentValid(type, !type.IsGenericParameter);
+        Require.Argument(type, !type.IsByRef);
+        Require.Argument(type, !type.IsGenericType || type.IsConstructedGenericType);
+        Require.Argument(type, !type.IsGenericParameter);
 
         if (type.GetGenericTypeDefinitionOrSelf() == typeof(Nullable<>))
             return null;

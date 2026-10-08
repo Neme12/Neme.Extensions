@@ -9,7 +9,7 @@ public static partial class FileIO
     public static string[] ReadAllLines(FileSource file, Encoding? encoding = null, CancellationToken cancellationToken = default)
     {
         Require.ArgumentNotDefault(file);
-        Require.ArgumentValid(file, file.IsValid);
+        Require.Argument(file, file.IsValid);
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -34,7 +34,7 @@ public static partial class FileIO
     public static Task<string[]> ReadAllLinesAsync(FileSource file, Encoding? encoding = null, CancellationToken cancellationToken = default)
     {
         Require.ArgumentNotDefault(file);
-        Require.ArgumentValid(file, file.IsValid);
+        Require.Argument(file, file.IsValid);
 
         if (cancellationToken.IsCancellationRequested)
             return Task.FromCanceled<string[]>(cancellationToken);
@@ -67,7 +67,7 @@ public static partial class FileIO
     public static void WriteAllLines(FileSource file, IEnumerable<string> contents, Encoding? encoding = null, CancellationToken cancellationToken = default)
     {
         Require.ArgumentNotDefault(file);
-        Require.ArgumentValid(file, file.IsValid);
+        Require.Argument(file, file.IsValid);
         Require.ArgumentNotNull(contents);
 
         cancellationToken.ThrowIfCancellationRequested();
@@ -92,7 +92,7 @@ public static partial class FileIO
     public static Task WriteAllLinesAsync(FileSource file, IEnumerable<string> contents, Encoding? encoding = null, CancellationToken cancellationToken = default)
     {
         Require.ArgumentNotDefault(file);
-        Require.ArgumentValid(file, file.IsValid);
+        Require.Argument(file, file.IsValid);
         Require.ArgumentNotNull(contents);
 
         if (cancellationToken.IsCancellationRequested)

@@ -12,7 +12,7 @@ public static partial class FileIO
     public static string ReadAllText(FileSource file, Encoding? encoding = null, CancellationToken cancellationToken = default)
     {
         Require.ArgumentNotDefault(file);
-        Require.ArgumentValid(file, file.IsValid);
+        Require.Argument(file, file.IsValid);
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -26,7 +26,7 @@ public static partial class FileIO
     public static Task<string> ReadAllTextAsync(FileSource file, Encoding? encoding = null, CancellationToken cancellationToken = default)
     {
         Require.ArgumentNotDefault(file);
-        Require.ArgumentValid(file, file.IsValid);
+        Require.Argument(file, file.IsValid);
 
         if (cancellationToken.IsCancellationRequested)
             return Task.FromCanceled<string>(cancellationToken);
@@ -49,7 +49,7 @@ public static partial class FileIO
     public static void WriteAllText(FileSource file, ReadOnlySpan<char> contents, Encoding? encoding = null, CancellationToken cancellationToken = default)
     {
         Require.ArgumentNotDefault(file);
-        Require.ArgumentValid(file, file.IsValid);
+        Require.Argument(file, file.IsValid);
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -67,7 +67,7 @@ public static partial class FileIO
     public static Task WriteAllTextAsync(FileSource file, ReadOnlyMemory<char> contents, Encoding? encoding = null, CancellationToken cancellationToken = default)
     {
         Require.ArgumentNotDefault(file);
-        Require.ArgumentValid(file, file.IsValid);
+        Require.Argument(file, file.IsValid);
 
         if (cancellationToken.IsCancellationRequested)
             return Task.FromCanceled(cancellationToken);
@@ -91,8 +91,8 @@ public static partial class FileIO
     public static void AppendAllText(FileSource file, ReadOnlySpan<char> contents, Encoding? encoding, CancellationToken cancellationToken = default)
     {
         Require.ArgumentNotDefault(file);
-        Require.ArgumentValid(file, file.IsValid);
-        Require.ArgumentValid(file, file.CanSeek);
+        Require.Argument(file, file.IsValid);
+        Require.Argument(file, file.CanSeek);
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -110,8 +110,8 @@ public static partial class FileIO
     public static Task AppendAllTextAsync(FileSource file, ReadOnlyMemory<char> contents, Encoding? encoding = null, CancellationToken cancellationToken = default)
     {
         Require.ArgumentNotDefault(file);
-        Require.ArgumentValid(file, file.IsValid);
-        Require.ArgumentValid(file, file.CanSeek);
+        Require.Argument(file, file.IsValid);
+        Require.Argument(file, file.CanSeek);
 
         if (cancellationToken.IsCancellationRequested)
             return Task.FromCanceled(cancellationToken);

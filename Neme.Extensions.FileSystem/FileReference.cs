@@ -167,7 +167,7 @@ public sealed class FileReference : IFileObject, IDisposable
     public static FileReference CreateFromHandle([Borrow] SafeFileHandle handle, FileReferenceOptions options = default)
     {
         Require.ArgumentNotNull(handle);
-        Require.ArgumentValid(handle, !handle.IsClosed && !handle.IsInvalid);
+        Require.Argument(handle, !handle.IsClosed && !handle.IsInvalid);
 
         var handleRequest = GetFileHandleRequest(FileReferenceMode.Open, options);
         var newHandle = FileOperations.ReopenHandle(handle, handleRequest);

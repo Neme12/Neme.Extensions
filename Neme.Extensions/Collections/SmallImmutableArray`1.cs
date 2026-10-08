@@ -357,7 +357,7 @@ public readonly partial struct SmallImmutableArray<T> :
 
     bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer)
     {
-        Require.ArgumentValid(other, other is null or ISmallImmutableArray);
+        Require.Argument(other, other is null or ISmallImmutableArray);
         Require.ArgumentNotNull(comparer);
 
         if (other is null)
@@ -406,7 +406,7 @@ public readonly partial struct SmallImmutableArray<T> :
 
     int IStructuralComparable.CompareTo(object? other, IComparer comparer)
     {
-        Require.ArgumentValid(other, other is null or ISmallImmutableArray);
+        Require.Argument(other, other is null or ISmallImmutableArray);
         Require.ArgumentNotNull(comparer);
 
         if (other is null)
