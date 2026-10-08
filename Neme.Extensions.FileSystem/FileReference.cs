@@ -241,6 +241,7 @@ public sealed class FileReference : IFileObject, IDisposable
     public CheckedFileStream OpenFileStream(FileAccess access, int bufferSize = FileStreamExtensions.DefaultBufferSize)
     {
         RequireNotDisposed();
+
         return _handle.CreateFileStream(access, ownsHandle: false, bufferSize);
     }
 

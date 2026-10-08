@@ -116,7 +116,7 @@ public sealed partial class FileCacheTests
 
             // Assert
             Assert.NotNull(result);
-            using var stream = result.CreateFileStream();
+            using var stream = result.CreateFileStream(FileAccess.Read);
             var content = new byte[data.Length];
 #pragma warning disable CA2022 // TODO: Polyfill ReadExactly
             stream.Read(content);
@@ -236,7 +236,7 @@ public sealed partial class FileCacheTests
             Assert.True(factoryCalled);
             Assert.NotNull(result);
 
-            using var stream = result.CreateFileStream();
+            using var stream = result.CreateFileStream(FileAccess.Read);
             var content = new byte[data.Length];
 #pragma warning disable CA2022 // TODO: Polyfill ReadExactly
             stream.Read(content);
@@ -271,7 +271,7 @@ public sealed partial class FileCacheTests
             Assert.False(factoryCalled);
             Assert.NotNull(result);
 
-            using var stream = result.CreateFileStream();
+            using var stream = result.CreateFileStream(FileAccess.Read);
             var content = new byte[originalData.Length];
 #pragma warning disable CA2022 // TODO: Polyfill ReadExactly
             stream.Read(content);

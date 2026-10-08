@@ -29,7 +29,7 @@ public static partial class FileIO
             case FileReference reference:
                 {
                     var session = reference.OpenSession(options);
-                    var fileStream = session.CreateFileStream();
+                    var fileStream = session.CreateFileStream(options.Access.ToFileAccess());
                     return new FileSessionFileStream(session, fileStream);
                 }
             case FileSession session:

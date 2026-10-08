@@ -19,7 +19,8 @@ public static class Require
 #if NET7_0_OR_GREATER
         ObjectDisposedException.ThrowIf(disposed, instance);
 #else
-        ThrowObjectDisposedException(instance, null);
+        if (disposed)
+            ThrowObjectDisposedException(instance, null);
 #endif
     }
 
@@ -449,6 +450,17 @@ public static class Require
             THrowArgumentFlagsDefinedException(paramName, argument, message);
     }
 
+    public static void ArgumentHasFlag<T>(
+        T argument,
+        T requiredFlag,
+        string? message = null,
+        [CallerArgumentExpression(nameof(argument))] string? paramName = null)
+        where T : struct, Enum
+    {
+        if (!argument.HasFlag(requiredFlag))
+            THrowArgumentHasFlagException(paramName, argument, requiredFlag, message);
+    }
+
     public static void ArgumentValid<T>(
         T argument,
         bool isValid,
@@ -489,6 +501,10 @@ public static class Require
     private static void THrowArgumentFlagsDefinedException(string? paramName, object actualValue, string? message) =>
         throw new ArgumentException2(paramName, actualValue, message ?? "The argument contains undefined flags.");
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void THrowArgumentHasFlagException(string? paramName, object actualValue, object requiredFlag, string? message) =>
+        throw new ArgumentException2(paramName, actualValue, message ?? $"The argument does not have the required flag.\nRequired flag: {FormatValue(requiredFlag)}");
+
     [DoesNotReturn]
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowArgumentException(string? paramName, object? actualValue, string? message) =>
@@ -518,4 +534,8 @@ public static class Require
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowObjectDisposedException(Type type, string? message) =>
         throw new ObjectDisposedException(type.FullName);
+
+    private static string FormatValue(object? value) =>
+        value is null ? "null" : $"'{value}'";
+
 }

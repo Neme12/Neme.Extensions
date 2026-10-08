@@ -730,12 +730,12 @@ public sealed partial class FileCache : IFileCache, IDisposable
         {
             if (TAsync.IsAsync)
             {
-                await using (var fileStream = file.CreateFileStream())
+                await using (var fileStream = file.CreateFileStream(FileAccess.Read))
                     return await JsonSerializer.DeserializeAsync(fileStream, FileCacheJsonSerializerContext.Default.FileCacheMetadata, cancellationToken);
             }
             else
             {
-                using (var fileStream = file.CreateFileStream())
+                using (var fileStream = file.CreateFileStream(FileAccess.Read))
                     return JsonSerializer.Deserialize(fileStream, FileCacheJsonSerializerContext.Default.FileCacheMetadata);
             }
         }
@@ -753,12 +753,12 @@ public sealed partial class FileCache : IFileCache, IDisposable
         {
             if (TAsync.IsAsync)
             {
-                await using (var fileStream = file.File.CreateFileStream())
+                await using (var fileStream = file.File.CreateFileStream(FileAccess.Write))
                     await JsonSerializer.SerializeAsync(fileStream, metadata, FileCacheJsonSerializerContext.Default.FileCacheMetadata, cancellationToken);
             }
             else
             {
-                using (var fileStream = file.File.CreateFileStream())
+                using (var fileStream = file.File.CreateFileStream(FileAccess.Write))
                     JsonSerializer.Serialize(fileStream, metadata, FileCacheJsonSerializerContext.Default.FileCacheMetadata);
             }
 

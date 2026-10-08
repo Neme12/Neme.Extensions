@@ -305,7 +305,7 @@ public sealed class PartialFileTests
 
         try
         {
-            using var stream = sut.File.CreateFileStream();
+            using var stream = sut.File.CreateFileStream(FileAccess.Write);
             stream.WriteByte(2);
             stream.Flush();
 
@@ -437,7 +437,7 @@ public sealed class PartialFileTests
         try
         {
             using var sut = PartialFile.CreateSessionFile(finalPath, options, createDirectory: true);
-            using var stream = sut.File.CreateFileStream();
+            using var stream = sut.File.CreateFileStream(FileAccess.Write);
             stream.WriteByte(7);
             stream.Flush();
             sut.Commit();

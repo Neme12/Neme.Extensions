@@ -30,7 +30,7 @@ public static class PartialFile
             file,
             file => file,
             finalPath,
-            finalPath => FileSession.Open(finalPath + PartialExtension, request with { Mode = FileMode.Open}));
+            finalPath => FileSession.Open(finalPath + PartialExtension, request with { Mode = FileMode.Open }));
     }
 
     /// <summary>
@@ -82,11 +82,11 @@ public static class PartialFile
         if (createDirectory)
             Directory.CreateDirectory(Path.GetDirectoryName(finalPath)!);
 
-        var fileStream = FileSession.Open(partialPath, request).CreateFileStream(ownsHandle: true);
+        var fileStream = FileSession.Open(partialPath, request).CreateFileStream(request.Access.ToFileAccess(), ownsHandle: true);
         return new PartialFile<FileStream>(
             fileStream,
             file => new FileStreamAdapter(file),
             finalPath,
-            finalPath => FileSession.Open(finalPath + PartialExtension, request with { Mode = FileMode.Open }).CreateFileStream(ownsHandle: true));
+            finalPath => FileSession.Open(finalPath + PartialExtension, request with { Mode = FileMode.Open }).CreateFileStream(request.Access.ToFileAccess(), ownsHandle: true));
     }
 }
