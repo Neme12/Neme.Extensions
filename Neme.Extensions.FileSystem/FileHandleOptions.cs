@@ -1,7 +1,10 @@
 ﻿using Neme.Extensions.Contracts;
+using Neme.Extensions.IO;
+using System.Runtime.InteropServices;
 
 namespace Neme.Extensions.FileSystem;
 
+[StructLayout(LayoutKind.Auto)]
 public readonly record struct FileHandleOptions
 {
     private readonly AllOptions _allOptions;
@@ -9,24 +12,39 @@ public readonly record struct FileHandleOptions
     public static FileCreationOptions None =>
         default;
 
+    public FileHandleOptions()
+    {
+        _allOptions = ToAllOptions(
+            FileSystemAccess.None,
+            FileShare.All,
+            FileHandleType.RegularFile,
+            FileOptions.None);
+    }
+
     public FileHandleOptions(
         FileSystemAccess access)
     {
         Require.ArgumentFlagsDefined(access);
 
-        _allOptions = ToAllOptions(access, GetDefaultFileShare(access) , FileOptions.None);
+        _allOptions = ToAllOptions(
+            access,
+            GetDefaultFileShare(access),
+            FileHandleType.RegularFile,
+            FileOptions.None);
     }
 
     public FileHandleOptions(
         FileSystemAccess access,
         FileShare share,
+        FileHandleType type = FileHandleType.RegularFile,
         FileOptions flags = FileOptions.None)
     {
         Require.ArgumentFlagsDefined(access);
         Require.ArgumentFlagsDefined(share);
+        Require.ArgumentDefined(type);
         Require.ArgumentFlagsDefined(flags);
 
-        _allOptions = ToAllOptions(access, share, flags);
+        _allOptions = ToAllOptions(access, share, type, flags);
     }
 
     public void Deconstruct(out FileSystemAccess access)
@@ -34,10 +52,17 @@ public readonly record struct FileHandleOptions
         access = Access;
     }
 
-    public void Deconstruct(out FileSystemAccess access, out FileShare share, out FileOptions flags)
+    public void Deconstruct(out FileSystemAccess access, out FileShare share)
     {
         access = Access;
         share = Share;
+    }
+
+    public void Deconstruct(out FileSystemAccess access, out FileShare share, out FileHandleType type, out FileOptions flags)
+    {
+        access = Access;
+        share = Share;
+        type = Type;
         flags = Flags;
     }
 
@@ -62,7 +87,7 @@ public readonly record struct FileHandleOptions
         init
         {
             Require.ArgumentFlagsDefined(value);
-            _allOptions = ToAllOptions(value, Share, Flags);
+            _allOptions = ToAllOptions(value, Share, Type, Flags);
         }
     }
 
@@ -72,7 +97,17 @@ public readonly record struct FileHandleOptions
         init
         {
             Require.ArgumentFlagsDefined(value);
-            _allOptions = ToAllOptions(Access, value, Flags);
+            _allOptions = ToAllOptions(Access, value, Type, Flags);
+        }
+    }
+
+    public FileHandleType Type
+    {
+        get => AllOptionsToType(_allOptions);
+        init
+        {
+            Require.ArgumentDefined(value);
+            _allOptions = ToAllOptions(Access, Share, value, Flags);
         }
     }
 
@@ -82,19 +117,31 @@ public readonly record struct FileHandleOptions
         init
         {
             Require.ArgumentFlagsDefined(value);
-            _allOptions = ToAllOptions(Access, Share, value);
+            _allOptions = ToAllOptions(Access, Share, Type, value);
         }
     }
 
     private static AllOptions ToAllOptions(
         FileSystemAccess access,
         FileShare share,
+        FileHandleType type,
         FileOptions flags)
     {
         return
             AccessToAllOptions(access) |
             ShareToAllOptions(share) |
+            TypeToAllOptions(type) |
             FlagsToAllOptions(flags);
+    }
+
+    private static AllOptions TypeToAllOptions(FileHandleType type)
+    {
+        return (AllOptions)((uint)type & TypeMask);
+    }
+
+    private static FileHandleType AllOptionsToType(AllOptions options)
+    {
+        return (FileHandleType)((uint)options & TypeMask);
     }
 
     private static AllOptions AccessToAllOptions(FileSystemAccess access)
@@ -197,6 +244,9 @@ public readonly record struct FileHandleOptions
         if ((flags & FileOptions.Asynchronous) != 0)
             value |= AllOptions.Flags_Asynchronous;
 
+        if ((flags & FileOptions.NoBuffering) != 0)
+            value |= AllOptions.Flags_NoBuffering;
+
         if ((flags & FileOptions.RandomAccess) != 0)
             value |= AllOptions.Flags_RandomAccess;
 
@@ -205,6 +255,21 @@ public readonly record struct FileHandleOptions
 
         if ((flags & FileOptions.SequentialScan) != 0)
             value |= AllOptions.Flags_SequentialScan;
+
+        if ((flags & FileOptions.AllowPosix) != 0)
+            value |= AllOptions.Flags_AllowPosix;
+
+        if ((flags & FileOptions.BackupOrRestore) != 0)
+            value |= AllOptions.Flags_BackupOrRestore;
+
+        if ((flags & FileOptions.DisallowReparsePoint) != 0)
+            value |= AllOptions.Flags_DisallowReparsePoint;
+
+        if ((flags & FileOptions.NoRemoteRecall) != 0)
+            value |= AllOptions.Flags_NoRemoteRecall;
+
+        if ((flags & FileOptions.FirstPipeInstance) != 0)
+            value |= AllOptions.Flags_FirstPipeInstance;
 
         if ((flags & FileOptions.Encrypted) != 0)
             value |= AllOptions.Flags_Encrypted;
@@ -222,6 +287,9 @@ public readonly record struct FileHandleOptions
         if ((options & AllOptions.Flags_Asynchronous) != 0)
             value |= FileOptions.Asynchronous;
 
+        if ((options & AllOptions.Flags_NoBuffering) != 0)
+            value |= FileOptions.NoBuffering;
+
         if ((options & AllOptions.Flags_RandomAccess) != 0)
             value |= FileOptions.RandomAccess;
 
@@ -230,6 +298,21 @@ public readonly record struct FileHandleOptions
 
         if ((options & AllOptions.Flags_SequentialScan) != 0)
             value |= FileOptions.SequentialScan;
+
+        if ((options & AllOptions.Flags_AllowPosix) != 0)
+            value |= FileOptions.AllowPosix;
+
+        if ((options & AllOptions.Flags_BackupOrRestore) != 0)
+            value |= FileOptions.BackupOrRestore;
+
+        if ((options & AllOptions.Flags_DisallowReparsePoint) != 0)
+            value |= FileOptions.DisallowReparsePoint;
+
+        if ((options & AllOptions.Flags_NoRemoteRecall) != 0)
+            value |= FileOptions.NoRemoteRecall;
+
+        if ((options & AllOptions.Flags_FirstPipeInstance) != 0)
+            value |= FileOptions.FirstPipeInstance;
 
         if ((options & AllOptions.Flags_Encrypted) != 0)
             value |= FileOptions.Encrypted;
@@ -254,25 +337,46 @@ public readonly record struct FileHandleOptions
         FromFileStreamOptions(options);
 #endif
 
+    private const ulong TypeMask = 0b111;
+
+    [Flags]
     private enum AllOptions : uint
     {
-        Access_ReadAttributes = 1 << 1,
-        Access_WriteAttributes = 1 << 2,
-        Access_Read = 1 << 3,
-        Access_Write = 1 << 4,
-        Access_Delete = 1 << 5,
-        Access_Execute = 1 << 6,
+        // Type_Unknown = 0,
+        Type_RegularFile = FileHandleType.RegularFile,
+        Type_Pipe = FileHandleType.Pipe,
+        Type_Socket = FileHandleType.Socket,
+        Type_CharacterDevice = FileHandleType.CharacterDevice,
+        Type_Directory = FileHandleType.Directory,
+        Type_SymbolicLink = FileHandleType.SymbolicLink,
+        Type_BlockDevice = FileHandleType.BlockDevice,
 
-        Share_Read = 1 << 7,
-        Share_Write = 1 << 8,
-        Share_Delete = 1 << 9,
-        Share_Inheritable = 1 << 10,
+        // Access_None = 0
+        Access_ReadAttributes = 1 << 3,
+        Access_WriteAttributes = 1 << 4,
+        Access_Read = 1 << 5,
+        Access_Write = 1 << 6,
+        Access_Delete = 1 << 7,
+        Access_Execute = 1 << 8,
 
-        Flags_WriteThrough = 1 << 11,
-        Flags_Asynchronous = 1 << 12,
-        Flags_RandomAccess = 1 << 13,
-        Flags_DeleteOnClose = 1 << 14,
-        Flags_SequentialScan = 1 << 15,
-        Flags_Encrypted = 1 << 16,
+        // Share_None = 0
+        Share_Read = 1 << 9,
+        Share_Write = 1 << 10,
+        Share_Delete = 1 << 11,
+        Share_Inheritable = 1 << 12,
+
+        // Flags_None = 0
+        Flags_WriteThrough = 1 << 13,
+        Flags_Asynchronous = 1 << 14,
+        Flags_NoBuffering = 1 << 15,
+        Flags_RandomAccess = 1 << 16,
+        Flags_DeleteOnClose = 1 << 17,
+        Flags_SequentialScan = 1 << 18,
+        Flags_AllowPosix = 1 << 19, 
+        Flags_BackupOrRestore = 1 << 20,
+        Flags_DisallowReparsePoint = 1 << 21,
+        Flags_NoRemoteRecall = 1 << 22,
+        Flags_FirstPipeInstance = 1 << 23,
+        Flags_Encrypted = 1 << 24,
     }
 }

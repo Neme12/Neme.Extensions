@@ -66,7 +66,7 @@ public sealed partial class FileOperationsTests
             Directory.CreateDirectory(tempDirectory);
             try
             {
-                var options = FileHandleRequest.Open(FileSystemAccess.ReadAttributes, FileShare.All, 0, FileAttributes.Directory);
+                var options = FileHandleRequest.Open(FileSystemAccess.ReadAttributes, FileShare.All, FileHandleType.Directory);
                 using var handle = FileOperations.OpenHandle(tempDirectory, options);
                 var now = SystemClock.Instance.GetCurrentInstant();
                 var earliestExpectedTime = now - Duration.FromSeconds(5);
@@ -75,6 +75,7 @@ public sealed partial class FileOperationsTests
                 var result = FileOperations.GetBasicInfo(handle);
 
                 // Assert
+                Assert.Equal(FileHandleType.Directory, handle.Type);
                 Assert.True(result.Attributes.HasFlag(FileAttributes.Directory));
                 Assert.InRange(result.CreationTime!.Value, earliestExpectedTime, now);
                 Assert.InRange(result.LastAccessTime, earliestExpectedTime, now);

@@ -47,15 +47,14 @@ public sealed partial class FileOperationsTests
             byte[] expected = [7, 8, 9];
             var access = FileSystemAccess.ReadWrite;
             var share = FileShare.All;
-            var options = FileOptions.Asynchronous;
-            var attributes = FileAttributes.Normal;
+            var flags = FileOptions.Asynchronous;
 
             try
             {
-                using (var handle = FileOperations.CreateTempFileHandle(access, share, options, attributes))
+                using (var handle = FileOperations.CreateTempFileHandle(access, share, flags: flags))
                 {
                     createdPath = FileOperations.GetPath(handle);
-                    var fileOptions = FileHandleRequest.Open(access, share, options, attributes);
+                    var fileOptions = FileHandleRequest.Open(access, share, flags: flags);
                     using var stream = handle.CreateFileStream(FileAccess.ReadWrite, bufferSize: 128);
 
                     // Act

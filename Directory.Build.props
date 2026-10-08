@@ -6,6 +6,7 @@
     <TestTargetFrameworks>net11.0;net10.0;net8.0;net6.0;net48</TestTargetFrameworks>
     <AspNetCoreTestTargetFrameworks>net11.0;net10.0;net8.0;net6.0</AspNetCoreTestTargetFrameworks>
     <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
   </PropertyGroup>
 
   <PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">

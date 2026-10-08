@@ -52,7 +52,8 @@ internal sealed partial class WindowsFileOperationsStrategy
         };
 
         var createOptions =
-            request.Flags.ToWinNT(request.Attributes) |
+            request.Type.ToWinNT() |
+            request.Flags.ToWinNT() |
             NTCREATEFILE_CREATE_OPTIONS.FILE_OPEN_BY_FILE_ID;
 
         var status = WinNTPInvoke.NtCreateFile(
@@ -130,7 +131,7 @@ internal sealed partial class WindowsFileOperationsStrategy
                 request.Attributes.ToWinNT(),
                 request.Share.ToWin32(),
                 request.Mode.ToWinNT(),
-                request.Flags.ToWinNT(request.Attributes),
+                request.Type.ToWinNT() | request.Flags.ToWinNT(),
                 []);
         }
         finally

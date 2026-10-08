@@ -17,7 +17,7 @@ public sealed class SafeFileHandleExtensionsTests
             // Arrange
             var expected = $"{IOPath.GetTempPath()}{nameof(SafeFileHandleExtensionsTests)}_{Guid.NewGuid():N}.tmp";
             string result;
-            using (var tempFile = FileOperations.OpenHandle(expected, FileHandleRequest.CreateNew(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete, FileOptions.DeleteOnClose, FileAttributes.Temporary)))
+            using (var tempFile = FileOperations.OpenHandle(expected, FileHandleRequest.CreateNew(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete, flags: FileOptions.DeleteOnClose) with { Attributes = FileAttributes.Temporary }))
             {
                 FileIO.WriteAllBytes(tempFile, "test"u8.ToArray());
 
@@ -463,7 +463,7 @@ public sealed class SafeFileHandleExtensionsTests
             // Arrange
             var expected = $"{System.IO.Path.GetTempPath()}{nameof(SafeFileHandleExtensionsTests)}_{Guid.NewGuid():N}.tmp";
             string? result;
-            using (var tempFile = FileOperations.OpenHandle(expected, FileHandleRequest.CreateNew(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete, FileOptions.DeleteOnClose, FileAttributes.Temporary)))
+            using (var tempFile = FileOperations.OpenHandle(expected, FileHandleRequest.CreateNew(FileSystemAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete, flags: FileOptions.DeleteOnClose) with { Attributes = FileAttributes.Temporary }))
             {
                 FileIO.WriteAllBytes(tempFile, "test"u8.ToArray());
 
@@ -492,7 +492,7 @@ public sealed class SafeFileHandleExtensionsTests
             var tempFile = IOPath.GetTempFileName();
             try
             {
-                var options = FileHandleRequest.Open(FileSystemAccess.ReadWrite, FileShare.None, FileOptions.Asynchronous);
+                var options = FileHandleRequest.Open(FileSystemAccess.ReadWrite, FileShare.None, flags: FileOptions.Asynchronous);
                 using var handle = FileOperations.OpenHandle(tempFile, options);
 
                 // Act

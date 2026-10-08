@@ -57,7 +57,7 @@ public sealed partial class FileOperationsTests
             try
             {
                 SafeFileHandle? rootDirectory = null;
-                var options = FileHandleRequest.Open(FileSystemAccess.ReadAttributes, FileShare.Read, 0, FileAttributes.Directory);
+                var options = FileHandleRequest.Open(FileSystemAccess.ReadAttributes, FileShare.Read, FileHandleType.Directory);
 
                 // Act
                 using var handle = FileOperations.OpenHandleAt(rootDirectory, tempDir, options);
@@ -66,6 +66,8 @@ public sealed partial class FileOperationsTests
                 Assert.NotNull(handle);
                 Assert.False(handle.IsInvalid);
                 Assert.False(handle.IsClosed);
+                Assert.Equal(FileHandleType.Directory, handle.Type);
+                Assert.True(FileOperations.GetAttributes(handle).HasFlag(FileAttributes.Directory));
             }
             finally
             {
@@ -126,7 +128,7 @@ public sealed partial class FileOperationsTests
                 {
                     Directory.SetCurrentDirectory(tempDir);
                     SafeFileHandle? rootDirectory = null;
-                    var options = FileHandleRequest.Open(FileSystemAccess.ReadAttributes, FileShare.Read, 0, FileAttributes.Directory);
+                    var options = FileHandleRequest.Open(FileSystemAccess.ReadAttributes, FileShare.Read, FileHandleType.Directory);
 
                     // Act
                     using var handle = FileOperations.OpenHandleAt(rootDirectory, dirName, options);
@@ -135,6 +137,8 @@ public sealed partial class FileOperationsTests
                     Assert.NotNull(handle);
                     Assert.False(handle.IsInvalid);
                     Assert.False(handle.IsClosed);
+                    Assert.Equal(FileHandleType.Directory, handle.Type);
+                    Assert.True(FileOperations.GetAttributes(handle).HasFlag(FileAttributes.Directory));
                 }
                 finally
                 {
@@ -158,8 +162,14 @@ public sealed partial class FileOperationsTests
                 var tempFile = Path.Combine(tempDir, "testfile.txt");
                 File.WriteAllText(tempFile, "test");
 
-                var dirOptions = FileHandleRequest.Open(FileSystemAccess.ReadAttributes, FileShare.Read, 0, FileAttributes.Directory);
+                var dirOptions = FileHandleRequest.Open(FileSystemAccess.ReadAttributes, FileShare.Read, FileHandleType.Directory);
                 using var rootDirectory = FileOperations.OpenHandle(tempDir, dirOptions);
+
+                Assert.NotNull(rootDirectory);
+                Assert.False(rootDirectory.IsInvalid);
+                Assert.False(rootDirectory.IsClosed);
+                Assert.Equal(FileHandleType.Directory, rootDirectory.Type);
+                Assert.True(FileOperations.GetAttributes(rootDirectory).HasFlag(FileAttributes.Directory));
 
                 var fileName = Path.GetFileName(tempFile);
                 var fileOptions = FileHandleRequest.Open(FileSystemAccess.ReadAttributes);
@@ -189,8 +199,14 @@ public sealed partial class FileOperationsTests
                 var subDir = Path.Combine(tempDir, "subdir");
                 Directory.CreateDirectory(subDir);
 
-                var dirOptions = FileHandleRequest.Open(FileSystemAccess.ReadAttributes, FileShare.Read, 0, FileAttributes.Directory);
+                var dirOptions = FileHandleRequest.Open(FileSystemAccess.ReadAttributes, FileShare.Read, FileHandleType.Directory);
                 using var rootDirectory = FileOperations.OpenHandle(tempDir, dirOptions);
+
+                Assert.NotNull(rootDirectory);
+                Assert.False(rootDirectory.IsInvalid);
+                Assert.False(rootDirectory.IsClosed);
+                Assert.Equal(FileHandleType.Directory, rootDirectory.Type);
+                Assert.True(FileOperations.GetAttributes(rootDirectory).HasFlag(FileAttributes.Directory));
 
                 var subDirName = Path.GetFileName(subDir);
 
@@ -201,6 +217,8 @@ public sealed partial class FileOperationsTests
                 Assert.NotNull(handle);
                 Assert.False(handle.IsInvalid);
                 Assert.False(handle.IsClosed);
+                Assert.Equal(FileHandleType.Directory, handle.Type);
+                Assert.True(FileOperations.GetAttributes(handle).HasFlag(FileAttributes.Directory));
             }
             finally
             {
@@ -216,8 +234,14 @@ public sealed partial class FileOperationsTests
             Directory.CreateDirectory(tempDir);
             try
             {
-                var dirOptions = FileHandleRequest.Open(FileSystemAccess.ReadAttributes, FileShare.Read, 0, FileAttributes.Directory);
+                var dirOptions = FileHandleRequest.Open(FileSystemAccess.ReadAttributes, FileShare.Read, FileHandleType.Directory);
                 using var rootDirectory = FileOperations.OpenHandle(tempDir, dirOptions);
+
+                Assert.NotNull(rootDirectory);
+                Assert.False(rootDirectory.IsInvalid);
+                Assert.False(rootDirectory.IsClosed);
+                Assert.Equal(FileHandleType.Directory, rootDirectory.Type);
+                Assert.True(FileOperations.GetAttributes(rootDirectory).HasFlag(FileAttributes.Directory));
 
                 string? path = null;
 
@@ -228,6 +252,8 @@ public sealed partial class FileOperationsTests
                 Assert.NotNull(handle);
                 Assert.False(handle.IsInvalid);
                 Assert.False(handle.IsClosed);
+                Assert.Equal(FileHandleType.Directory, handle.Type);
+                Assert.True(FileOperations.GetAttributes(handle).HasFlag(FileAttributes.Directory));
             }
             finally
             {
@@ -477,8 +503,14 @@ public sealed partial class FileOperationsTests
                 var tempFile = Path.Combine(subDir, "testfile.txt");
                 File.WriteAllText(tempFile, "test");
 
-                var dirOptions = FileHandleRequest.Open(FileSystemAccess.ReadAttributes, FileShare.Read, 0, FileAttributes.Directory);
+                var dirOptions = FileHandleRequest.Open(FileSystemAccess.ReadAttributes, FileShare.Read, FileHandleType.Directory);
                 using var rootDirectory = FileOperations.OpenHandle(tempDir, dirOptions);
+
+                Assert.NotNull(rootDirectory);
+                Assert.False(rootDirectory.IsInvalid);
+                Assert.False(rootDirectory.IsClosed);
+                Assert.Equal(FileHandleType.Directory, rootDirectory.Type);
+                Assert.True(FileOperations.GetAttributes(rootDirectory).HasFlag(FileAttributes.Directory));
 
                 var relativePath = Path.Combine("subdir", "testfile.txt");
                 var fileOptions = FileHandleRequest.Open(FileSystemAccess.ReadAttributes);

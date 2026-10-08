@@ -57,16 +57,16 @@ public sealed partial class FileCache : IFileCache, IDisposable
     private const string MetadataExtension = ".metadata";
 
     private static readonly FileHandleRequest s_fileSyncReadOptions =
-        FileHandleRequest.Open(FileSystemAccess.Read, FileShare.Read, FileOptions.SequentialScan);
+        FileHandleRequest.Open(FileSystemAccess.Read, FileShare.Read, flags: FileOptions.SequentialScan);
 
     private static readonly FileHandleRequest s_fileAsyncReadOptions =
-        FileHandleRequest.Open(FileSystemAccess.Read, FileShare.Read, FileOptions.SequentialScan | FileOptions.Asynchronous);
+        FileHandleRequest.Open(FileSystemAccess.Read, FileShare.Read, flags: FileOptions.SequentialScan | FileOptions.Asynchronous);
 
     private static readonly FileHandleRequest s_fileSyncWriteOptions =
-        FileHandleRequest.Create(FileSystemAccess.ReadWriteDelete, FileShare.All, FileOptions.SequentialScan);
+        FileHandleRequest.Create(FileSystemAccess.ReadWriteDelete, FileShare.All, flags: FileOptions.SequentialScan);
 
     private static readonly FileHandleRequest s_fileAsyncWriteOptions =
-        FileHandleRequest.Create(FileSystemAccess.ReadWriteDelete, FileShare.All, FileOptions.SequentialScan | FileOptions.Asynchronous);
+        FileHandleRequest.Create(FileSystemAccess.ReadWriteDelete, FileShare.All, flags: FileOptions.SequentialScan | FileOptions.Asynchronous);
 
     public FileCache(
         IOptions<FileCacheOptions> optionsAccessor,

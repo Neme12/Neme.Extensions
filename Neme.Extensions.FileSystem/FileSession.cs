@@ -49,6 +49,15 @@ public sealed class FileSession : IFileObject, IDisposable
         }
     }
 
+    public FileHandleType Type
+    {
+        get
+        {
+            ObjectDisposedException.ThrowIf(_handle is null, this);
+            return _handle.Type;
+        }
+    }
+
     public bool IsAsync
     {
         get
@@ -157,11 +166,12 @@ public sealed class FileSession : IFileObject, IDisposable
     public static FileSession CreateTempFile(
         FileSystemAccess access,
         FileShare share,
-        FileOptions options = FileOptions.DeleteOnClose,
+        FileHandleType type = FileHandleType.RegularFile,
+        FileOptions flags = FileOptions.DeleteOnClose,
         FileAttributes attributes = FileAttributes.Temporary)
     {
         var path = FileOperations.GetTempFilePath();
-        var request = FileHandleRequest.CreateNew(access, share, options, attributes);
+        var request = FileHandleRequest.CreateNew(access, share, type, flags) with { Attributes = attributes };
         return Open(path, request);
     }
 

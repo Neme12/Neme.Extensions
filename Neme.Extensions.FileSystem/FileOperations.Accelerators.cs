@@ -13,11 +13,12 @@ public static partial class FileOperations
     public static SafeFileHandle CreateTempFileHandle(
         FileSystemAccess access,
         FileShare share,
-        FileOptions options = FileOptions.DeleteOnClose,
+        FileHandleType type = FileHandleType.RegularFile,
+        FileOptions flags = FileOptions.DeleteOnClose,
         FileAttributes attributes = FileAttributes.Temporary)
     {
         var path = GetTempFilePath();
-        var request = FileHandleRequest.CreateNew(access, share, options, attributes);
+        var request = FileHandleRequest.CreateNew(access, share, type, flags) with { Attributes = attributes };
         return OpenHandle(path, request);
     }
 

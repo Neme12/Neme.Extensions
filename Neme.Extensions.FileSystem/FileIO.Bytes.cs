@@ -4,25 +4,23 @@ using Neme.Extensions.FileSystem.Internal;
 using Neme.Extensions.FileSystem.SafeHandles;
 using Neme.Extensions.InteropServices;
 using Neme.Extensions.IO;
-using Neme.Extensions.Ownership;
 using System.Diagnostics;
-using System.Text;
 
 namespace Neme.Extensions.FileSystem;
 
 public static partial class FileIO
 {
     private static FileHandleOptions ReadOptions =>
-        new(FileSystemAccess.Read, FileShare.Read, FileOptions.SequentialScan);
+        new(FileSystemAccess.Read, FileShare.Read, flags: FileOptions.SequentialScan);
    
     private static FileHandleOptions AsyncReadOptions =>
-        new(FileSystemAccess.Read, FileShare.Read, FileOptions.SequentialScan | FileOptions.Asynchronous);
+        new(FileSystemAccess.Read, FileShare.Read, flags: FileOptions.SequentialScan | FileOptions.Asynchronous);
 
     private static FileHandleOptions WriteOptions =>
-        new(FileSystemAccess.Write, FileShare.None, FileOptions.SequentialScan);
+        new(FileSystemAccess.Write, FileShare.None, flags: FileOptions.SequentialScan);
 
     private static FileHandleOptions AsyncWriteOptions =>
-        new(FileSystemAccess.Write, FileShare.None, FileOptions.SequentialScan | FileOptions.Asynchronous);
+        new(FileSystemAccess.Write, FileShare.None, flags: FileOptions.SequentialScan | FileOptions.Asynchronous);
 
     private static FileStream CreateFileStream(this FileSource file, FileHandleOptions options, bool resetPosition)
     {

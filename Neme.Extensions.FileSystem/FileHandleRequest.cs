@@ -1,4 +1,5 @@
 ﻿using Neme.Extensions.Contracts;
+using Neme.Extensions.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
@@ -10,30 +11,61 @@ public readonly record struct FileHandleRequest
     private readonly AllOptions _allOptions;
     private readonly long _preallocationSize;
 
+    public FileHandleRequest()
+    {
+        _allOptions = ToAllOptions(
+            0,
+            FileSystemAccess.None,
+            FileShare.All,
+            FileHandleType.RegularFile,
+            FileOptions.None,
+            0,
+            null);
+    }
+
     public FileHandleRequest(FileMode mode, FileSystemAccess access)
     {
         Require.ArgumentDefined(mode);
         Require.ArgumentFlagsDefined(access);
 
-        _allOptions = ToAllOptions(mode, access, FileHandleOptions.GetDefaultFileShare(access), 0, 0, null);
+        _allOptions = ToAllOptions(
+            mode,
+            access,
+            FileHandleOptions.GetDefaultFileShare(access),
+            FileHandleType.RegularFile,
+            FileOptions.None,
+            0,
+            null);
     }
 
-    public FileHandleRequest(FileMode mode, FileSystemAccess access, FileShare share, FileOptions flags = FileOptions.None, FileAttributes attributes = 0)
+    public FileHandleRequest(
+        FileMode mode,
+        FileSystemAccess access,
+        FileShare share,
+        FileHandleType type = FileHandleType.RegularFile,
+        FileOptions flags = FileOptions.None)
     {
         Require.ArgumentDefined(mode);
         Require.ArgumentFlagsDefined(access);
         Require.ArgumentFlagsDefined(share);
+        Require.ArgumentDefined(type);
         Require.ArgumentFlagsDefined(flags);
-        Require.ArgumentFlagsDefined(attributes);
 
-        _allOptions = ToAllOptions(mode, access, share, flags, attributes, null);
+        _allOptions = ToAllOptions(mode, access, share, type, flags, 0, null);
     }
 
     public FileHandleRequest(FileMode mode, FileHandleOptions handleOptions, FileCreationOptions creationOptions = default)
     {
         Require.ArgumentDefined(mode);
 
-        _allOptions = ToAllOptions(mode, handleOptions.Access, handleOptions.Share, handleOptions.Flags, creationOptions.Attributes, creationOptions.UnixCreateMode);
+        _allOptions = ToAllOptions(
+            mode,
+            handleOptions.Access,
+            handleOptions.Share,
+            handleOptions.Type,
+            handleOptions.Flags,
+            creationOptions.Attributes,
+            creationOptions.UnixCreateMode);
         _preallocationSize = creationOptions.PreallocationSize;
     }
 
@@ -56,18 +88,12 @@ public readonly record struct FileHandleRequest
     public static FileHandleRequest Create(
         FileSystemAccess access,
         FileShare share,
-        FileOptions flags = FileOptions.None,
-        FileAttributes attributes = 0)
-    {
-        return new(FileMode.Create, access, share, flags, attributes);
-    }
+        FileHandleType type = FileHandleType.RegularFile,
+        FileOptions flags = FileOptions.None) =>
+        new(FileMode.Create, access, share, type, flags);
 
-    public static FileHandleRequest Create(
-        FileHandleOptions options,
-        FileAttributes attributes = 0)
-    {
-        return new(FileMode.Create, options.Access, options.Share, options.Flags, attributes);
-    }
+    public static FileHandleRequest Create(FileHandleOptions handleOptions, FileCreationOptions creationOptions = default) =>
+        new(FileMode.Create, handleOptions, creationOptions);
 
     public static FileHandleRequest CreateNew(FileSystemAccess access) =>
         new(FileMode.CreateNew, access, FileHandleOptions.GetDefaultFileShare(access));
@@ -75,18 +101,12 @@ public readonly record struct FileHandleRequest
     public static FileHandleRequest CreateNew(
         FileSystemAccess access,
         FileShare share,
-        FileOptions flags = FileOptions.None,
-        FileAttributes attributes = 0)
-    {
-        return new(FileMode.CreateNew, access, share, flags, attributes);
-    }
+        FileHandleType type = FileHandleType.RegularFile,
+        FileOptions flags = FileOptions.None) =>
+        new(FileMode.CreateNew, access, share, type, flags);
 
-    public static FileHandleRequest CreateNew(
-        FileHandleOptions options,
-        FileAttributes attributes = 0)
-    {
-        return new(FileMode.CreateNew, options.Access, options.Share, options.Flags, attributes);
-    }
+    public static FileHandleRequest CreateNew(FileHandleOptions handleOptions, FileCreationOptions creationOptions = default) =>
+        new(FileMode.CreateNew, handleOptions, creationOptions);
 
     public static FileHandleRequest Open(FileSystemAccess access) =>
         new(FileMode.Open, access, FileHandleOptions.GetDefaultFileShare(access));
@@ -94,18 +114,12 @@ public readonly record struct FileHandleRequest
     public static FileHandleRequest Open(
         FileSystemAccess access,
         FileShare share,
-        FileOptions flags = FileOptions.None,
-        FileAttributes attributes = 0)
-    {
-        return new(FileMode.Open, access, share, flags, attributes);
-    }
+        FileHandleType type = FileHandleType.RegularFile,
+        FileOptions flags = FileOptions.None) =>
+        new(FileMode.Open, access, share, type, flags);
 
-    public static FileHandleRequest Open(
-        FileHandleOptions options,
-        FileAttributes attributes = 0)
-    {
-        return new(FileMode.Open, options.Access, options.Share, options.Flags, attributes);
-    }
+    public static FileHandleRequest Open(FileHandleOptions handleOptions, FileCreationOptions creationOptions = default) =>
+        new(FileMode.Open, handleOptions, creationOptions);
 
     public static FileHandleRequest OpenOrCreate(FileSystemAccess access) =>
         new(FileMode.OpenOrCreate, access, FileHandleOptions.GetDefaultFileShare(access));
@@ -113,18 +127,25 @@ public readonly record struct FileHandleRequest
     public static FileHandleRequest OpenOrCreate(
         FileSystemAccess access,
         FileShare share,
-        FileOptions flags = FileOptions.None,
-        FileAttributes attributes = 0)
-    {
-        return new(FileMode.OpenOrCreate, access, share, flags, attributes);
-    }
+        FileHandleType type = FileHandleType.RegularFile,
+        FileOptions flags = FileOptions.None) =>
+        new(FileMode.OpenOrCreate, access, share, type, flags);
 
-    public static FileHandleRequest OpenOrCreate(
-        FileHandleOptions options,
-        FileAttributes attributes = 0)
-    {
-        return new(FileMode.OpenOrCreate, options.Access, options.Share, options.Flags, attributes);
-    }
+    public static FileHandleRequest OpenOrCreate(FileHandleOptions handleOptions, FileCreationOptions creationOptions = default) =>
+        new(FileMode.OpenOrCreate, handleOptions, creationOptions);
+
+    public static FileHandleRequest Truncate(FileSystemAccess access = FileSystemAccess.Write) =>
+        new(FileMode.Truncate, access, FileHandleOptions.GetDefaultFileShare(access));
+
+    public static FileHandleRequest Truncate(
+        FileSystemAccess access = FileSystemAccess.Write,
+        FileShare share = FileShare.None,
+        FileHandleType type = FileHandleType.RegularFile,
+        FileOptions flags = FileOptions.None) =>
+        new(FileMode.Truncate, access, share, type, flags);
+
+    public static FileHandleRequest Truncate(FileHandleOptions handleOptions, FileCreationOptions creationOptions = default) =>
+        new(FileMode.Truncate, handleOptions, creationOptions);
 
     public static FileHandleRequest Append(FileSystemAccess access = FileSystemAccess.Write) =>
         new(FileMode.Append, access, FileHandleOptions.GetDefaultFileShare(access));
@@ -132,18 +153,12 @@ public readonly record struct FileHandleRequest
     public static FileHandleRequest Append(
         FileSystemAccess access = FileSystemAccess.Write,
         FileShare share = FileShare.None,
-        FileOptions flags = FileOptions.None,
-        FileAttributes attributes = 0)
-    {
-        return new(FileMode.Append, access, share, flags, attributes);
-    }
+        FileHandleType type = FileHandleType.RegularFile,
+        FileOptions flags = FileOptions.None) =>
+        new(FileMode.Append, access, share, type, flags);
 
-    public static FileHandleRequest Append(
-        FileHandleOptions options,
-        FileAttributes attributes = 0)
-    {
-        return new(FileMode.Append, options.Access, options.Share, options.Flags, attributes);
-    }
+    public static FileHandleRequest Append(FileHandleOptions handleOptions, FileCreationOptions creationOptions = default) =>
+        new(FileMode.Append, handleOptions, creationOptions);
 
     public FileMode Mode
     {
@@ -151,7 +166,7 @@ public readonly record struct FileHandleRequest
         init
         {
             Require.ArgumentDefined(value);
-            _allOptions = ToAllOptions(value, Access, Share, Flags, Attributes, UnixCreateMode);
+            _allOptions = ToAllOptions(value, Access, Share, Type, Flags, Attributes, UnixCreateMode);
         }
     }
 
@@ -161,7 +176,7 @@ public readonly record struct FileHandleRequest
         init
         {
             Require.ArgumentFlagsDefined(value);
-            _allOptions = ToAllOptions(Mode, value, Share, Flags, Attributes, UnixCreateMode);
+            _allOptions = ToAllOptions(Mode, value, Share, Type, Flags, Attributes, UnixCreateMode);
         }
     }
 
@@ -171,7 +186,17 @@ public readonly record struct FileHandleRequest
         init
         {
             Require.ArgumentFlagsDefined(value);
-            _allOptions = ToAllOptions(Mode, Access, value, Flags, Attributes, UnixCreateMode);
+            _allOptions = ToAllOptions(Mode, Access, value, Type, Flags, Attributes, UnixCreateMode);
+        }
+    }
+
+    public FileHandleType Type
+    {
+        get => AllOptionsToType(_allOptions);
+        init
+        {
+            Require.ArgumentDefined(value);
+            _allOptions = ToAllOptions(Mode, Access, Share, value, Flags, Attributes, UnixCreateMode);
         }
     }
 
@@ -181,7 +206,7 @@ public readonly record struct FileHandleRequest
         init
         {
             Require.ArgumentFlagsDefined(value);
-            _allOptions = ToAllOptions(Mode, Access, Share, value, Attributes, UnixCreateMode);
+            _allOptions = ToAllOptions(Mode, Access, Share, Type, value, Attributes, UnixCreateMode);
         }
     }
 
@@ -191,7 +216,7 @@ public readonly record struct FileHandleRequest
         init
         {
             Require.ArgumentFlagsDefined(value);
-            _allOptions = ToAllOptions(Mode, Access, Share, Flags, value, UnixCreateMode);
+            _allOptions = ToAllOptions(Mode, Access, Share, Type, Flags, value, UnixCreateMode);
         }
     }
 
@@ -207,7 +232,7 @@ public readonly record struct FileHandleRequest
             if (value is not null)
                 Require.ArgumentFlagsDefined(value.Value);
 
-            _allOptions = ToAllOptions(Mode, Access, Share, Flags, Attributes, value);
+            _allOptions = ToAllOptions(Mode, Access, Share, Type, Flags, Attributes, value);
         }
     }
 
@@ -227,12 +252,14 @@ public readonly record struct FileHandleRequest
         get => new(
             AllOptionsToAccess(_allOptions),
             AllOptionsToShare(_allOptions),
+            AllOptionsToType(_allOptions),
             AllOptionsToFlags(_allOptions));
         init =>
             _allOptions = ToAllOptions(
                 Mode,
                 value.Access,
                 value.Share,
+                value.Type,
                 value.Flags,
                 Attributes,
                 UnixCreateMode);
@@ -250,6 +277,7 @@ public readonly record struct FileHandleRequest
                 Mode,
                 Access,
                 Share,
+                Type,
                 Flags,
                 value.Attributes,
                 value.UnixCreateMode);
@@ -287,16 +315,19 @@ public readonly record struct FileHandleRequest
         FileMode mode,
         FileSystemAccess access,
         FileShare share,
+        FileHandleType type,
         FileOptions flags,
         FileAttributes attributes,
         UnixFileMode? unixFileMode)
     {
-        return ModeToAllOptions(mode)
-            | AccessToAllOptions(access)
-            | ShareToAllOptions(share)
-            | FlagsToAllOptions(flags)
-            | AttributesToAllOptions(attributes)
-            | UnixFileModeToAllOptions(unixFileMode);
+        return
+            ModeToAllOptions(mode) |
+            AccessToAllOptions(access) |
+            ShareToAllOptions(share) |
+            TypeToAllOptions(type) |
+            FlagsToAllOptions(flags) |
+            AttributesToAllOptions(attributes) |
+            UnixFileModeToAllOptions(unixFileMode);
     }
 
     private static AllOptions ModeToAllOptions(FileMode mode)
@@ -307,6 +338,16 @@ public readonly record struct FileHandleRequest
     private static FileMode AllOptionsToMode(AllOptions options)
     {
         return (FileMode)((ulong)options & ModeMask);
+    }
+
+    private static AllOptions TypeToAllOptions(FileHandleType type)
+    {
+        return (AllOptions)(((ulong)type & TypeMask) << TypeShift);
+    }
+
+    private static FileHandleType AllOptionsToType(AllOptions options)
+    {
+        return (FileHandleType)(((ulong)options >> TypeShift) & TypeMask);
     }
 
     private static AllOptions AccessToAllOptions(FileSystemAccess access)
@@ -409,6 +450,9 @@ public readonly record struct FileHandleRequest
         if ((flags & FileOptions.Asynchronous) != 0)
             value |= AllOptions.Flags_Asynchronous;
 
+        if ((flags & FileOptions.NoBuffering) != 0)
+            value |= AllOptions.Flags_NoBuffering;
+
         if ((flags & FileOptions.RandomAccess) != 0)
             value |= AllOptions.Flags_RandomAccess;
 
@@ -417,6 +461,21 @@ public readonly record struct FileHandleRequest
 
         if ((flags & FileOptions.SequentialScan) != 0)
             value |= AllOptions.Flags_SequentialScan;
+
+        if ((flags & FileOptions.AllowPosix) != 0)
+            value |= AllOptions.Flags_AllowPosix;
+
+        if ((flags & FileOptions.BackupOrRestore) != 0)
+            value |= AllOptions.Flags_BackupOrRestore;
+
+        if ((flags & FileOptions.DisallowReparsePoint) != 0)
+            value |= AllOptions.Flags_DisallowReparsePoint;
+
+        if ((flags & FileOptions.NoRemoteRecall) != 0)
+            value |= AllOptions.Flags_NoRemoteRecall;
+
+        if ((flags & FileOptions.FirstPipeInstance) != 0)
+            value |= AllOptions.Flags_FirstPipeInstance;
 
         if ((flags & FileOptions.Encrypted) != 0)
             value |= AllOptions.Flags_Encrypted;
@@ -434,6 +493,9 @@ public readonly record struct FileHandleRequest
         if ((options & AllOptions.Flags_Asynchronous) != 0)
             value |= FileOptions.Asynchronous;
 
+        if ((options & AllOptions.Flags_NoBuffering) != 0)
+            value |= FileOptions.NoBuffering;
+
         if ((options & AllOptions.Flags_RandomAccess) != 0)
             value |= FileOptions.RandomAccess;
 
@@ -442,6 +504,21 @@ public readonly record struct FileHandleRequest
 
         if ((options & AllOptions.Flags_SequentialScan) != 0)
             value |= FileOptions.SequentialScan;
+
+        if ((options & AllOptions.Flags_AllowPosix) != 0)
+            value |= FileOptions.AllowPosix;
+
+        if ((options & AllOptions.Flags_BackupOrRestore) != 0)
+            value |= FileOptions.BackupOrRestore;
+
+        if ((options & AllOptions.Flags_DisallowReparsePoint) != 0)
+            value |= FileOptions.DisallowReparsePoint;
+
+        if ((options & AllOptions.Flags_NoRemoteRecall) != 0)
+            value |= FileOptions.NoRemoteRecall;
+
+        if ((options & AllOptions.Flags_FirstPipeInstance) != 0)
+            value |= FileOptions.FirstPipeInstance;
 
         if ((options & AllOptions.Flags_Encrypted) != 0)
             value |= FileOptions.Encrypted;
@@ -652,64 +729,87 @@ public readonly record struct FileHandleRequest
     }
 
     private const ulong ModeMask = 0b111;
+    private const ulong TypeMask = 0b111;
+    private const int TypeShift = 3;
 
+    [Flags]
     private enum AllOptions : ulong
     {
-        Mode_CreateNew = 1,
-        Mode_Create = 2,
-        Mode_Open = 3,
-        Mode_OpenOrCreate = 4,
-        Mode_Truncate = 5,
-        Mode_Append = 6,
+        Mode_CreateNew = FileMode.CreateNew,
+        Mode_Create = FileMode.Create,
+        Mode_Open = FileMode.Open,
+        Mode_OpenOrCreate = FileMode.OpenOrCreate,
+        Mode_Truncate = FileMode.Truncate,
+        Mode_Append = FileMode.Append,
 
-        Access_ReadAttributes = 1 << 3,
-        Access_WriteAttributes = 1 << 4,
-        Access_Read = 1 << 5,
-        Access_Write = 1 << 6,
-        Access_Delete = 1 << 7,
-        Access_Execute = 1 << 8,
+        // Type_Unknown = 0
+        Type_RegularFile = FileHandleType.RegularFile << TypeShift,
+        Type_Pipe = FileHandleType.Pipe << TypeShift,
+        Type_Socket = FileHandleType.Socket << TypeShift,
+        Type_CharacterDevice = FileHandleType.CharacterDevice << TypeShift,
+        Type_Directory = FileHandleType.Directory << TypeShift,
+        Type_SymbolicLink = FileHandleType.SymbolicLink << TypeShift,
+        Type_BlockDevice = FileHandleType.BlockDevice << TypeShift,
 
-        Share_Read = 1 << 9,
-        Share_Write = 1 << 10,
-        Share_Delete = 1 << 11,
-        Share_Inheritable = 1 << 12,
+        // Access_None = 0
+        Access_ReadAttributes = 1 << 6,
+        Access_WriteAttributes = 1 << 7,
+        Access_Read = 1 << 8,
+        Access_Write = 1 << 9,
+        Access_Delete = 1 << 10,
+        Access_Execute = 1 << 11,
 
-        Flags_WriteThrough = 1 << 13,
-        Flags_Asynchronous = 1 << 14,
-        Flags_RandomAccess = 1 << 15,
-        Flags_DeleteOnClose = 1 << 16,
-        Flags_SequentialScan = 1 << 17,
-        Flags_Encrypted = 1 << 18,
+        // Share_None = 0
+        Share_Read = 1 << 12,
+        Share_Write = 1 << 13,
+        Share_Delete = 1 << 14,
+        Share_Inheritable = 1 << 15,
 
-        Attributes_ReadOnly = 1 << 19,
-        Attributes_Hidden = 1 << 20,
-        Attributes_System = 1 << 21,
-        Attributes_Directory = 1 << 22,
-        Attributes_Archive = 1 << 23,
-        Attributes_Device = 1 << 24,
-        Attributes_Normal = 1 << 25,
-        Attributes_Temporary = 1 << 26,
-        Attributes_SparseFile = 1 << 27,
-        Attributes_ReparsePoint = 1 << 28,
-        Attributes_Compressed = 1 << 29,
-        Attributes_Offline = 1 << 30,
-        Attributes_NotContentIndexed = 1ul << 31,
-        Attributes_Encrypted = 1ul << 32,
-        Attributes_IntegrityStream = 1ul << 33,
-        Attributes_NoScrubData = 1ul << 34,
+        // Flags_None = 0
+        Flags_WriteThrough = 1 << 16,
+        Flags_Asynchronous = 1 << 17,
+        Flags_NoBuffering = 1 << 18,
+        Flags_RandomAccess = 1 << 19,
+        Flags_DeleteOnClose = 1 << 20,
+        Flags_SequentialScan = 1 << 21,
+        Flags_AllowPosix = 1 << 22,
+        Flags_BackupOrRestore = 1 << 23,
+        Flags_DisallowReparsePoint = 1 << 24,
+        Flags_NoRemoteRecall = 1 << 25,
+        Flags_FirstPipeInstance = 1 << 26,
+        Flags_Encrypted = 1 << 27,
 
-        UnixFileMode_NotNull = 1ul << 35,
-        UnixFileMode_OtherExecute = 1ul << 36,
-        UnixFileMode_OtherWrite = 1ul << 37,
-        UnixFileMode_OtherRead = 1ul << 38,
-        UnixFileMode_GroupExecute = 1ul << 39,
-        UnixFileMode_GroupWrite = 1ul << 40,
-        UnixFileMode_GroupRead = 1ul << 41,
-        UnixFileMode_UserExecute = 1ul << 42,
-        UnixFileMode_UserWrite = 1ul << 43,
-        UnixFileMode_UserRead = 1ul << 44,
-        UnixFileMode_StickyBit = 1ul << 45,
-        UnixFileMode_SetGroup = 1ul << 46,
-        UnixFileMode_SetUser = 1ul << 47,
+        // Attributes_None = 0
+        Attributes_ReadOnly = 1 << 28,
+        Attributes_Hidden = 1 << 29,
+        Attributes_System = 1 << 30,
+        Attributes_Directory = 1ul << 31,
+        Attributes_Archive = 1ul << 32,
+        Attributes_Device = 1ul << 33,
+        Attributes_Normal = 1ul << 34,
+        Attributes_Temporary = 1ul << 35,
+        Attributes_SparseFile = 1ul << 36,
+        Attributes_ReparsePoint = 1ul << 37,
+        Attributes_Compressed = 1ul << 38,
+        Attributes_Offline = 1ul << 39,
+        Attributes_NotContentIndexed = 1ul << 40,
+        Attributes_Encrypted = 1ul << 41,
+        Attributes_IntegrityStream = 1ul << 42,
+        Attributes_NoScrubData = 1ul << 43,
+
+        // UnixFileMode_None = 0
+        UnixFileMode_NotNull = 1ul << 44,
+        UnixFileMode_OtherExecute = 1ul << 45,
+        UnixFileMode_OtherWrite = 1ul << 46,
+        UnixFileMode_OtherRead = 1ul << 47,
+        UnixFileMode_GroupExecute = 1ul << 48,
+        UnixFileMode_GroupWrite = 1ul << 49,
+        UnixFileMode_GroupRead = 1ul << 50,
+        UnixFileMode_UserExecute = 1ul << 51,
+        UnixFileMode_UserWrite = 1ul << 52,
+        UnixFileMode_UserRead = 1ul << 53,
+        UnixFileMode_StickyBit = 1ul << 54,
+        UnixFileMode_SetGroup = 1ul << 55,
+        UnixFileMode_SetUser = 1ul << 56,
     }
 }

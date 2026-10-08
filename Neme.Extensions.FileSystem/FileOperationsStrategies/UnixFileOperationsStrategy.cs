@@ -82,6 +82,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
             request.Mode,
             request.Access,
             request.Share,
+            request.Type,
             request.Flags,
             request.Attributes,
             request.UnixCreateMode ?? DefaultCreateMode,
@@ -106,7 +107,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
 
         var linuxFileId = fileId.LinuxFileId;
         var mountPath = linuxFileId.MountPath;
-        var openFlags = GetOpenByHandleFlags(request.Mode, request.Access, request.Share, request.Flags);
+        var openFlags = GetOpenByHandleFlags(request.Mode, request.Access, request.Share, request.Type, request.Flags);
 
         using var mountHandle = OpenMountHandle(mountPath);
         using OwnedOrBorrowed<SafeFileHandle?> handle = OwnedOrBorrowed.Create<SafeFileHandle?>(null);
@@ -727,12 +728,13 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
 #endif
     }
 
-    private static OpenFlags GetOpenByHandleFlags(FileMode mode, FileSystemAccess access, FileShare share, FileOptions options)
+    private static OpenFlags GetOpenByHandleFlags(FileMode mode, FileSystemAccess access, FileShare share, FileHandleType type, FileOptions flags)
     {
         var openFlags =
             access.ToUnix() |
             share.ToUnix() |
-            options.ToUnix();
+            type.ToUnix() |
+            flags.ToUnix();
 
         if (DisableFileLocking && mode is FileMode.Create or FileMode.Truncate)
             openFlags |= OpenFlags.O_TRUNC;
@@ -814,7 +816,8 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
         FileMode mode,
         FileSystemAccess access,
         FileShare share,
-        FileOptions options,
+        FileHandleType type,
+        FileOptions flags,
         FileAttributes attributes,
         UnixFileMode openPermissions,
         long preallocationSize)
@@ -825,7 +828,8 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
             mode.ToUnix() |
             access.ToUnix() |
             share.ToUnix() |
-            options.ToUnix();
+            type.ToUnix() |
+            flags.ToUnix();
 
         // O_PATH cannot be combined with O_CREAT on Linux (the kernel ignores O_CREAT when O_PATH is set).
         // When both are requested, create the file first with a write-only open, then reopen with O_PATH.
@@ -882,7 +886,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
                 throw UnixMarshal.GetExceptionForUnixError(error, fullPath);
             }
 
-            if (InitHandle(null, handle.Value!, fullPath, mode, access, share, options, attributes, preallocationSize))
+            if (InitHandle(null, handle.Value!, fullPath, mode, access, share, flags, attributes, preallocationSize))
             {
                 return handle.Move()!;
             }

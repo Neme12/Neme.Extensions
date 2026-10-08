@@ -32,7 +32,7 @@ internal sealed partial class WindowsFileOperationsStrategy : FileOperationsStra
             request.Share.ToWin32(),
             null,
             request.Mode.ToWin32(),
-            request.Flags.ToWin32() | request.Attributes.ToWin32(),
+            request.Type.ToWin32() | request.Flags.ToWin32() | request.Attributes.ToWin32(),
             null);
 
         if (handle.IsInvalid)

@@ -49,7 +49,7 @@ public sealed partial class FileOperationsTests
 
         private SafeFileHandle OpenDirectoryHandle()
         {
-            var options = FileHandleRequest.Open(FileSystemAccess.Read, FileShare.Read, 0, FileAttributes.Directory);
+            var options = FileHandleRequest.Open(FileSystemAccess.Read, FileShare.Read, FileHandleType.Directory);
             return FileOperations.OpenHandle(_tempDirectoryPath, options);
         }
 
@@ -191,7 +191,7 @@ public sealed partial class FileOperationsTests
             // Arrange - Get directory ID from an existing directory
             using var tempDirHandle = OpenDirectoryHandle();
             var directoryId = FileOperations.GetPersistentId(tempDirHandle);
-            var options = FileHandleRequest.Open(FileSystemAccess.Read, FileShare.Read, 0, FileAttributes.Directory);
+            var options = FileHandleRequest.Open(FileSystemAccess.Read, FileShare.Read, FileHandleType.Directory);
 
             // Act
             using var result = FileOperations.OpenHandle(directoryId, options);
@@ -200,6 +200,8 @@ public sealed partial class FileOperationsTests
             Assert.NotNull(result);
             Assert.False(result.IsInvalid);
             Assert.False(result.IsClosed);
+            Assert.Equal(FileHandleType.Directory, result.Type);
+            Assert.True(FileOperations.GetAttributes(result).HasFlag(FileAttributes.Directory));
         }
 
         [PlatformOnlyFact(Platform.Windows, Platform.Linux)]
@@ -208,7 +210,7 @@ public sealed partial class FileOperationsTests
             // Arrange
             using var tempDirHandle = OpenDirectoryHandle();
             var originalDirectoryId = FileOperations.GetPersistentId(tempDirHandle);
-            var options = FileHandleRequest.Open(FileSystemAccess.Read, FileShare.Read, 0, FileAttributes.Directory);
+            var options = FileHandleRequest.Open(FileSystemAccess.Read, FileShare.Read, FileHandleType.Directory);
 
             // Act
             using var reopenedHandle = FileOperations.OpenHandle(originalDirectoryId, options);
@@ -224,7 +226,7 @@ public sealed partial class FileOperationsTests
             // Arrange
             using var tempDirHandle = OpenDirectoryHandle();
             var directoryId = FileOperations.GetPersistentId(tempDirHandle);
-            var options = FileHandleRequest.Open(FileSystemAccess.Read, FileShare.ReadWrite, 0, FileAttributes.Directory);
+            var options = FileHandleRequest.Open(FileSystemAccess.Read, FileShare.ReadWrite, FileHandleType.Directory);
 
             // Act
             using var result = FileOperations.OpenHandle(directoryId, options);
@@ -240,7 +242,7 @@ public sealed partial class FileOperationsTests
             // Arrange
             using var tempDirHandle = OpenDirectoryHandle();
             var directoryId = FileOperations.GetPersistentId(tempDirHandle);
-            var options = FileHandleRequest.Open(FileSystemAccess.Read, FileShare.Read, 0, FileAttributes.Directory);
+            var options = FileHandleRequest.Open(FileSystemAccess.Read, FileShare.Read, FileHandleType.Directory);
 
             // Act
             var result = FileOperations.OpenHandle(directoryId, options);
@@ -267,7 +269,7 @@ public sealed partial class FileOperationsTests
                     validDirectoryId.LinuxFileId.MountPath,
                     validDirectoryId.LinuxFileId.FileType,
                     []));
-            var options = FileHandleRequest.Open(FileSystemAccess.Read, FileShare.Read, 0, FileAttributes.Directory);
+            var options = FileHandleRequest.Open(FileSystemAccess.Read, FileShare.Read, FileHandleType.Directory);
 
             // Act & Assert
             Assert.Throws<FileNotFoundException>(() =>

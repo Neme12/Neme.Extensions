@@ -4,21 +4,37 @@ namespace Neme.Extensions.FileSystem;
 
 public readonly record struct FileReferenceOptions
 {
+    private readonly FileHandleType _type;
     private readonly FileReferenceFlags _flags;
 
     public static FileReferenceOptions None =>
         default;
 
-    public FileReferenceOptions(FileReferenceFlags flags)
+    public FileReferenceOptions(
+        FileHandleType type = FileHandleType.RegularFile,
+        FileReferenceFlags flags = FileReferenceFlags.None)
     {
+        Require.ArgumentDefined(type);
         Require.ArgumentFlagsDefined(flags);
 
+        _type = type;
         _flags = flags;
     }
 
-    public void Deconstruct(out FileReferenceFlags flags)
+    public void Deconstruct(out FileHandleType type, out FileReferenceFlags flags)
     {
+        type = Type;
         flags = Flags;
+    }
+
+    public FileHandleType Type
+    {
+        get => _type;
+        init
+        {
+            Require.ArgumentDefined(value);
+            _type = value;
+        }
     }
 
     public FileReferenceFlags Flags

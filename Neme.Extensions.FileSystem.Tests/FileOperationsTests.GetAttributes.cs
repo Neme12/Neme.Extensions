@@ -36,13 +36,14 @@ public sealed partial class FileOperationsTests
             Directory.CreateDirectory(tempDirectory);
             try
             {
-                var options = FileHandleRequest.Open(FileSystemAccess.ReadAttributes, FileShare.All, 0, FileAttributes.Directory);
+                var options = FileHandleRequest.Open(FileSystemAccess.ReadAttributes, FileShare.All, FileHandleType.Directory);
                 using var handle = FileOperations.OpenHandle(tempDirectory, options);
 
                 // Act
                 var attributes = FileOperations.GetAttributes(handle);
 
                 // Assert
+                Assert.Equal(FileHandleType.Directory, handle.Type);
                 Assert.True(attributes.HasFlag(FileAttributes.Directory));
             }
             finally

@@ -13,6 +13,7 @@ public sealed class FileOpenOptionsTests
         Assert.Equal(FileMode.CreateNew, sut.Mode);
         Assert.Equal(FileSystemAccess.ReadWrite, sut.Access);
         Assert.Equal(FileShare.All, sut.Share);
+        Assert.Equal(FileHandleType.RegularFile, sut.Type);
         Assert.Equal(FileOptions.None, sut.Flags);
         Assert.Equal(default, sut.Attributes);
         Assert.Null(sut.UnixCreateMode);
@@ -32,6 +33,7 @@ public sealed class FileOpenOptionsTests
         Assert.Equal(FileMode.Open, sut.Mode);
         Assert.Equal(access, sut.Access);
         Assert.Equal(expectedShare, sut.Share);
+        Assert.Equal(FileHandleType.RegularFile, sut.Type);
     }
 
     [Fact]
@@ -52,6 +54,7 @@ public sealed class FileOpenOptionsTests
             Mode = FileMode.Append,
             Access = FileSystemAccess.Delete | FileSystemAccess.Write,
             Share = FileShare.All,
+            Type = FileHandleType.Directory,
             Flags = expectedOptions,
             Attributes = expectedAttributes,
         };
@@ -59,6 +62,7 @@ public sealed class FileOpenOptionsTests
         Assert.Equal(FileMode.Append, sut.Mode);
         Assert.Equal(FileSystemAccess.Delete | FileSystemAccess.Write, sut.Access);
         Assert.Equal(FileShare.All, sut.Share);
+        Assert.Equal(FileHandleType.Directory, sut.Type);
         Assert.Equal(expectedOptions, sut.Flags);
         Assert.Equal(expectedAttributes, sut.Attributes);
         Assert.Null(sut.UnixCreateMode);
@@ -76,6 +80,7 @@ public sealed class FileOpenOptionsTests
 #pragma warning restore CA1416
         };
 
+        Assert.Equal(FileHandleType.RegularFile, sut.Type);
         Assert.Equal(expected, sut.UnixCreateMode);
     }
 
@@ -89,6 +94,7 @@ public sealed class FileOpenOptionsTests
 #pragma warning restore CA1416
         };
 
+        Assert.Equal(FileHandleType.RegularFile, sut.Type);
         Assert.Null(sut.UnixCreateMode);
     }
 
@@ -120,6 +126,7 @@ public sealed class FileOpenOptionsTests
         Assert.Equal(FileMode.Truncate, sut.Mode);
         Assert.Equal(FileSystemAccess.ReadWrite, sut.Access);
         Assert.Equal(FileShare.Read, sut.Share);
+        Assert.Equal(FileHandleType.RegularFile, sut.Type);
         Assert.Equal(FileOptions.Asynchronous | FileOptions.WriteThrough | FileOptions.RandomAccess, sut.Flags);
         Assert.Equal(default, sut.Attributes);
         Assert.Null(sut.UnixCreateMode);
@@ -162,6 +169,7 @@ public sealed class FileOpenOptionsTests
         Assert.Equal(FileMode.Truncate, sut.Mode);
         Assert.Equal(FileSystemAccess.ReadWrite, sut.Access);
         Assert.Equal(FileShare.Read, sut.Share);
+        Assert.Equal(FileHandleType.RegularFile, sut.Type);
         Assert.Equal(FileOptions.Asynchronous | FileOptions.WriteThrough | FileOptions.RandomAccess, sut.Flags);
         Assert.Equal(default, sut.Attributes);
         Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, sut.UnixCreateMode);

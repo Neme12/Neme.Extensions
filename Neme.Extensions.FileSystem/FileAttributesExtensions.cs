@@ -17,7 +17,7 @@ internal static class FileAttributesExtensions
             // The values of FileAttributes map directly to FILE_FLAGS_AND_ATTRIBUTES.
             var value = (FILE_FLAGS_AND_ATTRIBUTES)(uint)attributes;
 
-            if ((value & FILE_FLAGS_AND_ATTRIBUTES.FILE_ATTRIBUTE_DIRECTORY) != 0)
+            if ((value & FILE_FLAGS_AND_ATTRIBUTES.FILE_ATTRIBUTE_DIRECTORY) == FILE_FLAGS_AND_ATTRIBUTES.FILE_ATTRIBUTE_DIRECTORY)
                 value |= FILE_FLAGS_AND_ATTRIBUTES.FILE_FLAG_BACKUP_SEMANTICS;
 
             return value;

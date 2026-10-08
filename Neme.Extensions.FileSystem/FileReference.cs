@@ -58,6 +58,15 @@ public sealed class FileReference : IFileObject, IDisposable
         }
     }
 
+    public FileHandleType Type
+    {
+        get
+        {
+            RequireNotDisposed();
+            return _handle.Type;
+        }
+    }
+
     public bool IsClosed
     {
         get
@@ -188,11 +197,12 @@ public sealed class FileReference : IFileObject, IDisposable
 
     [return: OwnershipTransfer]
     public static FileReference CreateTempFile(
+        FileHandleType type = FileHandleType.RegularFile,
         FileReferenceFlags flags = FileReferenceFlags.DeleteOnClose,
         FileAttributes attributes = FileAttributes.Temporary)
     {
         var path = FileOperations.GetTempFilePath();
-        var referenceRequest = FileReferenceRequest.CreateNew(new(flags), new(attributes));
+        var referenceRequest = FileReferenceRequest.CreateNew(new(type, flags), new(attributes));
         return Create(path, referenceRequest);
     }
 
@@ -251,6 +261,7 @@ public sealed class FileReference : IFileObject, IDisposable
             mode.ToFileMode(),
             FileSystemAccess.ReadAttributes,
             FileShare.All,
+            referenceOptions.Type,
             referenceOptions.Flags.HasFlag(FileReferenceFlags.DeleteOnClose)
                 ? FileOptions.DeleteOnClose
                 : FileOptions.None);
@@ -258,16 +269,10 @@ public sealed class FileReference : IFileObject, IDisposable
 
     private static FileHandleRequest GetFileHandleCreationRequest(FileReferenceRequest request)
     {
-        var handleRequest = GetFileHandleRequest(request.Mode, request.ReferenceOptions) with
+        return GetFileHandleRequest(request.Mode, request.ReferenceOptions) with
         {
-            Attributes = request.CreationOptions.Attributes,
-            PreallocationSize = request.CreationOptions.PreallocationSize,
+            CreationOptions = request.CreationOptions,
         };
-
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            handleRequest = handleRequest with { UnixCreateMode = request.CreationOptions.UnixCreateMode };
-
-        return handleRequest;
     }
 
     private void RequireNotDisposed()
