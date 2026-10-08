@@ -1,4 +1,4 @@
-﻿namespace Neme.Extensions.FileSystem;
+﻿namespace Neme.Extensions.IO;
 
 public static class FileModeExtensions
 {

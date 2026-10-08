@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using Neme.Extensions.FileSystem.SafeHandles;
+using Neme.Extensions.IO;
 using System.Runtime.InteropServices;
 
 namespace Neme.Extensions.FileSystem.Tests;

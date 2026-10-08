@@ -1,4 +1,5 @@
-﻿using Neme.Extensions.Tests.Utilities;
+﻿using Neme.Extensions.IO;
+using Neme.Extensions.Tests.Utilities;
 using System.Runtime.Versioning;
 
 namespace Neme.Extensions.FileSystem.Tests;

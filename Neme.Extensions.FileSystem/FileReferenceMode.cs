@@ -1,4 +1,6 @@
-﻿namespace Neme.Extensions.FileSystem;
+﻿using Neme.Extensions.IO;
+
+namespace Neme.Extensions.FileSystem;
 
 public enum FileReferenceMode
 {

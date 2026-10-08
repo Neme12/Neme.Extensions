@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.IO;
 
 namespace Neme.Extensions.FileSystem.Tests;
 
