@@ -62,7 +62,8 @@ public readonly union FileSource(string, FileResource)
                         return false;
                     }
 
-                    return handle.CanSeek;
+                    using (handle)
+                        return handle.CanSeek;
                 }
                 case FileResource resource:
                 {
