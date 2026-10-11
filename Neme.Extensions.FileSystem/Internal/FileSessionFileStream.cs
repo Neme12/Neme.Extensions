@@ -14,15 +14,15 @@ internal sealed class FileSessionFileStream : DelegatingFileStream
 
     public override void Close()
     {
-        _session.Dispose();
         base.Close();
+        _session.Dispose();
     }
 
 #if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
     public override async ValueTask DisposeAsync()
     {
-        _session.Dispose();
         await base.DisposeAsync();
+        _session.Dispose();
     }
 #endif
 }
