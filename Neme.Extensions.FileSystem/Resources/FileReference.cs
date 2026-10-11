@@ -191,7 +191,10 @@ public sealed class FileReference : IFileResource, IDisposable
 
     [return: OwnershipTransfer]
     public static FileReference CreateTempFile() =>
-        CreateTempFile();
+        CreateTempFile(
+            FileHandleType.RegularFile,
+            FileReferenceFlags.DeleteOnClose,
+            FileAttributes.Temporary);
 
     [return: OwnershipTransfer]
     public static FileReference CreateTempFile(

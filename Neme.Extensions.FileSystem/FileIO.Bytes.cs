@@ -12,16 +12,16 @@ namespace Neme.Extensions.FileSystem;
 public static partial class FileIO
 {
     private static FileHandleOptions ReadOptions =>
-        new(FileSystemAccess.Read, FileShare.Read, flags: FileOptions.SequentialScan);
+        new(FileSystemAccess.Read, FileShare.All, flags: FileOptions.SequentialScan);
    
     private static FileHandleOptions AsyncReadOptions =>
-        new(FileSystemAccess.Read, FileShare.Read, flags: FileOptions.SequentialScan | FileOptions.Asynchronous);
+        new(FileSystemAccess.Read, FileShare.All, flags: FileOptions.SequentialScan | FileOptions.Asynchronous);
 
     private static FileHandleOptions WriteOptions =>
-        new(FileSystemAccess.Write, FileShare.None, flags: FileOptions.SequentialScan);
+        new(FileSystemAccess.Write, FileShare.All, flags: FileOptions.SequentialScan);
 
     private static FileHandleOptions AsyncWriteOptions =>
-        new(FileSystemAccess.Write, FileShare.None, flags: FileOptions.SequentialScan | FileOptions.Asynchronous);
+        new(FileSystemAccess.Write, FileShare.All, flags: FileOptions.SequentialScan | FileOptions.Asynchronous);
 
     private static FileStream CreateFileStream(this FileSource file, FileHandleOptions options, bool resetPosition)
     {

@@ -1,5 +1,6 @@
 ﻿namespace Neme.Extensions.FileSystem.Resources;
 
+[Flags]
 public enum FileReferenceFlags
 {
     None = 0,
