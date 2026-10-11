@@ -27,26 +27,42 @@ public static partial class FileIO
     {
         switch (file)
         {
-            case FileReference reference:
+            case string path:
+            {
+                return new FileStream(
+                    path,
+                    FileMode.Open,
+                    options.Access.ToFileAccess(),
+                    options.Share,
+                    FileStream.DefaultBufferSize,
+                    options.Flags);
+            }
+            case FileResource resource:
+                switch (resource)
                 {
-                    var session = reference.OpenSession(options);
-                    var fileStream = session.CreateFileStream(options.Access.ToFileAccess());
-                    return new FileSessionFileStream(session, fileStream);
-                }
-            case FileSession session:
-                {
-                    var fileHandle = session.Handle;
-                    var fileStream = fileHandle.CreateFileStream(options.Access.ToFileAccess());
-                    return resetPosition
-                        ? new PositionResettingFileStream(fileStream)
-                        : fileStream;
-                }
-            case SafeFileHandle handle:
-                {
-                    var fileStream = handle.CreateFileStream(options.Access.ToFileAccess());
-                    return resetPosition
-                        ? new PositionResettingFileStream(fileStream)
-                        : fileStream;
+                    case FileReference reference:
+                    {
+                        var session = reference.OpenSession(options);
+                        var fileStream = session.CreateFileStream(options.Access.ToFileAccess());
+                        return new FileSessionFileStream(session, fileStream);
+                    }
+                    case FileSession session:
+                    {
+                        var fileHandle = session.Handle;
+                        var fileStream = fileHandle.CreateFileStream(options.Access.ToFileAccess());
+                        return resetPosition
+                            ? new PositionResettingFileStream(fileStream)
+                            : fileStream;
+                    }
+                    case SafeFileHandle handle:
+                    {
+                        var fileStream = handle.CreateFileStream(options.Access.ToFileAccess());
+                        return resetPosition
+                            ? new PositionResettingFileStream(fileStream)
+                            : fileStream;
+                    }
+                    default:
+                        throw new InvalidOperationException("Invalid FileResource type.");
                 }
             default:
                 throw new UnreachableException("Invalid FileSource type.");
