@@ -479,7 +479,7 @@ public static class Require
 
     public static void Argument<T>(
         T argument,
-        bool isValid,
+        [DoesNotReturnIf(false)] bool isValid,
         string? message = null,
         [CallerArgumentExpression(nameof(argument))] string? paramName = null,
         [CallerArgumentExpression(nameof(isValid))] string? condition = null)
@@ -490,7 +490,7 @@ public static class Require
 
     public static void Argument<T>(
         ReadOnlySpan<T> argument,
-        bool isValid,
+        [DoesNotReturnIf(false)] bool isValid,
         string? message = null,
         [CallerArgumentExpression(nameof(argument))] string? paramName = null,
         [CallerArgumentExpression(nameof(isValid))] string? condition = null)
@@ -501,7 +501,7 @@ public static class Require
 
     public static void Value<T>(
         T value,
-        bool isValid,
+        [DoesNotReturnIf(false)] bool isValid,
         string? message = null,
         [CallerArgumentExpression(nameof(value))] string? valueSource = null,
         [CallerArgumentExpression(nameof(isValid))] string? condition = null)
@@ -517,7 +517,7 @@ public static class Require
 
     public static void Argument<T>(
         Span<T> argument,
-        bool isValid,
+        [DoesNotReturnIf(false)] bool isValid,
         string? message = null,
         [CallerArgumentExpression(nameof(argument))] string? paramName = null,
         [CallerArgumentExpression(nameof(isValid))] string? condition = null)

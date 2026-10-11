@@ -11,7 +11,7 @@ using System.Runtime.Versioning;
 
 namespace Neme.Extensions.FileSystem.Resources;
 
-public sealed class FileSession : IFileResource, IDisposable
+public sealed class FileSession : IDisposable
 {
     [Owned]
     private SafeFileHandle _handle;
@@ -302,12 +302,6 @@ public sealed class FileSession : IFileResource, IDisposable
             _handle.Dispose();
             _handle = null!;
         }
-    }
-
-    public ValueTask DisposeAsync()
-    {
-        Dispose();
-        return default;
     }
 
     public long GetLength()

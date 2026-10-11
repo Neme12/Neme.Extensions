@@ -1250,31 +1250,6 @@ public sealed class FileReferenceTests
         }
     }
 
-    public sealed class DisposeAsync
-    {
-        [Fact]
-        public async Task OpenReference_DisposesReferenceAndReturnsCompletedTask()
-        {
-            // Arrange
-            var path = CreateUniquePath();
-            using (CreateTemporaryFileScope(path))
-            {
-                var fileReference = CreateFileReference(path);
-
-                // Act
-                var result = fileReference.DisposeAsync();
-                await result;
-                var exception = Assert.Throws<ObjectDisposedException>(() => _ = fileReference.OpenedPath);
-
-                // Assert
-                Assert.True(result.IsCompletedSuccessfully);
-                Assert.NotNull(exception);
-                Assert.True(fileReference.IsClosed);
-                Assert.False(fileReference.IsOpen);
-            }
-        }
-    }
-
     private static TemporaryFileUtilities.TemporaryFileScope CreateTemporaryFileScope(string path)
         => TemporaryFileUtilities.CreateTemporaryFileScope(path);
 }

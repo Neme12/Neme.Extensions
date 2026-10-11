@@ -10,7 +10,7 @@ using System.Runtime.Versioning;
 
 namespace Neme.Extensions.FileSystem.Resources;
 
-public sealed class FileReference : IFileResource, IDisposable
+public sealed class FileReference : IDisposable
 {
     [Owned]
     private SafeFileHandle _handle;
@@ -253,12 +253,6 @@ public sealed class FileReference : IFileResource, IDisposable
             _handle.Dispose();
             _handle = null!;
         }
-    }
-
-    public ValueTask DisposeAsync()
-    {
-        Dispose();
-        return default;
     }
 
     private static FileHandleRequest GetFileHandleRequest(

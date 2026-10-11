@@ -25,7 +25,7 @@ public static class PartialFile
         var file = FileOperations.OpenHandle(partialPath, request);
         return new PartialFile<SafeFileHandle>(
             file,
-            static file => file.ToFileResource(),
+            static file => file,
             finalPath,
             () => FileOperations.OpenHandle(partialPath, request with { Mode = FileMode.Open }));
     }
@@ -111,7 +111,7 @@ public static class PartialFile
         var fileStream = FileSession.Open(partialPath, request).CreateFileStream(request.Access.ToFileAccess(), ownsHandle: true);
         return new PartialFile<FileStream>(
             fileStream,
-            static file => file.ToFileResource(),
+            static file => file,
             finalPath,
             () => FileSession.Open(partialPath, request with { Mode = FileMode.Open }).CreateFileStream(request.Access.ToFileAccess(), ownsHandle: true));
     }

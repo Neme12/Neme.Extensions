@@ -24,15 +24,15 @@ public sealed class PartialFile<TFile> : IDisposable, IAsyncDisposable
     where TFile : class
 {
     private TFile? _file;
-    private IFileResource? _fileResource;
-    private readonly Func<TFile, IFileResource> _fileResourceAdapter;
+    private FileResource? _fileResource;
+    private readonly Func<TFile, FileResource> _fileResourceAdapter;
     private readonly string _finalPath;
     private readonly Func<TFile> _reopenFile;
     private State _state;
 
     internal PartialFile(
         TFile partialFile,
-        Func<TFile, IFileResource> fileResourceAdapter,
+        Func<TFile, FileResource> fileResourceAdapter,
         string finalPath,
         Func<TFile> reopenFile)
     {
@@ -47,11 +47,12 @@ public sealed class PartialFile<TFile> : IDisposable, IAsyncDisposable
     static PartialFile()
     {
         if (!(
-            typeof(IFileResource).IsAssignableFrom(typeof(TFile)) ||
             typeof(TFile) == typeof(SafeFileHandle) ||
-            typeof(TFile) == typeof(FileStream)))
+            typeof(TFile) == typeof(FileStream) ||
+            typeof(TFile) == typeof(FileSession) ||
+            typeof(TFile) == typeof(FileReference)))
         {
-            Throw.InvalidOperationException($"The type parameter {typeof(TFile)} must be assignable to {nameof(IFileResource)}.");
+            Throw.InvalidOperationException($"The type parameter {typeof(TFile)} must be assignable to {nameof(FileResource)}.");
         }
     }
 
@@ -131,7 +132,7 @@ public sealed class PartialFile<TFile> : IDisposable, IAsyncDisposable
         if (_state != State.Open)
             throw new InvalidOperationException("File is not open.");
 
-        _fileResource!.Dispose();
+        _fileResource!.Value.Dispose();
         _fileResource = null;
         _file = null;
         _state = State.Closed;
@@ -150,7 +151,7 @@ public sealed class PartialFile<TFile> : IDisposable, IAsyncDisposable
         if (_state != State.Open)
             throw new InvalidOperationException("File is not open.");
 
-        await _fileResource!.DisposeAsync();
+        await _fileResource!.Value.DisposeAsync();
         _fileResource = null;
         _file = null;
         _state = State.Closed;
@@ -170,7 +171,7 @@ public sealed class PartialFile<TFile> : IDisposable, IAsyncDisposable
         if (_state != State.Open)
             throw new InvalidOperationException("File must be open to commit.");
 
-        _fileResource!.Move(FinalPath, overwrite);
+        _fileResource!.Value.Move(FinalPath, overwrite);
         _state = State.Committed;
     }
 
@@ -182,13 +183,13 @@ public sealed class PartialFile<TFile> : IDisposable, IAsyncDisposable
         if (_state != State.Committed)
         {
             if (_state == State.Open)
-                _fileResource!.Delete();
+                _fileResource!.Value.Delete();
             else
                 System.IO.File.Delete(CurrentPath);
         }
 
         if (_state != State.Closed)
-            _fileResource!.Dispose();
+            _fileResource!.Value.Dispose();
 
         _state = State.Disposed;
     }
@@ -201,13 +202,13 @@ public sealed class PartialFile<TFile> : IDisposable, IAsyncDisposable
         if (_state != State.Committed)
         {
             if (_state == State.Open)
-                _fileResource!.Delete();
+                _fileResource!.Value.Delete();
             else
                 System.IO.File.Delete(CurrentPath);
         }
 
         if (_state != State.Closed)
-            await _fileResource!.DisposeAsync();
+            await _fileResource!.Value.DisposeAsync();
 
         _state = State.Disposed;
     }
