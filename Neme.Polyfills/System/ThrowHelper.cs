@@ -93,6 +93,28 @@ internal static class ThrowHelper
     }
 
     [DoesNotReturn]
+    internal static void ThrowArgumentOutOfRangeException(ExceptionArgument argument, ExceptionResource resource)
+    {
+        throw GetArgumentOutOfRangeException(argument, resource);
+    }
+
+    [DoesNotReturn]
+    internal static void ThrowArgumentOutOfRangeException(ExceptionArgument argument, int paramNumber, ExceptionResource resource)
+    {
+        throw GetArgumentOutOfRangeException(argument, paramNumber, resource);
+    }
+
+
+    [DoesNotReturn]
+    internal static void ThrowEndOfFileException()
+    {
+        throw CreateEndOfFileException();
+    }
+
+    internal static Exception CreateEndOfFileException() =>
+        new EndOfStreamException(SR.IO_EOF_ReadBeyondEOF);
+
+    [DoesNotReturn]
     internal static void ThrowInvalidOperationException()
     {
         throw new InvalidOperationException();
@@ -153,6 +175,11 @@ internal static class ThrowHelper
     private static ArgumentException GetArgumentException(ExceptionResource resource, ExceptionArgument argument)
     {
         return new ArgumentException(GetResourceString(resource), GetArgumentName(argument));
+    }
+
+    private static ArgumentOutOfRangeException GetArgumentOutOfRangeException(ExceptionArgument argument, int paramNumber, ExceptionResource resource)
+    {
+        return new ArgumentOutOfRangeException(GetArgumentName(argument) + "[" + paramNumber.ToString() + "]", GetResourceString(resource));
     }
 
     private static InvalidOperationException GetInvalidOperationException(ExceptionResource resource)
