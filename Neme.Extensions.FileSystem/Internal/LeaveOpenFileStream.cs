@@ -37,7 +37,7 @@ internal sealed class LeaveOpenFileStream : DelegatingFileStream
         _disposed = true;
 #pragma warning disable CA1816
         GC.SuppressFinalize(this);
-        GC.SuppressFinalize(InnerFileStream);
+        GC.SuppressFinalize(InnerStream);
 #pragma warning restore CA1816
 
         try
@@ -62,7 +62,7 @@ internal sealed class LeaveOpenFileStream : DelegatingFileStream
 
         _disposed = true;
         GC.SuppressFinalize(this);
-        GC.SuppressFinalize(InnerFileStream);
+        GC.SuppressFinalize(InnerStream);
 
         try
         {
