@@ -102,17 +102,15 @@ public static class SafeFileHandleExtensions
             Require.ArgumentInRange(access, FileAccess.None, FileAccess.ReadWrite);
             Require.ArgumentNotNegative(bufferSize);
 
+            var fileStream = new CheckedFileStream(
+                file,
+                access,
+                bufferSize,
+                isAsync: file.IsAsync);
+
             return ownsHandle
-                ? new CheckedFileStream(
-                    file,
-                    access,
-                    bufferSize,
-                    isAsync: file.IsAsync)
-                : new LeaveOpenFileStream(
-                    file,
-                    access,
-                    bufferSize,
-                    isAsync: file.IsAsync);
+                ? fileStream
+                : new LeaveOpenFileStream(fileStream);
         }
     }
 

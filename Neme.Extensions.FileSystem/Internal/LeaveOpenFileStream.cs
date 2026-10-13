@@ -1,93 +1,17 @@
-﻿using System.ComponentModel;
-using System.Diagnostics;
-using Microsoft.Win32.SafeHandles;
+﻿using System.Diagnostics;
+using Neme.Extensions.IO;
+using Neme.Extensions.Ownership;
 
 namespace Neme.Extensions.FileSystem.Internal;
 
-internal sealed class LeaveOpenFileStream : CheckedFileStream
+internal sealed class LeaveOpenFileStream : DelegatingFileStream
 {
     private bool _disposed;
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    [Obsolete("This constructor has been deprecated. Use FileStream(SafeFileHandle handle, FileAccess access) instead.")]
-    public LeaveOpenFileStream(IntPtr handle, FileAccess access)
-        : base(handle, access)
+    public LeaveOpenFileStream([OwnershipTransfer] FileStream fileStream)
+        : base(fileStream)
     {
     }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    [Obsolete("This constructor has been deprecated. Use FileStream(SafeFileHandle handle, FileAccess access) and optionally make a new SafeFileHandle with ownsHandle=false if needed instead.")]
-    public LeaveOpenFileStream(IntPtr handle, FileAccess access, bool ownsHandle)
-        : base(handle, access, ownsHandle)
-    {
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    [Obsolete("This constructor has been deprecated. Use FileStream(SafeFileHandle handle, FileAccess access, int bufferSize) and optionally make a new SafeFileHandle with ownsHandle=false if needed instead.")]
-    public LeaveOpenFileStream(IntPtr handle, FileAccess access, bool ownsHandle, int bufferSize)
-        : base(handle, access, ownsHandle, bufferSize)
-    {
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    [Obsolete("This constructor has been deprecated. Use FileStream(SafeFileHandle handle, FileAccess access, int bufferSize, bool isAsync) and optionally make a new SafeFileHandle with ownsHandle=false if needed instead.")]
-    public LeaveOpenFileStream(IntPtr handle, FileAccess access, bool ownsHandle, int bufferSize, bool isAsync)
-        : base(handle, access, ownsHandle, bufferSize, isAsync)
-    {
-    }
-
-    public LeaveOpenFileStream(SafeFileHandle handle, FileAccess access)
-        : base(handle, access)
-    {
-    }
-
-    public LeaveOpenFileStream(SafeFileHandle handle, FileAccess access, int bufferSize)
-        : base(handle, access, bufferSize)
-    {
-    }
-
-    public LeaveOpenFileStream(SafeFileHandle handle, FileAccess access, int bufferSize, bool isAsync)
-        : base(handle, access, bufferSize, isAsync)
-    {
-    }
-
-    public LeaveOpenFileStream(string path, FileMode mode)
-        : base(path, mode)
-    {
-    }
-
-    public LeaveOpenFileStream(string path, FileMode mode, FileAccess access)
-        : base(path, mode, access)
-    {
-    }
-
-    public LeaveOpenFileStream(string path, FileMode mode, FileAccess access, FileShare share)
-        : base(path, mode, access, share)
-    {
-    }
-
-    public LeaveOpenFileStream(string path, FileMode mode, FileAccess access, FileShare share, int bufferSize)
-        : base(path, mode, access, share, bufferSize)
-
-    {
-    }
-
-    public LeaveOpenFileStream(string path, FileMode mode, FileAccess access, FileShare share, int bufferSize, bool useAsync)
-        : base(path, mode, access, share, bufferSize, useAsync)
-    {
-    }
-
-    public LeaveOpenFileStream(string path, FileMode mode, FileAccess access, FileShare share, int bufferSize, FileOptions options)
-        : base(path, mode, access, share, bufferSize, options)
-    {
-    }
-
-#if NET6_0_OR_GREATER
-    public LeaveOpenFileStream(string path, FileStreamOptions options)
-        : base(path, options)
-    {
-    }
-#endif
 
     ~LeaveOpenFileStream()
     {
@@ -112,7 +36,8 @@ internal sealed class LeaveOpenFileStream : CheckedFileStream
 
         _disposed = true;
 #pragma warning disable CA1816
-    GC.SuppressFinalize(this);
+        GC.SuppressFinalize(this);
+        GC.SuppressFinalize(InnerFileStream);
 #pragma warning restore CA1816
 
         try
@@ -137,6 +62,7 @@ internal sealed class LeaveOpenFileStream : CheckedFileStream
 
         _disposed = true;
         GC.SuppressFinalize(this);
+        GC.SuppressFinalize(InnerFileStream);
 
         try
         {

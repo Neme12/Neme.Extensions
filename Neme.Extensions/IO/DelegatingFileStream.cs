@@ -1,15 +1,24 @@
 ﻿using Microsoft.Win32.SafeHandles;
+using Neme.Extensions.Ownership;
 using System.Diagnostics;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
+
+#if NETFRAMEWORK
+using System.Runtime.Remoting;
+#endif
 
 namespace Neme.Extensions.IO;
 
-public class DelegatingFileStream : FileStream
+public abstract class DelegatingFileStream : CheckedFileStream
 {
     private readonly FileStream _innerFileStream;
 
-    public DelegatingFileStream(FileStream innerFileStream)
-        : base(innerFileStream.SafeFileHandle, GetAccess(innerFileStream))
+    public DelegatingFileStream([OwnershipTransfer] FileStream innerFileStream)
+        : base(
+            File.OpenNullHandle(),
+            GetAccess(innerFileStream))
     {
         _innerFileStream = innerFileStream;
     }
@@ -18,6 +27,9 @@ public class DelegatingFileStream : FileStream
     {
         Debug.Fail($"{nameof(DelegatingFileStream)} should have been disposed.");
     }
+
+    protected FileStream InnerFileStream =>
+        _innerFileStream;
 
     private static FileAccess GetAccess(FileStream fileStream)
     {
@@ -163,4 +175,83 @@ public class DelegatingFileStream : FileStream
 
     public override long Seek(long offset, SeekOrigin origin) =>
         _innerFileStream.Seek(offset, origin);
+
+    public override bool CanTimeout =>
+        _innerFileStream.CanTimeout;
+
+    public override int ReadTimeout
+    {
+        get => _innerFileStream.ReadTimeout;
+        set => _innerFileStream.ReadTimeout = value;
+    }
+
+    public override int WriteTimeout
+    {
+        get => _innerFileStream.WriteTimeout;
+        set => _innerFileStream.WriteTimeout = value;
+    }
+
+    protected override void Dispose(bool disposing) =>
+        Accessors.Dispose(_innerFileStream, disposing);
+
+#if NETFRAMEWORK
+    public override ObjRef CreateObjRef(Type requestedType) =>
+        _innerFileStream.CreateObjRef(requestedType);
+#endif
+
+#if NET5_0_OR_GREATER
+    [Obsolete("This Remoting API is not supported and throws PlatformNotSupportedException.", DiagnosticId = "SYSLIB0010", UrlFormat = "https://aka.ms/dotnet-warnings/{0}")]
+#endif
+    public override object InitializeLifetimeService() =>
+        _innerFileStream.InitializeLifetimeService();
+
+    [Obsolete("CreateWaitHandle has been deprecated. Use the ManualResetEvent(false) constructor instead.")]
+    protected override WaitHandle CreateWaitHandle() =>
+        Accessors.CreateWaitHandle(_innerFileStream);
+
+    [System.Obsolete("Do not call or override this method.")]
+    protected override void ObjectInvariant() =>
+        Accessors.ObjectInvariant(_innerFileStream);
+
+    private static class Accessors
+    {
+#if NET8_0_OR_GREATER
+        [UnsafeAccessor(UnsafeAccessorKind.Method)]
+        public extern static void Dispose(FileStream stream, bool disposing);
+
+        [UnsafeAccessor(UnsafeAccessorKind.Method)]
+        public extern static WaitHandle CreateWaitHandle(FileStream stream);
+
+        [UnsafeAccessor(UnsafeAccessorKind.Method)]
+        public extern static void ObjectInvariant(FileStream stream);
+#else
+        private const BindingFlags _bindingFlags =
+            BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.ExactBinding;
+
+        public static readonly DisposeDelegate Dispose =
+            typeof(FileStream).GetMethod(
+                "Dispose",
+                _bindingFlags,
+                [typeof(bool)])!
+            .CreateDelegate<DisposeDelegate>();
+
+        public static readonly CreateWaitHandleDelegate CreateWaitHandle =
+            typeof(FileStream).GetMethod(
+                "CreateWaitHandle",
+                _bindingFlags,
+                [])!
+            .CreateDelegate<CreateWaitHandleDelegate>();
+
+        public static readonly ObjectInvariantDelegate ObjectInvariant =
+            typeof(FileStream).GetMethod(
+                "ObjectInvariant",
+                _bindingFlags,
+                [])!
+            .CreateDelegate<ObjectInvariantDelegate>();
+
+        public delegate void DisposeDelegate(FileStream stream, bool disposing);
+        public delegate WaitHandle CreateWaitHandleDelegate(FileStream stream);
+        public delegate void ObjectInvariantDelegate(FileStream stream);
+#endif
+    }
 }
