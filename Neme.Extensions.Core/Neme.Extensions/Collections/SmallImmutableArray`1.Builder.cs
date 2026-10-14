@@ -24,7 +24,7 @@ public readonly partial struct SmallImmutableArray<T>
         internal Builder(int initialCapacity)
         {
             if (initialCapacity > InlineCapacity)
-                _items = ImmutableArray.CreateBuilder<T>((int)BitOperationsPolyfill.RoundUpToPowerOf2((uint)initialCapacity));
+                _items = ImmutableArray.CreateBuilder<T>((int)BitOperations.RoundUpToPowerOf2((uint)initialCapacity));
 
             AssertInvariants();
         }

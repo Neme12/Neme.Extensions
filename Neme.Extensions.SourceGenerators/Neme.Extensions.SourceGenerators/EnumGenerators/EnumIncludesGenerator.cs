@@ -21,6 +21,23 @@ internal static class EnumIncludesGenerator
         var typeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         var underlyingTypeName = enumUnderlyingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
+        // Widen the value to uint or ulong as IsPow2 only has overloads for those
+        var isPow2Operand = enumUnderlyingType.SpecialType switch
+        {
+            SpecialType.System_SByte => "unchecked((uint)(byte)flag)",
+            SpecialType.System_Byte => "unchecked((uint)(byte)flag)",
+            SpecialType.System_Int16 => "unchecked((uint)(ushort)flag)",
+            SpecialType.System_UInt16 => "unchecked((uint)(ushort)flag)",
+            SpecialType.System_Int32 => "unchecked((uint)(int)flag)",
+            SpecialType.System_UInt32 => "unchecked((uint)flag)",
+            SpecialType.System_Int64 => "unchecked((ulong)(long)flag)",
+            SpecialType.System_UInt64 => "unchecked((ulong)flag)",
+            _ => null,
+        };
+
+        if (isPow2Operand is null)
+            return null;
+
         using (var stringWriter = new StringWriter(CultureInfo.InvariantCulture))
         using (var textWriter = new IndentedTextWriter(stringWriter))
         {
@@ -28,9 +45,9 @@ internal static class EnumIncludesGenerator
             textWriter.WriteLine($"public bool Includes({typeName} flag)");
             textWriter.WriteLine('{');
             textWriter.Indent = baselineIndent + 1;
-            textWriter.WriteLine($"if (!global::System.Numerics.BitOperations.IsPow2(({underlyingTypeName})flag))");
+            textWriter.WriteLine($"if (!global::System.Numerics.BitOperations.IsPow2({isPow2Operand}))");
             textWriter.Indent = baselineIndent + 2;
-            textWriter.WriteLine($"ThrowNotOneFlag(flag);");
+            textWriter.WriteLine("ThrowNotOneFlag(flag);");
             textWriter.WriteLine();
             textWriter.Indent = baselineIndent + 1;
             textWriter.WriteLine("return (value & flag) != 0;");

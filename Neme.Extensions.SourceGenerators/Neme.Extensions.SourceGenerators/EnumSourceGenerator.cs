@@ -26,7 +26,11 @@ public sealed class EnumSourceGenerator : IIncrementalGenerator
                 static (syntaxContext, cancellationToken) => GetEnumSymbol(syntaxContext, cancellationToken))
             .Where(static symbol => symbol is INamedTypeSymbol enumSymbol && IsAccessibleFromNamespaceLevel(enumSymbol));
 
-        context.RegisterSourceOutput(enumSymbols, static (sourceContext, enumSymbol) => EmitEnumSource(sourceContext, enumSymbol!, sourceContext.CancellationToken));
+        var enumSymbolsWithCompilation = enumSymbols.Combine(context.CompilationProvider);
+
+        context.RegisterSourceOutput(
+            enumSymbolsWithCompilation,
+            static (sourceContext, value) => EmitEnumSource(sourceContext, value.Left!, value.Right, sourceContext.CancellationToken));
     }
 
     private static INamedTypeSymbol? GetEnumSymbol(GeneratorSyntaxContext context, CancellationToken cancellationToken)
@@ -40,9 +44,10 @@ public sealed class EnumSourceGenerator : IIncrementalGenerator
     private static void EmitEnumSource(
         SourceProductionContext context,
         INamedTypeSymbol enumType,
+        Compilation compilation,
         CancellationToken cancellationToken)
     {
-        ReadOnlySpan<string?> flagMembers = IsFlagsEnum(enumType)
+        ReadOnlySpan<string?> flagMembers = IsFlagsEnum(compilation, enumType)
             ? [
                 EnumIncludesGenerator.GetExtensionSource(context, 2, enumType, cancellationToken)!,
                 EnumIncludesAllGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
@@ -77,11 +82,15 @@ public sealed class EnumSourceGenerator : IIncrementalGenerator
             cancellationToken);
     }
 
-    private static bool IsFlagsEnum(INamedTypeSymbol enumType)
+    private static bool IsFlagsEnum(Compilation compilation, INamedTypeSymbol enumType)
     {
+        var flagsAttributeType = compilation.GetTypeByMetadataName("System.FlagsAttribute");
+        if (flagsAttributeType is null)
+            return false;
+
         foreach (var attribute in enumType.GetAttributes())
         {
-            if (attribute.AttributeClass?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::System.FlagsAttribute")
+            if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, flagsAttributeType))
                 return true;
         }
 
