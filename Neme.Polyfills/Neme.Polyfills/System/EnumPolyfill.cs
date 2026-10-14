@@ -4,15 +4,26 @@ namespace System;
 
 public static class EnumPolyfill
 {
-#if NET5_0_OR_GREATER
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-    public static bool IsDefined<TEnum>(TEnum value) where TEnum : struct, Enum
+    extension(Enum)
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsDefined<TEnum>(TEnum value) where TEnum : struct, Enum
+        {
+    #if NET5_0_OR_GREATER
+            return Enum.IsDefined(value);
+    #else
+            return Enum.IsDefined(typeof(TEnum), value);
+    #endif
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string? GetName<TEnum>(TEnum value) where TEnum : struct, Enum
+        {
 #if NET5_0_OR_GREATER
-        return Enum.IsDefined(value);
+            return Enum.GetName(value);
 #else
-        return Enum.IsDefined(typeof(TEnum), value);
+            return Enum.GetName(typeof(TEnum), value);
 #endif
+        }
     }
 }

@@ -46,7 +46,7 @@ public sealed class EnumSourceGenerator : IIncrementalGenerator
             [
                 EnumNameGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
                 EnumValueGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
-                EnumIncludesGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
+                EnumIncludesAllGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
                 EnumIncludesAnyGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
             ];
 
