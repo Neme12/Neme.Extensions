@@ -19,11 +19,11 @@
 	</ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Neme.Extensions\InteropServices\RuntimeInformationExtensions.cs" Link="InteropServices\RuntimeInformationExtensions.cs" />
-    <Compile Include="..\Neme.Extensions\InteropServices\Win32Marshal.cs" Link="InteropServices\Win32Marshal.cs" />
-    <Compile Include="..\Neme.Extensions\InteropServices\WinNtMarshal.cs" Link="InteropServices\WinNtMarshal.cs" />
-    <EmbeddedResource Include="..\Neme.Extensions\IOStrings.resx" Link="IOStrings.resx" />
-    <Compile Include="..\Neme.Extensions\IOStrings.Designer.cs" Link="IOStrings.Designer.cs" DependentUpon="..\Neme.Extensions\IOStrings.resx" />
+    <Compile Include="..\..\Neme.Extensions\Neme.Extensions\InteropServices\RuntimeInformationExtensions.cs" Link="InteropServices\RuntimeInformationExtensions.cs" />
+    <Compile Include="..\..\Neme.Extensions\Neme.Extensions\InteropServices\Win32Marshal.cs" Link="InteropServices\Win32Marshal.cs" />
+    <Compile Include="..\..\Neme.Extensions\Neme.Extensions\InteropServices\WinNtMarshal.cs" Link="InteropServices\WinNtMarshal.cs" />
+    <EmbeddedResource Include="..\..\Neme.Extensions\Neme.Extensions\IOStrings.resx" Link="IOStrings.resx" />
+    <Compile Include="..\..\Neme.Extensions\Neme.Extensions\IOStrings.Designer.cs" Link="IOStrings.Designer.cs" DependentUpon="..\Neme.Extensions\Neme.Extensions\IOStrings.resx" />
   </ItemGroup>
 
   <ItemGroup>

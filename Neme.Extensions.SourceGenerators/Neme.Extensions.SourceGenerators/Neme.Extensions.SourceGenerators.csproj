@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Neme.Polyfills\Neme.Polyfills.csproj">
+    <ProjectReference Include="..\..\Neme.Polyfills\Neme.Polyfills\Neme.Polyfills.csproj">
       <IncludeInVSIX>true</IncludeInVSIX>
     </ProjectReference>
   </ItemGroup>
