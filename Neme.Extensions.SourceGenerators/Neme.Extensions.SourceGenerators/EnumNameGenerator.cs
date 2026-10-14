@@ -28,7 +28,7 @@ internal static class EnumNameGenerator
         using (var switchWriter = new IndentedTextWriter(stringWriter))
         {
             switchWriter.Indent = baselineIndent;
-            switchWriter.WriteLine("public string Name =>");
+            switchWriter.WriteLine("public string? Name =>");
             switchWriter.Indent = baselineIndent + 1;
             switchWriter.WriteLine("value switch");
             switchWriter.WriteLine("{");
@@ -39,7 +39,7 @@ internal static class EnumNameGenerator
                 switchWriter.WriteLine($"{enumTypeName}.{member.Name} => nameof({enumTypeName}.{member.Name}),");
             }
 
-            switchWriter.WriteLine("_ => value.ToString(),");
+            switchWriter.WriteLine("_ => global::System.Enum.GetName(value),");
 
             switchWriter.Indent = baselineIndent + 1;
             switchWriter.Write("};");
