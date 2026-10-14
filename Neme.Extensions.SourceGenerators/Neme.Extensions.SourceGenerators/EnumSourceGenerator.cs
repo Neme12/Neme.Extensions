@@ -42,13 +42,19 @@ public sealed class EnumSourceGenerator : IIncrementalGenerator
         INamedTypeSymbol enumType,
         CancellationToken cancellationToken)
     {
+        ReadOnlySpan<string?> flagMembers = IsFlagsEnum(enumType)
+            ? [
+                EnumIncludesGenerator.GetExtensionSource(context, 2, enumType, cancellationToken)!,
+                EnumIncludesAllGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
+                EnumIncludesAnyGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
+            ]
+            : [];
+
         Span<string?> members =
             [
                 EnumNameGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
                 EnumValueGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
-                EnumIncludesGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
-                EnumIncludesAllGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
-                EnumIncludesAnyGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
+                ..flagMembers,
             ];
 
         var nonNullCount = 0;
@@ -69,6 +75,17 @@ public sealed class EnumSourceGenerator : IIncrementalGenerator
             members[..nonNullCount]!,
             enumType,
             cancellationToken);
+    }
+
+    private static bool IsFlagsEnum(INamedTypeSymbol enumType)
+    {
+        foreach (var attribute in enumType.GetAttributes())
+        {
+            if (attribute.AttributeClass?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::System.FlagsAttribute")
+                return true;
+        }
+
+        return false;
     }
 
     private static void EmitEnumExtension(
