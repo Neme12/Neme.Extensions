@@ -23,6 +23,27 @@ internal static class EnumIncludesAnyGenerator
             textWriter.WriteLine($"public bool IncludesAny({enumTypeName} flag) =>");
             textWriter.Indent = baselineIndent + 1;
             textWriter.WriteLine("(value & flag) != 0;");
+            textWriter.WriteLine();
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            textWriter.Indent = baselineIndent;
+            textWriter.WriteLine($"public bool IncludesAny(params global::System.ReadOnlySpan<{enumTypeName}> flags)");
+            textWriter.WriteLine('{');
+            textWriter.Indent = baselineIndent + 1;
+            textWriter.WriteLine("foreach (var flag in flags)");
+            textWriter.WriteLine('{');
+            textWriter.Indent = baselineIndent + 2;
+            textWriter.WriteLine("if (IncludesAny(value, flag))");
+            textWriter.Indent = baselineIndent + 3;
+            textWriter.WriteLine("return true;");
+            textWriter.Indent = baselineIndent + 1;
+            textWriter.WriteLine('}');
+            textWriter.WriteLine();
+            textWriter.WriteLine("return false;");
+            textWriter.Indent = baselineIndent;
+            textWriter.WriteLine('}');
+
             textWriter.Flush();
 
             cancellationToken.ThrowIfCancellationRequested();

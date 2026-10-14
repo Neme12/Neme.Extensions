@@ -1,7 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using System.CodeDom.Compiler;
 using System.Globalization;
-using System.Runtime.Versioning;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
