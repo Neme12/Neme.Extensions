@@ -2,10 +2,10 @@
 using System.CodeDom.Compiler;
 using System.Globalization;
 
-namespace Neme.Extensions.SourceGenerators;
+namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
 internal static class EnumNameGenerator
-{
+{        
     public static string GetExtensionSource(
         SourceProductionContext context,
         int baselineIndent,
@@ -42,7 +42,7 @@ internal static class EnumNameGenerator
             switchWriter.WriteLine("_ => global::System.Enum.GetName(value),");
 
             switchWriter.Indent = baselineIndent + 1;
-            switchWriter.Write("};");
+            switchWriter.WriteLine("};");
 
             switchWriter.Flush();
 

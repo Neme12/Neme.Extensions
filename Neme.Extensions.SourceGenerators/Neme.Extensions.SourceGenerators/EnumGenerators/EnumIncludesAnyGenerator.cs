@@ -2,7 +2,7 @@
 using System.CodeDom.Compiler;
 using System.Globalization;
 
-namespace Neme.Extensions.SourceGenerators;
+namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
 internal static class EnumIncludesAnyGenerator
 {

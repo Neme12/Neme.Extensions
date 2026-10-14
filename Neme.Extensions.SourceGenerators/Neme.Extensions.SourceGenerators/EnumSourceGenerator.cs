@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using Neme.Extensions.SourceGenerators.EnumGenerators;
 using System.Text;
 using static System.FormattableString;
 
@@ -41,20 +42,24 @@ public sealed class EnumSourceGenerator : IIncrementalGenerator
         INamedTypeSymbol enumType,
         CancellationToken cancellationToken)
     {
-        EmitEnumExtension(
-            context,
+        string?[] members =
             [
                 EnumNameGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
+                EnumValueGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
                 EnumIncludesGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
                 EnumIncludesAnyGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
-            ],
+            ];
+
+        EmitEnumExtension(
+            context,
+            members.Where(static source => source is not null).ToImmutableArray()!,
             enumType,
             cancellationToken);
     }
 
     private static void EmitEnumExtension(
         SourceProductionContext context,
-        ReadOnlySpan<string> sources,
+        ImmutableArray<string> members,
         INamedTypeSymbol enumType,
         CancellationToken cancellationToken)
     {
@@ -85,7 +90,7 @@ public sealed class EnumSourceGenerator : IIncrementalGenerator
             {
                 extension({{typeName}} value)
                 {
-            {{string.Join(Environment.NewLine, sources)}}
+            {{string.Join(Environment.NewLine, members)}}
                 }
             }
 
