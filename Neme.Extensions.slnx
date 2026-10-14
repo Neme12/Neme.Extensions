@@ -6,6 +6,8 @@
     <File Path="README.md" />
     <File Path="THIRD-PARTY-NOTICES.txt" />
   </Folder>
+  <Project Path="Neme.Extensions.SourceGenerators/Neme.Extensions.SourceGenerators.Vsix/Neme.Extensions.SourceGenerators.Vsix.csproj" />
+  <Project Path="Neme.Extensions.SourceGenerators/Neme.Extensions.SourceGenerators/Neme.Extensions.SourceGenerators.csproj" />
   <Project Path="Neme.Extensions.AspNetCore.Tests/Neme.Extensions.AspNetCore.Tests.csproj" />
   <Project Path="Neme.Extensions.AspNetCore/Neme.Extensions.AspNetCore.csproj" />
   <Project Path="Neme.Extensions.EntityFrameworkCore.SqlServer.Tests/Neme.Extensions.EntityFrameworkCore.SqlServer.Tests.csproj" />
