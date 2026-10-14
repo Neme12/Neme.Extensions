@@ -13,21 +13,23 @@
     <Project Path="Neme.Extensions.SourceGenerators/Neme.Extensions.SourceGenerators/Neme.Extensions.SourceGenerators.csproj" />
     <Project Path="Neme.Extensions.SourceGenerators/Neme.Extensions.SourceGenerators.Vsix/Neme.Extensions.SourceGenerators.Vsix.csproj" />
   </Folder>
-  <Folder Name="/Neme.Extensions/">
-    <Project Path="Neme.Extensions/Neme.Extensions/Neme.Extensions.csproj" />
-    <Project Path="Neme.Extensions/Neme.Extensions.Tests/Neme.Extensions.Tests.csproj" />
-    <Project Path="Neme.Extensions/Neme.Extensions.Win32/Neme.Extensions.Win32.csproj" />
-    <Project Path="Neme.Extensions/Neme.Extensions.Win32.Tests/Neme.Extensions.Win32.Tests.csproj" />
-    <Project Path="Neme.Extensions/Neme.Extensions.FileSystem/Neme.Extensions.FileSystem.csproj" />
-    <Project Path="Neme.Extensions/Neme.Extensions.FileSystem.Tests/Neme.Extensions.FileSystem.Tests.csproj" />
-    <Project Path="Neme.Extensions/Neme.Extensions.MicrosoftExtensions/Neme.Extensions.MicrosoftExtensions.csproj" />
-    <Project Path="Neme.Extensions/Neme.Extensions.MicrosoftExtensions.Tests/Neme.Extensions.MicrosoftExtensions.Tests.csproj" />
-    <Project Path="Neme.Extensions/Neme.Extensions.AspNetCore/Neme.Extensions.AspNetCore.csproj" />
-    <Project Path="Neme.Extensions/Neme.Extensions.AspNetCore.Tests/Neme.Extensions.AspNetCore.Tests.csproj" />
-    <Project Path="Neme.Extensions/Neme.Extensions.EntityFrameworkCore/Neme.Extensions.EntityFrameworkCore.csproj" />
-    <Project Path="Neme.Extensions/Neme.Extensions.EntityFrameworkCore.Tests/Neme.Extensions.EntityFrameworkCore.Tests.csproj" />
-    <Project Path="Neme.Extensions/Neme.Extensions.EntityFrameworkCore.SqlServer/Neme.Extensions.EntityFrameworkCore.SqlServer.csproj" />
-    <Project Path="Neme.Extensions/Neme.Extensions.EntityFrameworkCore.SqlServer.Tests/Neme.Extensions.EntityFrameworkCore.SqlServer.Tests.csproj" />
+  <Folder Name="/Neme.Extensions.Core/">
+    <Project Path="Neme.Extensions.Core/Neme.Extensions/Neme.Extensions.csproj" />
+    <Project Path="Neme.Extensions.Core/Neme.Extensions.Tests/Neme.Extensions.Tests.csproj" />
+    <Project Path="Neme.Extensions.Core/Neme.Extensions.Win32/Neme.Extensions.Win32.csproj" />
+    <Project Path="Neme.Extensions.Core/Neme.Extensions.Win32.Tests/Neme.Extensions.Win32.Tests.csproj" />
+    <Project Path="Neme.Extensions.Core/Neme.Extensions.FileSystem/Neme.Extensions.FileSystem.csproj" />
+    <Project Path="Neme.Extensions.Core/Neme.Extensions.FileSystem.Tests/Neme.Extensions.FileSystem.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Neme.Extensions.Frameworks/">
+    <Project Path="Neme.Extensions.Frameworks/Neme.Extensions.MicrosoftExtensions/Neme.Extensions.MicrosoftExtensions.csproj" />
+    <Project Path="Neme.Extensions.Frameworks/Neme.Extensions.MicrosoftExtensions.Tests/Neme.Extensions.MicrosoftExtensions.Tests.csproj" />
+    <Project Path="Neme.Extensions.Frameworks/Neme.Extensions.AspNetCore/Neme.Extensions.AspNetCore.csproj" />
+    <Project Path="Neme.Extensions.Frameworks/Neme.Extensions.AspNetCore.Tests/Neme.Extensions.AspNetCore.Tests.csproj" />
+    <Project Path="Neme.Extensions.Frameworks/Neme.Extensions.EntityFrameworkCore/Neme.Extensions.EntityFrameworkCore.csproj" />
+    <Project Path="Neme.Extensions.Frameworks/Neme.Extensions.EntityFrameworkCore.Tests/Neme.Extensions.EntityFrameworkCore.Tests.csproj" />
+    <Project Path="Neme.Extensions.Frameworks/Neme.Extensions.EntityFrameworkCore.SqlServer/Neme.Extensions.EntityFrameworkCore.SqlServer.csproj" />
+    <Project Path="Neme.Extensions.Frameworks/Neme.Extensions.EntityFrameworkCore.SqlServer.Tests/Neme.Extensions.EntityFrameworkCore.SqlServer.Tests.csproj" />
   </Folder>
   <Folder Name="/Neme.Polyfills/">
     <Project Path="Neme.Polyfills/Neme.Polyfills/Neme.Polyfills.csproj" />
