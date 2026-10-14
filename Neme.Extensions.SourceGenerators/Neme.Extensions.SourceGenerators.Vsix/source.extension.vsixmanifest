@@ -14,6 +14,7 @@
   <Assets>
     <Asset Type="Microsoft.VisualStudio.MefComponent" Path="|Neme.Extensions.SourceGenerators;|" d:Source="Project" d:ProjectName="Neme.Extensions.SourceGenerators" />
     <Asset Type="Microsoft.VisualStudio.Analyzer" Path="|Neme.Extensions.SourceGenerators;|" d:Source="Project" d:ProjectName="Neme.Extensions.SourceGenerators" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="|Neme.Polyfills;BuiltProjectOutputGroup|" d:Source="Project" d:ProjectName="Neme.Polyfills" />
   </Assets>
   <Prerequisites>
     <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" DisplayName="Visual Studio core editor" Version="[15.0,)" />

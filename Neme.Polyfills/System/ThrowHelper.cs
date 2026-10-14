@@ -162,6 +162,12 @@ internal static class ThrowHelper
         throw new ObjectDisposedException(null, GetResourceString(resource));
     }
 
+    [DoesNotReturn]
+    internal static void ThrowOutOfMemoryException_StringTooLong()
+    {
+        throw new OutOfMemoryException(SR.OutOfMemory_StringTooLong);
+    }
+
     private static ArgumentException GetArgumentException(ExceptionResource resource)
     {
         return new ArgumentException(GetResourceString(resource));

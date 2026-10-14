@@ -8,6 +8,7 @@
     <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
     <IsRoslynComponent>true</IsRoslynComponent>
     <NoWarn>$(NoWarn);RS1035</NoWarn>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <IsPackable>false</IsPackable>
 
     <!-- Avoid ID conflicts with the package project. -->
@@ -17,6 +18,12 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="5.9.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.9.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Neme.Polyfills\Neme.Polyfills.csproj">
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>

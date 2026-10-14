@@ -41,13 +41,18 @@ public sealed class EnumSourceGenerator : IIncrementalGenerator
         INamedTypeSymbol enumType,
         CancellationToken cancellationToken)
     {
-        var source = EnumNameGenerator.GetExtensionSource(context, 2, enumType, cancellationToken);
-        EmitEnumExtension(context, source, enumType, cancellationToken);
+        var nameSource = EnumNameGenerator.GetExtensionSource(context, 2, enumType, cancellationToken);
+        var includesSource = EnumIncludesGenerator.GetExtensionSource(context, 2, enumType, cancellationToken);
+        EmitEnumExtension(
+            context,
+            [nameSource, includesSource],
+            enumType,
+            cancellationToken);
     }
 
     private static void EmitEnumExtension(
         SourceProductionContext context,
-        string source,
+        ReadOnlySpan<string> sources,
         INamedTypeSymbol enumType,
         CancellationToken cancellationToken)
     {
@@ -75,7 +80,7 @@ public sealed class EnumSourceGenerator : IIncrementalGenerator
             {
                 extension({{typeName}} value)
                 {
-            {{source}}
+            {{string.Join(Environment.NewLine, sources)}}
                 }
             }
 

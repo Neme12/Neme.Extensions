@@ -3,7 +3,7 @@ using System.Text;
 
 namespace System;
 
-public static class StringPolyfill
+public static partial class StringPolyfill
 {
     /// <summary>Maximum length allowed for a string.</summary>
     /// <remarks>Keep in sync with AllocateString in gchelpers.cpp.</remarks>
