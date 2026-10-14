@@ -42,24 +42,38 @@ public sealed class EnumSourceGenerator : IIncrementalGenerator
         INamedTypeSymbol enumType,
         CancellationToken cancellationToken)
     {
-        string?[] members =
+        Span<string?> members =
             [
                 EnumNameGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
                 EnumValueGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
+                EnumIncludesGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
                 EnumIncludesAllGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
                 EnumIncludesAnyGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
             ];
 
+        var nonNullCount = 0;
+
+        for (var i = 0; i < members.Length; ++i)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var member = members[i];
+            if (member is null)
+                continue;
+
+            members[nonNullCount++] = member;
+        }
+
         EmitEnumExtension(
             context,
-            members.Where(static source => source is not null).ToImmutableArray()!,
+            members[..nonNullCount]!,
             enumType,
             cancellationToken);
     }
 
     private static void EmitEnumExtension(
         SourceProductionContext context,
-        ImmutableArray<string> members,
+        ReadOnlySpan<string> members,
         INamedTypeSymbol enumType,
         CancellationToken cancellationToken)
     {

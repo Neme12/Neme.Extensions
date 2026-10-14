@@ -1,9 +1,68 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace System.Numerics
+namespace System.Numerics;
+
+#if NETCOREAPP3_0_OR_GREATER
+public static class BitOperationsPolyfill
 {
-    public static class BitOperationsPolyfill
+    extension(BitOperations)
     {
+#else
+public static class BitOperations
+{
+#endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsPow2(int value) =>
+#if NET6_0_OR_GREATER
+            BitOperations.IsPow2(value);
+#else
+            (value & (value - 1)) == 0 && value > 0;
+#endif
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [CLSCompliant(false)]
+        public static bool IsPow2(uint value) =>
+#if NET6_0_OR_GREATER
+            BitOperations.IsPow2(value);
+#else
+            (value & (value - 1)) == 0 && value != 0;
+#endif
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsPow2(long value) =>
+#if NET6_0_OR_GREATER
+            BitOperations.IsPow2(value);
+#else
+            (value & (value - 1)) == 0 && value > 0;
+#endif
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [CLSCompliant(false)]
+        public static bool IsPow2(ulong value) =>
+#if NET6_0_OR_GREATER
+            BitOperations.IsPow2(value);
+#else
+            (value & (value - 1)) == 0 && value != 0;
+#endif
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsPow2(nint value) =>
+#if NET7_0_OR_GREATER
+            BitOperations.IsPow2(value);
+#else
+            (value & (value - 1)) == 0 && value > 0;
+#endif
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [CLSCompliant(false)]
+        public static bool IsPow2(nuint value) =>
+#if NET7_0_OR_GREATER
+            BitOperations.IsPow2(value);
+#else
+            (value & (value - 1)) == 0 && value != 0;
+#endif
+
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [CLSCompliant(false)]
         public static uint RoundUpToPowerOf2(uint value)
@@ -21,5 +80,7 @@ namespace System.Numerics
             return value + 1;
 #endif
         }
+#if NETCOREAPP3_0_OR_GREATER
     }
+#endif
 }
