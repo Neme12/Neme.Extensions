@@ -6,13 +6,6 @@ namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
 internal static class EnumValueGenerator
 {
-    private static readonly SymbolDisplayFormat s_keywordFormat = new(
-    SymbolDisplayGlobalNamespaceStyle.Included,
-    SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
-    SymbolDisplayGenericsOptions.None,
-    SymbolDisplayMemberOptions.IncludeContainingType,
-    miscellaneousOptions: SymbolDisplayMiscellaneousOptions.UseSpecialTypes);
-
     public static string? GetExtensionSource(
         SourceProductionContext context,
         int baselineIndent,
@@ -26,7 +19,7 @@ internal static class EnumValueGenerator
             return null;
 
         var typeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-        var underlyingTypeName = underlyingType.ToDisplayString(s_keywordFormat);
+        var underlyingTypeName = underlyingType.ToDisplayString(GeneratorUtilities.KeywordTypeFormat);
 
         using (var stringWriter = new StringWriter(CultureInfo.InvariantCulture))
         using (var textWriter = new IndentedTextWriter(stringWriter))
