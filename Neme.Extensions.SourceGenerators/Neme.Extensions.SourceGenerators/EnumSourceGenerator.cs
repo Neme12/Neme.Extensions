@@ -47,7 +47,12 @@ public sealed class EnumSourceGenerator : IIncrementalGenerator
         Compilation compilation,
         CancellationToken cancellationToken)
     {
-        ReadOnlySpan<string?> flagMembers = IsFlagsEnum(compilation, enumType)
+        Span<string?> typeSources =
+            [
+                EnumNamesGenerator.GetTypeMemberSource(context, 1, enumType, cancellationToken)
+            ];
+
+        ReadOnlySpan<string?> flagExtensionSources = IsFlagsEnum(compilation, enumType)
             ? [
                 EnumIncludesGenerator.GetExtensionSource(context, 2, enumType, cancellationToken)!,
                 EnumIncludesAllGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
@@ -55,29 +60,18 @@ public sealed class EnumSourceGenerator : IIncrementalGenerator
             ]
             : [];
 
-        Span<string?> members =
+        Span<string?> extensionSources =
             [
                 EnumNameGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
+                EnumNamesGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
                 EnumValueGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
-                ..flagMembers,
+                ..flagExtensionSources,
             ];
-
-        var nonNullCount = 0;
-
-        for (var i = 0; i < members.Length; ++i)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var member = members[i];
-            if (member is null)
-                continue;
-
-            members[nonNullCount++] = member;
-        }
 
         EmitEnumExtension(
             context,
-            members[..nonNullCount]!,
+            typeSources.RemoveNullValuesInPlace(),
+            extensionSources.RemoveNullValuesInPlace(),
             enumType,
             cancellationToken);
     }
@@ -99,7 +93,8 @@ public sealed class EnumSourceGenerator : IIncrementalGenerator
 
     private static void EmitEnumExtension(
         SourceProductionContext context,
-        ReadOnlySpan<string> members,
+        ReadOnlySpan<string> typeSources,
+        ReadOnlySpan<string> extensionSources,
         INamedTypeSymbol enumType,
         CancellationToken cancellationToken)
     {
@@ -128,9 +123,11 @@ public sealed class EnumSourceGenerator : IIncrementalGenerator
             [global::System.CodeDom.Compiler.GeneratedCode("Neme.Extensions.SourceGenerators", "0.0.0.0")]
             internal static class {{extensionClassName}}
             {
+            {{string.Join(Environment.NewLine, typeSources)}}
+
                 extension({{typeName}} value)
                 {
-            {{string.Join(Environment.NewLine, members)}}
+            {{string.Join(Environment.NewLine, extensionSources)}}
                 }
             }
 

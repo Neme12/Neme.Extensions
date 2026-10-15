@@ -34,8 +34,16 @@ internal static class EnumNameGenerator
             switchWriter.WriteLine("{");
             switchWriter.Indent = baselineIndent + 2;
 
+            var seenValues = new HashSet<object>();
+
             foreach (var member in enumMembers)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var constantValue = member.ConstantValue;
+                if (constantValue is null || !seenValues.Add(constantValue))
+                    continue;
+
                 switchWriter.WriteLine($"{enumTypeName}.{member.Name} => nameof({enumTypeName}.{member.Name}),");
             }
 
