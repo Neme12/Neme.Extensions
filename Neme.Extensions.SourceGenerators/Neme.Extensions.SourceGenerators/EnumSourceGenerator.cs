@@ -115,6 +115,8 @@ public sealed class EnumSourceGenerator : IIncrementalGenerator
                 EnumIncludesGenerator.GetExtensionSource(context, 2, enumType, cancellationToken)!,
                 EnumIncludesAllGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
                 EnumIncludesAnyGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
+                EnumStaticAllGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
+                EnumStaticNoneGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
                 EnumStaticFlagsDefinedGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
             ]
             : [];
