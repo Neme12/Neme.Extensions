@@ -22,31 +22,39 @@ internal static class EnumStaticIsDefinedGenerator
             .Where(static field => field.HasConstantValue)
             .ToImmutableArray();
 
+        var seenValues = new HashSet<object>();
+        var definedPatterns = new List<string>(enumMembers.Length);
+        foreach (var member in enumMembers)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (!seenValues.Add(member.ConstantValue!))
+                continue;
+
+            definedPatterns.Add($"{enumTypeName}.{member.Name}");
+        }
+
         using (var stringWriter = new StringWriter(CultureInfo.InvariantCulture))
         using (var textWriter = new IndentedTextWriter(stringWriter))
         {
             textWriter.Indent = baselineIndent;
-            textWriter.WriteLine($"public static bool IsDefined({enumTypeName} value) =>");
-            textWriter.Indent = baselineIndent + 1;
-            textWriter.WriteLine("value switch");
-            textWriter.WriteLine("{");
-            textWriter.Indent = baselineIndent + 2;
 
-            var seenValues = new HashSet<object>();
-            foreach (var member in enumMembers)
+            if (definedPatterns.Count == 0)
+                textWriter.WriteLine($"public static bool IsDefined({enumTypeName} value) => false;");
+            else
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                textWriter.WriteLine($"public static bool IsDefined({enumTypeName} value) =>");
+                textWriter.Indent = baselineIndent + 1;
+                textWriter.WriteLine("value is");
+                textWriter.Indent = baselineIndent + 2;
 
-                if (!seenValues.Add(member.ConstantValue!))
-                    continue;
-
-                textWriter.WriteLine($"{enumTypeName}.{member.Name} => true,");
+                for (var i = 0; i < definedPatterns.Count; ++i)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var suffix = i == definedPatterns.Count - 1 ? ";" : " or";
+                    textWriter.WriteLine($"{definedPatterns[i]}{suffix}");
+                }
             }
-
-            textWriter.WriteLine("_ => false,");
-
-            textWriter.Indent = baselineIndent + 1;
-            textWriter.WriteLine("};");
 
             return textWriter.InnerWriter.ToString();
         }
