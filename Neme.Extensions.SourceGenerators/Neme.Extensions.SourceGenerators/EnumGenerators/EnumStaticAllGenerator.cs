@@ -8,18 +8,19 @@ internal static class EnumStaticAllGenerator
 {
     public static string? GetExtensionSource(
         SourceProductionContext context,
+        Compilation compilation,
         int baselineIndent,
         INamedTypeSymbol enumType,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
+        if (GeneratorUtilities.HasConflictingFieldOrProperty(compilation, enumType, "All", cancellationToken))
+            return null;
+
         var enumMembers = enumType.GetMembers()
             .OfType<IFieldSymbol>()
             .ToImmutableArray();
-
-        if (enumMembers.Any(static member => member.Name == "All"))
-            return null;
 
         var enumTypeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 

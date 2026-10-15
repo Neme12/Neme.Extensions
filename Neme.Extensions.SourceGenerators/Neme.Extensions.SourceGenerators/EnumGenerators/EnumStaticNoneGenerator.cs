@@ -8,17 +8,14 @@ internal static class EnumStaticNoneGenerator
 {
     public static string? GetExtensionSource(
         SourceProductionContext context,
+        Compilation compilation,
         int baselineIndent,
         INamedTypeSymbol enumType,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var enumMembers = enumType.GetMembers()
-            .OfType<IFieldSymbol>()
-            .ToImmutableArray();
-
-        if (enumMembers.Any(static member => member.Name == "None"))
+        if (GeneratorUtilities.HasConflictingFieldOrProperty(compilation, enumType, "None", cancellationToken))
             return null;
 
         var enumTypeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
