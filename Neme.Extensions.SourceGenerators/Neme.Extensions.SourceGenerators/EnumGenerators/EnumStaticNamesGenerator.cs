@@ -4,7 +4,7 @@ using System.Globalization;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal static class EnumGetNamesGenerator
+internal static class EnumStaticNamesGenerator
 {
     public static string GetTypeMemberSource(
         SourceProductionContext context,
@@ -60,7 +60,7 @@ internal static class EnumGetNamesGenerator
         using (var textWriter = new IndentedTextWriter(stringWriter))
         {
             textWriter.Indent = baselineIndent;
-            textWriter.WriteLine("public static global::System.Collections.Immutable.ImmutableArray<string> GetNames() =>");
+            textWriter.WriteLine("public static global::System.Collections.Immutable.ImmutableArray<string> Names =>");
             textWriter.Indent = baselineIndent + 1;
             textWriter.WriteLine("global::System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsImmutableArray(AllNames);");
 
