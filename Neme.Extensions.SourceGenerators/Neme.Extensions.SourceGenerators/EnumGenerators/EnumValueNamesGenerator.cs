@@ -4,7 +4,7 @@ using System.Globalization;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal static class EnumNamesGenerator
+internal static class EnumValueNamesGenerator
 {
     public static string GetTypeMemberSource(
         SourceProductionContext context,
@@ -21,7 +21,7 @@ internal static class EnumNamesGenerator
         using (var textWriter = new IndentedTextWriter(stringWriter))
         {
             textWriter.Indent = baselineIndent;
-            textWriter.WriteLine("private static string[] OrderedNames");
+            textWriter.WriteLine("private static string[] ValueOrderedNames");
             textWriter.WriteLine("{");
             textWriter.Indent = baselineIndent + 1;
             textWriter.WriteLine("get => global::System.Threading.LazyInitializer.EnsureInitialized(ref field, static () =>");
@@ -58,7 +58,7 @@ internal static class EnumNamesGenerator
         using (var switchWriter = new IndentedTextWriter(stringWriter))
         {
             switchWriter.Indent = baselineIndent;
-            switchWriter.WriteLine("public global::System.ReadOnlySpan<string> Names =>");
+            switchWriter.WriteLine("public global::System.ReadOnlySpan<string> ValueNames =>");
             switchWriter.Indent = baselineIndent + 1;
             switchWriter.WriteLine("value switch");
             switchWriter.WriteLine("{");
@@ -67,7 +67,7 @@ internal static class EnumNamesGenerator
             foreach (var group in nameData.Groups)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                switchWriter.WriteLine($"{enumTypeName}.{group.MemberName} => OrderedNames.AsSpan({group.Start}, {group.Length}),");
+                switchWriter.WriteLine($"{enumTypeName}.{group.MemberName} => ValueOrderedNames.AsSpan({group.Start}, {group.Length}),");
             }
 
             switchWriter.WriteLine("_ => [],");

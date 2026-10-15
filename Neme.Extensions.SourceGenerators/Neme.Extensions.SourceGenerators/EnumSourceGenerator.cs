@@ -106,7 +106,7 @@ public sealed class EnumSourceGenerator : IIncrementalGenerator
     {
         Span<string?> typeSources =
             [
-                EnumNamesGenerator.GetTypeMemberSource(context, 1, enumType, cancellationToken),
+                EnumValueNamesGenerator.GetTypeMemberSource(context, 1, enumType, cancellationToken),
                 EnumGetNamesGenerator.GetTypeMemberSource(context, 1, enumType, cancellationToken)
             ];
 
@@ -121,7 +121,7 @@ public sealed class EnumSourceGenerator : IIncrementalGenerator
         Span<string?> extensionSources =
             [
                 EnumNameGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
-                EnumNamesGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
+                EnumValueNamesGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
                 EnumGetNamesGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
                 EnumValueGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
                 ..flagExtensionSources,
