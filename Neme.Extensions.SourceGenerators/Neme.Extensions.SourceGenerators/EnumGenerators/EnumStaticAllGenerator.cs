@@ -6,7 +6,7 @@ namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
 internal static class EnumStaticAllGenerator
 {
-    public static string GetExtensionSource(
+    public static string? GetExtensionSource(
         SourceProductionContext context,
         int baselineIndent,
         INamedTypeSymbol enumType,
@@ -14,13 +14,14 @@ internal static class EnumStaticAllGenerator
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var enumTypeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-
-        var enumMembers = enumType
-            .GetMembers()
+        var enumMembers = enumType.GetMembers()
             .OfType<IFieldSymbol>()
-            .Where(static field => field.HasConstantValue)
             .ToImmutableArray();
+
+        if (enumMembers.Any(static member => member.Name == "All"))
+            return null;
+
+        var enumTypeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
         var allParts = new string[enumMembers.Length];
         for (var i = 0; i < enumMembers.Length; ++i)
@@ -35,7 +36,11 @@ internal static class EnumStaticAllGenerator
             textWriter.Indent = baselineIndent;
 
             if (allParts.Length == 0)
-                textWriter.WriteLine($"public static {enumTypeName} All => default;");
+            {
+                textWriter.WriteLine($"public static {enumTypeName} All =>");
+                textWriter.Indent = baselineIndent + 1;
+                textWriter.WriteLine("default;");
+            }
             else
             {
                 textWriter.WriteLine($"public static {enumTypeName} All =>");
