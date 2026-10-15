@@ -122,6 +122,7 @@ public sealed class EnumSourceGenerator : IIncrementalGenerator
         Span<string?> extensionSources =
             [
                 EnumNameGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
+                EnumToStringGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
                 EnumValueNamesGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
                 EnumValueGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
                 EnumStaticNamesGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
