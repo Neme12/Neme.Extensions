@@ -35,7 +35,7 @@ internal static class EnumNamesGenerator
             }
 
             textWriter.Indent = baselineIndent + 1;
-            textWriter.WriteLine("]);");
+            textWriter.WriteLine("]!);");
             textWriter.Indent = baselineIndent;
             textWriter.WriteLine("}");
 

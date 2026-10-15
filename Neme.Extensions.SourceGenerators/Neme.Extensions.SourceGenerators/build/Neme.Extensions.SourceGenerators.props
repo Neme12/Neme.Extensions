@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <EnumExtensionTypes>@(EnumExtension, ';')</EnumExtensionTypes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <CompilerVisibleProperty Include="EnumExtensionTypes" />
+  </ItemGroup>
+</Project>

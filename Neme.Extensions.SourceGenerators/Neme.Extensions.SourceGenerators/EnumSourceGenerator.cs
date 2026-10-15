@@ -26,11 +26,68 @@ public sealed class EnumSourceGenerator : IIncrementalGenerator
                 static (syntaxContext, cancellationToken) => GetEnumSymbol(syntaxContext, cancellationToken))
             .Where(static symbol => symbol is INamedTypeSymbol enumSymbol && IsAccessibleFromNamespaceLevel(enumSymbol));
 
-        var enumSymbolsWithCompilation = enumSymbols.Combine(context.CompilationProvider);
+        var configuredEnumTypes = context.AnalyzerConfigOptionsProvider.Select(
+            static (optionsProvider, _) =>
+                optionsProvider.GlobalOptions.TryGetValue("build_property.EnumExtensionTypes", out var enumExtensionTypes)
+                    ? enumExtensionTypes
+                    : null);
+
+        var generationInput = context.CompilationProvider
+            .Combine(enumSymbols.Collect())
+            .Combine(configuredEnumTypes);
 
         context.RegisterSourceOutput(
-            enumSymbolsWithCompilation,
-            static (sourceContext, value) => EmitEnumSource(sourceContext, value.Left!, value.Right, sourceContext.CancellationToken));
+            generationInput,
+            static (sourceContext, value) =>
+            {
+                var compilation = value.Left.Left;
+                var sourceEnums = value.Left.Right;
+                var configuredEnumTypes = value.Right;
+
+                var processedEnumTypes = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+
+                foreach (var enumType in sourceEnums)
+                {
+                    sourceContext.CancellationToken.ThrowIfCancellationRequested();
+
+                    if (enumType is null || !processedEnumTypes.Add(enumType))
+                        continue;
+
+                    if (!compilation.IsSymbolAccessibleWithin(enumType, compilation.Assembly))
+                        continue;
+
+                    EmitEnumSource(sourceContext, enumType, compilation, sourceContext.CancellationToken);
+                }
+
+                if (string.IsNullOrWhiteSpace(configuredEnumTypes))
+                    return;
+
+                foreach (var enumTypeMetadataName in configuredEnumTypes.Split(';'))
+                {
+                    sourceContext.CancellationToken.ThrowIfCancellationRequested();
+
+                    var normalizedMetadataName = enumTypeMetadataName.Trim();
+                    if (normalizedMetadataName.Length == 0)
+                        continue;
+
+                    if (compilation.GetTypeByMetadataName(normalizedMetadataName) is not INamedTypeSymbol enumType)
+                        continue;
+
+                    if (enumType.TypeKind != TypeKind.Enum)
+                        continue;
+
+                    if (!IsAccessibleFromNamespaceLevel(enumType))
+                        continue;
+
+                    if (!compilation.IsSymbolAccessibleWithin(enumType, compilation.Assembly))
+                        continue;
+
+                    if (!processedEnumTypes.Add(enumType))
+                        continue;
+
+                    EmitEnumSource(sourceContext, enumType, compilation, sourceContext.CancellationToken);
+                }
+            });
     }
 
     private static INamedTypeSymbol? GetEnumSymbol(GeneratorSyntaxContext context, CancellationToken cancellationToken)

@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="build\Neme.Extensions.SourceGenerators.props" Pack="true" PackagePath="build;buildTransitive" Visible="false" />
   </ItemGroup>
 
 </Project>
