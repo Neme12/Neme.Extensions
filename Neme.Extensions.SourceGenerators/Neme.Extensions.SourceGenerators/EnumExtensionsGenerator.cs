@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis.Text;
 using Neme.Extensions.SourceGenerators.EnumGenerators;
 using System.Globalization;
 using System.Text;
-using static System.FormattableString;
 
 namespace Neme.Extensions.SourceGenerators;
 
@@ -169,9 +168,7 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
                 """;
 
         var result = GetGeneratedClassSource(
-            enumType.ContainingNamespace.IsGlobalNamespace
-                ? null
-                : enumType.ContainingNamespace?.ToDisplayString(),
+            GetNamespaceName(enumType),
             extensionClassName,
             innerSource,
             isPartial: false,
@@ -184,7 +181,7 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
         context.AddSource(GetFileName(enumType, "Extensions"), SourceText.From(result, Encoding.UTF8));
     }
 
-    internal static string GetExtensionClassName(INamedTypeSymbol enumType)
+    private static string GetExtensionClassName(INamedTypeSymbol enumType)
     {
         var containingTypes = new Stack<string>();
         for (var containingType = enumType.ContainingType; containingType is not null; containingType = containingType.ContainingType)
@@ -194,5 +191,22 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
             ? ""
             : string.Create(CultureInfo.InvariantCulture, $"""{string.Join("_", containingTypes)}_""");
         return string.Create(CultureInfo.InvariantCulture, $"""{typePrefix}{enumType.Name}GeneratedExtensions""");
+    }
+
+    private static string? GetNamespaceName(INamedTypeSymbol enumType)
+    {
+        return enumType.ContainingNamespace.IsGlobalNamespace
+            ? null
+            : enumType.ContainingNamespace.ToDisplayString();
+    }
+
+    internal static string GetFullyQualifiedExtensionsClassName(INamedTypeSymbol enumType)
+    {
+        var namespaceName = GetNamespaceName(enumType);
+        var extensionClassName = GetExtensionClassName(enumType);
+        var fullyQualifiedName = namespaceName is null
+            ? extensionClassName
+            : $"{namespaceName}.{extensionClassName}";
+        return $"global::{fullyQualifiedName}";
     }
 }

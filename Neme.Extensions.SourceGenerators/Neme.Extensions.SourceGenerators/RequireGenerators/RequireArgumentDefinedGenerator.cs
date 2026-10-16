@@ -13,7 +13,7 @@ internal static class RequireArgumentDefinedGenerator
         CancellationToken cancellationToken)
     {
         var enumTypeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-        var extensionClassName = EnumExtensionsGenerator.GetExtensionClassName(enumType);
+        var extensionClassName = EnumExtensionsGenerator.GetFullyQualifiedExtensionsClassName(enumType);
 
         using (var stringWriter = new StringWriter(CultureInfo.InvariantCulture))
         using (var textWriter = new IndentedTextWriter(stringWriter))
