@@ -50,7 +50,7 @@ internal static class EnumIncludesGenerator
             textWriter.WriteLine("ThrowNotOneFlag(flag);");
             textWriter.WriteLine();
             textWriter.Indent = baselineIndent + 1;
-            textWriter.WriteLine("return (value & flag) != 0;");
+            textWriter.WriteLine("return (@enum & flag) != 0;");
             textWriter.WriteLine();
             textWriter.WriteLine("[global::System.Diagnostics.CodeAnalysis.DoesNotReturn]");
             textWriter.WriteLine($"static void ThrowNotOneFlag({typeName} flag) =>");

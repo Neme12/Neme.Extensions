@@ -27,7 +27,7 @@ internal static class EnumValueGenerator
             textWriter.Indent = baselineIndent;
             textWriter.WriteLine($"public {underlyingTypeName} Value =>");
             textWriter.Indent = baselineIndent + 1;
-            textWriter.WriteLine($"({underlyingTypeName})value;");
+            textWriter.WriteLine($"({underlyingTypeName})@enum;");
             textWriter.Flush();
 
             cancellationToken.ThrowIfCancellationRequested();

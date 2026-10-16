@@ -60,7 +60,7 @@ internal static class EnumValueNamesGenerator
             switchWriter.Indent = baselineIndent;
             switchWriter.WriteLine("public global::System.ReadOnlySpan<string> ValueNames =>");
             switchWriter.Indent = baselineIndent + 1;
-            switchWriter.WriteLine("value switch");
+            switchWriter.WriteLine("@enum switch");
             switchWriter.WriteLine("{");
             switchWriter.Indent = baselineIndent + 2;
 

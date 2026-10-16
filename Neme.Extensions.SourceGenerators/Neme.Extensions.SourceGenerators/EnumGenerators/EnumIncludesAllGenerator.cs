@@ -22,7 +22,7 @@ internal static class EnumIncludesAllGenerator
             textWriter.Indent = baselineIndent;
             textWriter.WriteLine($"public bool IncludesAll({enumTypeName} flag) =>");
             textWriter.Indent = baselineIndent + 1;
-            textWriter.WriteLine("(value & flag) == flag;");
+            textWriter.WriteLine("(@enum & flag) == flag;");
             textWriter.WriteLine();
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -34,7 +34,7 @@ internal static class EnumIncludesAllGenerator
             textWriter.WriteLine("foreach (var flag in flags)");
             textWriter.WriteLine('{');
             textWriter.Indent = baselineIndent + 2;
-            textWriter.WriteLine("if (!IncludesAll(value, flag))");
+            textWriter.WriteLine("if (!IncludesAll(@enum, flag))");
             textWriter.Indent = baselineIndent + 3;
             textWriter.WriteLine("return false;");
             textWriter.Indent = baselineIndent + 1;

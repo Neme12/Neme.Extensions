@@ -1,13 +1,14 @@
 ﻿using Microsoft.CodeAnalysis;
 using System.CodeDom.Compiler;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
 internal static class EnumIncludesAnyGenerator
 {
     public static string GetExtensionSource(
-        SourceProductionContext context,
+         SourceProductionContext context,
         int baselineIndent,
         INamedTypeSymbol enumType,
         CancellationToken cancellationToken)
@@ -22,7 +23,7 @@ internal static class EnumIncludesAnyGenerator
             textWriter.Indent = baselineIndent;
             textWriter.WriteLine($"public bool IncludesAny({enumTypeName} flag) =>");
             textWriter.Indent = baselineIndent + 1;
-            textWriter.WriteLine("(value & flag) != 0;");
+            textWriter.WriteLine("(@enum & flag) != 0;");
             textWriter.WriteLine();
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -34,7 +35,7 @@ internal static class EnumIncludesAnyGenerator
             textWriter.WriteLine("foreach (var flag in flags)");
             textWriter.WriteLine('{');
             textWriter.Indent = baselineIndent + 2;
-            textWriter.WriteLine("if (IncludesAny(value, flag))");
+            textWriter.WriteLine("if (IncludesAny(@enum, flag))");
             textWriter.Indent = baselineIndent + 3;
             textWriter.WriteLine("return true;");
             textWriter.Indent = baselineIndent + 1;

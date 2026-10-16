@@ -30,7 +30,7 @@ internal static class EnumToStringGenerator
             switchWriter.Indent = baselineIndent;
             switchWriter.WriteLine("public string ToStringGenerated() =>");
             switchWriter.Indent = baselineIndent + 1;
-            switchWriter.WriteLine("value switch");
+            switchWriter.WriteLine("@enum switch");
             switchWriter.WriteLine("{");
             switchWriter.Indent = baselineIndent + 2;
 
@@ -47,7 +47,7 @@ internal static class EnumToStringGenerator
                 switchWriter.WriteLine($"{enumTypeName}.{member.Name} => nameof({enumTypeName}.{member.Name}),");
             }
 
-            switchWriter.WriteLine("_ => value.ToString(),");
+            switchWriter.WriteLine("_ => @enum.ToString(),");
 
             switchWriter.Indent = baselineIndent + 1;
             switchWriter.WriteLine("};");
