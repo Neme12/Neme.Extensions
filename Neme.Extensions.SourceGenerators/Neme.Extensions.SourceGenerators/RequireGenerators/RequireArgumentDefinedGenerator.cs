@@ -4,7 +4,7 @@ using System.Globalization;
 
 namespace Neme.Extensions.SourceGenerators.RequireGenerators;
 
-internal static class RequireDefinedGenerator
+internal static class RequireArgumentDefinedGenerator
 {
     public static string GetSource(
         SourceProductionContext context,
