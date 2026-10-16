@@ -5,5 +5,6 @@
 
   <ItemGroup>
     <CompilerVisibleProperty Include="EnumExtensionTypes" />
+    <CompilerVisibleProperty Include="RootNamespace" />
   </ItemGroup>
 </Project>

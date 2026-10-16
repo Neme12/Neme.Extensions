@@ -51,7 +51,7 @@ public abstract class AbstractEnumGenerator
     }
 
     protected static string GetGeneratedClassSource(
-        string? @namespace,
+        string @namespace,
         string className,
         string memberSource,
         bool isPartial,

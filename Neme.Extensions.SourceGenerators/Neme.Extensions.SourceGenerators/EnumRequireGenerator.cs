@@ -20,16 +20,14 @@ public sealed class EnumRequireGenerator : AbstractEnumGenerator, IIncrementalGe
                 static (syntaxContext, cancellationToken) => GetEnumSymbol(syntaxContext, cancellationToken))
             .Where(static symbol => symbol is INamedTypeSymbol enumSymbol && IsAccessibleFromNamespaceLevel(enumSymbol));
 
-        var compilationProvider = context.CompilationProvider;
-
-        context.RegisterSourceOutput(compilationProvider, static (context, compilation) =>
+        context.RegisterSourceOutput(
+            context.CompilationProvider,
+            static (context, compilation) =>
         {
             context.CancellationToken.ThrowIfCancellationRequested();
 
-            var @namespace = GetNamespace(compilation.Assembly);
-
             var requireGeneratedClassSource = GetGeneratedClassSource(
-                @namespace,
+                GetNamespace(),
                 "RequireGenerated",
                 "",
                 isPartial: true,
@@ -40,10 +38,15 @@ public sealed class EnumRequireGenerator : AbstractEnumGenerator, IIncrementalGe
             context.AddSource("RequireGenerated.g.cs", SourceText.From(requireGeneratedClassSource, Encoding.UTF8));
         });
 
-        context.RegisterSourceOutput(enumTypesProvider!, static (context, enumType) =>
-        {
-            EmitRequireSource(context, enumType!, context.CancellationToken);
-        });
+        context.RegisterSourceOutput(
+            enumTypesProvider,
+            (context, enumType) =>
+            {
+                if (enumType is null)
+                    return;
+
+                EmitRequireSource(context, enumType, context.CancellationToken);
+            });
     }
 
     internal static void EmitRequireSource(
@@ -82,12 +85,10 @@ public sealed class EnumRequireGenerator : AbstractEnumGenerator, IIncrementalGe
                 {{string.Join(Environment.NewLine, memberSources)}}
                 """;
 
-        var @namespace = GetNamespace(enumType.ContainingAssembly);
-
         cancellationToken.ThrowIfCancellationRequested();
 
         var result = GetGeneratedClassSource(
-            @namespace,
+            GetNamespace(),
             extensionClassName,
             innerSource,
             isPartial: true,
@@ -100,15 +101,8 @@ public sealed class EnumRequireGenerator : AbstractEnumGenerator, IIncrementalGe
         context.AddSource(GetFileName(enumType, "Require"), SourceText.From(result, Encoding.UTF8));
     }
 
-    private static string GetNamespace(IAssemblySymbol assembly)
+    private static string GetNamespace()
     {
-        var projectNamespace = assembly.ContainingNamespace;
-
-        var namespaceSuffix = "Generated.Contracts";
-        return projectNamespace is null ||  projectNamespace.IsGlobalNamespace
-            ? namespaceSuffix
-            : string.Create(
-                CultureInfo.InvariantCulture,
-                $"{projectNamespace.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}.{namespaceSuffix}");
+        return "Neme.Generated.Contracts";
     }
 }
