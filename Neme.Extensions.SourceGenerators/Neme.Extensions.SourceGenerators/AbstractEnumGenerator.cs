@@ -36,7 +36,7 @@ public abstract class AbstractEnumGenerator
     }
 
     private static bool IsNamespaceVisible(Accessibility accessibility) =>
-        accessibility is Accessibility.Public or Accessibility.Internal;
+        accessibility is Accessibility.Public or Accessibility.Internal or Accessibility.ProtectedAndInternal;
 
     protected static string GetFileName(INamedTypeSymbol enumType, string suffix)
     {
