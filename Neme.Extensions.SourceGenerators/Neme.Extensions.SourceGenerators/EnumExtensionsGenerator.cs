@@ -184,7 +184,7 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
         context.AddSource(GetFileName(enumType, "Extensions"), SourceText.From(result, Encoding.UTF8));
     }
 
-    private static string GetExtensionClassName(INamedTypeSymbol enumType)
+    internal static string GetExtensionClassName(INamedTypeSymbol enumType)
     {
         var containingTypes = new Stack<string>();
         for (var containingType = enumType.ContainingType; containingType is not null; containingType = containingType.ContainingType)
@@ -193,6 +193,6 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
         var typePrefix = containingTypes.Count == 0
             ? ""
             : string.Create(CultureInfo.InvariantCulture, $"""{string.Join("_", containingTypes)}_""");
-        return string.Create(CultureInfo.InvariantCulture, $"""{typePrefix}{enumType.Name}Extensions""");
+        return string.Create(CultureInfo.InvariantCulture, $"""{typePrefix}{enumType.Name}GeneratedExtensions""");
     }
 }
