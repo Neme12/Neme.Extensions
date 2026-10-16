@@ -26,7 +26,7 @@ internal static class RequireValueDefinedGenerator
             textWriter.Indent = baselineIndent;
             textWriter.WriteLine('{');
             textWriter.Indent = baselineIndent + 1;
-            textWriter.WriteLine($"if (!{enumTypeName}Extensions.IsDefined(value))");
+            textWriter.WriteLine($"if (!{enumTypeName}GeneratedExtensions.IsDefined(value))");
             textWriter.Indent = baselineIndent + 2;
             textWriter.WriteLine($"Throw(value, message, global::Neme.Extensions.Contracts.Assert.NotNull(valueSource));");
             textWriter.Indent = baselineIndent + 1;

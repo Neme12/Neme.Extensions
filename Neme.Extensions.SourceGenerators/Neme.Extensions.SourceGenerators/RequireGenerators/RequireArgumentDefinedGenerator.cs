@@ -26,7 +26,7 @@ internal static class RequireArgumentDefinedGenerator
             textWriter.Indent = baselineIndent;
             textWriter.WriteLine('{');
             textWriter.Indent = baselineIndent + 1;
-            textWriter.WriteLine($"if (!{enumTypeName}Extensions.IsDefined(argument))");
+            textWriter.WriteLine($"if (!{enumTypeName}GeneratedExtensions.IsDefined(argument))");
             textWriter.Indent = baselineIndent + 2;
             textWriter.WriteLine($"Throw(global::Neme.Extensions.Contracts.Assert.NotNull(paramName), argument, message);");
             textWriter.Indent = baselineIndent + 1;
