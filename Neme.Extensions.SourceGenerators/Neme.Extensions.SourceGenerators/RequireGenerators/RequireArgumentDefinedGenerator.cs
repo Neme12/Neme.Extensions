@@ -13,6 +13,7 @@ internal static class RequireArgumentDefinedGenerator
         CancellationToken cancellationToken)
     {
         var enumTypeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var extensionClassName = EnumExtensionsGenerator.GetExtensionClassName(enumType);
 
         using (var stringWriter = new StringWriter(CultureInfo.InvariantCulture))
         using (var textWriter = new IndentedTextWriter(stringWriter))
@@ -26,7 +27,7 @@ internal static class RequireArgumentDefinedGenerator
             textWriter.Indent = baselineIndent;
             textWriter.WriteLine('{');
             textWriter.Indent = baselineIndent + 1;
-            textWriter.WriteLine($"if (!{enumTypeName}GeneratedExtensions.IsDefined(argument))");
+            textWriter.WriteLine($"if (!{extensionClassName}.IsDefined(argument))");
             textWriter.Indent = baselineIndent + 2;
             textWriter.WriteLine($"Throw(global::Neme.Extensions.Contracts.Assert.NotNull(paramName), argument, message);");
             textWriter.Indent = baselineIndent + 1;
