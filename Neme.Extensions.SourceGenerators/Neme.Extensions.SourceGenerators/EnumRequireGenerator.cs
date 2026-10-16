@@ -54,15 +54,19 @@ public sealed class EnumRequireGenerator : AbstractEnumGenerator, IIncrementalGe
         INamedTypeSymbol enumType,
         CancellationToken cancellationToken)
     {
-        Span<string?> typeSources =
-            [
-                RequireArgumentDefinedGenerator.GetSource(context, 1, enumType, cancellationToken),
-                RequireValueDefinedGenerator.GetSource(context, 1, enumType, cancellationToken),
-            ];
+        ReadOnlySpan<IRequireGenerator> generators =
+        [
+            new RequireArgumentDefinedGenerator(enumType),
+            new RequireValueDefinedGenerator(enumType),
+        ];
+
+        var sources = new string?[generators.Length];
+        for (var i = 0; i < generators.Length; ++i)
+            sources[i] = generators[i].GetExtensionSource(context, 1, cancellationToken);
 
         EmitRequireClass(
             context,
-            typeSources.RemoveNullValuesInPlace(),
+            sources.AsSpan().RemoveNullValuesInPlace(),
             enumType,
             cancellationToken);
     }

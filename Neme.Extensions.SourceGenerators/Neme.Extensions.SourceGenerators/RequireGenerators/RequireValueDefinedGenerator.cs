@@ -4,16 +4,17 @@ using System.Globalization;
 
 namespace Neme.Extensions.SourceGenerators.RequireGenerators;
 
-internal static class RequireValueDefinedGenerator
+internal sealed class RequireValueDefinedGenerator(INamedTypeSymbol enumType) : IRequireGenerator
 {
-    public static string GetSource(
+    private readonly INamedTypeSymbol _enumType = enumType;
+
+    public string? GetExtensionSource(
         SourceProductionContext context,
         int baselineIndent,
-        INamedTypeSymbol enumType,
         CancellationToken cancellationToken)
     {
-        var enumTypeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-        var extensionClassName = EnumExtensionsGenerator.GetFullyQualifiedExtensionsClassName(enumType);
+        var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var extensionClassName = EnumExtensionsGenerator.GetFullyQualifiedExtensionsClassName(_enumType);
 
         using (var stringWriter = new StringWriter(CultureInfo.InvariantCulture))
         using (var textWriter = new IndentedTextWriter(stringWriter))
