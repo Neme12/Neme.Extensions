@@ -54,6 +54,7 @@ public sealed class EnumRequireGenerator : AbstractEnumGenerator, IIncrementalGe
         Span<string?> typeSources =
             [
                 RequireArgumentDefinedGenerator.GetSource(context, 1, enumType, cancellationToken),
+                RequireValueDefinedGenerator.GetSource(context, 1, enumType, cancellationToken),
             ];
 
         EmitRequireClass(

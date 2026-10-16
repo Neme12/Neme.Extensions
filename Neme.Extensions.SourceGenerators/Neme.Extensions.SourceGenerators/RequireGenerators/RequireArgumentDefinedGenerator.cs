@@ -28,12 +28,12 @@ internal static class RequireArgumentDefinedGenerator
             textWriter.Indent = baselineIndent + 1;
             textWriter.WriteLine($"if (!{enumTypeName}Extensions.IsDefined(argument))");
             textWriter.Indent = baselineIndent + 2;
-            textWriter.WriteLine($"Throw(paramName, argument, message);");
+            textWriter.WriteLine($"Throw(global::Neme.Extensions.Contracts.Assert.NotNull(paramName), argument, message);");
             textWriter.Indent = baselineIndent + 1;
             textWriter.WriteLine();
             textWriter.WriteLine("static void Throw(string? paramName, object? actualValue, string? message) =>");
             textWriter.Indent = baselineIndent + 2;
-            textWriter.WriteLine($"throw new global::Neme.Extensions.ArgumentException2(paramName, actualValue, message);");
+            textWriter.WriteLine($"throw new global::Neme.Extensions.ArgumentException2(paramName, actualValue, message ?? \"Argument is not defined.\");");
             textWriter.Indent = baselineIndent;
             textWriter.WriteLine('}');
             return stringWriter.ToString();
