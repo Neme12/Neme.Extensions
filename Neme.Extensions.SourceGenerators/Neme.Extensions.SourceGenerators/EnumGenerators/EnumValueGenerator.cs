@@ -4,21 +4,29 @@ using System.Globalization;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal static class EnumValueGenerator
+internal sealed class EnumValueGenerator(INamedTypeSymbol enumType) : IEnumGenerator
 {
-    public static string? GetExtensionSource(
+    private readonly INamedTypeSymbol _enumType = enumType;
+
+    public string? GetTypeMemberSource(
         SourceProductionContext context,
         int baselineIndent,
-        INamedTypeSymbol enumType,
+        CancellationToken cancellationToken)
+    {
+        return null;
+    }
+
+    public string? GetExtensionSource(
+        SourceProductionContext context,
+        int baselineIndent,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var underlyingType = enumType.EnumUnderlyingType;
+        var underlyingType = _enumType.EnumUnderlyingType;
         if (underlyingType is null)
             return null;
 
-        var typeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         var underlyingTypeName = underlyingType.ToDisplayString(GeneratorUtilities.KeywordTypeFormat);
 
         using (var stringWriter = new StringWriter(CultureInfo.InvariantCulture))

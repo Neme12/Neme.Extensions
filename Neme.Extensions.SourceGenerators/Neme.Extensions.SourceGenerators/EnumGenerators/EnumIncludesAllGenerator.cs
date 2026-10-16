@@ -4,20 +4,29 @@ using System.Globalization;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal static class EnumIncludesAllGenerator
+internal sealed class EnumIncludesAllGenerator(INamedTypeSymbol enumType) : IEnumGenerator
 {
-    public static string GetExtensionSource(
+    private readonly INamedTypeSymbol _enumType = enumType;
+
+    public string? GetTypeMemberSource(
         SourceProductionContext context,
         int baselineIndent,
-        INamedTypeSymbol enumType,
+        CancellationToken cancellationToken)
+    {
+        return null;
+    }
+
+    public string? GetExtensionSource(
+        SourceProductionContext context,
+        int baselineIndent,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        
-        var enumTypeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+
+        var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
         using (var stringWriter = new StringWriter(CultureInfo.InvariantCulture))
-            using (var textWriter = new IndentedTextWriter(stringWriter))
+        using (var textWriter = new IndentedTextWriter(stringWriter))
         {
             textWriter.Indent = baselineIndent;
             textWriter.WriteLine($"public bool IncludesAll({enumTypeName} flag) =>");

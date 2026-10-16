@@ -4,25 +4,34 @@ using System.Globalization;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal static class EnumStaticAllGenerator
+internal sealed class EnumStaticAllGenerator(INamedTypeSymbol enumType, Compilation compilation) : IEnumGenerator
 {
-    public static string? GetExtensionSource(
+    private readonly INamedTypeSymbol _enumType = enumType;
+    private readonly Compilation _compilation = compilation;
+
+    public string? GetTypeMemberSource(
         SourceProductionContext context,
-        Compilation compilation,
         int baselineIndent,
-        INamedTypeSymbol enumType,
+        CancellationToken cancellationToken)
+    {
+        return null;
+    }
+
+    public string? GetExtensionSource(
+        SourceProductionContext context,
+        int baselineIndent,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (GeneratorUtilities.HasConflictingFieldOrProperty(compilation, enumType, "All", cancellationToken))
+        if (GeneratorUtilities.HasConflictingFieldOrProperty(_compilation, _enumType, "All", cancellationToken))
             return null;
 
-        var enumMembers = enumType.GetMembers()
+        var enumMembers = _enumType.GetMembers()
             .OfType<IFieldSymbol>()
             .ToImmutableArray();
 
-        var enumTypeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
         var allParts = new string[enumMembers.Length];
         for (var i = 0; i < enumMembers.Length; ++i)

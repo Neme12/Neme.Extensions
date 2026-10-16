@@ -4,21 +4,30 @@ using System.Globalization;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal static class EnumStaticNoneGenerator
+internal sealed class EnumStaticNoneGenerator(INamedTypeSymbol enumType, Compilation compilation) : IEnumGenerator
 {
-    public static string? GetExtensionSource(
+    private readonly INamedTypeSymbol _enumType = enumType;
+    private readonly Compilation _compilation = compilation;
+
+    public string? GetTypeMemberSource(
         SourceProductionContext context,
-        Compilation compilation,
         int baselineIndent,
-        INamedTypeSymbol enumType,
+        CancellationToken cancellationToken)
+    {
+        return null;
+    }
+
+    public string? GetExtensionSource(
+        SourceProductionContext context,
+        int baselineIndent,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (GeneratorUtilities.HasConflictingFieldOrProperty(compilation, enumType, "None", cancellationToken))
+        if (GeneratorUtilities.HasConflictingFieldOrProperty(_compilation, _enumType, "None", cancellationToken))
             return null;
 
-        var enumTypeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
         using (var stringWriter = new StringWriter(CultureInfo.InvariantCulture))
         using (var textWriter = new IndentedTextWriter(stringWriter))

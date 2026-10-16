@@ -90,40 +90,49 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
         Compilation compilation,
         CancellationToken cancellationToken)
     {
-        Span<string?> typeSources =
-            [
-                EnumValueNamesGenerator.GetTypeMemberSource(context, 1, enumType, cancellationToken),
-                EnumStaticNamesGenerator.GetTypeMemberSource(context, 1, enumType, cancellationToken)
-            ];
+        ReadOnlySpan<IEnumGenerator> typeGenerators =
+        [
+            new EnumValueNamesGenerator(enumType),
+            new EnumStaticNamesGenerator(enumType),
+        ];
 
-        ReadOnlySpan<string?> flagExtensionSources = IsFlagsEnum(compilation, enumType)
-            ? [
-                EnumIncludesGenerator.GetExtensionSource(context, 2, enumType, cancellationToken)!,
-                EnumIncludesAllGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
-                EnumIncludesAnyGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
-                EnumStaticAllGenerator.GetExtensionSource(context, compilation, 2, enumType, cancellationToken),
-                EnumStaticNoneGenerator.GetExtensionSource(context, compilation, 2, enumType, cancellationToken),
-                EnumStaticFlagsDefinedGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
+        ReadOnlySpan<IEnumGenerator> flagExtensionGenerators = IsFlagsEnum(compilation, enumType)
+            ?
+            [
+                new EnumIncludesGenerator(enumType),
+                new EnumIncludesAllGenerator(enumType),
+                new EnumIncludesAnyGenerator(enumType),
+                new EnumStaticAllGenerator(enumType, compilation),
+                new EnumStaticNoneGenerator(enumType, compilation),
+                new EnumStaticFlagsDefinedGenerator(enumType),
             ]
             : [];
 
-        Span<string?> extensionSources =
-            [
-                EnumNameGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
-                EnumToStringGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
-                EnumValueNamesGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
-                EnumValueGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
-                EnumStaticNamesGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
-                EnumStaticValuesGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
-                EnumStaticUnderlyingValuesGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
-                EnumStaticIsDefinedGenerator.GetExtensionSource(context, 2, enumType, cancellationToken),
-                ..flagExtensionSources,
-            ];
+        ReadOnlySpan<IEnumGenerator> extensionGenerators =
+        [
+            new EnumNameGenerator(enumType),
+            new EnumToStringGenerator(enumType),
+            new EnumValueNamesGenerator(enumType),
+            new EnumValueGenerator(enumType),
+            new EnumStaticNamesGenerator(enumType),
+            new EnumStaticValuesGenerator(enumType),
+            new EnumStaticUnderlyingValuesGenerator(enumType),
+            new EnumStaticIsDefinedGenerator(enumType),
+            ..flagExtensionGenerators,
+        ];
+
+        var typeSources = new string?[typeGenerators.Length];
+        for (var i = 0; i < typeGenerators.Length; ++i)
+            typeSources[i] = typeGenerators[i].GetTypeMemberSource(context, 1, cancellationToken);
+
+        var extensionSources = new string?[extensionGenerators.Length];
+        for (var i = 0; i < extensionGenerators.Length; ++i)
+            extensionSources[i] = extensionGenerators[i].GetExtensionSource(context, 2, cancellationToken);
 
         EmitEnumExtension(
             context,
-            typeSources.RemoveNullValuesInPlace(),
-            extensionSources.RemoveNullValuesInPlace(),
+            typeSources.AsSpan().RemoveNullValuesInPlace(),
+            extensionSources.AsSpan().RemoveNullValuesInPlace(),
             enumType,
             cancellationToken);
     }

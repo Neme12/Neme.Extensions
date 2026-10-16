@@ -4,22 +4,30 @@ using System.Globalization;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal static class EnumIncludesGenerator
+internal sealed class EnumIncludesGenerator(INamedTypeSymbol enumType) : IEnumGenerator
 {
-    public static string? GetExtensionSource(
+    private readonly INamedTypeSymbol _enumType = enumType;
+
+    public string? GetTypeMemberSource(
         SourceProductionContext context,
         int baselineIndent,
-        INamedTypeSymbol enumType,
+        CancellationToken cancellationToken)
+    {
+        return null;
+    }
+
+    public string? GetExtensionSource(
+        SourceProductionContext context,
+        int baselineIndent,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var enumUnderlyingType = enumType.EnumUnderlyingType;
+        var enumUnderlyingType = _enumType.EnumUnderlyingType;
         if (enumUnderlyingType is null)
             return null;
 
-        var typeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-        var underlyingTypeName = enumUnderlyingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var typeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
         // Widen the value to uint or ulong as IsPow2 only has overloads for those
         var isPow2Operand = enumUnderlyingType.SpecialType switch
@@ -55,7 +63,7 @@ internal static class EnumIncludesGenerator
             textWriter.WriteLine("[global::System.Diagnostics.CodeAnalysis.DoesNotReturn]");
             textWriter.WriteLine($"static void ThrowNotOneFlag({typeName} flag) =>");
             textWriter.Indent = baselineIndent + 2;
-            textWriter.WriteLine($"throw new global::System.ArgumentException($\"The value '{{flag}}' is not a single flag value for enum type '{{nameof({enumType})}}'.\", nameof(flag));");
+            textWriter.WriteLine($"throw new global::System.ArgumentException($\"The value '{{flag}}' is not a single flag value for enum type '{{nameof({_enumType})}}'.\", nameof(flag));");
             textWriter.Indent = baselineIndent;
             textWriter.WriteLine('}');
 

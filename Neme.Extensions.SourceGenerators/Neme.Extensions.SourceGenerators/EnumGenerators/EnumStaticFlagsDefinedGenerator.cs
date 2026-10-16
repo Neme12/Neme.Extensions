@@ -4,24 +4,33 @@ using System.Globalization;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal static class EnumStaticFlagsDefinedGenerator
+internal sealed class EnumStaticFlagsDefinedGenerator(INamedTypeSymbol enumType) : IEnumGenerator
 {
-    public static string? GetExtensionSource(
+    private readonly INamedTypeSymbol _enumType = enumType;
+
+    public string? GetTypeMemberSource(
         SourceProductionContext context,
         int baselineIndent,
-        INamedTypeSymbol enumType,
+        CancellationToken cancellationToken)
+    {
+        return null;
+    }
+
+    public string? GetExtensionSource(
+        SourceProductionContext context,
+        int baselineIndent,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var enumUnderlyingType = enumType.EnumUnderlyingType;
+        var enumUnderlyingType = _enumType.EnumUnderlyingType;
         if (enumUnderlyingType is null)
             return null;
 
-        var enumTypeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         var underlyingTypeName = enumUnderlyingType.ToDisplayString(GeneratorUtilities.KeywordTypeFormat);
 
-        var enumMembers = enumType
+        var enumMembers = _enumType
             .GetMembers()
             .OfType<IFieldSymbol>()
             .Where(static field => field.HasConstantValue)

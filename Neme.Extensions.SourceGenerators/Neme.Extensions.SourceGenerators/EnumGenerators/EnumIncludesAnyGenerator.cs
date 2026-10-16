@@ -1,24 +1,32 @@
 ﻿using Microsoft.CodeAnalysis;
 using System.CodeDom.Compiler;
 using System.Globalization;
-using System.Runtime.CompilerServices;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal static class EnumIncludesAnyGenerator
+internal sealed class EnumIncludesAnyGenerator(INamedTypeSymbol enumType) : IEnumGenerator
 {
-    public static string GetExtensionSource(
-         SourceProductionContext context,
+    private readonly INamedTypeSymbol _enumType = enumType;
+
+    public string? GetTypeMemberSource(
+        SourceProductionContext context,
         int baselineIndent,
-        INamedTypeSymbol enumType,
+        CancellationToken cancellationToken)
+    {
+        return null;
+    }
+
+    public string? GetExtensionSource(
+        SourceProductionContext context,
+        int baselineIndent,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        
-        var enumTypeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+
+        var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
         using (var stringWriter = new StringWriter(CultureInfo.InvariantCulture))
-            using (var textWriter = new IndentedTextWriter(stringWriter))
+        using (var textWriter = new IndentedTextWriter(stringWriter))
         {
             textWriter.Indent = baselineIndent;
             textWriter.WriteLine($"public bool IncludesAny({enumTypeName} flag) =>");

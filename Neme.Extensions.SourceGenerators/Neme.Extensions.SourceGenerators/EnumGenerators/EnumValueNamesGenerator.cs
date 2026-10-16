@@ -4,18 +4,19 @@ using System.Globalization;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal static class EnumValueNamesGenerator
+internal sealed class EnumValueNamesGenerator(INamedTypeSymbol enumType) : IEnumGenerator
 {
-    public static string GetTypeMemberSource(
+    private readonly INamedTypeSymbol _enumType = enumType;
+
+    public string? GetTypeMemberSource(
         SourceProductionContext context,
         int baselineIndent,
-        INamedTypeSymbol enumType,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var enumTypeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-        var nameData = GetNameData(enumType, cancellationToken);
+        var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var nameData = GetNameData(cancellationToken);
 
         using (var stringWriter = new StringWriter(CultureInfo.InvariantCulture))
         using (var textWriter = new IndentedTextWriter(stringWriter))
@@ -43,16 +44,15 @@ internal static class EnumValueNamesGenerator
         }
     }
 
-    public static string GetExtensionSource(
+    public string? GetExtensionSource(
         SourceProductionContext context,
         int baselineIndent,
-        INamedTypeSymbol enumType,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var enumTypeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-        var nameData = GetNameData(enumType, cancellationToken);
+        var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var nameData = GetNameData(cancellationToken);
 
         using (var stringWriter = new StringWriter(CultureInfo.InvariantCulture))
         using (var switchWriter = new IndentedTextWriter(stringWriter))
@@ -83,9 +83,9 @@ internal static class EnumValueNamesGenerator
         }
     }
 
-    private static NameData GetNameData(INamedTypeSymbol enumType, CancellationToken cancellationToken)
+    private NameData GetNameData(CancellationToken cancellationToken)
     {
-        var enumMembers = enumType
+        var enumMembers = _enumType
             .GetMembers()
             .OfType<IFieldSymbol>()
             .Where(static field => field.HasConstantValue)
