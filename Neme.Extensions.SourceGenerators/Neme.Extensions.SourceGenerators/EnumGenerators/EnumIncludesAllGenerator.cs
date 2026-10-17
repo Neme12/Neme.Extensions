@@ -27,40 +27,38 @@ internal sealed class EnumIncludesAllGenerator(INamedTypeSymbol enumType) : IEnu
 
         using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))
         {
+            textWriter.WriteLine($"public bool IncludesAll({enumTypeName} flag) =>");
+
+            using (textWriter.WithIndent(baselineIndent + 1))
             {
-                textWriter.WriteLine($"public bool IncludesAll({enumTypeName} flag) =>");
+                textWriter.WriteLine("(@enum & flag) == flag;");
+                textWriter.WriteLine();
+            }
 
-                using (textWriter.WithIndent(baselineIndent + 1))
-                {
-                    textWriter.WriteLine("(@enum & flag) == flag;");
-                    textWriter.WriteLine();
-                }
+            cancellationToken.ThrowIfCancellationRequested();
 
-                cancellationToken.ThrowIfCancellationRequested();
+            textWriter.WriteLine($"public bool IncludesAll(params global::System.ReadOnlySpan<{enumTypeName}> flags)");
+            textWriter.WriteLine('{');
 
-                textWriter.WriteLine($"public bool IncludesAll(params global::System.ReadOnlySpan<{enumTypeName}> flags)");
+            using (textWriter.WithIndent(baselineIndent + 1))
+            {
+                textWriter.WriteLine("foreach (var flag in flags)");
                 textWriter.WriteLine('{');
 
-                using (textWriter.WithIndent(baselineIndent + 1))
+                using (textWriter.WithIndent(baselineIndent + 2))
                 {
-                    textWriter.WriteLine("foreach (var flag in flags)");
-                    textWriter.WriteLine('{');
+                    textWriter.WriteLine("if (!IncludesAll(@enum, flag))");
 
-                    using (textWriter.WithIndent(baselineIndent + 2))
-                    {
-                        textWriter.WriteLine("if (!IncludesAll(@enum, flag))");
-
-                        using (textWriter.WithIndent(baselineIndent + 3))
-                            textWriter.WriteLine("return false;");
-                    }
-
-                    textWriter.WriteLine('}');
-                    textWriter.WriteLine();
-                    textWriter.WriteLine("return true;");
+                    using (textWriter.WithIndent(baselineIndent + 3))
+                        textWriter.WriteLine("return false;");
                 }
 
                 textWriter.WriteLine('}');
+                textWriter.WriteLine();
+                textWriter.WriteLine("return true;");
             }
+
+            textWriter.WriteLine('}');
 
             textWriter.Flush();
 

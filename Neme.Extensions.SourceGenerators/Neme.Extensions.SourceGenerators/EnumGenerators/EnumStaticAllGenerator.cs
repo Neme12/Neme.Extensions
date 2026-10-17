@@ -40,21 +40,19 @@ internal sealed class EnumStaticAllGenerator(INamedTypeSymbol enumType, Compilat
 
         using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))
         {
-            {
-                textWriter.WriteLine($"public static {enumTypeName} All =>");
+            textWriter.WriteLine($"public static {enumTypeName} All =>");
 
-                using (textWriter.WithIndent(baselineIndent + 1))
+            using (textWriter.WithIndent(baselineIndent + 1))
+            {
+                if (allParts.Length == 0)
+                    textWriter.WriteLine("default;");
+                else
                 {
-                    if (allParts.Length == 0)
-                        textWriter.WriteLine("default;");
-                    else
+                    for (var i = 0; i < allParts.Length; ++i)
                     {
-                        for (var i = 0; i < allParts.Length; ++i)
-                        {
-                            cancellationToken.ThrowIfCancellationRequested();
-                            var suffix = i == allParts.Length - 1 ? ";" : " |";
-                            textWriter.WriteLine($"{allParts[i]}{suffix}");
-                        }
+                        cancellationToken.ThrowIfCancellationRequested();
+                        var suffix = i == allParts.Length - 1 ? ";" : " |";
+                        textWriter.WriteLine($"{allParts[i]}{suffix}");
                     }
                 }
             }

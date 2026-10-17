@@ -31,12 +31,10 @@ internal sealed class EnumValueGenerator(INamedTypeSymbol enumType) : IEnumGener
 
         using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))
         {
-            {
-                textWriter.WriteLine($"public {underlyingTypeName} Value =>");
+            textWriter.WriteLine($"public {underlyingTypeName} Value =>");
 
-                using (textWriter.WithIndent(baselineIndent + 1))
-                    textWriter.WriteLine($"({underlyingTypeName})@enum;");
-            }
+            using (textWriter.WithIndent(baselineIndent + 1))
+                textWriter.WriteLine($"({underlyingTypeName})@enum;");
 
             textWriter.Flush();
 
