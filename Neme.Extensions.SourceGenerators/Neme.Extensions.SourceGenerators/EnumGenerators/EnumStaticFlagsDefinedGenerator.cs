@@ -30,11 +30,7 @@ internal sealed class EnumStaticFlagsDefinedGenerator(INamedTypeSymbol enumType)
         var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         var underlyingTypeName = enumUnderlyingType.ToDisplayString(GeneratorUtilities.KeywordTypeFormat);
 
-        var enumMembers = _enumType
-            .GetMembers()
-            .OfType<IFieldSymbol>()
-            .Where(static field => field.HasConstantValue)
-            .ToImmutableArray();
+        var enumMembers = GeneratorUtilities.GetEnumMembersWithConstantValue(_enumType, cancellationToken);
 
         var allFlagsParts = new string[enumMembers.Length];
         for (var i = 0; i < enumMembers.Length; ++i)

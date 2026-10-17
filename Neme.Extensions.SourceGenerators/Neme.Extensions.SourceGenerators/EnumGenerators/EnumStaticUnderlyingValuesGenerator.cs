@@ -30,11 +30,7 @@ internal sealed class EnumStaticUnderlyingValuesGenerator(INamedTypeSymbol enumT
         var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         var underlyingTypeName = underlyingType.ToDisplayString(GeneratorUtilities.KeywordTypeFormat);
 
-        var enumMembers = _enumType
-            .GetMembers()
-            .OfType<IFieldSymbol>()
-            .Where(static field => field.HasConstantValue)
-            .ToImmutableArray();
+        var enumMembers = GeneratorUtilities.GetEnumMembersWithConstantValue(_enumType, cancellationToken);
 
         using (var stringWriter = new StringWriter(CultureInfo.InvariantCulture))
         using (var textWriter = new IndentedTextWriter(stringWriter))

@@ -25,11 +25,7 @@ internal sealed class EnumNameGenerator(INamedTypeSymbol enumType) : IEnumGenera
 
         var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
-        var enumMembers = _enumType
-            .GetMembers()
-            .OfType<IFieldSymbol>()
-            .Where(static field => field.HasConstantValue)
-            .ToImmutableArray();
+        var enumMembers = GeneratorUtilities.GetEnumMembersWithConstantValue(_enumType, cancellationToken);
 
         cancellationToken.ThrowIfCancellationRequested();
 

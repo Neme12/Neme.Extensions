@@ -85,11 +85,7 @@ internal sealed class EnumValueNamesGenerator(INamedTypeSymbol enumType) : IEnum
 
     private NameData GetNameData(CancellationToken cancellationToken)
     {
-        var enumMembers = _enumType
-            .GetMembers()
-            .OfType<IFieldSymbol>()
-            .Where(static field => field.HasConstantValue)
-            .ToImmutableArray();
+        var enumMembers = GeneratorUtilities.GetEnumMembersWithConstantValue(_enumType, cancellationToken);
 
         if (enumMembers.Length == 0)
             return new NameData([], []);

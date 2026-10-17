@@ -27,9 +27,7 @@ internal sealed class EnumStaticAllGenerator(INamedTypeSymbol enumType, Compilat
         if (GeneratorUtilities.HasConflictingFieldOrProperty(_compilation, _enumType, "All", cancellationToken))
             return null;
 
-        var enumMembers = _enumType.GetMembers()
-            .OfType<IFieldSymbol>()
-            .ToImmutableArray();
+        var enumMembers = GeneratorUtilities.GetEnumMembers(_enumType, cancellationToken);
 
         var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
