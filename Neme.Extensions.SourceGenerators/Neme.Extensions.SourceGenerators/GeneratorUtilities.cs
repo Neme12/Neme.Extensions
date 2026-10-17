@@ -17,20 +17,28 @@ internal static class GeneratorUtilities
         string propertyName,
         CancellationToken cancellationToken)
     {
+        // Do not use LINQ for perf
         cancellationToken.ThrowIfCancellationRequested();
 
-        return type.GetMembers(propertyName).Any(static member => member is IFieldSymbol or IPropertySymbol);
+        foreach (var member in type.GetMembers(propertyName))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (member is IFieldSymbol or IPropertySymbol)
+                return true;
+        }
+
+        return false;
     }
 
     public static ImmutableArray<IFieldSymbol> GetEnumMembers(INamedTypeSymbol enumType, CancellationToken cancellationToken)
     {
+        // Do not use LINQ for perf
         cancellationToken.ThrowIfCancellationRequested();
 
-        // Do not use LINQ for perf
-        var members = enumType.GetMembers();
-        var resultBuilder = ImmutableArray.CreateBuilder<IFieldSymbol>(members.Length);
+        var resultBuilder = ImmutableArray.CreateBuilder<IFieldSymbol>(enumType.GetMembers().Length);
 
-        foreach (var member in members)
+        foreach (var member in enumType.GetMembers())
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -44,13 +52,12 @@ internal static class GeneratorUtilities
 
     public static ImmutableArray<IFieldSymbol> GetEnumMembersWithConstantValue(INamedTypeSymbol enumType, CancellationToken cancellationToken)
     {
+        // Do not use LINQ for perf
         cancellationToken.ThrowIfCancellationRequested();
 
-        // Do not use LINQ for perf
-        var members = enumType.GetMembers();
-        var resultBuilder = ImmutableArray.CreateBuilder<IFieldSymbol>(members.Length);
+        var resultBuilder = ImmutableArray.CreateBuilder<IFieldSymbol>(enumType.GetMembers().Length);
 
-        foreach (var member in members)
+        foreach (var member in enumType.GetMembers())
         {
             cancellationToken.ThrowIfCancellationRequested();
 
