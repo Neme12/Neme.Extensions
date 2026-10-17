@@ -42,7 +42,7 @@ internal sealed class EnumStaticAllGenerator(INamedTypeSymbol enumType, Compilat
         {
             textWriter.WriteLine($"public static {enumTypeName} All =>");
 
-            using (textWriter.WithAddedIndent())
+            using (textWriter.AddIndent())
             {
                 if (allParts.Length == 0)
                     textWriter.WriteLine("default;");

@@ -15,14 +15,14 @@ internal static class IndentedTextWriterExtensions
             return new IndentedTextWriter(stringWriter) { Indent = initialIndent };
         }
 
-        public IndentScope WithIndent(int indent)
+        public IndentScope SetIndent(int indent)
         {
             var originalIndent = writer.Indent;
             writer.Indent = indent;
             return new IndentScope(writer, originalIndent);
         }
 
-        public IndentScope WithAddedIndent()
+        public IndentScope AddIndent()
         {
             var originalIndent = writer.Indent;
             writer.Indent += 1;

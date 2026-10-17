@@ -33,7 +33,7 @@ internal sealed class EnumStaticNoneGenerator(INamedTypeSymbol enumType, Compila
         {
             textWriter.WriteLine($"public static {enumTypeName} None =>");
 
-            using (textWriter.WithAddedIndent())
+            using (textWriter.AddIndent())
                 textWriter.WriteLine("default;");
 
             return textWriter.InnerWriter.ToString();

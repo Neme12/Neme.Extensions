@@ -20,7 +20,7 @@ internal sealed class RequireArgumentDefinedGenerator(INamedTypeSymbol enumType)
         {
             textWriter.WriteLine($"public static void ArgumentDefined(");
 
-            using (textWriter.WithAddedIndent())
+            using (textWriter.AddIndent())
             {
                 textWriter.WriteLine($"{enumTypeName} argument,");
                 textWriter.WriteLine($"string? message = null,");
@@ -29,17 +29,17 @@ internal sealed class RequireArgumentDefinedGenerator(INamedTypeSymbol enumType)
 
             textWriter.WriteLine('{');
 
-            using (textWriter.WithAddedIndent())
+            using (textWriter.AddIndent())
             {
                 textWriter.WriteLine($"if (!{extensionClassName}.IsDefined(argument))");
 
-                using (textWriter.WithAddedIndent())
+                using (textWriter.AddIndent())
                     textWriter.WriteLine($"Throw(global::Neme.Extensions.Contracts.Assert.NotNull(paramName), argument, message);");
 
                 textWriter.WriteLine();
                 textWriter.WriteLine("static void Throw(string? paramName, object? actualValue, string? message) =>");
 
-                using (textWriter.WithAddedIndent())
+                using (textWriter.AddIndent())
                     textWriter.WriteLine($"throw new global::Neme.Extensions.ArgumentException2(paramName, actualValue, message ?? \"Argument is not defined.\");");
             }
 

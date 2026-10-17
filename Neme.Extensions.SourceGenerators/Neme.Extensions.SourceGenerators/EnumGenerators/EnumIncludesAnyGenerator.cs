@@ -29,7 +29,7 @@ internal sealed class EnumIncludesAnyGenerator(INamedTypeSymbol enumType) : IEnu
         {
             textWriter.WriteLine($"public bool IncludesAny({enumTypeName} flag) =>");
 
-            using (textWriter.WithAddedIndent())
+            using (textWriter.AddIndent())
             {
                 textWriter.WriteLine("(@enum & flag) != 0;");
                 textWriter.WriteLine();
@@ -40,16 +40,16 @@ internal sealed class EnumIncludesAnyGenerator(INamedTypeSymbol enumType) : IEnu
             textWriter.WriteLine($"public bool IncludesAny(params global::System.ReadOnlySpan<{enumTypeName}> flags)");
             textWriter.WriteLine('{');
 
-            using (textWriter.WithAddedIndent())
+            using (textWriter.AddIndent())
             {
                 textWriter.WriteLine("foreach (var flag in flags)");
                 textWriter.WriteLine('{');
 
-                using (textWriter.WithAddedIndent())
+                using (textWriter.AddIndent())
                 {
                     textWriter.WriteLine("if (IncludesAny(@enum, flag))");
 
-                    using (textWriter.WithAddedIndent())
+                    using (textWriter.AddIndent())
                         textWriter.WriteLine("return true;");
                 }
 

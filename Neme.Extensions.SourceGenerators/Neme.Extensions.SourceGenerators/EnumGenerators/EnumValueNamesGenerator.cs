@@ -23,12 +23,12 @@ internal sealed class EnumValueNamesGenerator(INamedTypeSymbol enumType) : IEnum
             textWriter.WriteLine("private static string[] ValueOrderedNames");
             textWriter.WriteLine("{");
 
-            using (textWriter.WithAddedIndent())
+            using (textWriter.AddIndent())
             {
                 textWriter.WriteLine("get => global::System.Threading.LazyInitializer.EnsureInitialized(ref field, static () =>");
                 textWriter.WriteLine("[");
 
-                using (textWriter.WithAddedIndent())
+                using (textWriter.AddIndent())
                 {
                     foreach (var name in nameData.AllNames)
                     {
@@ -60,12 +60,12 @@ internal sealed class EnumValueNamesGenerator(INamedTypeSymbol enumType) : IEnum
         {
             switchWriter.WriteLine("public global::System.ReadOnlySpan<string> ValueNames =>");
 
-            using (switchWriter.WithAddedIndent())
+            using (switchWriter.AddIndent())
             {
                 switchWriter.WriteLine("@enum switch");
                 switchWriter.WriteLine("{");
 
-                using (switchWriter.WithAddedIndent())
+                using (switchWriter.AddIndent())
                 {
                     foreach (var group in nameData.Groups)
                     {

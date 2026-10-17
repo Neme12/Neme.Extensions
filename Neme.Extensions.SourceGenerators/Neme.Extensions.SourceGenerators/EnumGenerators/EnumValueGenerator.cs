@@ -33,7 +33,7 @@ internal sealed class EnumValueGenerator(INamedTypeSymbol enumType) : IEnumGener
         {
             textWriter.WriteLine($"public {underlyingTypeName} Value =>");
 
-            using (textWriter.WithAddedIndent())
+            using (textWriter.AddIndent())
                 textWriter.WriteLine($"({underlyingTypeName})@enum;");
 
             textWriter.Flush();

@@ -51,11 +51,11 @@ internal sealed class EnumIncludesGenerator(INamedTypeSymbol enumType) : IEnumGe
             textWriter.WriteLine($"public bool Includes({typeName} flag)");
             textWriter.WriteLine('{');
 
-            using (textWriter.WithAddedIndent())
+            using (textWriter.AddIndent())
             {
                 textWriter.WriteLine($"if (!global::System.Numerics.BitOperations.IsPow2({isPow2Operand}))");
 
-                using (textWriter.WithAddedIndent())
+                using (textWriter.AddIndent())
                     textWriter.WriteLine("ThrowNotOneFlag(flag);");
 
                 textWriter.WriteLine();
@@ -64,7 +64,7 @@ internal sealed class EnumIncludesGenerator(INamedTypeSymbol enumType) : IEnumGe
                 textWriter.WriteLine("[global::System.Diagnostics.CodeAnalysis.DoesNotReturn]");
                 textWriter.WriteLine($"static void ThrowNotOneFlag({typeName} flag) =>");
 
-                using (textWriter.WithAddedIndent())
+                using (textWriter.AddIndent())
                     textWriter.WriteLine($"throw new global::System.ArgumentException($\"The value '{{flag}}' is not a single flag value for enum type '{{nameof({_enumType})}}'.\", nameof(flag));");
             }
 
