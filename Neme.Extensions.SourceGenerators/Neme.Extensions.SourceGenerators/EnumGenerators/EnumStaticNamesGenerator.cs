@@ -25,28 +25,26 @@ internal sealed class EnumStaticNamesGenerator(INamedTypeSymbol enumType) : IEnu
             {
                 textWriter.WriteLine("private static string[] AllNames");
                 textWriter.WriteLine("{");
-            }
 
-            using (textWriter.WithIndent(baselineIndent + 1))
-            {
-                textWriter.WriteLine("get => global::System.Threading.LazyInitializer.EnsureInitialized(ref field, static () =>");
-                textWriter.WriteLine("[");
-            }
-
-            using (textWriter.WithIndent(baselineIndent + 2))
-            {
-                foreach (var member in enumMembers)
+                using (textWriter.WithIndent(baselineIndent + 1))
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    textWriter.WriteLine($"nameof({enumTypeName}.{member.Name}),");
+                    textWriter.WriteLine("get => global::System.Threading.LazyInitializer.EnsureInitialized(ref field, static () =>");
+                    textWriter.WriteLine("[");
+
+                    using (textWriter.WithIndent(baselineIndent + 2))
+                    {
+                        foreach (var member in enumMembers)
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
+                            textWriter.WriteLine($"nameof({enumTypeName}.{member.Name}),");
+                        }
+                    }
+
+                    textWriter.WriteLine("]!);");
                 }
-            }
 
-            using (textWriter.WithIndent(baselineIndent + 1))
-                textWriter.WriteLine("]!);");
-
-            using (textWriter.WithIndent(baselineIndent))
                 textWriter.WriteLine("}");
+            }
 
             return textWriter.InnerWriter.ToString();
         }
@@ -62,10 +60,12 @@ internal sealed class EnumStaticNamesGenerator(INamedTypeSymbol enumType) : IEnu
         using (var textWriter = IndentedTextWriter.CreateNew())
         {
             using (textWriter.WithIndent(baselineIndent))
+            {
                 textWriter.WriteLine("public static global::System.Collections.Immutable.ImmutableArray<string> Names =>");
 
-            using (textWriter.WithIndent(baselineIndent + 1))
-                textWriter.WriteLine("global::System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsImmutableArray(AllNames);");
+                using (textWriter.WithIndent(baselineIndent + 1))
+                    textWriter.WriteLine("global::System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsImmutableArray(AllNames);");
+            }
 
             return textWriter.InnerWriter.ToString();
         }

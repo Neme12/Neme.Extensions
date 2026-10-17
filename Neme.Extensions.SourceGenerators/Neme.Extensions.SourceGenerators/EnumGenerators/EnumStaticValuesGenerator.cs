@@ -30,22 +30,25 @@ internal sealed class EnumStaticValuesGenerator(INamedTypeSymbol enumType) : IEn
         using (var textWriter = IndentedTextWriter.CreateNew())
         {
             using (textWriter.WithIndent(baselineIndent))
+            {
                 textWriter.WriteLine($"public static global::System.ReadOnlySpan<{enumTypeName}> Values =>");
 
-            using (textWriter.WithIndent(baselineIndent + 1))
-                textWriter.WriteLine("[");
-
-            using (textWriter.WithIndent(baselineIndent + 2))
-            {
-                foreach (var member in enumMembers)
+                using (textWriter.WithIndent(baselineIndent + 1))
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    textWriter.WriteLine($"{enumTypeName}.{member.Name},");
+                    textWriter.WriteLine("[");
+
+                    using (textWriter.WithIndent(baselineIndent + 2))
+                    {
+                        foreach (var member in enumMembers)
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
+                            textWriter.WriteLine($"{enumTypeName}.{member.Name},");
+                        }
+                    }
+
+                    textWriter.WriteLine("];");
                 }
             }
-
-            using (textWriter.WithIndent(baselineIndent + 1))
-                textWriter.WriteLine("];");
 
             return textWriter.InnerWriter.ToString();
         }

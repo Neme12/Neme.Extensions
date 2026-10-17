@@ -46,21 +46,22 @@ internal sealed class EnumStaticIsDefinedGenerator(INamedTypeSymbol enumType) : 
                 if (definedPatterns.Count == 0)
                     textWriter.WriteLine($"public static bool IsDefined({enumTypeName} value) => false;");
                 else
-                    textWriter.WriteLine($"public static bool IsDefined({enumTypeName} value) =>");
-            }
-
-            if (definedPatterns.Count > 0)
-            {
-                using (textWriter.WithIndent(baselineIndent + 1))
-                    textWriter.WriteLine("value is");
-
-                using (textWriter.WithIndent(baselineIndent + 2))
                 {
-                    for (var i = 0; i < definedPatterns.Count; ++i)
+                    textWriter.WriteLine($"public static bool IsDefined({enumTypeName} value) =>");
+
+                    using (textWriter.WithIndent(baselineIndent + 1))
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        var suffix = i == definedPatterns.Count - 1 ? ";" : " or";
-                        textWriter.WriteLine($"{definedPatterns[i]}{suffix}");
+                        textWriter.WriteLine("value is");
+
+                        using (textWriter.WithIndent(baselineIndent + 2))
+                        {
+                            for (var i = 0; i < definedPatterns.Count; ++i)
+                            {
+                                cancellationToken.ThrowIfCancellationRequested();
+                                var suffix = i == definedPatterns.Count - 1 ? ";" : " or";
+                                textWriter.WriteLine($"{definedPatterns[i]}{suffix}");
+                            }
+                        }
                     }
                 }
             }

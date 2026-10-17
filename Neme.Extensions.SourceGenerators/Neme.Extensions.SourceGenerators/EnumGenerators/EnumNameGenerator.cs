@@ -32,34 +32,35 @@ internal sealed class EnumNameGenerator(INamedTypeSymbol enumType) : IEnumGenera
         using (var switchWriter = IndentedTextWriter.CreateNew())
         {
             using (switchWriter.WithIndent(baselineIndent))
+            {
                 switchWriter.WriteLine("public string? Name =>");
 
-            using (switchWriter.WithIndent(baselineIndent + 1))
-            {
-                switchWriter.WriteLine("@enum switch");
-                switchWriter.WriteLine("{");
-            }
-
-            using (switchWriter.WithIndent(baselineIndent + 2))
-            {
-                var seenValues = new HashSet<object>();
-
-                foreach (var member in enumMembers)
+                using (switchWriter.WithIndent(baselineIndent + 1))
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
+                    switchWriter.WriteLine("@enum switch");
+                    switchWriter.WriteLine("{");
 
-                    var constantValue = member.ConstantValue;
-                    if (constantValue is null || !seenValues.Add(constantValue))
-                        continue;
+                    using (switchWriter.WithIndent(baselineIndent + 2))
+                    {
+                        var seenValues = new HashSet<object>();
 
-                    switchWriter.WriteLine($"{enumTypeName}.{member.Name} => nameof({enumTypeName}.{member.Name}),");
+                        foreach (var member in enumMembers)
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
+
+                            var constantValue = member.ConstantValue;
+                            if (constantValue is null || !seenValues.Add(constantValue))
+                                continue;
+
+                            switchWriter.WriteLine($"{enumTypeName}.{member.Name} => nameof({enumTypeName}.{member.Name}),");
+                        }
+
+                        switchWriter.WriteLine("_ => global::System.Enum.GetName(@enum),");
+                    }
+
+                    switchWriter.WriteLine("};");
                 }
-
-                switchWriter.WriteLine("_ => global::System.Enum.GetName(@enum),");
             }
-
-            using (switchWriter.WithIndent(baselineIndent + 1))
-                switchWriter.WriteLine("};");
 
             switchWriter.Flush();
 

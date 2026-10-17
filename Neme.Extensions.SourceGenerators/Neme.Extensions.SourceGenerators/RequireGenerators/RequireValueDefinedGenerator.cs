@@ -19,33 +19,34 @@ internal sealed class RequireValueDefinedGenerator(INamedTypeSymbol enumType) : 
         using (var textWriter = IndentedTextWriter.CreateNew())
         {
             using (textWriter.WithIndent(baselineIndent))
+            {
                 textWriter.WriteLine($"public static void ValueDefined(");
 
-            using (textWriter.WithIndent(baselineIndent + 1))
-            {
-                textWriter.WriteLine($"{enumTypeName} value,");
-                textWriter.WriteLine($"string? message = null,");
-                textWriter.WriteLine($"[global::System.Runtime.CompilerServices.CallerArgumentExpression(nameof(value))] string? valueSource = null)");
-            }
+                using (textWriter.WithIndent(baselineIndent + 1))
+                {
+                    textWriter.WriteLine($"{enumTypeName} value,");
+                    textWriter.WriteLine($"string? message = null,");
+                    textWriter.WriteLine($"[global::System.Runtime.CompilerServices.CallerArgumentExpression(nameof(value))] string? valueSource = null)");
+                }
 
-            using (textWriter.WithIndent(baselineIndent))
                 textWriter.WriteLine('{');
 
-            using (textWriter.WithIndent(baselineIndent + 1))
-            {
-                textWriter.WriteLine($"if (!{extensionClassName}.IsDefined(value))");
-                textWriter.WriteLine();
-                textWriter.WriteLine("static void Throw(object? value, string? message, string? valueSource) =>");
-            }
+                using (textWriter.WithIndent(baselineIndent + 1))
+                {
+                    textWriter.WriteLine($"if (!{extensionClassName}.IsDefined(value))");
 
-            using (textWriter.WithIndent(baselineIndent + 2))
-            {
-                textWriter.WriteLine($"Throw(value, message, global::Neme.Extensions.Contracts.Assert.NotNull(valueSource));");
-                textWriter.WriteLine($@"throw new Neme.Extensions.Contracts.InvalidValueException(valueSource!, value, message ?? ""Value is not defined."");");
-            }
+                    using (textWriter.WithIndent(baselineIndent + 2))
+                        textWriter.WriteLine($"Throw(value, message, global::Neme.Extensions.Contracts.Assert.NotNull(valueSource));");
 
-            using (textWriter.WithIndent(baselineIndent))
+                    textWriter.WriteLine();
+                    textWriter.WriteLine("static void Throw(object? value, string? message, string? valueSource) =>");
+
+                    using (textWriter.WithIndent(baselineIndent + 2))
+                        textWriter.WriteLine($@"throw new Neme.Extensions.Contracts.InvalidValueException(valueSource!, value, message ?? ""Value is not defined."");");
+                }
+
                 textWriter.WriteLine('}');
+            }
 
             return textWriter.InnerWriter.ToString();
         }
