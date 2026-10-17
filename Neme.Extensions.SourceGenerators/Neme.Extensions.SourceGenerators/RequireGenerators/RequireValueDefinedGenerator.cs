@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
+using Neme.Extensions.SourceGenerators.Internal;
 using System.CodeDom.Compiler;
-using System.Globalization;
 
 namespace Neme.Extensions.SourceGenerators.RequireGenerators;
 
@@ -16,8 +16,7 @@ internal sealed class RequireValueDefinedGenerator(INamedTypeSymbol enumType) : 
         var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         var extensionClassName = EnumExtensionsGenerator.GetFullyQualifiedExtensionsClassName(_enumType);
 
-        using (var stringWriter = new StringWriter(CultureInfo.InvariantCulture))
-        using (var textWriter = new IndentedTextWriter(stringWriter))
+        using (var textWriter = IndentedTextWriter.CreateNew())
         {
             textWriter.Indent = baselineIndent;
             textWriter.WriteLine($"public static void ValueDefined(");
@@ -38,7 +37,7 @@ internal sealed class RequireValueDefinedGenerator(INamedTypeSymbol enumType) : 
             textWriter.WriteLine($@"throw new Neme.Extensions.Contracts.InvalidValueException(valueSource!, value, message ?? ""Value is not defined."");");
             textWriter.Indent = baselineIndent;
             textWriter.WriteLine('}');
-            return stringWriter.ToString();
+            return textWriter.InnerWriter.ToString();
         }
     }
 }

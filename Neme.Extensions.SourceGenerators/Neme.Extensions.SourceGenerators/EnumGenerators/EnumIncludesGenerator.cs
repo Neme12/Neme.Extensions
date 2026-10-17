@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
+using Neme.Extensions.SourceGenerators.Internal;
 using System.CodeDom.Compiler;
-using System.Globalization;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
@@ -46,8 +46,7 @@ internal sealed class EnumIncludesGenerator(INamedTypeSymbol enumType) : IEnumGe
         if (isPow2Operand is null)
             return null;
 
-        using (var stringWriter = new StringWriter(CultureInfo.InvariantCulture))
-        using (var textWriter = new IndentedTextWriter(stringWriter))
+        using (var textWriter = IndentedTextWriter.CreateNew())
         {
             textWriter.Indent = baselineIndent;
             textWriter.WriteLine($"public bool Includes({typeName} flag)");

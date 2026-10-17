@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
+using Neme.Extensions.SourceGenerators.Internal;
 using System.CodeDom.Compiler;
-using System.Globalization;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
@@ -18,8 +18,7 @@ internal sealed class EnumValueNamesGenerator(INamedTypeSymbol enumType) : IEnum
         var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         var nameData = GetNameData(cancellationToken);
 
-        using (var stringWriter = new StringWriter(CultureInfo.InvariantCulture))
-        using (var textWriter = new IndentedTextWriter(stringWriter))
+        using (var textWriter = IndentedTextWriter.CreateNew())
         {
             textWriter.Indent = baselineIndent;
             textWriter.WriteLine("private static string[] ValueOrderedNames");
@@ -54,8 +53,7 @@ internal sealed class EnumValueNamesGenerator(INamedTypeSymbol enumType) : IEnum
         var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         var nameData = GetNameData(cancellationToken);
 
-        using (var stringWriter = new StringWriter(CultureInfo.InvariantCulture))
-        using (var switchWriter = new IndentedTextWriter(stringWriter))
+        using (var switchWriter = IndentedTextWriter.CreateNew())
         {
             switchWriter.Indent = baselineIndent;
             switchWriter.WriteLine("public global::System.ReadOnlySpan<string> ValueNames =>");

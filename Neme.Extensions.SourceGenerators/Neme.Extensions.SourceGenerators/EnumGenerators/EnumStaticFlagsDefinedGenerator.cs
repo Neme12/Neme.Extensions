@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
+using Neme.Extensions.SourceGenerators.Internal;
 using System.CodeDom.Compiler;
-using System.Globalization;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
@@ -39,8 +39,7 @@ internal sealed class EnumStaticFlagsDefinedGenerator(INamedTypeSymbol enumType)
             allFlagsParts[i] = $"({underlyingTypeName}){enumTypeName}.{enumMembers[i].Name}";
         }
 
-        using (var stringWriter = new StringWriter(CultureInfo.InvariantCulture))
-        using (var textWriter = new IndentedTextWriter(stringWriter))
+        using (var textWriter = IndentedTextWriter.CreateNew())
         {
             textWriter.Indent = baselineIndent;
             textWriter.WriteLine($"public static bool FlagsDefined({enumTypeName} value)");

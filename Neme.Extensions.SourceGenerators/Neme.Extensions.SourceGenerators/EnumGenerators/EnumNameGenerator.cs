@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
+using Neme.Extensions.SourceGenerators.Internal;
 using System.CodeDom.Compiler;
-using System.Globalization;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
@@ -29,8 +29,7 @@ internal sealed class EnumNameGenerator(INamedTypeSymbol enumType) : IEnumGenera
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        using (var stringWriter = new StringWriter(CultureInfo.InvariantCulture))
-        using (var switchWriter = new IndentedTextWriter(stringWriter))
+        using (var switchWriter = IndentedTextWriter.CreateNew())
         {
             switchWriter.Indent = baselineIndent;
             switchWriter.WriteLine("public string? Name =>");

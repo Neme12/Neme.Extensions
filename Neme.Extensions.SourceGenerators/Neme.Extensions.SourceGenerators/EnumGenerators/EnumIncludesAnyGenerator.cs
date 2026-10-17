@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
+using Neme.Extensions.SourceGenerators.Internal;
 using System.CodeDom.Compiler;
-using System.Globalization;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
@@ -25,8 +25,7 @@ internal sealed class EnumIncludesAnyGenerator(INamedTypeSymbol enumType) : IEnu
 
         var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
-        using (var stringWriter = new StringWriter(CultureInfo.InvariantCulture))
-        using (var textWriter = new IndentedTextWriter(stringWriter))
+        using (var textWriter = IndentedTextWriter.CreateNew())
         {
             textWriter.Indent = baselineIndent;
             textWriter.WriteLine($"public bool IncludesAny({enumTypeName} flag) =>");
