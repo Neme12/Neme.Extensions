@@ -47,11 +47,11 @@ internal sealed class EnumStaticIsDefinedGenerator(INamedTypeSymbol enumType) : 
             {
                 textWriter.WriteLine($"public static bool IsDefined({enumTypeName} value) =>");
 
-                using (textWriter.WithIndent(baselineIndent + 1))
+                using (textWriter.WithAddedIndent())
                 {
                     textWriter.WriteLine("value is");
 
-                    using (textWriter.WithIndent(baselineIndent + 2))
+                    using (textWriter.WithAddedIndent())
                     {
                         for (var i = 0; i < definedPatterns.Count; ++i)
                         {

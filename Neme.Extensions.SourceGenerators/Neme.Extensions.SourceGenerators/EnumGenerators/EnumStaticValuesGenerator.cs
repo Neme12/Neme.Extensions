@@ -31,11 +31,11 @@ internal sealed class EnumStaticValuesGenerator(INamedTypeSymbol enumType) : IEn
         {
             textWriter.WriteLine($"public static global::System.ReadOnlySpan<{enumTypeName}> Values =>");
 
-            using (textWriter.WithIndent(baselineIndent + 1))
+            using (textWriter.WithAddedIndent())
             {
                 textWriter.WriteLine("[");
 
-                using (textWriter.WithIndent(baselineIndent + 2))
+                using (textWriter.WithAddedIndent())
                 {
                     foreach (var member in enumMembers)
                     {

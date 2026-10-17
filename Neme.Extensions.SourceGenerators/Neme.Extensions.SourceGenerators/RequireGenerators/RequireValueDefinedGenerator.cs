@@ -20,7 +20,7 @@ internal sealed class RequireValueDefinedGenerator(INamedTypeSymbol enumType) : 
         {
             textWriter.WriteLine($"public static void ValueDefined(");
 
-            using (textWriter.WithIndent(baselineIndent + 1))
+            using (textWriter.WithAddedIndent())
             {
                 textWriter.WriteLine($"{enumTypeName} value,");
                 textWriter.WriteLine($"string? message = null,");
@@ -29,17 +29,17 @@ internal sealed class RequireValueDefinedGenerator(INamedTypeSymbol enumType) : 
 
             textWriter.WriteLine('{');
 
-            using (textWriter.WithIndent(baselineIndent + 1))
+            using (textWriter.WithAddedIndent())
             {
                 textWriter.WriteLine($"if (!{extensionClassName}.IsDefined(value))");
 
-                using (textWriter.WithIndent(baselineIndent + 2))
+                using (textWriter.WithAddedIndent())
                     textWriter.WriteLine($"Throw(value, message, global::Neme.Extensions.Contracts.Assert.NotNull(valueSource));");
 
                 textWriter.WriteLine();
                 textWriter.WriteLine("static void Throw(object? value, string? message, string? valueSource) =>");
 
-                using (textWriter.WithIndent(baselineIndent + 2))
+                using (textWriter.WithAddedIndent())
                     textWriter.WriteLine($@"throw new Neme.Extensions.Contracts.InvalidValueException(valueSource!, value, message ?? ""Value is not defined."");");
             }
 

@@ -33,12 +33,12 @@ internal sealed class EnumToStringGenerator(INamedTypeSymbol enumType) : IEnumGe
         {
             switchWriter.WriteLine("public string ToStringGenerated() =>");
 
-            using (switchWriter.WithIndent(baselineIndent + 1))
+            using (switchWriter.WithAddedIndent())
             {
                 switchWriter.WriteLine("@enum switch");
                 switchWriter.WriteLine("{");
 
-                using (switchWriter.WithIndent(baselineIndent + 2))
+                using (switchWriter.WithAddedIndent())
                 {
                     var seenValues = new HashSet<object>();
 

@@ -44,7 +44,7 @@ internal sealed class EnumStaticFlagsDefinedGenerator(INamedTypeSymbol enumType)
             textWriter.WriteLine($"public static bool FlagsDefined({enumTypeName} value)");
             textWriter.WriteLine("{");
 
-            using (textWriter.WithIndent(baselineIndent + 1))
+            using (textWriter.WithAddedIndent())
             {
                 if (allFlagsParts.Length == 0)
                     textWriter.WriteLine($"{underlyingTypeName} allFlags = default;");
@@ -53,7 +53,7 @@ internal sealed class EnumStaticFlagsDefinedGenerator(INamedTypeSymbol enumType)
 
                 if (allFlagsParts.Length > 0)
                 {
-                    using (textWriter.WithIndent(baselineIndent + 2))
+                    using (textWriter.WithAddedIndent())
                     {
                         for (var i = 0; i < allFlagsParts.Length; ++i)
                         {

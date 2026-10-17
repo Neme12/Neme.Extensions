@@ -36,11 +36,11 @@ internal sealed class EnumStaticUnderlyingValuesGenerator(INamedTypeSymbol enumT
         {
             textWriter.WriteLine($"public static global::System.ReadOnlySpan<{underlyingTypeName}> UnderlyingValues =>");
 
-            using (textWriter.WithIndent(baselineIndent + 1))
+            using (textWriter.WithAddedIndent())
             {
                 textWriter.WriteLine("[");
 
-                using (textWriter.WithIndent(baselineIndent + 2))
+                using (textWriter.WithAddedIndent())
                 {
                     foreach (var member in enumMembers)
                     {

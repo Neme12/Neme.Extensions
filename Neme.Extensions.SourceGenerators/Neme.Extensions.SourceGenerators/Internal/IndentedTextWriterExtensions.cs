@@ -21,6 +21,13 @@ internal static class IndentedTextWriterExtensions
             writer.Indent = indent;
             return new IndentScope(writer, originalIndent);
         }
+
+        public IndentScope WithAddedIndent()
+        {
+            var originalIndent = writer.Indent;
+            writer.Indent += 1;
+            return new IndentScope(writer, originalIndent);
+        }
     }
 
     public struct IndentScope : IDisposable
