@@ -25,9 +25,8 @@ internal sealed class EnumIncludesAllGenerator(INamedTypeSymbol enumType) : IEnu
 
         var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
-        using (var textWriter = IndentedTextWriter.CreateNew())
+        using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))
         {
-            using (textWriter.WithIndent(baselineIndent))
             {
                 textWriter.WriteLine($"public bool IncludesAll({enumTypeName} flag) =>");
 

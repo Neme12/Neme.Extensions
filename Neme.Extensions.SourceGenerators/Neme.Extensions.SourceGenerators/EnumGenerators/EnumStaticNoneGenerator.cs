@@ -29,9 +29,8 @@ internal sealed class EnumStaticNoneGenerator(INamedTypeSymbol enumType, Compila
 
         var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
-        using (var textWriter = IndentedTextWriter.CreateNew())
+        using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))
         {
-            using (textWriter.WithIndent(baselineIndent))
             {
                 textWriter.WriteLine($"public static {enumTypeName} None =>");
 

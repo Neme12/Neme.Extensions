@@ -32,9 +32,8 @@ internal sealed class EnumStaticUnderlyingValuesGenerator(INamedTypeSymbol enumT
 
         var enumMembers = GeneratorUtilities.GetEnumMembersWithConstantValue(_enumType, cancellationToken);
 
-        using (var textWriter = IndentedTextWriter.CreateNew())
+        using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))
         {
-            using (textWriter.WithIndent(baselineIndent))
             {
                 textWriter.WriteLine($"public static global::System.ReadOnlySpan<{underlyingTypeName}> UnderlyingValues =>");
 

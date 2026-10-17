@@ -39,9 +39,8 @@ internal sealed class EnumStaticFlagsDefinedGenerator(INamedTypeSymbol enumType)
             allFlagsParts[i] = $"({underlyingTypeName}){enumTypeName}.{enumMembers[i].Name}";
         }
 
-        using (var textWriter = IndentedTextWriter.CreateNew())
+        using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))
         {
-            using (textWriter.WithIndent(baselineIndent))
             {
                 textWriter.WriteLine($"public static bool FlagsDefined({enumTypeName} value)");
                 textWriter.WriteLine("{");

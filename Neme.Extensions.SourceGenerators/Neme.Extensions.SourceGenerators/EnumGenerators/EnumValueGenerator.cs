@@ -29,9 +29,8 @@ internal sealed class EnumValueGenerator(INamedTypeSymbol enumType) : IEnumGener
 
         var underlyingTypeName = underlyingType.ToDisplayString(GeneratorUtilities.KeywordTypeFormat);
 
-        using (var textWriter = IndentedTextWriter.CreateNew())
+        using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))
         {
-            using (textWriter.WithIndent(baselineIndent))
             {
                 textWriter.WriteLine($"public {underlyingTypeName} Value =>");
 

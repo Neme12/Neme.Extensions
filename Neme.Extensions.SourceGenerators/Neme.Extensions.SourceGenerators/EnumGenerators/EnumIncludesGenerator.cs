@@ -46,9 +46,8 @@ internal sealed class EnumIncludesGenerator(INamedTypeSymbol enumType) : IEnumGe
         if (isPow2Operand is null)
             return null;
 
-        using (var textWriter = IndentedTextWriter.CreateNew())
+        using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))
         {
-            using (textWriter.WithIndent(baselineIndent))
             {
                 textWriter.WriteLine($"public bool Includes({typeName} flag)");
                 textWriter.WriteLine('{');

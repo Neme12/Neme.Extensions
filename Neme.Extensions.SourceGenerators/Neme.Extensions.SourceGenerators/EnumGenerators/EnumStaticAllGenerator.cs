@@ -38,9 +38,8 @@ internal sealed class EnumStaticAllGenerator(INamedTypeSymbol enumType, Compilat
             allParts[i] = $"{enumTypeName}.{enumMembers[i].Name}";
         }
 
-        using (var textWriter = IndentedTextWriter.CreateNew())
+        using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))
         {
-            using (textWriter.WithIndent(baselineIndent))
             {
                 textWriter.WriteLine($"public static {enumTypeName} All =>");
 

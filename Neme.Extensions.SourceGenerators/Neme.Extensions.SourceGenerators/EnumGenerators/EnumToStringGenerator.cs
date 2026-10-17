@@ -29,9 +29,8 @@ internal sealed class EnumToStringGenerator(INamedTypeSymbol enumType) : IEnumGe
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        using (var switchWriter = IndentedTextWriter.CreateNew())
+        using (var switchWriter = IndentedTextWriter.CreateNew(baselineIndent))
         {
-            using (switchWriter.WithIndent(baselineIndent))
             {
                 switchWriter.WriteLine("public string ToStringGenerated() =>");
 

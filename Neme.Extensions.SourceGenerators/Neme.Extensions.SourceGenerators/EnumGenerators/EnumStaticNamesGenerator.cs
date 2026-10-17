@@ -19,9 +19,8 @@ internal sealed class EnumStaticNamesGenerator(INamedTypeSymbol enumType) : IEnu
 
         var enumMembers = GeneratorUtilities.GetEnumMembersWithConstantValue(_enumType, cancellationToken);
 
-        using (var textWriter = IndentedTextWriter.CreateNew())
+        using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))
         {
-            using (textWriter.WithIndent(baselineIndent))
             {
                 textWriter.WriteLine("private static string[] AllNames");
                 textWriter.WriteLine("{");
@@ -57,9 +56,8 @@ internal sealed class EnumStaticNamesGenerator(INamedTypeSymbol enumType) : IEnu
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        using (var textWriter = IndentedTextWriter.CreateNew())
+        using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))
         {
-            using (textWriter.WithIndent(baselineIndent))
             {
                 textWriter.WriteLine("public static global::System.Collections.Immutable.ImmutableArray<string> Names =>");
 

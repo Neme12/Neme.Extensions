@@ -7,12 +7,12 @@ internal static class IndentedTextWriterExtensions
 {
     extension(IndentedTextWriter writer)
     {
-        public static IndentedTextWriter CreateNew()
+        public static IndentedTextWriter CreateNew(int initialIndent)
         {
             var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
 
             // IndentedTextWriter disposal disposes the underlying StringWriter, so we don't dispose it.
-            return new IndentedTextWriter(stringWriter);
+            return new IndentedTextWriter(stringWriter) { Indent = initialIndent };
         }
 
         public IndentScope WithIndent(int indent)

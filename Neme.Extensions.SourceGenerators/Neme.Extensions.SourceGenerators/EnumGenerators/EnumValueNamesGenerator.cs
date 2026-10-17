@@ -18,9 +18,8 @@ internal sealed class EnumValueNamesGenerator(INamedTypeSymbol enumType) : IEnum
         var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         var nameData = GetNameData(cancellationToken);
 
-        using (var textWriter = IndentedTextWriter.CreateNew())
+        using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))
         {
-            using (textWriter.WithIndent(baselineIndent))
             {
                 textWriter.WriteLine("private static string[] ValueOrderedNames");
                 textWriter.WriteLine("{");
@@ -59,9 +58,8 @@ internal sealed class EnumValueNamesGenerator(INamedTypeSymbol enumType) : IEnum
         var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         var nameData = GetNameData(cancellationToken);
 
-        using (var switchWriter = IndentedTextWriter.CreateNew())
+        using (var switchWriter = IndentedTextWriter.CreateNew(baselineIndent))
         {
-            using (switchWriter.WithIndent(baselineIndent))
             {
                 switchWriter.WriteLine("public global::System.ReadOnlySpan<string> ValueNames =>");
 

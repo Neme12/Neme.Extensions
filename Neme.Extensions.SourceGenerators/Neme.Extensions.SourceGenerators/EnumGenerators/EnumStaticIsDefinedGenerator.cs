@@ -39,9 +39,8 @@ internal sealed class EnumStaticIsDefinedGenerator(INamedTypeSymbol enumType) : 
             definedPatterns.Add($"{enumTypeName}.{member.Name}");
         }
 
-        using (var textWriter = IndentedTextWriter.CreateNew())
+        using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))
         {
-            using (textWriter.WithIndent(baselineIndent))
             {
                 if (definedPatterns.Count == 0)
                     textWriter.WriteLine($"public static bool IsDefined({enumTypeName} value) => false;");
