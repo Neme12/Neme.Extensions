@@ -36,7 +36,7 @@ internal sealed class EnumStaticIsDefinedGenerator(INamedTypeSymbol enumType) : 
             if (!seenValues.Add(member.ConstantValue!))
                 continue;
 
-            definedPatterns.Add($"{enumTypeName}.{member.Name}");
+            definedPatterns.Add(Invariant($"""{enumTypeName}.{member.Name}"""));
         }
 
         using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))

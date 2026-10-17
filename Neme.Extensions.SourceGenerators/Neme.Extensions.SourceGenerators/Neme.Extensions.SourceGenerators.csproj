@@ -16,6 +16,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Using Include="Neme.Extensions.InterpolatedString" Static="true" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="5.9.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.9.0" />
   </ItemGroup>
@@ -26,6 +30,11 @@
     </ProjectReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\..\Neme.Extensions.Core\Neme.Extensions\InterpolatedString.cs" Link="Linked\InterpolatedString.cs" />
+    <Compile Include="..\..\Neme.Extensions.Core\Neme.Extensions\CompilerServices\InvariantInterpolatedStringHandler.cs" Link="Linked\CompilerServices\InvariantInterpolatedStringHandler.cs" />
+  </ItemGroup>
+  
   <ItemGroup>
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="build\Neme.Extensions.SourceGenerators.props" Pack="true" PackagePath="build;buildTransitive" />

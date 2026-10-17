@@ -85,9 +85,9 @@ public sealed class EnumRequireGenerator : AbstractEnumGenerator, IIncrementalGe
         cancellationToken.ThrowIfCancellationRequested();
 
         // lang=c#
-        var innerSource = $$"""
-                {{string.Join(Environment.NewLine, memberSources)}}
-                """;
+        var innerSource = Invariant($"""
+                {string.Join(Environment.NewLine, memberSources)}
+                """);
 
         cancellationToken.ThrowIfCancellationRequested();
 

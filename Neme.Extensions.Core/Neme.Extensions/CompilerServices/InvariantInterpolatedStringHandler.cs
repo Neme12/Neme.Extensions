@@ -4,7 +4,12 @@ using System.Runtime.CompilerServices;
 namespace Neme.Extensions.CompilerServices;
 
 [InterpolatedStringHandler]
-public ref struct InvariantInterpolatedStringHandler
+#if NEME_EXTENSIONS
+public
+#else
+internal
+#endif
+ref struct InvariantInterpolatedStringHandler
 {
     private DefaultInterpolatedStringHandler _handler;
 
@@ -61,7 +66,7 @@ public ref struct InvariantInterpolatedStringHandler
     public void AppendFormatted(ReadOnlySpan<char> value, int alignment = 0, string? format = null) =>
         _handler.AppendFormatted(value, alignment, format);
 #endif
-    #endregion
+#endregion
 
     #region AppendFormatted string
     public void AppendFormatted(string? value) =>

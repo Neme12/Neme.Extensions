@@ -36,7 +36,7 @@ internal sealed class EnumStaticFlagsDefinedGenerator(INamedTypeSymbol enumType)
         for (var i = 0; i < enumMembers.Length; ++i)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            allFlagsParts[i] = $"({underlyingTypeName}){enumTypeName}.{enumMembers[i].Name}";
+            allFlagsParts[i] = Invariant($"""({underlyingTypeName}){enumTypeName}.{enumMembers[i].Name}""");
         }
 
         using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))

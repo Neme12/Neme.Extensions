@@ -2,7 +2,12 @@
 
 namespace Neme.Extensions;
 
-public static class InterpolatedString
+#if NEME_EXTENSIONS
+public
+#else
+internal
+#endif
+static class InterpolatedString
 {
     public static string Invariant(ref InvariantInterpolatedStringHandler handler) =>
         handler.ToStringAndClear();

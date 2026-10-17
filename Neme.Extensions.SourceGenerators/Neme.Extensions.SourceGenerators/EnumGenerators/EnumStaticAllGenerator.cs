@@ -35,7 +35,7 @@ internal sealed class EnumStaticAllGenerator(INamedTypeSymbol enumType, Compilat
         for (var i = 0; i < enumMembers.Length; ++i)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            allParts[i] = $"{enumTypeName}.{enumMembers[i].Name}";
+            allParts[i] = Invariant($"""{enumTypeName}.{enumMembers[i].Name}""");
         }
 
         using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))

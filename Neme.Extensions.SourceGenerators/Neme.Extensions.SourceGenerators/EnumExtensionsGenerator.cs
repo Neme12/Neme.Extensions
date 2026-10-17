@@ -167,14 +167,14 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
         cancellationToken.ThrowIfCancellationRequested();
 
         // lang=c#
-        var innerSource = $$"""
+        var innerSource = Invariant($$"""
                 {{string.Join(Environment.NewLine, typeSources)}}
 
                     extension({{typeName}} @enum)
                     {
                 {{string.Join(Environment.NewLine, extensionSources)}}
                     }
-                """;
+                """);
 
         var result = GetGeneratedClassSource(
             GetNamespaceName(enumType),
@@ -198,8 +198,8 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
 
         var typePrefix = containingTypes.Count == 0
             ? ""
-            : string.Create(CultureInfo.InvariantCulture, $"""{string.Join("_", containingTypes)}_""");
-        return string.Create(CultureInfo.InvariantCulture, $"""{typePrefix}{enumType.Name}GeneratedExtensions""");
+            : Invariant($"""{string.Join("_", containingTypes)}_""");
+        return Invariant($"""{typePrefix}{enumType.Name}GeneratedExtensions""");
     }
 
     private static string? GetNamespaceName(INamedTypeSymbol enumType)
@@ -215,7 +215,7 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
         var extensionClassName = GetExtensionClassName(enumType);
         var fullyQualifiedName = namespaceName is null
             ? extensionClassName
-            : $"{namespaceName}.{extensionClassName}";
-        return $"global::{fullyQualifiedName}";
+            : Invariant($"""{namespaceName}.{extensionClassName}""");
+        return Invariant($"""global::{fullyQualifiedName}""");
     }
 }
