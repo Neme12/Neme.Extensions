@@ -41,32 +41,41 @@ internal sealed class EnumStaticFlagsDefinedGenerator(INamedTypeSymbol enumType)
 
         using (var textWriter = IndentedTextWriter.CreateNew())
         {
-            textWriter.Indent = baselineIndent;
-            textWriter.WriteLine($"public static bool FlagsDefined({enumTypeName} value)");
-            textWriter.WriteLine("{");
-            textWriter.Indent = baselineIndent + 1;
-
-            if (allFlagsParts.Length == 0)
-                textWriter.WriteLine($"{underlyingTypeName} allFlags = default;");
-            else
+            using (textWriter.WithIndent(baselineIndent))
             {
-                textWriter.WriteLine($"{underlyingTypeName} allFlags =");
-                textWriter.Indent = baselineIndent + 2;
-
-                for (var i = 0; i < allFlagsParts.Length; ++i)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    var suffix = i == allFlagsParts.Length - 1 ? ";" : " |";
-                    textWriter.WriteLine($"{allFlagsParts[i]}{suffix}");
-                }
-
-                textWriter.Indent = baselineIndent + 1;
+                textWriter.WriteLine($"public static bool FlagsDefined({enumTypeName} value)");
+                textWriter.WriteLine("{");
             }
 
-            textWriter.WriteLine();
-            textWriter.WriteLine($"return ((({underlyingTypeName})value) | allFlags) == allFlags;");
-            textWriter.Indent = baselineIndent;
-            textWriter.WriteLine("}");
+            using (textWriter.WithIndent(baselineIndent + 1))
+            {
+                if (allFlagsParts.Length == 0)
+                    textWriter.WriteLine($"{underlyingTypeName} allFlags = default;");
+                else
+                    textWriter.WriteLine($"{underlyingTypeName} allFlags =");
+            }
+
+            if (allFlagsParts.Length > 0)
+            {
+                using (textWriter.WithIndent(baselineIndent + 2))
+                {
+                    for (var i = 0; i < allFlagsParts.Length; ++i)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        var suffix = i == allFlagsParts.Length - 1 ? ";" : " |";
+                        textWriter.WriteLine($"{allFlagsParts[i]}{suffix}");
+                    }
+                }
+            }
+
+            using (textWriter.WithIndent(baselineIndent + 1))
+            {
+                textWriter.WriteLine();
+                textWriter.WriteLine($"return ((({underlyingTypeName})value) | allFlags) == allFlags;");
+            }
+
+            using (textWriter.WithIndent(baselineIndent))
+                textWriter.WriteLine("}");
 
             return textWriter.InnerWriter.ToString();
         }

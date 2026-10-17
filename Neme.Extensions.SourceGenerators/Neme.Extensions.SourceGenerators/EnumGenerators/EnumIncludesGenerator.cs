@@ -48,23 +48,34 @@ internal sealed class EnumIncludesGenerator(INamedTypeSymbol enumType) : IEnumGe
 
         using (var textWriter = IndentedTextWriter.CreateNew())
         {
-            textWriter.Indent = baselineIndent;
-            textWriter.WriteLine($"public bool Includes({typeName} flag)");
-            textWriter.WriteLine('{');
-            textWriter.Indent = baselineIndent + 1;
-            textWriter.WriteLine($"if (!global::System.Numerics.BitOperations.IsPow2({isPow2Operand}))");
-            textWriter.Indent = baselineIndent + 2;
-            textWriter.WriteLine("ThrowNotOneFlag(flag);");
-            textWriter.WriteLine();
-            textWriter.Indent = baselineIndent + 1;
-            textWriter.WriteLine("return (@enum & flag) != 0;");
-            textWriter.WriteLine();
-            textWriter.WriteLine("[global::System.Diagnostics.CodeAnalysis.DoesNotReturn]");
-            textWriter.WriteLine($"static void ThrowNotOneFlag({typeName} flag) =>");
-            textWriter.Indent = baselineIndent + 2;
-            textWriter.WriteLine($"throw new global::System.ArgumentException($\"The value '{{flag}}' is not a single flag value for enum type '{{nameof({_enumType})}}'.\", nameof(flag));");
-            textWriter.Indent = baselineIndent;
-            textWriter.WriteLine('}');
+            using (textWriter.WithIndent(baselineIndent))
+            {
+                textWriter.WriteLine($"public bool Includes({typeName} flag)");
+                textWriter.WriteLine('{');
+            }
+
+            using (textWriter.WithIndent(baselineIndent + 1))
+            {
+                textWriter.WriteLine($"if (!global::System.Numerics.BitOperations.IsPow2({isPow2Operand}))");
+            }
+
+            using (textWriter.WithIndent(baselineIndent + 2))
+                textWriter.WriteLine("ThrowNotOneFlag(flag);");
+
+            using (textWriter.WithIndent(baselineIndent + 1))
+            {
+                textWriter.WriteLine();
+                textWriter.WriteLine("return (@enum & flag) != 0;");
+                textWriter.WriteLine();
+                textWriter.WriteLine("[global::System.Diagnostics.CodeAnalysis.DoesNotReturn]");
+                textWriter.WriteLine($"static void ThrowNotOneFlag({typeName} flag) =>");
+            }
+
+            using (textWriter.WithIndent(baselineIndent + 2))
+                textWriter.WriteLine($"throw new global::System.ArgumentException($\"The value '{{flag}}' is not a single flag value for enum type '{{nameof({_enumType})}}'.\", nameof(flag));");
+
+            using (textWriter.WithIndent(baselineIndent))
+                textWriter.WriteLine('}');
 
             textWriter.Flush();
 

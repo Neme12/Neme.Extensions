@@ -41,22 +41,27 @@ internal sealed class EnumStaticIsDefinedGenerator(INamedTypeSymbol enumType) : 
 
         using (var textWriter = IndentedTextWriter.CreateNew())
         {
-            textWriter.Indent = baselineIndent;
-
-            if (definedPatterns.Count == 0)
-                textWriter.WriteLine($"public static bool IsDefined({enumTypeName} value) => false;");
-            else
+            using (textWriter.WithIndent(baselineIndent))
             {
-                textWriter.WriteLine($"public static bool IsDefined({enumTypeName} value) =>");
-                textWriter.Indent = baselineIndent + 1;
-                textWriter.WriteLine("value is");
-                textWriter.Indent = baselineIndent + 2;
+                if (definedPatterns.Count == 0)
+                    textWriter.WriteLine($"public static bool IsDefined({enumTypeName} value) => false;");
+                else
+                    textWriter.WriteLine($"public static bool IsDefined({enumTypeName} value) =>");
+            }
 
-                for (var i = 0; i < definedPatterns.Count; ++i)
+            if (definedPatterns.Count > 0)
+            {
+                using (textWriter.WithIndent(baselineIndent + 1))
+                    textWriter.WriteLine("value is");
+
+                using (textWriter.WithIndent(baselineIndent + 2))
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    var suffix = i == definedPatterns.Count - 1 ? ";" : " or";
-                    textWriter.WriteLine($"{definedPatterns[i]}{suffix}");
+                    for (var i = 0; i < definedPatterns.Count; ++i)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        var suffix = i == definedPatterns.Count - 1 ? ";" : " or";
+                        textWriter.WriteLine($"{definedPatterns[i]}{suffix}");
+                    }
                 }
             }
 

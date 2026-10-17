@@ -27,30 +27,44 @@ internal sealed class EnumIncludesAllGenerator(INamedTypeSymbol enumType) : IEnu
 
         using (var textWriter = IndentedTextWriter.CreateNew())
         {
-            textWriter.Indent = baselineIndent;
-            textWriter.WriteLine($"public bool IncludesAll({enumTypeName} flag) =>");
-            textWriter.Indent = baselineIndent + 1;
-            textWriter.WriteLine("(@enum & flag) == flag;");
-            textWriter.WriteLine();
+            using (textWriter.WithIndent(baselineIndent))
+                textWriter.WriteLine($"public bool IncludesAll({enumTypeName} flag) =>");
+
+            using (textWriter.WithIndent(baselineIndent + 1))
+            {
+                textWriter.WriteLine("(@enum & flag) == flag;");
+                textWriter.WriteLine();
+            }
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            textWriter.Indent = baselineIndent;
-            textWriter.WriteLine($"public bool IncludesAll(params global::System.ReadOnlySpan<{enumTypeName}> flags)");
-            textWriter.WriteLine('{');
-            textWriter.Indent = baselineIndent + 1;
-            textWriter.WriteLine("foreach (var flag in flags)");
-            textWriter.WriteLine('{');
-            textWriter.Indent = baselineIndent + 2;
-            textWriter.WriteLine("if (!IncludesAll(@enum, flag))");
-            textWriter.Indent = baselineIndent + 3;
-            textWriter.WriteLine("return false;");
-            textWriter.Indent = baselineIndent + 1;
-            textWriter.WriteLine('}');
-            textWriter.WriteLine();
-            textWriter.WriteLine("return true;");
-            textWriter.Indent = baselineIndent;
-            textWriter.WriteLine('}');
+            using (textWriter.WithIndent(baselineIndent))
+            {
+                textWriter.WriteLine($"public bool IncludesAll(params global::System.ReadOnlySpan<{enumTypeName}> flags)");
+                textWriter.WriteLine('{');
+            }
+
+            using (textWriter.WithIndent(baselineIndent + 1))
+            {
+                textWriter.WriteLine("foreach (var flag in flags)");
+                textWriter.WriteLine('{');
+            }
+
+            using (textWriter.WithIndent(baselineIndent + 2))
+                textWriter.WriteLine("if (!IncludesAll(@enum, flag))");
+
+            using (textWriter.WithIndent(baselineIndent + 3))
+                textWriter.WriteLine("return false;");
+
+            using (textWriter.WithIndent(baselineIndent + 1))
+            {
+                textWriter.WriteLine('}');
+                textWriter.WriteLine();
+                textWriter.WriteLine("return true;");
+            }
+
+            using (textWriter.WithIndent(baselineIndent))
+                textWriter.WriteLine('}');
 
             textWriter.Flush();
 

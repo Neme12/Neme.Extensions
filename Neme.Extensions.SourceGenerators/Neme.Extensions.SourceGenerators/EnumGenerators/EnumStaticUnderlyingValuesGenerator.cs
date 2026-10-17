@@ -34,20 +34,23 @@ internal sealed class EnumStaticUnderlyingValuesGenerator(INamedTypeSymbol enumT
 
         using (var textWriter = IndentedTextWriter.CreateNew())
         {
-            textWriter.Indent = baselineIndent;
-            textWriter.WriteLine($"public static global::System.ReadOnlySpan<{underlyingTypeName}> UnderlyingValues =>");
-            textWriter.Indent = baselineIndent + 1;
-            textWriter.WriteLine("[");
-            textWriter.Indent = baselineIndent + 2;
+            using (textWriter.WithIndent(baselineIndent))
+                textWriter.WriteLine($"public static global::System.ReadOnlySpan<{underlyingTypeName}> UnderlyingValues =>");
 
-            foreach (var member in enumMembers)
+            using (textWriter.WithIndent(baselineIndent + 1))
+                textWriter.WriteLine("[");
+
+            using (textWriter.WithIndent(baselineIndent + 2))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                textWriter.WriteLine($"({underlyingTypeName}){enumTypeName}.{member.Name},");
+                foreach (var member in enumMembers)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    textWriter.WriteLine($"({underlyingTypeName}){enumTypeName}.{member.Name},");
+                }
             }
 
-            textWriter.Indent = baselineIndent + 1;
-            textWriter.WriteLine("];");
+            using (textWriter.WithIndent(baselineIndent + 1))
+                textWriter.WriteLine("];");
 
             return textWriter.InnerWriter.ToString();
         }

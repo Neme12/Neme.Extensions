@@ -20,24 +20,32 @@ internal sealed class EnumValueNamesGenerator(INamedTypeSymbol enumType) : IEnum
 
         using (var textWriter = IndentedTextWriter.CreateNew())
         {
-            textWriter.Indent = baselineIndent;
-            textWriter.WriteLine("private static string[] ValueOrderedNames");
-            textWriter.WriteLine("{");
-            textWriter.Indent = baselineIndent + 1;
-            textWriter.WriteLine("get => global::System.Threading.LazyInitializer.EnsureInitialized(ref field, static () =>");
-            textWriter.WriteLine("[");
-            textWriter.Indent = baselineIndent + 2;
-
-            foreach (var name in nameData.AllNames)
+            using (textWriter.WithIndent(baselineIndent))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                textWriter.WriteLine($"nameof({enumTypeName}.{name}),");
+                textWriter.WriteLine("private static string[] ValueOrderedNames");
+                textWriter.WriteLine("{");
             }
 
-            textWriter.Indent = baselineIndent + 1;
-            textWriter.WriteLine("]!);");
-            textWriter.Indent = baselineIndent;
-            textWriter.WriteLine("}");
+            using (textWriter.WithIndent(baselineIndent + 1))
+            {
+                textWriter.WriteLine("get => global::System.Threading.LazyInitializer.EnsureInitialized(ref field, static () =>");
+                textWriter.WriteLine("[");
+            }
+
+            using (textWriter.WithIndent(baselineIndent + 2))
+            {
+                foreach (var name in nameData.AllNames)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    textWriter.WriteLine($"nameof({enumTypeName}.{name}),");
+                }
+            }
+
+            using (textWriter.WithIndent(baselineIndent + 1))
+                textWriter.WriteLine("]!);");
+
+            using (textWriter.WithIndent(baselineIndent))
+                textWriter.WriteLine("}");
 
             return textWriter.InnerWriter.ToString();
         }
@@ -55,23 +63,28 @@ internal sealed class EnumValueNamesGenerator(INamedTypeSymbol enumType) : IEnum
 
         using (var switchWriter = IndentedTextWriter.CreateNew())
         {
-            switchWriter.Indent = baselineIndent;
-            switchWriter.WriteLine("public global::System.ReadOnlySpan<string> ValueNames =>");
-            switchWriter.Indent = baselineIndent + 1;
-            switchWriter.WriteLine("@enum switch");
-            switchWriter.WriteLine("{");
-            switchWriter.Indent = baselineIndent + 2;
+            using (switchWriter.WithIndent(baselineIndent))
+                switchWriter.WriteLine("public global::System.ReadOnlySpan<string> ValueNames =>");
 
-            foreach (var group in nameData.Groups)
+            using (switchWriter.WithIndent(baselineIndent + 1))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                switchWriter.WriteLine($"{enumTypeName}.{group.MemberName} => ValueOrderedNames.AsSpan({group.Start}, {group.Length}),");
+                switchWriter.WriteLine("@enum switch");
+                switchWriter.WriteLine("{");
             }
 
-            switchWriter.WriteLine("_ => [],");
+            using (switchWriter.WithIndent(baselineIndent + 2))
+            {
+                foreach (var group in nameData.Groups)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    switchWriter.WriteLine($"{enumTypeName}.{group.MemberName} => ValueOrderedNames.AsSpan({group.Start}, {group.Length}),");
+                }
 
-            switchWriter.Indent = baselineIndent + 1;
-            switchWriter.WriteLine("};");
+                switchWriter.WriteLine("_ => [],");
+            }
+
+            using (switchWriter.WithIndent(baselineIndent + 1))
+                switchWriter.WriteLine("};");
 
             switchWriter.Flush();
 

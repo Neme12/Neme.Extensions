@@ -31,30 +31,35 @@ internal sealed class EnumToStringGenerator(INamedTypeSymbol enumType) : IEnumGe
 
         using (var switchWriter = IndentedTextWriter.CreateNew())
         {
-            switchWriter.Indent = baselineIndent;
-            switchWriter.WriteLine("public string ToStringGenerated() =>");
-            switchWriter.Indent = baselineIndent + 1;
-            switchWriter.WriteLine("@enum switch");
-            switchWriter.WriteLine("{");
-            switchWriter.Indent = baselineIndent + 2;
+            using (switchWriter.WithIndent(baselineIndent))
+                switchWriter.WriteLine("public string ToStringGenerated() =>");
 
-            var seenValues = new HashSet<object>();
-
-            foreach (var member in enumMembers)
+            using (switchWriter.WithIndent(baselineIndent + 1))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var constantValue = member.ConstantValue;
-                if (constantValue is null || !seenValues.Add(constantValue))
-                    continue;
-
-                switchWriter.WriteLine($"{enumTypeName}.{member.Name} => nameof({enumTypeName}.{member.Name}),");
+                switchWriter.WriteLine("@enum switch");
+                switchWriter.WriteLine("{");
             }
 
-            switchWriter.WriteLine("_ => @enum.ToString(),");
+            using (switchWriter.WithIndent(baselineIndent + 2))
+            {
+                var seenValues = new HashSet<object>();
 
-            switchWriter.Indent = baselineIndent + 1;
-            switchWriter.WriteLine("};");
+                foreach (var member in enumMembers)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    var constantValue = member.ConstantValue;
+                    if (constantValue is null || !seenValues.Add(constantValue))
+                        continue;
+
+                    switchWriter.WriteLine($"{enumTypeName}.{member.Name} => nameof({enumTypeName}.{member.Name}),");
+                }
+
+                switchWriter.WriteLine("_ => @enum.ToString(),");
+            }
+
+            using (switchWriter.WithIndent(baselineIndent + 1))
+                switchWriter.WriteLine("};");
 
             switchWriter.Flush();
 

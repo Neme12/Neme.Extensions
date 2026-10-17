@@ -31,10 +31,11 @@ internal sealed class EnumStaticNoneGenerator(INamedTypeSymbol enumType, Compila
 
         using (var textWriter = IndentedTextWriter.CreateNew())
         {
-            textWriter.Indent = baselineIndent;
-            textWriter.WriteLine($"public static {enumTypeName} None =>");
-            textWriter.Indent = baselineIndent + 1;
-            textWriter.WriteLine("default;");
+            using (textWriter.WithIndent(baselineIndent))
+                textWriter.WriteLine($"public static {enumTypeName} None =>");
+
+            using (textWriter.WithIndent(baselineIndent + 1))
+                textWriter.WriteLine("default;");
 
             return textWriter.InnerWriter.ToString();
         }
