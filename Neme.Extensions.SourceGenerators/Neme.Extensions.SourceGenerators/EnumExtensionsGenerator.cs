@@ -7,6 +7,7 @@ using System.CodeDom.Compiler;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Neme.Extensions.SourceGenerators;
@@ -248,23 +249,23 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
 
     private static string GetExtensionClassName(INamedTypeSymbol enumType)
     {
-        var stringBuilder = new StringBuilder(32);
+        var builder = new DefaultInterpolatedStringHandler(literalLength: 32, formattedCount: 0);
 
-        AppendContainingTypeNames(stringBuilder, enumType.ContainingType);
+        AppendContainingTypeNames(ref builder, enumType.ContainingType);
 
-        stringBuilder.Append(enumType.Name);
-        stringBuilder.Append("GeneratedExtensions");
+        builder.AppendFormatted(enumType.Name);
+        builder.AppendLiteral("GeneratedExtensions");
 
-        return stringBuilder.ToString();
+        return builder.ToStringAndClear();
 
-        static void AppendContainingTypeNames(StringBuilder stringBuilder, INamedTypeSymbol? containingType)
+        static void AppendContainingTypeNames(ref DefaultInterpolatedStringHandler builder, INamedTypeSymbol? containingType)
         {
             if (containingType is null)
                 return;
 
-            AppendContainingTypeNames(stringBuilder, containingType.ContainingType);
-            stringBuilder.Append(containingType.Name);
-            stringBuilder.Append('_');
+            AppendContainingTypeNames(ref builder, containingType.ContainingType);
+            builder.AppendFormatted(containingType.Name);
+            builder.AppendLiteral("_");
         }
     }
 
