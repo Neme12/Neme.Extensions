@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal readonly struct EnumGenerationContext
+internal readonly record struct EnumGenerationContext
 {
     public required Compilation Compilation { get; init; }
 

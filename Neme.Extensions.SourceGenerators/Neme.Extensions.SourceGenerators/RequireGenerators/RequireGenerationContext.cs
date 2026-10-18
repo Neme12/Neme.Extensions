@@ -1,6 +1,6 @@
 ﻿namespace Neme.Extensions.SourceGenerators.RequireGenerators;
 
-internal readonly struct RequireGenerationContext
+internal readonly record struct RequireGenerationContext
 {
     public required string EnumTypeName { get; init; }
 
