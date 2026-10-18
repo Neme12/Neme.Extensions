@@ -8,17 +8,17 @@ internal sealed class EnumStaticIsDefinedGenerator(INamedTypeSymbol enumType) : 
 {
     private readonly INamedTypeSymbol _enumType = enumType;
 
-    public string? GetTypeMemberSource(
+    public bool GetTypeMemberSource(
         SourceProductionContext context,
-        int baselineIndent,
+        IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
     {
-        return null;
+        return false;
     }
 
-    public string? GetExtensionSource(
+    public bool GetExtensionSource(
         SourceProductionContext context,
-        int baselineIndent,
+        IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -39,31 +39,28 @@ internal sealed class EnumStaticIsDefinedGenerator(INamedTypeSymbol enumType) : 
             definedPatterns.Add(Invariant($"""{enumTypeName}.{member.Name}"""));
         }
 
-        using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))
+        if (definedPatterns.Count == 0)
+            textWriter.WriteLine($"public static bool IsDefined({enumTypeName} value) => false;");
+        else
         {
-            if (definedPatterns.Count == 0)
-                textWriter.WriteLine($"public static bool IsDefined({enumTypeName} value) => false;");
-            else
+            textWriter.WriteLine($"public static bool IsDefined({enumTypeName} value) =>");
+
+            using (textWriter.AddIndent())
             {
-                textWriter.WriteLine($"public static bool IsDefined({enumTypeName} value) =>");
+                textWriter.WriteLine("value is");
 
                 using (textWriter.AddIndent())
                 {
-                    textWriter.WriteLine("value is");
-
-                    using (textWriter.AddIndent())
+                    for (var i = 0; i < definedPatterns.Count; ++i)
                     {
-                        for (var i = 0; i < definedPatterns.Count; ++i)
-                        {
-                            cancellationToken.ThrowIfCancellationRequested();
-                            var suffix = i == definedPatterns.Count - 1 ? ";" : " or";
-                            textWriter.WriteLine($"{definedPatterns[i]}{suffix}");
-                        }
+                        cancellationToken.ThrowIfCancellationRequested();
+                        var suffix = i == definedPatterns.Count - 1 ? ";" : " or";
+                        textWriter.WriteLine($"{definedPatterns[i]}{suffix}");
                     }
                 }
             }
-
-            return textWriter.InnerWriter.ToString();
         }
+
+        return true;
     }
 }

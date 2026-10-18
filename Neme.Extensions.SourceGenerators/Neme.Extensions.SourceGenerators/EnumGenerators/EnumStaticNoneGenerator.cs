@@ -9,34 +9,31 @@ internal sealed class EnumStaticNoneGenerator(INamedTypeSymbol enumType, Compila
     private readonly INamedTypeSymbol _enumType = enumType;
     private readonly Compilation _compilation = compilation;
 
-    public string? GetTypeMemberSource(
+    public bool GetTypeMemberSource(
         SourceProductionContext context,
-        int baselineIndent,
+        IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
     {
-        return null;
+        return false;
     }
 
-    public string? GetExtensionSource(
+    public bool GetExtensionSource(
         SourceProductionContext context,
-        int baselineIndent,
+        IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         if (GeneratorUtilities.HasConflictingFieldOrProperty(_compilation, _enumType, "None", cancellationToken))
-            return null;
+            return false;
 
         var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
-        using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))
-        {
-            textWriter.WriteLine($"public static {enumTypeName} None =>");
+        textWriter.WriteLine($"public static {enumTypeName} None =>");
 
-            using (textWriter.AddIndent())
-                textWriter.WriteLine("default;");
+        using (textWriter.AddIndent())
+            textWriter.WriteLine("default;");
 
-            return textWriter.InnerWriter.ToString();
-        }
+        return true;
     }
 }

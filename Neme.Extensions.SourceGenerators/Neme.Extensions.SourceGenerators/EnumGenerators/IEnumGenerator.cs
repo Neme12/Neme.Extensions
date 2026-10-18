@@ -1,16 +1,17 @@
 ﻿using Microsoft.CodeAnalysis;
+using System.CodeDom.Compiler;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
 internal interface IEnumGenerator
 {
-    public string? GetTypeMemberSource(
+    public bool GetTypeMemberSource(
         SourceProductionContext context,
-        int baselineIndent,
+        IndentedTextWriter textWriter,
         CancellationToken cancellationToken);
 
-    public string? GetExtensionSource(
+    public bool GetExtensionSource(
         SourceProductionContext context,
-        int baselineIndent,
+        IndentedTextWriter textWriter,
         CancellationToken cancellationToken);
 }

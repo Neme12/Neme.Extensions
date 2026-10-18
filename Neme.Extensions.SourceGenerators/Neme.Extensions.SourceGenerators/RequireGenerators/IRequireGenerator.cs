@@ -1,11 +1,12 @@
 ﻿using Microsoft.CodeAnalysis;
+using System.CodeDom.Compiler;
 
 namespace Neme.Extensions.SourceGenerators.RequireGenerators;
 
 internal interface IRequireGenerator
 {
-    public string? GetExtensionSource(
+    public bool GetExtensionSource(
         SourceProductionContext context,
-        int baselineIndent,
+        IndentedTextWriter textWriter,
         CancellationToken cancellationToken);
 }

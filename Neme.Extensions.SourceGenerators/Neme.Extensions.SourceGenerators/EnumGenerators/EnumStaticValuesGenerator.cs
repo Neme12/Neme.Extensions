@@ -8,17 +8,17 @@ internal sealed class EnumStaticValuesGenerator(INamedTypeSymbol enumType) : IEn
 {
     private readonly INamedTypeSymbol _enumType = enumType;
 
-    public string? GetTypeMemberSource(
+    public bool GetTypeMemberSource(
         SourceProductionContext context,
-        int baselineIndent,
+        IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
     {
-        return null;
+        return false;
     }
 
-    public string? GetExtensionSource(
+    public bool GetExtensionSource(
         SourceProductionContext context,
-        int baselineIndent,
+        IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -27,27 +27,24 @@ internal sealed class EnumStaticValuesGenerator(INamedTypeSymbol enumType) : IEn
 
         var enumMembers = GeneratorUtilities.GetEnumMembersWithConstantValue(_enumType, cancellationToken);
 
-        using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))
+        textWriter.WriteLine($"public static global::System.ReadOnlySpan<{enumTypeName}> Values =>");
+
+        using (textWriter.AddIndent())
         {
-            textWriter.WriteLine($"public static global::System.ReadOnlySpan<{enumTypeName}> Values =>");
+            textWriter.WriteLine("[");
 
             using (textWriter.AddIndent())
             {
-                textWriter.WriteLine("[");
-
-                using (textWriter.AddIndent())
+                foreach (var member in enumMembers)
                 {
-                    foreach (var member in enumMembers)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        textWriter.WriteLine($"{enumTypeName}.{member.Name},");
-                    }
+                    cancellationToken.ThrowIfCancellationRequested();
+                    textWriter.WriteLine($"{enumTypeName}.{member.Name},");
                 }
-
-                textWriter.WriteLine("];");
             }
 
-            return textWriter.InnerWriter.ToString();
+            textWriter.WriteLine("];");
         }
+
+        return true;
     }
 }

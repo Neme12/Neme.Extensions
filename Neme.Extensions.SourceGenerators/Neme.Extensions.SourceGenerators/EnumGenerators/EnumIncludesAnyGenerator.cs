@@ -8,64 +8,58 @@ internal sealed class EnumIncludesAnyGenerator(INamedTypeSymbol enumType) : IEnu
 {
     private readonly INamedTypeSymbol _enumType = enumType;
 
-    public string? GetTypeMemberSource(
+    public bool GetTypeMemberSource(
         SourceProductionContext context,
-        int baselineIndent,
+        IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
     {
-        return null;
+        return false;
     }
 
-    public string? GetExtensionSource(
+    public bool GetExtensionSource(
         SourceProductionContext context,
-        int baselineIndent,
+        IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
-        using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))
+        textWriter.WriteLine($"public bool IncludesAny({enumTypeName} flag) =>");
+
+        using (textWriter.AddIndent())
         {
-            textWriter.WriteLine($"public bool IncludesAny({enumTypeName} flag) =>");
+            textWriter.WriteLine("(@enum & flag) != 0;");
+            textWriter.WriteLine();
+        }
 
-            using (textWriter.AddIndent())
-            {
-                textWriter.WriteLine("(@enum & flag) != 0;");
-                textWriter.WriteLine();
-            }
+        cancellationToken.ThrowIfCancellationRequested();
 
-            cancellationToken.ThrowIfCancellationRequested();
+        textWriter.WriteLine($"public bool IncludesAny(params global::System.ReadOnlySpan<{enumTypeName}> flags)");
+        textWriter.WriteLine('{');
 
-            textWriter.WriteLine($"public bool IncludesAny(params global::System.ReadOnlySpan<{enumTypeName}> flags)");
+        using (textWriter.AddIndent())
+        {
+            textWriter.WriteLine("foreach (var flag in flags)");
             textWriter.WriteLine('{');
 
             using (textWriter.AddIndent())
             {
-                textWriter.WriteLine("foreach (var flag in flags)");
-                textWriter.WriteLine('{');
+                textWriter.WriteLine("if (IncludesAny(@enum, flag))");
 
                 using (textWriter.AddIndent())
-                {
-                    textWriter.WriteLine("if (IncludesAny(@enum, flag))");
-
-                    using (textWriter.AddIndent())
-                        textWriter.WriteLine("return true;");
-                }
-
-                textWriter.WriteLine('}');
-                textWriter.WriteLine();
-                textWriter.WriteLine("return false;");
+                    textWriter.WriteLine("return true;");
             }
 
             textWriter.WriteLine('}');
-
-            textWriter.Flush();
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            return textWriter.InnerWriter.ToString();
+            textWriter.WriteLine();
+            textWriter.WriteLine("return false;");
         }
+
+        textWriter.WriteLine('}');
+
+        cancellationToken.ThrowIfCancellationRequested();
+        return true;
     }
 }
 

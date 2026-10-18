@@ -15,81 +15,71 @@ internal sealed class EnumValueNamesGenerator : IEnumGenerator
         _nameData = GetNameData(cancellationToken);
     }
 
-    public string? GetTypeMemberSource(
+    public bool GetTypeMemberSource(
         SourceProductionContext context,
-        int baselineIndent,
+        IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
-        using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))
+        textWriter.WriteLine("private static string[] ValueOrderedNames");
+        textWriter.WriteLine("{");
+
+        using (textWriter.AddIndent())
         {
-            textWriter.WriteLine("private static string[] ValueOrderedNames");
+            textWriter.WriteLine("get => global::System.Threading.LazyInitializer.EnsureInitialized(ref field, static () =>");
+            textWriter.WriteLine("[");
+
+            using (textWriter.AddIndent())
+            {
+                foreach (var name in _nameData.AllNames)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    textWriter.WriteLine($"nameof({enumTypeName}.{name}),");
+                }
+            }
+
+            textWriter.WriteLine("]!);");
+        }
+
+        textWriter.WriteLine("}");
+        return true;
+    }
+
+    public bool GetExtensionSource(
+        SourceProductionContext context,
+        IndentedTextWriter textWriter,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+
+        textWriter.WriteLine("public global::System.ReadOnlySpan<string> ValueNames =>");
+
+        using (textWriter.AddIndent())
+        {
+            textWriter.WriteLine("@enum switch");
             textWriter.WriteLine("{");
 
             using (textWriter.AddIndent())
             {
-                textWriter.WriteLine("get => global::System.Threading.LazyInitializer.EnsureInitialized(ref field, static () =>");
-                textWriter.WriteLine("[");
-
-                using (textWriter.AddIndent())
+                foreach (var group in _nameData.Groups)
                 {
-                    foreach (var name in _nameData.AllNames)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        textWriter.WriteLine($"nameof({enumTypeName}.{name}),");
-                    }
+                    cancellationToken.ThrowIfCancellationRequested();
+                    textWriter.WriteLine($"{enumTypeName}.{group.MemberName} => ValueOrderedNames.AsSpan({group.Start}, {group.Length}),");
                 }
 
-                textWriter.WriteLine("]!);");
+                textWriter.WriteLine("_ => [],");
             }
 
-            textWriter.WriteLine("}");
-
-            return textWriter.InnerWriter.ToString();
+            textWriter.WriteLine("};");
         }
-    }
 
-    public string? GetExtensionSource(
-        SourceProductionContext context,
-        int baselineIndent,
-        CancellationToken cancellationToken)
-    {
         cancellationToken.ThrowIfCancellationRequested();
-
-        var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-
-        using (var switchWriter = IndentedTextWriter.CreateNew(baselineIndent))
-        {
-            switchWriter.WriteLine("public global::System.ReadOnlySpan<string> ValueNames =>");
-
-            using (switchWriter.AddIndent())
-            {
-                switchWriter.WriteLine("@enum switch");
-                switchWriter.WriteLine("{");
-
-                using (switchWriter.AddIndent())
-                {
-                    foreach (var group in _nameData.Groups)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        switchWriter.WriteLine($"{enumTypeName}.{group.MemberName} => ValueOrderedNames.AsSpan({group.Start}, {group.Length}),");
-                    }
-
-                    switchWriter.WriteLine("_ => [],");
-                }
-
-                switchWriter.WriteLine("};");
-            }
-
-            switchWriter.Flush();
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            return switchWriter.InnerWriter.ToString();
-        }
+        return true;
     }
 
     private NameData GetNameData(CancellationToken cancellationToken)

@@ -8,51 +8,48 @@ internal sealed class EnumStaticUnderlyingValuesGenerator(INamedTypeSymbol enumT
 {
     private readonly INamedTypeSymbol _enumType = enumType;
 
-    public string? GetTypeMemberSource(
+    public bool GetTypeMemberSource(
         SourceProductionContext context,
-        int baselineIndent,
+        IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
     {
-        return null;
+        return false;
     }
 
-    public string? GetExtensionSource(
+    public bool GetExtensionSource(
         SourceProductionContext context,
-        int baselineIndent,
+        IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         var underlyingType = _enumType.EnumUnderlyingType;
         if (underlyingType is null)
-            return null;
+            return false;
 
         var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         var underlyingTypeName = underlyingType.ToDisplayString(GeneratorUtilities.KeywordTypeFormat);
 
         var enumMembers = GeneratorUtilities.GetEnumMembersWithConstantValue(_enumType, cancellationToken);
 
-        using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))
+        textWriter.WriteLine($"public static global::System.ReadOnlySpan<{underlyingTypeName}> UnderlyingValues =>");
+
+        using (textWriter.AddIndent())
         {
-            textWriter.WriteLine($"public static global::System.ReadOnlySpan<{underlyingTypeName}> UnderlyingValues =>");
+            textWriter.WriteLine("[");
 
             using (textWriter.AddIndent())
             {
-                textWriter.WriteLine("[");
-
-                using (textWriter.AddIndent())
+                foreach (var member in enumMembers)
                 {
-                    foreach (var member in enumMembers)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        textWriter.WriteLine($"({underlyingTypeName}){enumTypeName}.{member.Name},");
-                    }
+                    cancellationToken.ThrowIfCancellationRequested();
+                    textWriter.WriteLine($"({underlyingTypeName}){enumTypeName}.{member.Name},");
                 }
-
-                textWriter.WriteLine("];");
             }
 
-            return textWriter.InnerWriter.ToString();
+            textWriter.WriteLine("];");
         }
+
+        return true;
     }
 }

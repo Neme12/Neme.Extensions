@@ -8,17 +8,17 @@ internal sealed class EnumToStringGenerator(INamedTypeSymbol enumType) : IEnumGe
 {
     private readonly INamedTypeSymbol _enumType = enumType;
 
-    public string? GetTypeMemberSource(
+    public bool GetTypeMemberSource(
         SourceProductionContext context,
-        int baselineIndent,
+        IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
     {
-        return null;
+        return false;
     }
 
-    public string? GetExtensionSource(
+    public bool GetExtensionSource(
         SourceProductionContext context,
-        int baselineIndent,
+        IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -29,41 +29,35 @@ internal sealed class EnumToStringGenerator(INamedTypeSymbol enumType) : IEnumGe
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        using (var switchWriter = IndentedTextWriter.CreateNew(baselineIndent))
+        textWriter.WriteLine("public string ToStringGenerated() =>");
+
+        using (textWriter.AddIndent())
         {
-            switchWriter.WriteLine("public string ToStringGenerated() =>");
+            textWriter.WriteLine("@enum switch");
+            textWriter.WriteLine("{");
 
-            using (switchWriter.AddIndent())
+            using (textWriter.AddIndent())
             {
-                switchWriter.WriteLine("@enum switch");
-                switchWriter.WriteLine("{");
+                var seenValues = new HashSet<object>();
 
-                using (switchWriter.AddIndent())
+                foreach (var member in enumMembers)
                 {
-                    var seenValues = new HashSet<object>();
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                    foreach (var member in enumMembers)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
+                    var constantValue = member.ConstantValue;
+                    if (constantValue is null || !seenValues.Add(constantValue))
+                        continue;
 
-                        var constantValue = member.ConstantValue;
-                        if (constantValue is null || !seenValues.Add(constantValue))
-                            continue;
-
-                        switchWriter.WriteLine($"{enumTypeName}.{member.Name} => nameof({enumTypeName}.{member.Name}),");
-                    }
-
-                    switchWriter.WriteLine("_ => @enum.ToString(),");
+                    textWriter.WriteLine($"{enumTypeName}.{member.Name} => nameof({enumTypeName}.{member.Name}),");
                 }
 
-                switchWriter.WriteLine("};");
+                textWriter.WriteLine("_ => @enum.ToString(),");
             }
 
-            switchWriter.Flush();
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            return switchWriter.InnerWriter.ToString();
+            textWriter.WriteLine("};");
         }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        return true;
     }
 }

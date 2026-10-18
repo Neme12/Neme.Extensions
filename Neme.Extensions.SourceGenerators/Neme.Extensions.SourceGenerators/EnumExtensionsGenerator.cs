@@ -2,7 +2,11 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Neme.Extensions.SourceGenerators.EnumGenerators;
+using Neme.Extensions.SourceGenerators.Internal;
+using System.CodeDom.Compiler;
+using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Text;
 
 namespace Neme.Extensions.SourceGenerators;
@@ -90,6 +94,9 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
         Compilation compilation,
         CancellationToken cancellationToken)
     {
+        using var typeTextWriter = IndentedTextWriter.CreateNew(1);
+        using var extensionTextWriter = IndentedTextWriter.CreateNew(2);
+
         ReadOnlySpan<IEnumGenerator> flagsGenerators = IsFlagsEnum(compilation, enumType)
             ?
             [
@@ -115,28 +122,22 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
                 ..flagsGenerators,
             ];
 
-        var typeSources = new string[generators.Length];
-        var typeSourcesLength = 0;
-        for (var i = 0; i < generators.Length; ++i)
+        foreach (var generator in generators)
         {
-            var source = generators[i].GetTypeMemberSource(context, 1, cancellationToken);
-            if (source is not null)
-                typeSources[typeSourcesLength++] = source;
+            if (generator.GetTypeMemberSource(context, typeTextWriter, cancellationToken))
+                typeTextWriter.WriteLine();
         }
 
-        var extensionSources = new string[generators.Length];
-        int extensionSourcesLength = 0;
-        for (var i = 0; i < generators.Length; ++i)
+        foreach (var generator in generators)
         {
-            var source = generators[i].GetExtensionSource(context, 2, cancellationToken);
-            if (source is not null)
-                extensionSources[extensionSourcesLength++] = source;
+            if (generator.GetExtensionSource(context, extensionTextWriter, cancellationToken))
+                extensionTextWriter.WriteLine();
         }
 
         EmitEnumExtension(
             context,
-            typeSources.AsSpan(0, typeSourcesLength),
-            extensionSources.AsSpan(0, extensionSourcesLength),
+            typeTextWriter.InnerWriter.ToString(),
+            extensionTextWriter.InnerWriter.ToString(),
             enumType,
             cancellationToken);
     }
@@ -158,8 +159,8 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
 
     private static void EmitEnumExtension(
         SourceProductionContext context,
-        ReadOnlySpan<string> typeSources,
-        ReadOnlySpan<string> extensionSources,
+        string typeSource,
+        string extensionSource,
         INamedTypeSymbol enumType,
         CancellationToken cancellationToken)
     {
@@ -172,11 +173,11 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
 
         // lang=c#
         var innerSource = Invariant($$"""
-                {{string.Join(Environment.NewLine, typeSources)}}
+                {{typeSource}}
 
                     extension({{typeName}} @enum)
                     {
-                {{string.Join(Environment.NewLine, extensionSources)}}
+                {{extensionSource}}
                     }
                 """);
 

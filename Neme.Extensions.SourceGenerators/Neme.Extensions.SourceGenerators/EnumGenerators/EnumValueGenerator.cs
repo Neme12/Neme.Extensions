@@ -8,40 +8,34 @@ internal sealed class EnumValueGenerator(INamedTypeSymbol enumType) : IEnumGener
 {
     private readonly INamedTypeSymbol _enumType = enumType;
 
-    public string? GetTypeMemberSource(
+    public bool GetTypeMemberSource(
         SourceProductionContext context,
-        int baselineIndent,
+        IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
     {
-        return null;
+        return false;
     }
 
-    public string? GetExtensionSource(
+    public bool GetExtensionSource(
         SourceProductionContext context,
-        int baselineIndent,
+        IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         var underlyingType = _enumType.EnumUnderlyingType;
         if (underlyingType is null)
-            return null;
+            return false;
 
         var underlyingTypeName = underlyingType.ToDisplayString(GeneratorUtilities.KeywordTypeFormat);
 
-        using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))
-        {
-            textWriter.WriteLine($"public {underlyingTypeName} Value =>");
+        textWriter.WriteLine($"public {underlyingTypeName} Value =>");
 
-            using (textWriter.AddIndent())
-                textWriter.WriteLine($"({underlyingTypeName})@enum;");
+        using (textWriter.AddIndent())
+            textWriter.WriteLine($"({underlyingTypeName})@enum;");
 
-            textWriter.Flush();
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            return textWriter.InnerWriter.ToString();
-        }
+        cancellationToken.ThrowIfCancellationRequested();
+        return true;
     }
 }
 

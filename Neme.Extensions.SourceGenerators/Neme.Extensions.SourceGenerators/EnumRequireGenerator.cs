@@ -1,8 +1,9 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using Neme.Extensions.SourceGenerators.Internal;
 using Neme.Extensions.SourceGenerators.RequireGenerators;
-using System.Globalization;
+using System.CodeDom.Compiler;
 using System.Text;
 
 namespace Neme.Extensions.SourceGenerators;
@@ -54,39 +55,42 @@ public sealed class EnumRequireGenerator : AbstractEnumGenerator, IIncrementalGe
         INamedTypeSymbol enumType,
         CancellationToken cancellationToken)
     {
+        using var textWriter = IndentedTextWriter.CreateNew(1);
+
         ReadOnlySpan<IRequireGenerator> generators =
         [
             new RequireArgumentDefinedGenerator(enumType),
             new RequireValueDefinedGenerator(enumType),
         ];
 
-        var sources = new string?[generators.Length];
-        for (var i = 0; i < generators.Length; ++i)
-            sources[i] = generators[i].GetExtensionSource(context, 1, cancellationToken);
+        foreach (var generator in generators)
+        {
+            if (generator.GetExtensionSource(context, textWriter, cancellationToken))
+                textWriter.WriteLine();
+        }
 
         EmitRequireClass(
             context,
-            sources.AsSpan().RemoveNullValuesInPlace(),
+            textWriter.InnerWriter.ToString(),
             enumType,
             cancellationToken);
     }
 
     internal static void EmitRequireClass(
         SourceProductionContext context,
-        ReadOnlySpan<string> memberSources,
+        string memberSource,
         INamedTypeSymbol enumType,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var typeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         var extensionClassName = "RequireGenerated";
 
         cancellationToken.ThrowIfCancellationRequested();
 
         // lang=c#
         var innerSource = Invariant($"""
-                {string.Join(Environment.NewLine, memberSources)}
+                {memberSource}
                 """);
 
         cancellationToken.ThrowIfCancellationRequested();

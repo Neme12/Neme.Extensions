@@ -8,24 +8,24 @@ internal sealed class EnumIncludesGenerator(INamedTypeSymbol enumType) : IEnumGe
 {
     private readonly INamedTypeSymbol _enumType = enumType;
 
-    public string? GetTypeMemberSource(
+    public bool GetTypeMemberSource(
         SourceProductionContext context,
-        int baselineIndent,
+        IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
     {
-        return null;
+        return false;
     }
 
-    public string? GetExtensionSource(
+    public bool GetExtensionSource(
         SourceProductionContext context,
-        int baselineIndent,
+        IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         var enumUnderlyingType = _enumType.EnumUnderlyingType;
         if (enumUnderlyingType is null)
-            return null;
+            return false;
 
         var typeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
@@ -44,38 +44,32 @@ internal sealed class EnumIncludesGenerator(INamedTypeSymbol enumType) : IEnumGe
         };
 
         if (isPow2Operand is null)
-            return null;
+            return false;
 
-        using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))
+        textWriter.WriteLine($"public bool Includes({typeName} flag)");
+        textWriter.WriteLine('{');
+
+        using (textWriter.AddIndent())
         {
-            textWriter.WriteLine($"public bool Includes({typeName} flag)");
-            textWriter.WriteLine('{');
+            textWriter.WriteLine($"if (!global::System.Numerics.BitOperations.IsPow2({isPow2Operand}))");
 
             using (textWriter.AddIndent())
-            {
-                textWriter.WriteLine($"if (!global::System.Numerics.BitOperations.IsPow2({isPow2Operand}))");
+                textWriter.WriteLine("ThrowNotOneFlag(flag);");
 
-                using (textWriter.AddIndent())
-                    textWriter.WriteLine("ThrowNotOneFlag(flag);");
+            textWriter.WriteLine();
+            textWriter.WriteLine("return (@enum & flag) != 0;");
+            textWriter.WriteLine();
+            textWriter.WriteLine("[global::System.Diagnostics.CodeAnalysis.DoesNotReturn]");
+            textWriter.WriteLine($"static void ThrowNotOneFlag({typeName} flag) =>");
 
-                textWriter.WriteLine();
-                textWriter.WriteLine("return (@enum & flag) != 0;");
-                textWriter.WriteLine();
-                textWriter.WriteLine("[global::System.Diagnostics.CodeAnalysis.DoesNotReturn]");
-                textWriter.WriteLine($"static void ThrowNotOneFlag({typeName} flag) =>");
-
-                using (textWriter.AddIndent())
-                    textWriter.WriteLine($"throw new global::System.ArgumentException($\"The value '{{flag}}' is not a single flag value for enum type '{{nameof({_enumType})}}'.\", nameof(flag));");
-            }
-
-            textWriter.WriteLine('}');
-
-            textWriter.Flush();
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            return textWriter.InnerWriter.ToString();
+            using (textWriter.AddIndent())
+                textWriter.WriteLine($"throw new global::System.ArgumentException($\"The value '{{flag}}' is not a single flag value for enum type '{{nameof({_enumType})}}'.\", nameof(flag));");
         }
+
+        textWriter.WriteLine('}');
+
+        cancellationToken.ThrowIfCancellationRequested();
+        return true;
     }
 }
 

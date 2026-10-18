@@ -9,23 +9,23 @@ internal sealed class EnumStaticAllGenerator(INamedTypeSymbol enumType, Compilat
     private readonly INamedTypeSymbol _enumType = enumType;
     private readonly Compilation _compilation = compilation;
 
-    public string? GetTypeMemberSource(
+    public bool GetTypeMemberSource(
         SourceProductionContext context,
-        int baselineIndent,
+        IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
     {
-        return null;
+        return false;
     }
 
-    public string? GetExtensionSource(
+    public bool GetExtensionSource(
         SourceProductionContext context,
-        int baselineIndent,
+        IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         if (GeneratorUtilities.HasConflictingFieldOrProperty(_compilation, _enumType, "All", cancellationToken))
-            return null;
+            return false;
 
         var enumMembers = GeneratorUtilities.GetEnumMembers(_enumType, cancellationToken);
 
@@ -38,26 +38,23 @@ internal sealed class EnumStaticAllGenerator(INamedTypeSymbol enumType, Compilat
             allParts[i] = Invariant($"""{enumTypeName}.{enumMembers[i].Name}""");
         }
 
-        using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))
-        {
-            textWriter.WriteLine($"public static {enumTypeName} All =>");
+        textWriter.WriteLine($"public static {enumTypeName} All =>");
 
-            using (textWriter.AddIndent())
+        using (textWriter.AddIndent())
+        {
+            if (allParts.Length == 0)
+                textWriter.WriteLine("default;");
+            else
             {
-                if (allParts.Length == 0)
-                    textWriter.WriteLine("default;");
-                else
+                for (var i = 0; i < allParts.Length; ++i)
                 {
-                    for (var i = 0; i < allParts.Length; ++i)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        var suffix = i == allParts.Length - 1 ? ";" : " |";
-                        textWriter.WriteLine($"{allParts[i]}{suffix}");
-                    }
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var suffix = i == allParts.Length - 1 ? ";" : " |";
+                    textWriter.WriteLine($"{allParts[i]}{suffix}");
                 }
             }
-
-            return textWriter.InnerWriter.ToString();
         }
+
+        return true;
     }
 }
