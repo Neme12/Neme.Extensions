@@ -128,11 +128,15 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
                 typeTextWriter.WriteLine();
         }
 
+        cancellationToken.ThrowIfCancellationRequested();
+
         foreach (var generator in generators)
         {
             if (generator.GetExtensionSource(context, extensionTextWriter, cancellationToken))
                 extensionTextWriter.WriteLine();
         }
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         EmitEnumExtension(
             context,
@@ -142,8 +146,10 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
             cancellationToken);
     }
 
-    private static bool IsFlagsEnum(Compilation compilation, INamedTypeSymbol enumType)
+    private static bool IsFlagsEnum(Compilation compilation, INamedTypeSymbol enumType, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var flagsAttributeType = compilation.GetTypeByMetadataName("System.FlagsAttribute");
         if (flagsAttributeType is null)
             return false;
