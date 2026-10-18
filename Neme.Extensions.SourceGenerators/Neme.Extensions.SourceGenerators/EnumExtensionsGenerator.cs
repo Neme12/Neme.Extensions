@@ -148,14 +148,14 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
 
     private static bool IsFlagsEnum(Compilation compilation, INamedTypeSymbol enumType, CancellationToken cancellationToken)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-
         var flagsAttributeType = compilation.GetTypeByMetadataName("System.FlagsAttribute");
         if (flagsAttributeType is null)
             return false;
 
         foreach (var attribute in enumType.GetAttributes())
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, flagsAttributeType))
                 return true;
         }
