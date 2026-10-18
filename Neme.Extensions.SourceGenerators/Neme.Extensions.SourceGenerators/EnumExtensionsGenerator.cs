@@ -218,25 +218,32 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var typeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         var extensionClassName = GetExtensionClassName(enumType);
 
-        cancellationToken.ThrowIfCancellationRequested();
+        DefaultInterpolatedStringHandlerDelegate<(INamedTypeSymbol enumType, string typeSource, string extensionSource, CancellationToken cancellationToken)> emitMemberSource =
+            static (ref builder, value) =>
+        {
+            var (enumType, typeSource, extensionSource, cancellationToken) = value;
 
-        var innerSourceBuilder = new DefaultInterpolatedStringHandler(literalLength: 1024, formattedCount: 0);
-        innerSourceBuilder.AppendLineFormatted(typeSource);
-        innerSourceBuilder.AppendLine();
-        innerSourceBuilder.AppendLiteral("extension(");
-        innerSourceBuilder.AppendFormatted(typeName);
-        innerSourceBuilder.AppendLineLiteral(" @enum)");
-        innerSourceBuilder.AppendLineLiteral("{");
-        innerSourceBuilder.AppendLineFormatted(extensionSource);
-        innerSourceBuilder.AppendLineLiteral("}");
+            var typeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            builder.AppendLineFormatted(typeSource);
+            builder.AppendLine();
+            builder.AppendLiteral("extension(");
+            builder.AppendFormatted(typeName);
+            builder.AppendLineLiteral(" @enum)");
+            builder.AppendLineLiteral("{");
+            builder.AppendLineFormatted(extensionSource);
+            builder.AppendLineLiteral("}");
+        };
 
         var result = GetGeneratedClassSource(
             GetNamespaceName(enumType),
             extensionClassName,
-            innerSourceBuilder.ToStringAndClear(),
+            emitMemberSource,
+            (enumType, typeSource, extensionSource, cancellationToken),
             isPartial: false,
             emitAttribute: true,
             generatorName: nameof(EnumExtensionsGenerator),

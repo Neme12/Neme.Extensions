@@ -27,10 +27,16 @@ public sealed class EnumRequireGenerator : AbstractEnumGenerator, IIncrementalGe
         {
             context.CancellationToken.ThrowIfCancellationRequested();
 
+            DefaultInterpolatedStringHandlerDelegate<bool> emitMemberSource =
+                static (ref builder, value) =>
+                {
+                };
+
             var requireGeneratedClassSource = GetGeneratedClassSource(
                 GetNamespace(),
                 "RequireGenerated",
-                "",
+                emitMemberSource,
+                default,
                 isPartial: true,
                 emitAttribute: true,
                 generatorName: nameof(EnumRequireGenerator),
@@ -94,17 +100,20 @@ public sealed class EnumRequireGenerator : AbstractEnumGenerator, IIncrementalGe
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        // lang=c#
-        var innerSource = Invariant($"""
-                {memberSource}
-                """);
+        DefaultInterpolatedStringHandlerDelegate<string> emitMemberSource =
+            static (ref builder, memberSource) =>
+            {
+                builder.AppendLine();
+                builder.AppendLineFormatted(memberSource);
+            };
 
         cancellationToken.ThrowIfCancellationRequested();
 
         var result = GetGeneratedClassSource(
             GetNamespace(),
             extensionClassName,
-            innerSource,
+            emitMemberSource,
+            memberSource,
             isPartial: true,
             emitAttribute: false,
             generatorName: nameof(EnumRequireGenerator),

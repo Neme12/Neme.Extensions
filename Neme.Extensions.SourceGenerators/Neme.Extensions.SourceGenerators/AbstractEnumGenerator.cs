@@ -52,10 +52,11 @@ public abstract class AbstractEnumGenerator
         return Invariant($"""{hintNameBuilder}{suffix}.g.cs""");
     }
 
-    protected static string GetGeneratedClassSource(
+    protected static string GetGeneratedClassSource<TArg>(
         string? @namespace,
         string className,
-        string memberSource,
+        DefaultInterpolatedStringHandlerDelegate<TArg> emitMemberSource,
+        TArg arg,
         bool isPartial,
         bool emitAttribute,
         string generatorName,
@@ -92,11 +93,13 @@ public abstract class AbstractEnumGenerator
         resultBuilder.AppendLiteral("class ");
         resultBuilder.AppendLineFormatted(className);
         resultBuilder.AppendLineLiteral("{");
-        resultBuilder.AppendLineFormatted(memberSource);
+        emitMemberSource(ref resultBuilder, arg);
         resultBuilder.AppendLineLiteral("}");
 
         cancellationToken.ThrowIfCancellationRequested();
 
         return resultBuilder.ToStringAndClear();
     }
+
+    protected delegate void DefaultInterpolatedStringHandlerDelegate<TState>(ref DefaultInterpolatedStringHandler handler, TState state);
 }
