@@ -139,8 +139,8 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
             UnderlyingTypeName = underlyingTypeName,
         };
 
-        using var typeTextWriter = IndentedTextWriter.CreateNew(1);
-        using var extensionTextWriter = IndentedTextWriter.CreateNew(2);
+        using var typeTextWriter = IndentedTextWriter.CreateNew(1, 1024);
+        using var extensionTextWriter = IndentedTextWriter.CreateNew(2, 4096);
 
         ReadOnlySpan<IEnumGenerator> flagsGenerators = IsFlagsEnum(compilation, enumType, cancellationToken)
             ?

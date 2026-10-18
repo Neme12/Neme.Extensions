@@ -1,5 +1,6 @@
 ﻿using System.CodeDom.Compiler;
 using System.Globalization;
+using System.Text;
 
 namespace Neme.Extensions.SourceGenerators.Internal;
 
@@ -7,9 +8,9 @@ internal static class IndentedTextWriterExtensions
 {
     extension(IndentedTextWriter writer)
     {
-        public static IndentedTextWriter CreateNew(int initialIndent)
+        public static IndentedTextWriter CreateNew(int initialIndent,int initialCapacity = 0)
         {
-            var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
+            var stringWriter = new StringWriter(new StringBuilder(initialCapacity), CultureInfo.InvariantCulture);
 
             // IndentedTextWriter disposal disposes the underlying StringWriter, so we don't dispose it.
             return new IndentedTextWriter(stringWriter) { Indent = initialIndent };

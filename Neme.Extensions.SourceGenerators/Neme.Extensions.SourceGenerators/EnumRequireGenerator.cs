@@ -55,7 +55,7 @@ public sealed class EnumRequireGenerator : AbstractEnumGenerator, IIncrementalGe
         INamedTypeSymbol enumType,
         CancellationToken cancellationToken)
     {
-        using var textWriter = IndentedTextWriter.CreateNew(1);
+        using var textWriter = IndentedTextWriter.CreateNew(1, 2048);
 
         var generationContext = new RequireGenerationContext
         {
