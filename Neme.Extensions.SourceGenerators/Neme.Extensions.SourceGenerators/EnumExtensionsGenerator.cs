@@ -60,10 +60,9 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
                 if (string.IsNullOrWhiteSpace(configuredEnumTypes))
                     return;
 
-                var configuredEnumTypesSpan = configuredEnumTypes.AsSpan();
                 var tokenStart = 0;
 
-                while (TryGetNextSemicolonSeparatedToken(configuredEnumTypesSpan, ref tokenStart, out var metadataName))
+                while (TryGetNextSemicolonSeparatedToken(configuredEnumTypes.AsSpan(), ref tokenStart, out var metadataName))
                 {
                     sourceContext.CancellationToken.ThrowIfCancellationRequested();
 
