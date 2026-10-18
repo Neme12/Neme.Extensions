@@ -52,64 +52,64 @@
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(IsPackable)' == 'true'">
-	  <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.401">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-	  </PackageReference>
-  </ItemGroup>
+	<ItemGroup Condition="'$(IsPackable)' == 'true'">
+		<PackageReference Include="Microsoft.SourceLink.GitHub">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
 
-  <ItemGroup Condition="'$(IsTestProject)' != 'true'">
-    <PackageReference Include="PolyKit.Embedded" Version="3.0.9">
-        <PrivateAssets>all</PrivateAssets>
-        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Roslyn.Diagnostics.Analyzers" Version="5.6.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
+	<ItemGroup Condition="'$(IsTestProject)' != 'true'">
+		<PackageReference Include="PolyKit.Embedded">
+				<PrivateAssets>all</PrivateAssets>
+				<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Roslyn.Diagnostics.Analyzers">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
 
-  <ItemGroup Condition="'$(IsTestProject)' != 'true' AND !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net10.0'))">
-	  <PackageReference Include="System.Collections.Immutable" Version="10.0.8" />
-  </ItemGroup>
+	<ItemGroup Condition="'$(IsTestProject)' != 'true' AND !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net10.0'))">
+		<PackageReference Include="System.Collections.Immutable" />
+	</ItemGroup>
 
-  <ItemGroup Condition="'$(IsTestProject)' != 'true' AND !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.1'))">
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.8" />
-  </ItemGroup>
+	<ItemGroup Condition="'$(IsTestProject)' != 'true' AND !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.1'))">
+		<PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Using Include="System.Collections.Immutable" />
-  </ItemGroup>
+	<ItemGroup>
+		<Using Include="System.Collections.Immutable" />
+	</ItemGroup>
 
-  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
-    <Using Include="Xunit" />
-  </ItemGroup>
+	<ItemGroup Condition="'$(IsTestProject)' == 'true'">
+		<Using Include="Xunit" />
+	</ItemGroup>
 
-  <ItemGroup Condition="'$(IsTestProject)' == 'true' And '$(TargetFramework)' == 'net6.0'">
-      <PackageReference Include="coverlet.collector" Version="10.0.0">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      </PackageReference>
-      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
-      <PackageReference Include="xunit" Version="2.9.3" />
-      <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      </PackageReference>
-  </ItemGroup>
-    
-  <ItemGroup Condition="'$(IsTestProject)' == 'true' And '$(TargetFramework)' != 'net6.0'">
-      <PackageReference Include="coverlet.collector" Version="10.0.0">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      </PackageReference>
-      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.4.0" />
-      <PackageReference Include="xunit" Version="2.9.3" />
-      <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      </PackageReference>
-  </ItemGroup>
+	<ItemGroup Condition="'$(IsTestProject)' == 'true' And '$(TargetFramework)' == 'net6.0'">
+			<PackageReference Include="coverlet.collector">
+					<PrivateAssets>all</PrivateAssets>
+					<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			</PackageReference>
+			<PackageReference Include="Microsoft.NET.Test.Sdk" />
+			<PackageReference Include="xunit" />
+			<PackageReference Include="xunit.runner.visualstudio">
+					<PrivateAssets>all</PrivateAssets>
+					<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(IsTestProject)' == 'true' And '$(TargetFramework)' != 'net6.0'">
+			<PackageReference Include="coverlet.collector">
+					<PrivateAssets>all</PrivateAssets>
+					<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			</PackageReference>
+			<PackageReference Include="Microsoft.NET.Test.Sdk" />
+			<PackageReference Include="xunit" />
+			<PackageReference Include="xunit.runner.visualstudio">
+					<PrivateAssets>all</PrivateAssets>
+					<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			</PackageReference>
+	</ItemGroup>
   
 </Project>

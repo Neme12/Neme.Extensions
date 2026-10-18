@@ -7,15 +7,15 @@
 	  <AnalysisMode>Minimum</AnalysisMode>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.275">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Windows.CsWin32">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' != 'net48'">
-		<PackageReference Include="Openur.Mono.Unix" Version="7.1.0.155" />
+		<PackageReference Include="Openur.Mono.Unix" />
 	</ItemGroup>
 
   <ItemGroup>
