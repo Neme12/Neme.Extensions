@@ -26,8 +26,11 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net11.0'">
-    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="11.0.0-rc.1.26425.128" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="11.0.0-rc.1.26425.128" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="11.0.0-rc.2.26504.105" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="11.0.0-rc.2.26504.105" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="11.0.0-rc.2.26504.105" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="11.0.0-rc.2.26504.105" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="11.0.0-rc.2.26504.105" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
