@@ -94,10 +94,12 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
         Compilation compilation,
         CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         using var typeTextWriter = IndentedTextWriter.CreateNew(1);
         using var extensionTextWriter = IndentedTextWriter.CreateNew(2);
 
-        ReadOnlySpan<IEnumGenerator> flagsGenerators = IsFlagsEnum(compilation, enumType)
+        ReadOnlySpan<IEnumGenerator> flagsGenerators = IsFlagsEnum(compilation, enumType, cancellationToken)
             ?
             [
                 new EnumIncludesGenerator(enumType),
