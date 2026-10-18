@@ -4,9 +4,10 @@ using System.CodeDom.Compiler;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal sealed class EnumStaticValuesGenerator(INamedTypeSymbol enumType) : IEnumGenerator
+internal sealed class EnumStaticValuesGenerator(INamedTypeSymbol enumType, string enumTypeName) : IEnumGenerator
 {
     private readonly INamedTypeSymbol _enumType = enumType;
+    private readonly string _enumTypeName = enumTypeName;
 
     public bool GetTypeMemberSource(
         SourceProductionContext context,
@@ -23,11 +24,9 @@ internal sealed class EnumStaticValuesGenerator(INamedTypeSymbol enumType) : IEn
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-
         var enumMembers = GeneratorUtilities.GetEnumMembersWithConstantValue(_enumType, cancellationToken);
 
-        textWriter.WriteLine($"public static global::System.ReadOnlySpan<{enumTypeName}> Values =>");
+        textWriter.WriteLine($"public static global::System.ReadOnlySpan<{_enumTypeName}> Values =>");
 
         using (textWriter.AddIndent())
         {
@@ -38,7 +37,7 @@ internal sealed class EnumStaticValuesGenerator(INamedTypeSymbol enumType) : IEn
                 foreach (var member in enumMembers)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    textWriter.WriteLine($"{enumTypeName}.{member.Name},");
+                    textWriter.WriteLine($"{_enumTypeName}.{member.Name},");
                 }
             }
 

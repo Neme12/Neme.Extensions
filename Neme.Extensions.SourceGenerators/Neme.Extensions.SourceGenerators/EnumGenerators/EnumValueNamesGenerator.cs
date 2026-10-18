@@ -7,11 +7,13 @@ namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 internal sealed class EnumValueNamesGenerator : IEnumGenerator
 {
     private readonly INamedTypeSymbol _enumType;
+    private readonly string _enumTypeName;
     private readonly NameData _nameData;
 
-    public EnumValueNamesGenerator(INamedTypeSymbol enumType, CancellationToken cancellationToken)
+    public EnumValueNamesGenerator(INamedTypeSymbol enumType, string enumTypeName, CancellationToken cancellationToken)
     {
         _enumType = enumType;
+        _enumTypeName = enumTypeName;
         _nameData = GetNameData(cancellationToken);
     }
 
@@ -21,8 +23,6 @@ internal sealed class EnumValueNamesGenerator : IEnumGenerator
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-
-        var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
         textWriter.WriteLine("private static string[] ValueOrderedNames");
         textWriter.WriteLine("{");
@@ -37,7 +37,7 @@ internal sealed class EnumValueNamesGenerator : IEnumGenerator
                 foreach (var name in _nameData.AllNames)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    textWriter.WriteLine($"nameof({enumTypeName}.{name}),");
+                    textWriter.WriteLine($"nameof({_enumTypeName}.{name}),");
                 }
             }
 
@@ -55,8 +55,6 @@ internal sealed class EnumValueNamesGenerator : IEnumGenerator
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-
         textWriter.WriteLine("public global::System.ReadOnlySpan<string> ValueNames =>");
 
         using (textWriter.AddIndent())
@@ -69,7 +67,7 @@ internal sealed class EnumValueNamesGenerator : IEnumGenerator
                 foreach (var group in _nameData.Groups)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    textWriter.WriteLine($"{enumTypeName}.{group.MemberName} => ValueOrderedNames.AsSpan({group.Start}, {group.Length}),");
+                    textWriter.WriteLine($"{_enumTypeName}.{group.MemberName} => ValueOrderedNames.AsSpan({group.Start}, {group.Length}),");
                 }
 
                 textWriter.WriteLine("_ => [],");

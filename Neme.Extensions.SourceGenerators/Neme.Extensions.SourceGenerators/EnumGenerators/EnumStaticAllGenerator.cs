@@ -4,9 +4,10 @@ using System.CodeDom.Compiler;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal sealed class EnumStaticAllGenerator(INamedTypeSymbol enumType, Compilation compilation) : IEnumGenerator
+internal sealed class EnumStaticAllGenerator(INamedTypeSymbol enumType, string enumTypeName, Compilation compilation) : IEnumGenerator
 {
     private readonly INamedTypeSymbol _enumType = enumType;
+    private readonly string _enumTypeName = enumTypeName;
     private readonly Compilation _compilation = compilation;
 
     public bool GetTypeMemberSource(
@@ -29,16 +30,14 @@ internal sealed class EnumStaticAllGenerator(INamedTypeSymbol enumType, Compilat
 
         var enumMembers = GeneratorUtilities.GetEnumMembers(_enumType, cancellationToken);
 
-        var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-
         var allParts = new string[enumMembers.Length];
         for (var i = 0; i < enumMembers.Length; ++i)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            allParts[i] = Invariant($"""{enumTypeName}.{enumMembers[i].Name}""");
+            allParts[i] = Invariant($"""{_enumTypeName}.{enumMembers[i].Name}""");
         }
 
-        textWriter.WriteLine($"public static {enumTypeName} All =>");
+        textWriter.WriteLine($"public static {_enumTypeName} All =>");
 
         using (textWriter.AddIndent())
         {

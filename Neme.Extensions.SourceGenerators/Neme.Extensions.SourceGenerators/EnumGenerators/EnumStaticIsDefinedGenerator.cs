@@ -4,9 +4,10 @@ using System.CodeDom.Compiler;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal sealed class EnumStaticIsDefinedGenerator(INamedTypeSymbol enumType) : IEnumGenerator
+internal sealed class EnumStaticIsDefinedGenerator(INamedTypeSymbol enumType, string enumTypeName) : IEnumGenerator
 {
     private readonly INamedTypeSymbol _enumType = enumType;
+    private readonly string _enumTypeName = enumTypeName;
 
     public bool GetTypeMemberSource(
         SourceProductionContext context,
@@ -23,8 +24,6 @@ internal sealed class EnumStaticIsDefinedGenerator(INamedTypeSymbol enumType) : 
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-
         var enumMembers = GeneratorUtilities.GetEnumMembersWithConstantValue(_enumType, cancellationToken);
 
         var seenValues = new HashSet<object>();
@@ -36,14 +35,14 @@ internal sealed class EnumStaticIsDefinedGenerator(INamedTypeSymbol enumType) : 
             if (!seenValues.Add(member.ConstantValue!))
                 continue;
 
-            definedPatterns.Add(Invariant($"""{enumTypeName}.{member.Name}"""));
+            definedPatterns.Add(Invariant($"""{_enumTypeName}.{member.Name}"""));
         }
 
         if (definedPatterns.Count == 0)
-            textWriter.WriteLine($"public static bool IsDefined({enumTypeName} value) => false;");
+            textWriter.WriteLine($"public static bool IsDefined({_enumTypeName} value) => false;");
         else
         {
-            textWriter.WriteLine($"public static bool IsDefined({enumTypeName} value) =>");
+            textWriter.WriteLine($"public static bool IsDefined({_enumTypeName} value) =>");
 
             using (textWriter.AddIndent())
             {

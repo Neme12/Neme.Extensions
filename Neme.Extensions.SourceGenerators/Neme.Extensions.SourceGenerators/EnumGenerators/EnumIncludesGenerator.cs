@@ -4,9 +4,10 @@ using System.CodeDom.Compiler;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal sealed class EnumIncludesGenerator(INamedTypeSymbol enumType) : IEnumGenerator
+internal sealed class EnumIncludesGenerator(INamedTypeSymbol enumType, string enumTypeName) : IEnumGenerator
 {
     private readonly INamedTypeSymbol _enumType = enumType;
+    private readonly string _enumTypeName = enumTypeName;
 
     public bool GetTypeMemberSource(
         SourceProductionContext context,
@@ -27,7 +28,7 @@ internal sealed class EnumIncludesGenerator(INamedTypeSymbol enumType) : IEnumGe
         if (enumUnderlyingType is null)
             return false;
 
-        var typeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var typeName = _enumTypeName;
 
         // Widen the value to uint or ulong as IsPow2 only has overloads for those
         var isPow2Operand = enumUnderlyingType.SpecialType switch

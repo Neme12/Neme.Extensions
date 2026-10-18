@@ -4,23 +4,23 @@ using System.CodeDom.Compiler;
 
 namespace Neme.Extensions.SourceGenerators.RequireGenerators;
 
-internal sealed class RequireValueDefinedGenerator(INamedTypeSymbol enumType) : IRequireGenerator
+internal sealed class RequireValueDefinedGenerator(INamedTypeSymbol enumType, string enumTypeName) : IRequireGenerator
 {
     private readonly INamedTypeSymbol _enumType = enumType;
+    private readonly string _enumTypeName = enumTypeName;
 
     public bool GetExtensionSource(
         SourceProductionContext context,
         IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
     {
-        var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         var extensionClassName = EnumExtensionsGenerator.GetFullyQualifiedExtensionsClassName(_enumType);
 
         textWriter.WriteLine($"public static void ValueDefined(");
 
         using (textWriter.AddIndent())
         {
-            textWriter.WriteLine($"{enumTypeName} value,");
+            textWriter.WriteLine($"{_enumTypeName} value,");
             textWriter.WriteLine($"string? message = null,");
             textWriter.WriteLine($"[global::System.Runtime.CompilerServices.CallerArgumentExpression(nameof(value))] string? valueSource = null)");
         }

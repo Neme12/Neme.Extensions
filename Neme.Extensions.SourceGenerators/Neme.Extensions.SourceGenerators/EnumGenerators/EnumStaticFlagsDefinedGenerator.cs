@@ -4,9 +4,10 @@ using System.CodeDom.Compiler;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal sealed class EnumStaticFlagsDefinedGenerator(INamedTypeSymbol enumType) : IEnumGenerator
+internal sealed class EnumStaticFlagsDefinedGenerator(INamedTypeSymbol enumType, string enumTypeName) : IEnumGenerator
 {
     private readonly INamedTypeSymbol _enumType = enumType;
+    private readonly string _enumTypeName = enumTypeName;
 
     public bool GetTypeMemberSource(
         SourceProductionContext context,
@@ -27,7 +28,6 @@ internal sealed class EnumStaticFlagsDefinedGenerator(INamedTypeSymbol enumType)
         if (enumUnderlyingType is null)
             return false;
 
-        var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         var underlyingTypeName = enumUnderlyingType.ToDisplayString(GeneratorUtilities.KeywordTypeFormat);
 
         var enumMembers = GeneratorUtilities.GetEnumMembersWithConstantValue(_enumType, cancellationToken);
@@ -36,10 +36,10 @@ internal sealed class EnumStaticFlagsDefinedGenerator(INamedTypeSymbol enumType)
         for (var i = 0; i < enumMembers.Length; ++i)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            allFlagsParts[i] = Invariant($"""({underlyingTypeName}){enumTypeName}.{enumMembers[i].Name}""");
+            allFlagsParts[i] = Invariant($"""({underlyingTypeName}){_enumTypeName}.{enumMembers[i].Name}""");
         }
 
-        textWriter.WriteLine($"public static bool FlagsDefined({enumTypeName} value)");
+        textWriter.WriteLine($"public static bool FlagsDefined({_enumTypeName} value)");
         textWriter.WriteLine("{");
 
         using (textWriter.AddIndent())

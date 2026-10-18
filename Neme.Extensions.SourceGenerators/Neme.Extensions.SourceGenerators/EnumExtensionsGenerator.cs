@@ -124,31 +124,33 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
     {
         cancellationToken.ThrowIfCancellationRequested();
 
+        var enumTypeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+
         using var typeTextWriter = IndentedTextWriter.CreateNew(1);
         using var extensionTextWriter = IndentedTextWriter.CreateNew(2);
 
         ReadOnlySpan<IEnumGenerator> flagsGenerators = IsFlagsEnum(compilation, enumType, cancellationToken)
             ?
             [
-                new EnumIncludesGenerator(enumType),
-                new EnumIncludesAllGenerator(enumType),
-                new EnumIncludesAnyGenerator(enumType),
-                new EnumStaticAllGenerator(enumType, compilation),
-                new EnumStaticNoneGenerator(enumType, compilation),
-                new EnumStaticFlagsDefinedGenerator(enumType),
+                new EnumIncludesGenerator(enumType, enumTypeName),
+                new EnumIncludesAllGenerator(enumType, enumTypeName),
+                new EnumIncludesAnyGenerator(enumType, enumTypeName),
+                new EnumStaticAllGenerator(enumType, enumTypeName, compilation),
+                new EnumStaticNoneGenerator(enumType, enumTypeName, compilation),
+                new EnumStaticFlagsDefinedGenerator(enumType, enumTypeName),
             ]
             : [];
 
         ReadOnlySpan<IEnumGenerator> generators =
             [
-                new EnumNameGenerator(enumType),
-                new EnumToStringGenerator(enumType),
-                new EnumValueNamesGenerator(enumType, cancellationToken),
+                new EnumNameGenerator(enumType, enumTypeName),
+                new EnumToStringGenerator(enumType, enumTypeName),
+                new EnumValueNamesGenerator(enumType, enumTypeName, cancellationToken),
                 new EnumValueGenerator(enumType),
-                new EnumStaticNamesGenerator(enumType),
-                new EnumStaticValuesGenerator(enumType),
-                new EnumStaticUnderlyingValuesGenerator(enumType),
-                new EnumStaticIsDefinedGenerator(enumType),
+                new EnumStaticNamesGenerator(enumType, enumTypeName),
+                new EnumStaticValuesGenerator(enumType, enumTypeName),
+                new EnumStaticUnderlyingValuesGenerator(enumType, enumTypeName),
+                new EnumStaticIsDefinedGenerator(enumType, enumTypeName),
                 ..flagsGenerators,
             ];
 

@@ -4,9 +4,10 @@ using System.CodeDom.Compiler;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal sealed class EnumIncludesAllGenerator(INamedTypeSymbol enumType) : IEnumGenerator
+internal sealed class EnumIncludesAllGenerator(INamedTypeSymbol enumType, string enumTypeName) : IEnumGenerator
 {
     private readonly INamedTypeSymbol _enumType = enumType;
+    private readonly string _enumTypeName = enumTypeName;
 
     public bool GetTypeMemberSource(
         SourceProductionContext context,
@@ -23,9 +24,7 @@ internal sealed class EnumIncludesAllGenerator(INamedTypeSymbol enumType) : IEnu
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-
-        textWriter.WriteLine($"public bool IncludesAll({enumTypeName} flag) =>");
+        textWriter.WriteLine($"public bool IncludesAll({_enumTypeName} flag) =>");
 
         using (textWriter.AddIndent())
         {
@@ -35,7 +34,7 @@ internal sealed class EnumIncludesAllGenerator(INamedTypeSymbol enumType) : IEnu
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        textWriter.WriteLine($"public bool IncludesAll(params global::System.ReadOnlySpan<{enumTypeName}> flags)");
+        textWriter.WriteLine($"public bool IncludesAll(params global::System.ReadOnlySpan<{_enumTypeName}> flags)");
         textWriter.WriteLine('{');
 
         using (textWriter.AddIndent())

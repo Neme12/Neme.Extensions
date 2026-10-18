@@ -4,9 +4,10 @@ using System.CodeDom.Compiler;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal sealed class EnumStaticNoneGenerator(INamedTypeSymbol enumType, Compilation compilation) : IEnumGenerator
+internal sealed class EnumStaticNoneGenerator(INamedTypeSymbol enumType, string enumTypeName, Compilation compilation) : IEnumGenerator
 {
     private readonly INamedTypeSymbol _enumType = enumType;
+    private readonly string _enumTypeName = enumTypeName;
     private readonly Compilation _compilation = compilation;
 
     public bool GetTypeMemberSource(
@@ -27,9 +28,7 @@ internal sealed class EnumStaticNoneGenerator(INamedTypeSymbol enumType, Compila
         if (GeneratorUtilities.HasConflictingFieldOrProperty(_compilation, _enumType, "None", cancellationToken))
             return false;
 
-        var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-
-        textWriter.WriteLine($"public static {enumTypeName} None =>");
+        textWriter.WriteLine($"public static {_enumTypeName} None =>");
 
         using (textWriter.AddIndent())
             textWriter.WriteLine("default;");

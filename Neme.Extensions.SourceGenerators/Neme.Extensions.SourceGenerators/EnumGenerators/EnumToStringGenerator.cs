@@ -4,9 +4,10 @@ using System.CodeDom.Compiler;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal sealed class EnumToStringGenerator(INamedTypeSymbol enumType) : IEnumGenerator
+internal sealed class EnumToStringGenerator(INamedTypeSymbol enumType, string enumTypeName) : IEnumGenerator
 {
     private readonly INamedTypeSymbol _enumType = enumType;
+    private readonly string _enumTypeName = enumTypeName;
 
     public bool GetTypeMemberSource(
         SourceProductionContext context,
@@ -22,8 +23,6 @@ internal sealed class EnumToStringGenerator(INamedTypeSymbol enumType) : IEnumGe
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-
-        var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
         var enumMembers = GeneratorUtilities.GetEnumMembersWithConstantValue(_enumType, cancellationToken);
 
@@ -48,7 +47,7 @@ internal sealed class EnumToStringGenerator(INamedTypeSymbol enumType) : IEnumGe
                     if (constantValue is null || !seenValues.Add(constantValue))
                         continue;
 
-                    textWriter.WriteLine($"{enumTypeName}.{member.Name} => nameof({enumTypeName}.{member.Name}),");
+                    textWriter.WriteLine($"{_enumTypeName}.{member.Name} => nameof({_enumTypeName}.{member.Name}),");
                 }
 
                 textWriter.WriteLine("_ => @enum.ToString(),");
