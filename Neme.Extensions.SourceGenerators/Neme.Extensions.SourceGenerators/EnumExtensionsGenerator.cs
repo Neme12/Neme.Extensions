@@ -90,13 +90,7 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
         Compilation compilation,
         CancellationToken cancellationToken)
     {
-        ReadOnlySpan<IEnumGenerator> typeGenerators =
-        [
-            new EnumValueNamesGenerator(enumType, cancellationToken),
-            new EnumStaticNamesGenerator(enumType),
-        ];
-
-        ReadOnlySpan<IEnumGenerator> flagExtensionGenerators = IsFlagsEnum(compilation, enumType)
+        ReadOnlySpan<IEnumGenerator> flagsGenerators = IsFlagsEnum(compilation, enumType)
             ?
             [
                 new EnumIncludesGenerator(enumType),
@@ -108,26 +102,26 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
             ]
             : [];
 
-        ReadOnlySpan<IEnumGenerator> extensionGenerators =
-        [
-            new EnumNameGenerator(enumType),
-            new EnumToStringGenerator(enumType),
-            new EnumValueNamesGenerator(enumType, cancellationToken),
-            new EnumValueGenerator(enumType),
-            new EnumStaticNamesGenerator(enumType),
-            new EnumStaticValuesGenerator(enumType),
-            new EnumStaticUnderlyingValuesGenerator(enumType),
-            new EnumStaticIsDefinedGenerator(enumType),
-            ..flagExtensionGenerators,
-        ];
+        ReadOnlySpan<IEnumGenerator> generators =
+            [
+                new EnumNameGenerator(enumType),
+                new EnumToStringGenerator(enumType),
+                new EnumValueNamesGenerator(enumType, cancellationToken),
+                new EnumValueGenerator(enumType),
+                new EnumStaticNamesGenerator(enumType),
+                new EnumStaticValuesGenerator(enumType),
+                new EnumStaticUnderlyingValuesGenerator(enumType),
+                new EnumStaticIsDefinedGenerator(enumType),
+                ..flagsGenerators,
+            ];
 
-        var typeSources = new string?[typeGenerators.Length];
-        for (var i = 0; i < typeGenerators.Length; ++i)
-            typeSources[i] = typeGenerators[i].GetTypeMemberSource(context, 1, cancellationToken);
+        var typeSources = new string?[generators.Length];
+        for (var i = 0; i < generators.Length; ++i)
+            typeSources[i] = generators[i].GetTypeMemberSource(context, 1, cancellationToken);
 
-        var extensionSources = new string?[extensionGenerators.Length];
-        for (var i = 0; i < extensionGenerators.Length; ++i)
-            extensionSources[i] = extensionGenerators[i].GetExtensionSource(context, 2, cancellationToken);
+        var extensionSources = new string?[generators.Length];
+        for (var i = 0; i < generators.Length; ++i)
+            extensionSources[i] = generators[i].GetExtensionSource(context, 2, cancellationToken);
 
         EmitEnumExtension(
             context,
