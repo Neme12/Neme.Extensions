@@ -233,14 +233,24 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
 
     private static string GetExtensionClassName(INamedTypeSymbol enumType)
     {
-        var containingTypes = new Stack<string>();
-        for (var containingType = enumType.ContainingType; containingType is not null; containingType = containingType.ContainingType)
-            containingTypes.Push(containingType.Name);
+        var stringBuilder = new StringBuilder(32);
 
-        var typePrefix = containingTypes.Count == 0
-            ? ""
-            : Invariant($"""{string.Join("_", containingTypes)}_""");
-        return Invariant($"""{typePrefix}{enumType.Name}GeneratedExtensions""");
+        AppendContainingTypeNames(stringBuilder, enumType.ContainingType);
+
+        stringBuilder.Append(enumType.Name);
+        stringBuilder.Append("GeneratedExtensions");
+
+        return stringBuilder.ToString();
+
+        static void AppendContainingTypeNames(StringBuilder stringBuilder, INamedTypeSymbol? containingType)
+        {
+            if (containingType is null)
+                return;
+
+            AppendContainingTypeNames(stringBuilder, containingType.ContainingType);
+            stringBuilder.Append(containingType.Name);
+            stringBuilder.Append('_');
+        }
     }
 
     private static string? GetNamespaceName(INamedTypeSymbol enumType)
