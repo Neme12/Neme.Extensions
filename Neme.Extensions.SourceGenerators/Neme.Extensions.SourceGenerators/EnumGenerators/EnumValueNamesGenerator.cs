@@ -4,9 +4,16 @@ using System.CodeDom.Compiler;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal sealed class EnumValueNamesGenerator(INamedTypeSymbol enumType) : IEnumGenerator
+internal sealed class EnumValueNamesGenerator : IEnumGenerator
 {
-    private readonly INamedTypeSymbol _enumType = enumType;
+    private readonly INamedTypeSymbol _enumType;
+    private readonly NameData _nameData;
+
+    public EnumValueNamesGenerator(INamedTypeSymbol enumType, CancellationToken cancellationToken)
+    {
+        _enumType = enumType;
+        _nameData = GetNameData(cancellationToken);
+    }
 
     public string? GetTypeMemberSource(
         SourceProductionContext context,
@@ -16,7 +23,6 @@ internal sealed class EnumValueNamesGenerator(INamedTypeSymbol enumType) : IEnum
         cancellationToken.ThrowIfCancellationRequested();
 
         var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-        var nameData = GetNameData(cancellationToken);
 
         using (var textWriter = IndentedTextWriter.CreateNew(baselineIndent))
         {
@@ -30,7 +36,7 @@ internal sealed class EnumValueNamesGenerator(INamedTypeSymbol enumType) : IEnum
 
                 using (textWriter.AddIndent())
                 {
-                    foreach (var name in nameData.AllNames)
+                    foreach (var name in _nameData.AllNames)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         textWriter.WriteLine($"nameof({enumTypeName}.{name}),");
@@ -54,7 +60,6 @@ internal sealed class EnumValueNamesGenerator(INamedTypeSymbol enumType) : IEnum
         cancellationToken.ThrowIfCancellationRequested();
 
         var enumTypeName = _enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-        var nameData = GetNameData(cancellationToken);
 
         using (var switchWriter = IndentedTextWriter.CreateNew(baselineIndent))
         {
@@ -67,7 +72,7 @@ internal sealed class EnumValueNamesGenerator(INamedTypeSymbol enumType) : IEnum
 
                 using (switchWriter.AddIndent())
                 {
-                    foreach (var group in nameData.Groups)
+                    foreach (var group in _nameData.Groups)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         switchWriter.WriteLine($"{enumTypeName}.{group.MemberName} => ValueOrderedNames.AsSpan({group.Start}, {group.Length}),");

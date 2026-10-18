@@ -92,7 +92,7 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
     {
         ReadOnlySpan<IEnumGenerator> typeGenerators =
         [
-            new EnumValueNamesGenerator(enumType),
+            new EnumValueNamesGenerator(enumType, cancellationToken),
             new EnumStaticNamesGenerator(enumType),
         ];
 
@@ -112,7 +112,7 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
         [
             new EnumNameGenerator(enumType),
             new EnumToStringGenerator(enumType),
-            new EnumValueNamesGenerator(enumType),
+            new EnumValueNamesGenerator(enumType, cancellationToken),
             new EnumValueGenerator(enumType),
             new EnumStaticNamesGenerator(enumType),
             new EnumStaticValuesGenerator(enumType),
