@@ -223,20 +223,20 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        // lang=c#
-        var innerSource = Invariant($$"""
-                {{typeSource}}
-
-                    extension({{typeName}} @enum)
-                    {
-                {{extensionSource}}
-                    }
-                """);
+        var innerSourceBuilder = new DefaultInterpolatedStringHandler(literalLength: 1024, formattedCount: 0);
+        innerSourceBuilder.AppendLineFormatted(typeSource);
+        innerSourceBuilder.AppendLine();
+        innerSourceBuilder.AppendLiteral("extension(");
+        innerSourceBuilder.AppendFormatted(typeName);
+        innerSourceBuilder.AppendLineLiteral(" @enum)");
+        innerSourceBuilder.AppendLineLiteral("{");
+        innerSourceBuilder.AppendLineFormatted(extensionSource);
+        innerSourceBuilder.AppendLineLiteral("}");
 
         var result = GetGeneratedClassSource(
             GetNamespaceName(enumType),
             extensionClassName,
-            innerSource,
+            innerSourceBuilder.ToStringAndClear(),
             isPartial: false,
             emitAttribute: true,
             generatorName: nameof(EnumExtensionsGenerator),
