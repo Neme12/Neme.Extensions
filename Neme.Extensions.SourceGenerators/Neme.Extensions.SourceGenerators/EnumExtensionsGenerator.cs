@@ -60,15 +60,18 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
                 if (string.IsNullOrWhiteSpace(configuredEnumTypes))
                     return;
 
-                foreach (var enumTypeMetadataName in configuredEnumTypes.Split(';'))
+                var configuredEnumTypesSpan = configuredEnumTypes.AsSpan();
+                var tokenStart = 0;
+
+                while (TryGetNextSemicolonSeparatedToken(configuredEnumTypesSpan, ref tokenStart, out var metadataName))
                 {
                     sourceContext.CancellationToken.ThrowIfCancellationRequested();
 
-                    var normalizedMetadataName = enumTypeMetadataName.Trim();
+                    var normalizedMetadataName = metadataName.Trim();
                     if (normalizedMetadataName.Length == 0)
                         continue;
 
-                    if (compilation.GetTypeByMetadataName(normalizedMetadataName) is not INamedTypeSymbol enumType)
+                    if (compilation.GetTypeByMetadataName(normalizedMetadataName.ToString()) is not INamedTypeSymbol enumType)
                         continue;
 
                     if (enumType.TypeKind != TypeKind.Enum)
@@ -86,6 +89,32 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
                     EmitEnumSource(sourceContext, enumType, compilation, sourceContext.CancellationToken);
                 }
             });
+    }
+
+    private static bool TryGetNextSemicolonSeparatedToken(
+        ReadOnlySpan<char> input,
+        ref int tokenStart,
+        out ReadOnlySpan<char> token)
+    {
+        if (tokenStart > input.Length)
+        {
+            token = default;
+            return false;
+        }
+
+        var remaining = input[tokenStart..];
+        var separatorIndex = remaining.IndexOf(';');
+
+        if (separatorIndex < 0)
+        {
+            token = remaining;
+            tokenStart = input.Length + 1;
+            return true;
+        }
+
+        token = remaining[..separatorIndex];
+        tokenStart += separatorIndex + 1;
+        return true;
     }
 
     private static void EmitEnumSource(
