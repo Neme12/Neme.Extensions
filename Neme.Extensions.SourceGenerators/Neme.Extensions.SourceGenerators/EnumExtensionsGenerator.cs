@@ -115,26 +115,28 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
                 ..flagsGenerators,
             ];
 
-        var typeSourcesBuilder = ImmutableArray.CreateBuilder<string>(generators.Length);
+        var typeSources = new string[generators.Length];
+        var typeSourcesLength = 0;
         for (var i = 0; i < generators.Length; ++i)
         {
             var source = generators[i].GetTypeMemberSource(context, 1, cancellationToken);
             if (source is not null)
-                typeSourcesBuilder.Add(source);
+                typeSources[typeSourcesLength++] = source;
         }
 
-        var extensionSourcesBuilder = ImmutableArray.CreateBuilder<string>(generators.Length);
+        var extensionSources = new string[generators.Length];
+        int extensionSourcesLength = 0;
         for (var i = 0; i < generators.Length; ++i)
         {
             var source = generators[i].GetExtensionSource(context, 2, cancellationToken);
             if (source is not null)
-                extensionSourcesBuilder.Add(source);
+                extensionSources[extensionSourcesLength++] = source;
         }
 
         EmitEnumExtension(
             context,
-            typeSourcesBuilder.DrainToImmutable(),
-            extensionSourcesBuilder.DrainToImmutable(),
+            typeSources.AsSpan(0, typeSourcesLength),
+            extensionSources.AsSpan(0, extensionSourcesLength),
             enumType,
             cancellationToken);
     }
@@ -156,8 +158,8 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
 
     private static void EmitEnumExtension(
         SourceProductionContext context,
-        ImmutableArray<string> typeSources,
-        ImmutableArray<string> extensionSources,
+        ReadOnlySpan<string> typeSources,
+        ReadOnlySpan<string> extensionSources,
         INamedTypeSymbol enumType,
         CancellationToken cancellationToken)
     {
