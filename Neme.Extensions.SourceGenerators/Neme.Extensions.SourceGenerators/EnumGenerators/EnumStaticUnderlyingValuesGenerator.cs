@@ -1,13 +1,15 @@
 ﻿using Microsoft.CodeAnalysis;
 using Neme.Extensions.SourceGenerators.Internal;
 using System.CodeDom.Compiler;
+using System.Collections.Immutable;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal sealed class EnumStaticUnderlyingValuesGenerator(INamedTypeSymbol enumType, string enumTypeName) : IEnumGenerator
+internal sealed class EnumStaticUnderlyingValuesGenerator(EnumGenerationContext generationContext) : IEnumGenerator
 {
-    private readonly INamedTypeSymbol _enumType = enumType;
-    private readonly string _enumTypeName = enumTypeName;
+    private readonly string _enumTypeName = generationContext.EnumTypeName;
+    private readonly string? _underlyingTypeName = generationContext.UnderlyingTypeName;
+    private readonly ImmutableArray<IFieldSymbol> _enumMembers = generationContext.ConstantEnumMembers;
 
     public bool GetTypeMemberSource(
         SourceProductionContext context,
@@ -24,15 +26,10 @@ internal sealed class EnumStaticUnderlyingValuesGenerator(INamedTypeSymbol enumT
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var underlyingType = _enumType.EnumUnderlyingType;
-        if (underlyingType is null)
+        if (_underlyingTypeName is null)
             return false;
 
-        var underlyingTypeName = underlyingType.ToDisplayString(GeneratorUtilities.KeywordTypeFormat);
-
-        var enumMembers = GeneratorUtilities.GetEnumMembersWithConstantValue(_enumType, cancellationToken);
-
-        textWriter.WriteLine($"public static global::System.ReadOnlySpan<{underlyingTypeName}> UnderlyingValues =>");
+        textWriter.WriteLine($"public static global::System.ReadOnlySpan<{_underlyingTypeName}> UnderlyingValues =>");
 
         using (textWriter.AddIndent())
         {
@@ -40,10 +37,10 @@ internal sealed class EnumStaticUnderlyingValuesGenerator(INamedTypeSymbol enumT
 
             using (textWriter.AddIndent())
             {
-                foreach (var member in enumMembers)
+                foreach (var member in _enumMembers)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    textWriter.WriteLine($"({underlyingTypeName}){_enumTypeName}.{member.Name},");
+                    textWriter.WriteLine($"({_underlyingTypeName}){_enumTypeName}.{member.Name},");
                 }
             }
 

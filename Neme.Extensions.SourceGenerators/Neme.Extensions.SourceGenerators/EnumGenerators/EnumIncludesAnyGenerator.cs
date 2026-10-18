@@ -4,10 +4,9 @@ using System.CodeDom.Compiler;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal sealed class EnumIncludesAnyGenerator(INamedTypeSymbol enumType, string enumTypeName) : IEnumGenerator
+internal sealed class EnumIncludesAnyGenerator(EnumGenerationContext generationContext) : IEnumGenerator
 {
-    private readonly INamedTypeSymbol _enumType = enumType;
-    private readonly string _enumTypeName = enumTypeName;
+    private readonly string _enumTypeName = generationContext.EnumTypeName;
 
     public bool GetTypeMemberSource(
         SourceProductionContext context,

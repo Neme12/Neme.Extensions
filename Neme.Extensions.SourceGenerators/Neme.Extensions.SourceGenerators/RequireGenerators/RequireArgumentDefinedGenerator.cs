@@ -4,18 +4,16 @@ using System.CodeDom.Compiler;
 
 namespace Neme.Extensions.SourceGenerators.RequireGenerators;
 
-internal sealed class RequireArgumentDefinedGenerator(INamedTypeSymbol enumType, string enumTypeName) : IRequireGenerator
+internal sealed class RequireArgumentDefinedGenerator(RequireGenerationContext generationContext) : IRequireGenerator
 {
-    private readonly INamedTypeSymbol _enumType = enumType;
-    private readonly string _enumTypeName = enumTypeName;
+    private readonly string _enumTypeName = generationContext.EnumTypeName;
+    private readonly string _extensionClassName = generationContext.ExtensionClassName;
 
     public bool GetExtensionSource(
         SourceProductionContext context,
         IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
     {
-        var extensionClassName = EnumExtensionsGenerator.GetFullyQualifiedExtensionsClassName(_enumType);
-
         textWriter.WriteLine($"public static void ArgumentDefined(");
 
         using (textWriter.AddIndent())
@@ -29,7 +27,7 @@ internal sealed class RequireArgumentDefinedGenerator(INamedTypeSymbol enumType,
 
         using (textWriter.AddIndent())
         {
-            textWriter.WriteLine($"if (!{extensionClassName}.IsDefined(argument))");
+            textWriter.WriteLine($"if (!{_extensionClassName}.IsDefined(argument))");
 
             using (textWriter.AddIndent())
                 textWriter.WriteLine($"Throw(global::Neme.Extensions.Contracts.Assert.NotNull(paramName), argument, message);");

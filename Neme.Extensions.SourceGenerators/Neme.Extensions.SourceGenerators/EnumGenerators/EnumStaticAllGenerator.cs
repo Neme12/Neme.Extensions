@@ -1,14 +1,16 @@
 ﻿using Microsoft.CodeAnalysis;
 using Neme.Extensions.SourceGenerators.Internal;
 using System.CodeDom.Compiler;
+using System.Collections.Immutable;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal sealed class EnumStaticAllGenerator(INamedTypeSymbol enumType, string enumTypeName, Compilation compilation) : IEnumGenerator
+internal sealed class EnumStaticAllGenerator(EnumGenerationContext generationContext) : IEnumGenerator
 {
-    private readonly INamedTypeSymbol _enumType = enumType;
-    private readonly string _enumTypeName = enumTypeName;
-    private readonly Compilation _compilation = compilation;
+    private readonly Compilation _compilation = generationContext.Compilation;
+    private readonly INamedTypeSymbol _enumType = generationContext.EnumType;
+    private readonly string _enumTypeName = generationContext.EnumTypeName;
+    private readonly ImmutableArray<IFieldSymbol> _enumMembers = generationContext.EnumMembers;
 
     public bool GetTypeMemberSource(
         SourceProductionContext context,
@@ -28,13 +30,11 @@ internal sealed class EnumStaticAllGenerator(INamedTypeSymbol enumType, string e
         if (GeneratorUtilities.HasConflictingFieldOrProperty(_compilation, _enumType, "All", cancellationToken))
             return false;
 
-        var enumMembers = GeneratorUtilities.GetEnumMembers(_enumType, cancellationToken);
-
-        var allParts = new string[enumMembers.Length];
-        for (var i = 0; i < enumMembers.Length; ++i)
+        var allParts = new string[_enumMembers.Length];
+        for (var i = 0; i < _enumMembers.Length; ++i)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            allParts[i] = Invariant($"""{_enumTypeName}.{enumMembers[i].Name}""");
+            allParts[i] = Invariant($"""{_enumTypeName}.{_enumMembers[i].Name}""");
         }
 
         textWriter.WriteLine($"public static {_enumTypeName} All =>");

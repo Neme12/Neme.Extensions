@@ -1,13 +1,14 @@
 ﻿using Microsoft.CodeAnalysis;
 using Neme.Extensions.SourceGenerators.Internal;
 using System.CodeDom.Compiler;
+using System.Collections.Immutable;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal sealed class EnumStaticValuesGenerator(INamedTypeSymbol enumType, string enumTypeName) : IEnumGenerator
+internal sealed class EnumStaticValuesGenerator(EnumGenerationContext generationContext) : IEnumGenerator
 {
-    private readonly INamedTypeSymbol _enumType = enumType;
-    private readonly string _enumTypeName = enumTypeName;
+    private readonly string _enumTypeName = generationContext.EnumTypeName;
+    private readonly ImmutableArray<IFieldSymbol> _enumMembers = generationContext.ConstantEnumMembers;
 
     public bool GetTypeMemberSource(
         SourceProductionContext context,
@@ -24,8 +25,6 @@ internal sealed class EnumStaticValuesGenerator(INamedTypeSymbol enumType, strin
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var enumMembers = GeneratorUtilities.GetEnumMembersWithConstantValue(_enumType, cancellationToken);
-
         textWriter.WriteLine($"public static global::System.ReadOnlySpan<{_enumTypeName}> Values =>");
 
         using (textWriter.AddIndent())
@@ -34,7 +33,7 @@ internal sealed class EnumStaticValuesGenerator(INamedTypeSymbol enumType, strin
 
             using (textWriter.AddIndent())
             {
-                foreach (var member in enumMembers)
+                foreach (var member in _enumMembers)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     textWriter.WriteLine($"{_enumTypeName}.{member.Name},");

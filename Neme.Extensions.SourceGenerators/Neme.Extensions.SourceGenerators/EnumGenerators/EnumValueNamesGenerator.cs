@@ -1,20 +1,19 @@
 ﻿using Microsoft.CodeAnalysis;
 using Neme.Extensions.SourceGenerators.Internal;
 using System.CodeDom.Compiler;
+using System.Collections.Immutable;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
 internal sealed class EnumValueNamesGenerator : IEnumGenerator
 {
-    private readonly INamedTypeSymbol _enumType;
     private readonly string _enumTypeName;
     private readonly NameData _nameData;
 
-    public EnumValueNamesGenerator(INamedTypeSymbol enumType, string enumTypeName, CancellationToken cancellationToken)
+    public EnumValueNamesGenerator(EnumGenerationContext generationContext, CancellationToken cancellationToken)
     {
-        _enumType = enumType;
-        _enumTypeName = enumTypeName;
-        _nameData = GetNameData(cancellationToken);
+        _enumTypeName = generationContext.EnumTypeName;
+        _nameData = GetNameData(generationContext.ConstantEnumMembers, cancellationToken);
     }
 
     public bool GetTypeMemberSource(
@@ -80,9 +79,8 @@ internal sealed class EnumValueNamesGenerator : IEnumGenerator
         return true;
     }
 
-    private NameData GetNameData(CancellationToken cancellationToken)
+    private static NameData GetNameData(ImmutableArray<IFieldSymbol> enumMembers, CancellationToken cancellationToken)
     {
-        var enumMembers = GeneratorUtilities.GetEnumMembersWithConstantValue(_enumType, cancellationToken);
 
         if (enumMembers.Length == 0)
             return new NameData([], []);

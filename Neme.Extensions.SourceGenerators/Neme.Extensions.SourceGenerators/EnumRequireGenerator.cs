@@ -57,12 +57,16 @@ public sealed class EnumRequireGenerator : AbstractEnumGenerator, IIncrementalGe
     {
         using var textWriter = IndentedTextWriter.CreateNew(1);
 
-        var enumTypeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var generationContext = new RequireGenerationContext
+        {
+            EnumTypeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+            ExtensionClassName = EnumExtensionsGenerator.GetFullyQualifiedExtensionsClassName(enumType),
+        };
 
         ReadOnlySpan<IRequireGenerator> generators =
         [
-            new RequireArgumentDefinedGenerator(enumType, enumTypeName),
-            new RequireValueDefinedGenerator(enumType, enumTypeName),
+            new RequireArgumentDefinedGenerator(generationContext),
+            new RequireValueDefinedGenerator(generationContext),
         ];
 
         foreach (var generator in generators)

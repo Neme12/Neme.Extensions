@@ -1,13 +1,14 @@
 ﻿using Microsoft.CodeAnalysis;
 using Neme.Extensions.SourceGenerators.Internal;
 using System.CodeDom.Compiler;
+using System.Collections.Immutable;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal sealed class EnumNameGenerator(INamedTypeSymbol enumType, string enumTypeName) : IEnumGenerator
+internal sealed class EnumNameGenerator(EnumGenerationContext generationContext) : IEnumGenerator
 {
-    private readonly INamedTypeSymbol _enumType = enumType;
-    private readonly string _enumTypeName = enumTypeName;
+    private readonly string _enumTypeName = generationContext.EnumTypeName;
+    private readonly ImmutableArray<IFieldSymbol> _enumMembers = generationContext.ConstantEnumMembers;
 
     public bool GetTypeMemberSource(
         SourceProductionContext context,
@@ -24,8 +25,6 @@ internal sealed class EnumNameGenerator(INamedTypeSymbol enumType, string enumTy
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var enumMembers = GeneratorUtilities.GetEnumMembersWithConstantValue(_enumType, cancellationToken);
-
         cancellationToken.ThrowIfCancellationRequested();
 
         textWriter.WriteLine("public string? Name =>");
@@ -39,7 +38,7 @@ internal sealed class EnumNameGenerator(INamedTypeSymbol enumType, string enumTy
             {
                 var seenValues = new HashSet<object>();
 
-                foreach (var member in enumMembers)
+                foreach (var member in _enumMembers)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 

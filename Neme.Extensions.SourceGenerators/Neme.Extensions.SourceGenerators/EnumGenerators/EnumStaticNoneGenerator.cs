@@ -4,11 +4,11 @@ using System.CodeDom.Compiler;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal sealed class EnumStaticNoneGenerator(INamedTypeSymbol enumType, string enumTypeName, Compilation compilation) : IEnumGenerator
+internal sealed class EnumStaticNoneGenerator(EnumGenerationContext generationContext) : IEnumGenerator
 {
-    private readonly INamedTypeSymbol _enumType = enumType;
-    private readonly string _enumTypeName = enumTypeName;
-    private readonly Compilation _compilation = compilation;
+    private readonly Compilation _compilation = generationContext.Compilation;
+    private readonly INamedTypeSymbol _enumType = generationContext.EnumType;
+    private readonly string _enumTypeName = generationContext.EnumTypeName;
 
     public bool GetTypeMemberSource(
         SourceProductionContext context,

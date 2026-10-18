@@ -4,9 +4,9 @@ using System.CodeDom.Compiler;
 
 namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
-internal sealed class EnumValueGenerator(INamedTypeSymbol enumType) : IEnumGenerator
+internal sealed class EnumValueGenerator(EnumGenerationContext generationContext) : IEnumGenerator
 {
-    private readonly INamedTypeSymbol _enumType = enumType;
+    private readonly string? _underlyingTypeName = generationContext.UnderlyingTypeName;
 
     public bool GetTypeMemberSource(
         SourceProductionContext context,
@@ -23,16 +23,13 @@ internal sealed class EnumValueGenerator(INamedTypeSymbol enumType) : IEnumGener
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var underlyingType = _enumType.EnumUnderlyingType;
-        if (underlyingType is null)
+        if (_underlyingTypeName is null)
             return false;
 
-        var underlyingTypeName = underlyingType.ToDisplayString(GeneratorUtilities.KeywordTypeFormat);
-
-        textWriter.WriteLine($"public {underlyingTypeName} Value =>");
+        textWriter.WriteLine($"public {_underlyingTypeName} Value =>");
 
         using (textWriter.AddIndent())
-            textWriter.WriteLine($"({underlyingTypeName})@enum;");
+            textWriter.WriteLine($"({_underlyingTypeName})@enum;");
 
         cancellationToken.ThrowIfCancellationRequested();
         return true;

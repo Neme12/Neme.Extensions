@@ -125,6 +125,19 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
         cancellationToken.ThrowIfCancellationRequested();
 
         var enumTypeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var enumMembers = GeneratorUtilities.GetEnumMembers(enumType, cancellationToken);
+        var constantEnumMembers = GeneratorUtilities.GetEnumMembersWithConstantValue(enumType, cancellationToken);
+        var underlyingTypeName = enumType.EnumUnderlyingType?.ToDisplayString(GeneratorUtilities.KeywordTypeFormat);
+
+        var generationContext = new EnumGenerationContext
+        {
+            Compilation = compilation,
+            EnumType = enumType,
+            EnumTypeName = enumTypeName,
+            EnumMembers = enumMembers,
+            ConstantEnumMembers = constantEnumMembers,
+            UnderlyingTypeName = underlyingTypeName,
+        };
 
         using var typeTextWriter = IndentedTextWriter.CreateNew(1);
         using var extensionTextWriter = IndentedTextWriter.CreateNew(2);
@@ -132,25 +145,25 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
         ReadOnlySpan<IEnumGenerator> flagsGenerators = IsFlagsEnum(compilation, enumType, cancellationToken)
             ?
             [
-                new EnumIncludesGenerator(enumType, enumTypeName),
-                new EnumIncludesAllGenerator(enumType, enumTypeName),
-                new EnumIncludesAnyGenerator(enumType, enumTypeName),
-                new EnumStaticAllGenerator(enumType, enumTypeName, compilation),
-                new EnumStaticNoneGenerator(enumType, enumTypeName, compilation),
-                new EnumStaticFlagsDefinedGenerator(enumType, enumTypeName),
+                new EnumIncludesGenerator(generationContext),
+                new EnumIncludesAllGenerator(generationContext),
+                new EnumIncludesAnyGenerator(generationContext),
+                new EnumStaticAllGenerator(generationContext),
+                new EnumStaticNoneGenerator(generationContext),
+                new EnumStaticFlagsDefinedGenerator(generationContext),
             ]
             : [];
 
         ReadOnlySpan<IEnumGenerator> generators =
             [
-                new EnumNameGenerator(enumType, enumTypeName),
-                new EnumToStringGenerator(enumType, enumTypeName),
-                new EnumValueNamesGenerator(enumType, enumTypeName, cancellationToken),
-                new EnumValueGenerator(enumType),
-                new EnumStaticNamesGenerator(enumType, enumTypeName),
-                new EnumStaticValuesGenerator(enumType, enumTypeName),
-                new EnumStaticUnderlyingValuesGenerator(enumType, enumTypeName),
-                new EnumStaticIsDefinedGenerator(enumType, enumTypeName),
+                new EnumNameGenerator(generationContext),
+                new EnumToStringGenerator(generationContext),
+                new EnumValueNamesGenerator(generationContext, cancellationToken),
+                new EnumValueGenerator(generationContext),
+                new EnumStaticNamesGenerator(generationContext),
+                new EnumStaticValuesGenerator(generationContext),
+                new EnumStaticUnderlyingValuesGenerator(generationContext),
+                new EnumStaticIsDefinedGenerator(generationContext),
                 ..flagsGenerators,
             ];
 
