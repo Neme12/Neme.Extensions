@@ -115,18 +115,28 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
                 ..flagsGenerators,
             ];
 
-        var typeSources = new string?[generators.Length];
+        var typeSources = new string[generators.Length];
+        var typeSourcesLength = 0;
         for (var i = 0; i < generators.Length; ++i)
-            typeSources[i] = generators[i].GetTypeMemberSource(context, 1, cancellationToken);
+        {
+            var source = generators[i].GetTypeMemberSource(context, 1, cancellationToken);
+            if (source is not null)
+                typeSources[typeSourcesLength++] = source;
+        }
 
-        var extensionSources = new string?[generators.Length];
+        var extensionSources = new string[generators.Length];
+        int extensionSourcesLength = 0;
         for (var i = 0; i < generators.Length; ++i)
-            extensionSources[i] = generators[i].GetExtensionSource(context, 2, cancellationToken);
+        {
+            var source = generators[i].GetExtensionSource(context, 2, cancellationToken);
+            if (source is not null)
+                extensionSources[extensionSourcesLength++] = source;
+        }
 
         EmitEnumExtension(
             context,
-            typeSources.AsSpan().RemoveNullValuesInPlace(),
-            extensionSources.AsSpan().RemoveNullValuesInPlace(),
+            typeSources.AsSpan(0, typeSourcesLength),
+            extensionSources.AsSpan(0, extensionSourcesLength),
             enumType,
             cancellationToken);
     }
