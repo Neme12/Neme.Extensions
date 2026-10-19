@@ -81,9 +81,9 @@ public abstract class AbstractEnumGenerator
 
         if (emitAttribute)
         {
-            resultBuilder.AppendLiteral("[global::System.CodeDom.Compiler.GeneratedCode(global::Neme.Extensions.SourceGenerators.");
+            resultBuilder.AppendLiteral("[global::System.CodeDom.Compiler.GeneratedCode(\"Neme.Extensions.SourceGenerators.");
             resultBuilder.AppendFormatted(generatorName);
-            resultBuilder.AppendLineLiteral(", 0.0.0.0)]");
+            resultBuilder.AppendLineLiteral("\", \"0.0.0.0\")]");
         }
 
         resultBuilder.AppendLiteral("internal static ");

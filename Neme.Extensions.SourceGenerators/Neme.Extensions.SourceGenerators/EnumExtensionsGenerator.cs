@@ -130,11 +130,14 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
         var constantEnumMembers = GeneratorUtilities.GetEnumMembersWithConstantValue(enumType, cancellationToken);
         var underlyingTypeName = enumType.EnumUnderlyingType?.ToDisplayString(GeneratorUtilities.KeywordTypeFormat);
 
+        var isFlagsEnum = IsFlagsEnum(compilation, enumType, cancellationToken);
+
         var generationContext = new EnumGenerationContext
         {
             Compilation = compilation,
             EnumType = enumType,
             EnumTypeName = enumTypeName,
+            IsFlagsEnum = isFlagsEnum,
             EnumMembers = enumMembers,
             ConstantEnumMembers = constantEnumMembers,
             UnderlyingTypeName = underlyingTypeName,
@@ -143,7 +146,7 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
         using var typeTextWriter = IndentedTextWriter.CreateNew(1, 1024);
         using var extensionTextWriter = IndentedTextWriter.CreateNew(2, 4096);
 
-        ReadOnlySpan<IEnumGenerator> flagsGenerators = IsFlagsEnum(compilation, enumType, cancellationToken)
+        ReadOnlySpan<IEnumGenerator> flagsGenerators = isFlagsEnum
             ?
             [
                 new EnumIncludesGenerator(generationContext),

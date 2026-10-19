@@ -30,20 +30,7 @@ internal sealed class EnumIncludesGenerator(EnumGenerationContext generationCont
 
         var typeName = _enumTypeName;
 
-        // Widen the value to uint or ulong as IsPow2 only has overloads for those
-        var isPow2Operand = enumUnderlyingType.SpecialType switch
-        {
-            SpecialType.System_SByte => "unchecked((uint)(byte)flag)",
-            SpecialType.System_Byte => "unchecked((uint)(byte)flag)",
-            SpecialType.System_Int16 => "unchecked((uint)(ushort)flag)",
-            SpecialType.System_UInt16 => "unchecked((uint)(ushort)flag)",
-            SpecialType.System_Int32 => "unchecked((uint)(int)flag)",
-            SpecialType.System_UInt32 => "unchecked((uint)flag)",
-            SpecialType.System_Int64 => "unchecked((ulong)(long)flag)",
-            SpecialType.System_UInt64 => "unchecked((ulong)flag)",
-            _ => null,
-        };
-
+        var isPow2Operand = GeneratorUtilities.GetBitOperationsPow2ValueExpression(enumUnderlyingType, "flag");
         if (isPow2Operand is null)
             return false;
 
