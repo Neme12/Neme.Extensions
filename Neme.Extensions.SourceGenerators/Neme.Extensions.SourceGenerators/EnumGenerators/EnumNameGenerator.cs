@@ -25,8 +25,6 @@ internal sealed class EnumNameGenerator(EnumGenerationContext generationContext)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        cancellationToken.ThrowIfCancellationRequested();
-
         textWriter.WriteLine("public string? Name =>");
 
         using (textWriter.AddIndent())
@@ -49,7 +47,7 @@ internal sealed class EnumNameGenerator(EnumGenerationContext generationContext)
                     textWriter.WriteLine($"{_enumTypeName}.{member.Name} => nameof({_enumTypeName}.{member.Name}),");
                 }
 
-                textWriter.WriteLine("_ => global::System.Enum.GetName(@enum),");
+                textWriter.WriteLine("_ => null,");
             }
 
             textWriter.WriteLine("};");
