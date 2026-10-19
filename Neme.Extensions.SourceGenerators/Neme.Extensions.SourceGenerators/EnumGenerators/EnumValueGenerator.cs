@@ -8,7 +8,7 @@ internal sealed class EnumValueGenerator(EnumGenerationContext generationContext
 {
     private readonly string? _underlyingTypeName = generationContext.UnderlyingTypeName;
 
-    public bool GetTypeMemberSource(
+    public bool EmitTypeSource(
         SourceProductionContext context,
         IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
@@ -16,7 +16,7 @@ internal sealed class EnumValueGenerator(EnumGenerationContext generationContext
         return false;
     }
 
-    public bool GetExtensionSource(
+    public bool EmitExtensionSource(
         SourceProductionContext context,
         IndentedTextWriter textWriter,
         CancellationToken cancellationToken)

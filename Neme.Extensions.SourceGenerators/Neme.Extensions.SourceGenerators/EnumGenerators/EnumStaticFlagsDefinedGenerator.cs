@@ -11,7 +11,7 @@ internal sealed class EnumStaticFlagsDefinedGenerator(EnumGenerationContext gene
     private readonly string? _underlyingTypeName = generationContext.UnderlyingTypeName;
     private readonly ImmutableArray<IFieldSymbol> _enumMembers = generationContext.ConstantEnumMembers;
 
-    public bool GetTypeMemberSource(
+    public bool EmitTypeSource(
         SourceProductionContext context,
         IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
@@ -19,7 +19,7 @@ internal sealed class EnumStaticFlagsDefinedGenerator(EnumGenerationContext gene
         return false;
     }
 
-    public bool GetExtensionSource(
+    public bool EmitExtensionSource(
         SourceProductionContext context,
         IndentedTextWriter textWriter,
         CancellationToken cancellationToken)

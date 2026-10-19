@@ -170,7 +170,7 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
 
         foreach (var generator in generators)
         {
-            if (generator.GetTypeMemberSource(context, typeTextWriter, cancellationToken))
+            if (generator.EmitTypeSource(context, typeTextWriter, cancellationToken))
                 typeTextWriter.WriteLine();
         }
 
@@ -178,7 +178,7 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
 
         foreach (var generator in generators)
         {
-            if (generator.GetExtensionSource(context, extensionTextWriter, cancellationToken))
+            if (generator.EmitExtensionSource(context, extensionTextWriter, cancellationToken))
                 extensionTextWriter.WriteLine();
         }
 

@@ -5,7 +5,7 @@ namespace Neme.Extensions.SourceGenerators.RequireGenerators;
 
 internal interface IRequireGenerator
 {
-    public bool GetExtensionSource(
+    public bool EmitExtensionSource(
         SourceProductionContext context,
         IndentedTextWriter textWriter,
         CancellationToken cancellationToken);

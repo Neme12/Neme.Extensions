@@ -77,7 +77,7 @@ public sealed class EnumRequireGenerator : AbstractEnumGenerator, IIncrementalGe
 
         foreach (var generator in generators)
         {
-            if (generator.GetExtensionSource(context, textWriter, cancellationToken))
+            if (generator.EmitExtensionSource(context, textWriter, cancellationToken))
                 textWriter.WriteLine();
         }
 

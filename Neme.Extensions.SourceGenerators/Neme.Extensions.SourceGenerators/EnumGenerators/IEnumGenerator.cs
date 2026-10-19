@@ -5,12 +5,12 @@ namespace Neme.Extensions.SourceGenerators.EnumGenerators;
 
 internal interface IEnumGenerator
 {
-    public bool GetTypeMemberSource(
+    public bool EmitTypeSource(
         SourceProductionContext context,
         IndentedTextWriter textWriter,
         CancellationToken cancellationToken);
 
-    public bool GetExtensionSource(
+    public bool EmitExtensionSource(
         SourceProductionContext context,
         IndentedTextWriter textWriter,
         CancellationToken cancellationToken);

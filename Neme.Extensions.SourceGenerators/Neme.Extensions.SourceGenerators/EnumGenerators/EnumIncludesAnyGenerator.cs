@@ -8,7 +8,7 @@ internal sealed class EnumIncludesAnyGenerator(EnumGenerationContext generationC
 {
     private readonly string _enumTypeName = generationContext.EnumTypeName;
 
-    public bool GetTypeMemberSource(
+    public bool EmitTypeSource(
         SourceProductionContext context,
         IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
@@ -16,7 +16,7 @@ internal sealed class EnumIncludesAnyGenerator(EnumGenerationContext generationC
         return false;
     }
 
-    public bool GetExtensionSource(
+    public bool EmitExtensionSource(
         SourceProductionContext context,
         IndentedTextWriter textWriter,
         CancellationToken cancellationToken)

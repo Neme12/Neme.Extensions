@@ -10,7 +10,7 @@ internal sealed class EnumStaticValuesGenerator(EnumGenerationContext generation
     private readonly string _enumTypeName = generationContext.EnumTypeName;
     private readonly ImmutableArray<IFieldSymbol> _enumMembers = generationContext.ConstantEnumMembers;
 
-    public bool GetTypeMemberSource(
+    public bool EmitTypeSource(
         SourceProductionContext context,
         IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
@@ -18,7 +18,7 @@ internal sealed class EnumStaticValuesGenerator(EnumGenerationContext generation
         return false;
     }
 
-    public bool GetExtensionSource(
+    public bool EmitExtensionSource(
         SourceProductionContext context,
         IndentedTextWriter textWriter,
         CancellationToken cancellationToken)

@@ -9,7 +9,7 @@ internal sealed class EnumIncludesGenerator(EnumGenerationContext generationCont
     private readonly INamedTypeSymbol _enumType = generationContext.EnumType;
     private readonly string _enumTypeName = generationContext.EnumTypeName;
 
-    public bool GetTypeMemberSource(
+    public bool EmitTypeSource(
         SourceProductionContext context,
         IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
@@ -17,7 +17,7 @@ internal sealed class EnumIncludesGenerator(EnumGenerationContext generationCont
         return false;
     }
 
-    public bool GetExtensionSource(
+    public bool EmitExtensionSource(
         SourceProductionContext context,
         IndentedTextWriter textWriter,
         CancellationToken cancellationToken)

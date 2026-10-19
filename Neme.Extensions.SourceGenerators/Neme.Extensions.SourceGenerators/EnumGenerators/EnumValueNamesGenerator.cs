@@ -16,7 +16,7 @@ internal sealed class EnumValueNamesGenerator : IEnumGenerator
         _nameData = GetNameData(generationContext.ConstantEnumMembers, cancellationToken);
     }
 
-    public bool GetTypeMemberSource(
+    public bool EmitTypeSource(
         SourceProductionContext context,
         IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
@@ -47,7 +47,7 @@ internal sealed class EnumValueNamesGenerator : IEnumGenerator
         return true;
     }
 
-    public bool GetExtensionSource(
+    public bool EmitExtensionSource(
         SourceProductionContext context,
         IndentedTextWriter textWriter,
         CancellationToken cancellationToken)

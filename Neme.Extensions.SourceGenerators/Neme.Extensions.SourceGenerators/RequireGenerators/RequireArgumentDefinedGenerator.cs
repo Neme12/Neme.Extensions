@@ -9,7 +9,7 @@ internal sealed class RequireArgumentDefinedGenerator(RequireGenerationContext g
     private readonly string _enumTypeName = generationContext.EnumTypeName;
     private readonly string _extensionClassName = generationContext.ExtensionClassName;
 
-    public bool GetExtensionSource(
+    public bool EmitExtensionSource(
         SourceProductionContext context,
         IndentedTextWriter textWriter,
         CancellationToken cancellationToken)
