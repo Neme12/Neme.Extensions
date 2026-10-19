@@ -4,7 +4,7 @@ namespace Neme.Extensions.SourceGenerators.Internal;
 
 internal static class DefaultInterpolatedStringHandlerExtensions
 {
-    extension(DefaultInterpolatedStringHandler handler)
+    extension(ref DefaultInterpolatedStringHandler handler)
     {
         public void AppendLine()
         {
@@ -21,25 +21,25 @@ internal static class DefaultInterpolatedStringHandlerExtensions
         #region AppendLineFormatted T
         public void AppendLineFormatted<T>(T value)
         {
-            handler.AppendLineFormatted(value);
+            handler.AppendFormatted(value);
             handler.AppendLiteral(Environment.NewLine);
         }
 
         public void AppendLineFormatted<T>(T value, string? format)
         {
-            handler.AppendLineFormatted(value, format);
+            handler.AppendFormatted(value, format);
             handler.AppendLiteral(Environment.NewLine);
         }
 
         public void AppendLineFormatted<T>(T value, int alignment)
         {
-            handler.AppendLineFormatted(value, alignment);
+            handler.AppendFormatted(value, alignment);
             handler.AppendLiteral(Environment.NewLine);
         }
 
         public void AppendLineFormatted<T>(T value, int alignment, string? format)
         {
-            handler.AppendLineFormatted(value, alignment, format);
+            handler.AppendFormatted(value, alignment, format);
             handler.AppendLiteral(Environment.NewLine);
         }
         #endregion
@@ -47,13 +47,13 @@ internal static class DefaultInterpolatedStringHandlerExtensions
         #region AppendLineFormatted ReadOnlySpan<char>
         public void AppendLineFormatted(scoped ReadOnlySpan<char> value)
         {
-            handler.AppendLineFormatted(value);
+            handler.AppendFormatted(value);
             handler.AppendLiteral(Environment.NewLine);
         }
 
         public void AppendLineFormatted(scoped ReadOnlySpan<char> value, int alignment = 0, string? format = null)
         {
-            handler.AppendLineFormatted(value, alignment, format);
+            handler.AppendFormatted(value, alignment, format);
             handler.AppendLiteral(Environment.NewLine);
         }
         #endregion
@@ -61,13 +61,13 @@ internal static class DefaultInterpolatedStringHandlerExtensions
         #region AppendLineFormatted string
         public void AppendLineFormatted(string? value)
         {
-            handler.AppendLineFormatted(value);
+            handler.AppendFormatted(value);
             handler.AppendLiteral(Environment.NewLine);
         }
 
         public void AppendLineFormatted(string? value, int alignment = 0, string? format = null)
         {
-            handler.AppendLineFormatted(value, alignment, format);
+            handler.AppendFormatted(value, alignment, format);
             handler.AppendLiteral(Environment.NewLine);
         }
         #endregion
@@ -75,7 +75,7 @@ internal static class DefaultInterpolatedStringHandlerExtensions
         #region AppendLineFormatted object
         public void AppendLineFormatted(object? value, int alignment = 0, string? format = null)
         {
-            handler.AppendLineFormatted(value, alignment, format);
+            handler.AppendFormatted(value, alignment, format);
             handler.AppendLiteral(Environment.NewLine);
         }
         #endregion
