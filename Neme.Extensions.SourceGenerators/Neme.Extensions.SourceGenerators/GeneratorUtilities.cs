@@ -94,7 +94,6 @@ internal static class GeneratorUtilities
         }
 
         return resultBuilder.DrainToImmutable();
-
     }
 
     public static ImmutableArray<IFieldSymbol> GetEnumMembersWithConstantValue(INamedTypeSymbol enumType, CancellationToken cancellationToken)
@@ -112,6 +111,5 @@ internal static class GeneratorUtilities
         }
 
         return resultBuilder.DrainToImmutable();
-
     }
 }
