@@ -281,11 +281,12 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
                 Indent = 1,
             };
 
-            foreach (var generator in _generators)
+            for (int i = 0; i < _generators.Length; ++i)
             {
+                var generator = _generators[i];
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (generator.EmitTypeSource(_context, textWriter, cancellationToken))
+                if (generator.EmitTypeSource(_context, textWriter, cancellationToken) && i < _generators.Length - 1)
                     textWriter.WriteLine();
             }
 
@@ -311,11 +312,12 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
                 Indent = 2,
             };
 
-            foreach (var generator in _generators)
+            for (int i = 0; i < _generators.Length; ++i)
             {
+                var generator = _generators[i];
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (generator.EmitExtensionSource(_context, textWriter, cancellationToken))
+                if (generator.EmitExtensionSource(_context, textWriter, cancellationToken) && i < _generators.Length - 1)
                     textWriter.WriteLine();
             }
 
