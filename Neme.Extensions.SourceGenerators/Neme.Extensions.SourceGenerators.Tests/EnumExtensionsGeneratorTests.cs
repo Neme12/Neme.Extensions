@@ -3,7 +3,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Neme.Extensions.SourceGenerators.EnumGenerators;
 using System.CodeDom.Compiler;
-using System.Text;
 
 namespace Neme.Extensions.SourceGenerators.Tests;
 
@@ -41,7 +40,7 @@ public sealed class EnumExtensionsGeneratorTests
     return @enum.ToString(provider);
 }";
 
-            Assert.Equal(NormalizeLineEndings(expected), NormalizeLineEndings(method));
+            Assert.Equal(TestUtilities.NormalizeLineEndings(expected), TestUtilities.NormalizeLineEndings(method));
         }
     }
 
@@ -121,7 +120,7 @@ public sealed class EnumExtensionsGeneratorTests
     }
 }";
 
-            Assert.Equal(NormalizeLineEndings(expected), NormalizeLineEndings(method));
+            Assert.Equal(TestUtilities.NormalizeLineEndings(expected), TestUtilities.NormalizeLineEndings(method));
         }
     }
 
@@ -158,23 +157,5 @@ public sealed class EnumExtensionsGeneratorTests
             .First(m => m.Statement is LocalFunctionStatementSyntax localFunction && localFunction.Identifier.Text == "ToStringGenerated");
 
         return generatedToStringMethod.ToString();
-    }
-
-    private static string NormalizeLineEndings(string value)
-    {
-        var normalized = value.Replace("\r\n", "\n", StringComparison.Ordinal).Trim();
-        var lines = normalized.Split('\n');
-        var builder = new StringBuilder(normalized.Length);
-
-        for (var i = 0; i < lines.Length; i++)
-        {
-            var trimmed = lines[i].TrimEnd();
-            builder.Append(trimmed);
-
-            if (i < lines.Length - 1)
-                builder.Append('\n');
-        }
-
-        return builder.ToString();
     }
 }

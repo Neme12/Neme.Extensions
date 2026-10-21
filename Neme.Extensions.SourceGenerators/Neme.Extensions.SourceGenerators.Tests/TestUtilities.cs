@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Neme.Extensions.SourceGenerators.EnumGenerators;
+using System.Text;
 
 namespace Neme.Extensions.SourceGenerators.Tests;
 
@@ -30,5 +31,23 @@ internal static class TestUtilities
             ConstantEnumMembers = constantMembers,
             UnderlyingTypeName = enumType.EnumUnderlyingType?.ToDisplayString(s_keywordTypeFormat),
         };
+    }
+
+    public static string NormalizeLineEndings(string value)
+    {
+        var normalized = value.Replace("\r\n", "\n", StringComparison.Ordinal).Trim();
+        var lines = normalized.Split('\n');
+        var builder = new StringBuilder(normalized.Length);
+
+        for (var i = 0; i < lines.Length; i++)
+        {
+            var trimmed = lines[i].TrimEnd();
+            builder.Append(trimmed);
+
+            if (i < lines.Length - 1)
+                builder.Append('\n');
+        }
+
+        return builder.ToString();
     }
 }
