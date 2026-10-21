@@ -44,12 +44,14 @@ public abstract class AbstractEnumGenerator
     {
         var fullyQualifiedName = enumType.ToDisplayString(s_fullyQualifiedMinimalFormat);
 
-        var hintNameBuilder = new StringBuilder(fullyQualifiedName.Length);
+        var hintNameBuilder = new StringBuilder(fullyQualifiedName.Length + suffix.Length + 5);
 
         foreach (var character in fullyQualifiedName)
             hintNameBuilder.Append(char.IsLetterOrDigit(character) ? character : '_');
 
-        return Invariant($"""{hintNameBuilder}{suffix}.g.cs""");
+        hintNameBuilder.Append(suffix);
+        hintNameBuilder.Append(".g.cs");
+        return hintNameBuilder.ToString();
     }
 
     protected static string GetGeneratedClassSource<TArg>(
