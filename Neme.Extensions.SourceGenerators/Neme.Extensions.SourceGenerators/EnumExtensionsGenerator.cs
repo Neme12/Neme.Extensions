@@ -143,10 +143,7 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
             UnderlyingTypeName = underlyingTypeName,
         };
 
-        using var typeTextWriter = IndentedTextWriter.CreateNew(1, 1024);
-        using var extensionTextWriter = IndentedTextWriter.CreateNew(2, 4096);
-
-        ReadOnlySpan<IEnumGenerator> flagsGenerators = isFlagsEnum
+        ImmutableArray<IEnumGenerator> flagsGenerators = isFlagsEnum
             ?
             [
                 new EnumIncludesGenerator(generationContext),
@@ -158,7 +155,7 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
             ]
             : [];
 
-        ReadOnlySpan<IEnumGenerator> generators =
+        ImmutableArray<IEnumGenerator> generators =
             [
                 new EnumNameGenerator(generationContext),
                 new EnumToStringGenerator(generationContext),
@@ -171,26 +168,10 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
                 ..flagsGenerators,
             ];
 
-        foreach (var generator in generators)
-        {
-            if (generator.EmitTypeSource(context, typeTextWriter, cancellationToken))
-                typeTextWriter.WriteLine();
-        }
-
-        cancellationToken.ThrowIfCancellationRequested();
-
-        foreach (var generator in generators)
-        {
-            if (generator.EmitExtensionSource(context, extensionTextWriter, cancellationToken))
-                extensionTextWriter.WriteLine();
-        }
-
-        cancellationToken.ThrowIfCancellationRequested();
-
         EmitEnumExtension(
             context,
-            typeTextWriter.InnerWriter.ToString(),
-            extensionTextWriter.InnerWriter.ToString(),
+            new TypeSourceEmitter(context, generators),
+            new ExtensionSourceEmitter(context, generators),
             enumType,
             cancellationToken);
     }
@@ -212,41 +193,24 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
         return false;
     }
 
-    private static void EmitEnumExtension(
+    private static void EmitEnumExtension<TTypeSourceEmitter, TExtensionSourceEmitter>(
         SourceProductionContext context,
-        string typeSource,
-        string extensionSource,
+        TTypeSourceEmitter typeSourceEmitter,
+        TExtensionSourceEmitter extensionSourceEmitter,
         INamedTypeSymbol enumType,
         CancellationToken cancellationToken)
+        where TTypeSourceEmitter : struct, ISourceEmitter
+        where TExtensionSourceEmitter : struct, ISourceEmitter
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         var extensionClassName = GetExtensionClassName(enumType);
 
-        Action<StringBuilder, CancellationToken, (INamedTypeSymbol enumType, string typeSource, string extensionSource)> emitMemberSource =
-            static (builder, cancellationToken, value) =>
-        {
-            var (enumType, typeSource, extensionSource) = value;
-
-            var typeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            builder.AppendLine(typeSource);
-            builder.AppendLine();
-            builder.Append("extension(");
-            builder.Append(typeName);
-            builder.AppendLine(" @enum)");
-            builder.AppendLine("{");
-            builder.AppendLine(extensionSource);
-            builder.AppendLine("}");
-        };
-
         var result = GetGeneratedClassSource(
             GetNamespaceName(enumType),
             extensionClassName,
-            emitMemberSource,
-            (enumType, typeSource, extensionSource),
+            capacity: 4096,
+            new MemberSourceEmitter<TTypeSourceEmitter, TExtensionSourceEmitter>(enumType, typeSourceEmitter, extensionSourceEmitter),
             isPartial: false,
             emitAttribute: true,
             generatorName: nameof(EnumExtensionsGenerator),
@@ -294,5 +258,96 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
             ? extensionClassName
             : Invariant($"""{namespaceName}.{extensionClassName}""");
         return Invariant($"""global::{fullyQualifiedName}""");
+    }
+
+
+    private readonly struct TypeSourceEmitter : ISourceEmitter
+    {
+        private readonly SourceProductionContext _context;
+        private readonly ImmutableArray<IEnumGenerator> _generators;
+
+        public TypeSourceEmitter(SourceProductionContext context, ImmutableArray<IEnumGenerator> typeSource)
+        {
+            _context = context;
+            _generators = typeSource;
+        }
+
+        public void EmitSource(StringBuilder builder, CancellationToken cancellationToken)
+        {
+            using var textWriter = new IndentedTextWriter(new StringWriter(builder, CultureInfo.InvariantCulture))
+            {
+                Indent = 1,
+            };
+
+            foreach (var generator in _generators)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (generator.EmitTypeSource(_context, textWriter, cancellationToken))
+                    textWriter.WriteLine();
+            }
+
+            textWriter.Flush();
+        }
+    }
+
+    private readonly struct ExtensionSourceEmitter : ISourceEmitter
+    {
+        private readonly SourceProductionContext _context;
+        private readonly ImmutableArray<IEnumGenerator> _generators;
+
+        public ExtensionSourceEmitter(SourceProductionContext context, ImmutableArray<IEnumGenerator> typeSource)
+        {
+            _context = context;
+            _generators = typeSource;
+        }
+
+        public void EmitSource(StringBuilder builder, CancellationToken cancellationToken)
+        {
+            using var textWriter = new IndentedTextWriter(new StringWriter(builder, CultureInfo.InvariantCulture))
+            {
+                Indent = 2,
+            };
+
+            foreach (var generator in _generators)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (generator.EmitExtensionSource(_context, textWriter, cancellationToken))
+                    textWriter.WriteLine();
+            }
+
+            textWriter.Flush();
+        }
+    }
+
+    private readonly struct MemberSourceEmitter<TTypeSourceEmitter, TExtensionSourceEmitter> : ISourceEmitter
+        where TTypeSourceEmitter : struct, ISourceEmitter
+        where TExtensionSourceEmitter : struct, ISourceEmitter
+    {
+        private readonly INamedTypeSymbol _enumType;
+        private readonly TTypeSourceEmitter _typeSourceEmitter;
+        private readonly TExtensionSourceEmitter _extensionSourceEmitter;
+
+        public MemberSourceEmitter(INamedTypeSymbol enumType, TTypeSourceEmitter typeSourceEmitter, TExtensionSourceEmitter extensionSourceEmitter)
+        {
+            _enumType = enumType;
+            _typeSourceEmitter = typeSourceEmitter;
+            _extensionSourceEmitter = extensionSourceEmitter;
+        }
+
+        public void EmitSource(StringBuilder builder, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            _typeSourceEmitter.EmitSource(builder, cancellationToken);
+            builder.AppendLine();
+            builder.Append("extension(");
+            builder.Append(_enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+            builder.AppendLine(" @enum)");
+            builder.AppendLine("{");
+            _extensionSourceEmitter.EmitSource(builder, cancellationToken);
+            builder.AppendLine("}");
+        }
     }
 }

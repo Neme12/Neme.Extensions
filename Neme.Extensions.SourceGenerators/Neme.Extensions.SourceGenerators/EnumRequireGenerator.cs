@@ -1,9 +1,9 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
-using Neme.Extensions.SourceGenerators.Internal;
 using Neme.Extensions.SourceGenerators.RequireGenerators;
 using System.CodeDom.Compiler;
+using System.Globalization;
 using System.Text;
 
 namespace Neme.Extensions.SourceGenerators;
@@ -27,16 +27,11 @@ public sealed class EnumRequireGenerator : AbstractEnumGenerator, IIncrementalGe
         {
             context.CancellationToken.ThrowIfCancellationRequested();
 
-            Action<StringBuilder, CancellationToken, bool> emitMemberSource =
-                static (builder, cancellationToken, state) =>
-                {
-                };
-
             var requireGeneratedClassSource = GetGeneratedClassSource(
                 GetNamespace(),
                 "RequireGenerated",
-                emitMemberSource,
-                default,
+                capacity: 256,
+                new NullSourceEmitter(),
                 isPartial: true,
                 emitAttribute: true,
                 generatorName: nameof(EnumRequireGenerator),
@@ -61,58 +56,39 @@ public sealed class EnumRequireGenerator : AbstractEnumGenerator, IIncrementalGe
         INamedTypeSymbol enumType,
         CancellationToken cancellationToken)
     {
-        using var textWriter = IndentedTextWriter.CreateNew(1, 2048);
-
         var generationContext = new RequireGenerationContext
         {
             EnumTypeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
             ExtensionClassName = EnumExtensionsGenerator.GetFullyQualifiedExtensionsClassName(enumType),
         };
 
-        ReadOnlySpan<IRequireGenerator> generators =
+        ImmutableArray<IRequireGenerator> generators =
         [
             new RequireArgumentDefinedGenerator(generationContext),
             new RequireValueDefinedGenerator(generationContext),
         ];
 
-        foreach (var generator in generators)
-        {
-            if (generator.EmitExtensionSource(context, textWriter, cancellationToken))
-                textWriter.WriteLine();
-        }
-
         EmitRequireClass(
             context,
-            textWriter.InnerWriter.ToString(),
+            new MemberSourceEmitter(context, generators),
             enumType,
             cancellationToken);
     }
 
-    internal static void EmitRequireClass(
+    internal static void EmitRequireClass<TEmitSource>(
         SourceProductionContext context,
-        string memberSource,
+        TEmitSource memberSourceEmitter,
         INamedTypeSymbol enumType,
         CancellationToken cancellationToken)
+        where TEmitSource : struct, ISourceEmitter
     {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        var extensionClassName = "RequireGenerated";
-
-        cancellationToken.ThrowIfCancellationRequested();
-
-        Action<StringBuilder, CancellationToken, string> emitMemberSource =
-            static (builder, cancellationToken, memberSource) =>
-            {
-                builder.AppendLine(memberSource);
-            };
-
         cancellationToken.ThrowIfCancellationRequested();
 
         var result = GetGeneratedClassSource(
             GetNamespace(),
-            extensionClassName,
-            emitMemberSource,
-            memberSource,
+            "RequireGenerated",
+            capacity: 2048,
+            memberSourceEmitter,
             isPartial: true,
             emitAttribute: false,
             generatorName: nameof(EnumRequireGenerator),
@@ -126,5 +102,42 @@ public sealed class EnumRequireGenerator : AbstractEnumGenerator, IIncrementalGe
     private static string GetNamespace()
     {
         return "Neme.Generated.Contracts";
+    }
+
+    private readonly struct NullSourceEmitter : ISourceEmitter
+    {
+        public void EmitSource(StringBuilder builder, CancellationToken cancellationToken)
+        {
+        }
+    }
+
+    private readonly struct MemberSourceEmitter : ISourceEmitter
+    {
+        private readonly SourceProductionContext _context;
+        private readonly ImmutableArray<IRequireGenerator> _generators;
+
+        public MemberSourceEmitter(SourceProductionContext context, ImmutableArray<IRequireGenerator> generators)
+        {
+            _context = context;
+            _generators = generators;
+        }
+
+        public void EmitSource(StringBuilder builder, CancellationToken cancellationToken)
+        {
+            using var textWriter = new IndentedTextWriter(new StringWriter(builder, CultureInfo.InvariantCulture))
+            {
+                Indent = 1,
+            };
+
+            foreach (var generator in _generators)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (generator.EmitExtensionSource(_context, textWriter, cancellationToken))
+                    textWriter.WriteLine();
+            }
+
+            textWriter.Flush();
+        }
     }
 }
