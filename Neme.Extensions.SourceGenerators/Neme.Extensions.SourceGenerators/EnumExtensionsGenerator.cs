@@ -223,30 +223,30 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
 
         var extensionClassName = GetExtensionClassName(enumType);
 
-        DefaultInterpolatedStringHandlerDelegate<(INamedTypeSymbol enumType, string typeSource, string extensionSource, CancellationToken cancellationToken)> emitMemberSource =
-            static (ref builder, value) =>
+        Action<StringBuilder, CancellationToken, (INamedTypeSymbol enumType, string typeSource, string extensionSource)> emitMemberSource =
+            static (builder, cancellationToken, value) =>
         {
-            var (enumType, typeSource, extensionSource, cancellationToken) = value;
+            var (enumType, typeSource, extensionSource) = value;
 
             var typeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            builder.AppendLineFormatted(typeSource);
+            builder.AppendLine(typeSource);
             builder.AppendLine();
-            builder.AppendLiteral("extension(");
-            builder.AppendFormatted(typeName);
-            builder.AppendLineLiteral(" @enum)");
-            builder.AppendLineLiteral("{");
-            builder.AppendLineFormatted(extensionSource);
-            builder.AppendLineLiteral("}");
+            builder.Append("extension(");
+            builder.Append(typeName);
+            builder.AppendLine(" @enum)");
+            builder.AppendLine("{");
+            builder.AppendLine(extensionSource);
+            builder.AppendLine("}");
         };
 
         var result = GetGeneratedClassSource(
             GetNamespaceName(enumType),
             extensionClassName,
             emitMemberSource,
-            (enumType, typeSource, extensionSource, cancellationToken),
+            (enumType, typeSource, extensionSource),
             isPartial: false,
             emitAttribute: true,
             generatorName: nameof(EnumExtensionsGenerator),

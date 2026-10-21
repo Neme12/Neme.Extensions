@@ -27,8 +27,8 @@ public sealed class EnumRequireGenerator : AbstractEnumGenerator, IIncrementalGe
         {
             context.CancellationToken.ThrowIfCancellationRequested();
 
-            DefaultInterpolatedStringHandlerDelegate<bool> emitMemberSource =
-                static (ref builder, value) =>
+            Action<StringBuilder, CancellationToken, bool> emitMemberSource =
+                static (builder, cancellationToken, state) =>
                 {
                 };
 
@@ -100,11 +100,10 @@ public sealed class EnumRequireGenerator : AbstractEnumGenerator, IIncrementalGe
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        DefaultInterpolatedStringHandlerDelegate<string> emitMemberSource =
-            static (ref builder, memberSource) =>
+        Action<StringBuilder, CancellationToken, string> emitMemberSource =
+            static (builder, cancellationToken, memberSource) =>
             {
-                builder.AppendLine();
-                builder.AppendLineFormatted(memberSource);
+                builder.AppendLine(memberSource);
             };
 
         cancellationToken.ThrowIfCancellationRequested();
