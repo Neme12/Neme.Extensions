@@ -218,7 +218,9 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        context.AddSource(GetFileName(enumType, "Extensions"), SourceText.From(result, Encoding.UTF8));
+        context.AddSource(
+            GetFileName(enumType, "Extensions"),
+            new StringBuilderText(result, Encoding.UTF8, SourceHashAlgorithm.Sha256));
     }
 
     private static string GetExtensionClassName(INamedTypeSymbol enumType)

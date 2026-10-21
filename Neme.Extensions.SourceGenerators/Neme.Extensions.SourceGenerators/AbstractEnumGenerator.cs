@@ -1,8 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Neme.Extensions.SourceGenerators.Internal;
-using System.Globalization;
-using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Neme.Extensions.SourceGenerators;
@@ -54,7 +51,7 @@ public abstract class AbstractEnumGenerator
         return hintNameBuilder.ToString();
     }
 
-    private protected static string GetGeneratedClassSource<TMemberSourceEmitter>(
+    private protected static StringBuilder GetGeneratedClassSource<TMemberSourceEmitter>(
         string? @namespace,
         string className,
         int capacity,
@@ -102,7 +99,7 @@ public abstract class AbstractEnumGenerator
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        return resultBuilder.ToString();
+        return resultBuilder;
     }
 
     internal interface ISourceEmitter

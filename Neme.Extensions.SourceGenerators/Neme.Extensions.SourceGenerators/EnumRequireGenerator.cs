@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using Neme.Extensions.SourceGenerators.Internal;
 using Neme.Extensions.SourceGenerators.RequireGenerators;
 using System.CodeDom.Compiler;
 using System.Globalization;
@@ -37,7 +38,9 @@ public sealed class EnumRequireGenerator : AbstractEnumGenerator, IIncrementalGe
                 generatorName: nameof(EnumRequireGenerator),
                 cancellationToken: context.CancellationToken);
 
-            context.AddSource("RequireGenerated.g.cs", SourceText.From(requireGeneratedClassSource, Encoding.UTF8));
+            context.AddSource(
+                "RequireGenerated.g.cs",
+                new StringBuilderText(requireGeneratedClassSource, Encoding.UTF8, SourceHashAlgorithm.Sha256));
         });
 
         context.RegisterSourceOutput(
@@ -96,7 +99,9 @@ public sealed class EnumRequireGenerator : AbstractEnumGenerator, IIncrementalGe
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        context.AddSource(GetFileName(enumType, "Require"), SourceText.From(result, Encoding.UTF8));
+        context.AddSource(
+            GetFileName(enumType, "Require"),
+            new StringBuilderText(result, Encoding.UTF8, SourceHashAlgorithm.Sha256));
     }
 
     private static string GetNamespace()
