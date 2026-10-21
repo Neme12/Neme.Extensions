@@ -143,7 +143,7 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
             UnderlyingTypeName = underlyingTypeName,
         };
 
-        ImmutableArray<IEnumGenerator> flagsGenerators = isFlagsEnum
+        ReadOnlySpan<IEnumGenerator> flagsGenerators = isFlagsEnum
             ?
             [
                 new EnumIncludesGenerator(generationContext),
