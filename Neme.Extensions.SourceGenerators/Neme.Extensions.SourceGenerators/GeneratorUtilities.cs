@@ -82,6 +82,8 @@ internal static class GeneratorUtilities
     public static ImmutableArray<IFieldSymbol> GetEnumMembers(INamedTypeSymbol enumType, CancellationToken cancellationToken)
     {
         // Do not use LINQ for perf
+        cancellationToken.ThrowIfCancellationRequested();
+
         var members = enumType.GetMembers();
         var resultBuilder = ImmutableArray.CreateBuilder<IFieldSymbol>(members.Length);
 
@@ -99,6 +101,8 @@ internal static class GeneratorUtilities
     public static ImmutableArray<IFieldSymbol> GetEnumMembersWithConstantValue(INamedTypeSymbol enumType, CancellationToken cancellationToken)
     {
         // Do not use LINQ for perf
+        cancellationToken.ThrowIfCancellationRequested();
+
         var members = enumType.GetMembers();
         var resultBuilder = ImmutableArray.CreateBuilder<IFieldSymbol>(members.Length);
 
