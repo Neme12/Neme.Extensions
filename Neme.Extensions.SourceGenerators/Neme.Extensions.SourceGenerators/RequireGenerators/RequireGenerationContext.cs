@@ -4,5 +4,7 @@ internal readonly record struct RequireGenerationContext
 {
     public required string EnumTypeName { get; init; }
 
+    public required bool IsFlagsEnum { get; init; }
+
     public required string ExtensionClassName { get; init; }
 }

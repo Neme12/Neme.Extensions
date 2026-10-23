@@ -4,9 +4,7 @@ using Microsoft.CodeAnalysis.Text;
 using Neme.Extensions.SourceGenerators.EnumGenerators;
 using Neme.Extensions.SourceGenerators.Internal;
 using System.CodeDom.Compiler;
-using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -130,7 +128,7 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
         var constantEnumMembers = GeneratorUtilities.GetEnumMembersWithConstantValue(enumType, cancellationToken);
         var underlyingTypeName = enumType.EnumUnderlyingType?.ToDisplayString(GeneratorUtilities.KeywordTypeFormat);
 
-        var isFlagsEnum = IsFlagsEnum(compilation, enumType, cancellationToken);
+        var isFlagsEnum = GeneratorUtilities.IsFlagsEnum(compilation, enumType, cancellationToken);
 
         var generationContext = new EnumGenerationContext
         {
@@ -174,23 +172,6 @@ public sealed class EnumExtensionsGenerator : AbstractEnumGenerator, IIncrementa
             new ExtensionSourceEmitter(context, generators),
             enumType,
             cancellationToken);
-    }
-
-    private static bool IsFlagsEnum(Compilation compilation, INamedTypeSymbol enumType, CancellationToken cancellationToken)
-    {
-        var flagsAttributeType = compilation.GetTypeByMetadataName("System.FlagsAttribute");
-        if (flagsAttributeType is null)
-            return false;
-
-        foreach (var attribute in enumType.GetAttributes())
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, flagsAttributeType))
-                return true;
-        }
-
-        return false;
     }
 
     private static void EmitEnumExtension<TTypeSourceEmitter, TExtensionSourceEmitter>(

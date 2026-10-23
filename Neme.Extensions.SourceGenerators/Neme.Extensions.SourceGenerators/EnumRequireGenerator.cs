@@ -44,32 +44,45 @@ public sealed class EnumRequireGenerator : AbstractEnumGenerator, IIncrementalGe
         });
 
         context.RegisterSourceOutput(
-            enumTypesProvider,
-            (context, enumType) =>
+            enumTypesProvider.Combine(context.CompilationProvider),
+            (context, arg) =>
             {
+                var enumType = arg.Left;
+                var compilation = arg.Right;
+
                 if (enumType is null)
                     return;
 
-                EmitRequireSource(context, enumType, context.CancellationToken);
+                EmitRequireSource(context, enumType, compilation, context.CancellationToken);
             });
     }
 
     internal static void EmitRequireSource(
         SourceProductionContext context,
         INamedTypeSymbol enumType,
+        Compilation compilation,
         CancellationToken cancellationToken)
     {
         var generationContext = new RequireGenerationContext
         {
             EnumTypeName = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+            IsFlagsEnum = GeneratorUtilities.IsFlagsEnum(compilation, enumType, cancellationToken),
             ExtensionClassName = EnumExtensionsGenerator.GetFullyQualifiedExtensionsClassName(enumType),
         };
 
+        ReadOnlySpan<IRequireGenerator> flagsGenerators = generationContext.IsFlagsEnum
+            ?
+            [
+                new RequireArgumentFlagsDefinedGenerator(generationContext),
+            ]
+            : [] ;
+
         ImmutableArray<IRequireGenerator> generators =
-        [
-            new RequireArgumentDefinedGenerator(generationContext),
-            new RequireValueDefinedGenerator(generationContext),
-        ];
+            [
+                new RequireArgumentDefinedGenerator(generationContext),
+                new RequireValueDefinedGenerator(generationContext),
+                ..flagsGenerators,
+            ];
 
         EmitRequireClass(
             context,

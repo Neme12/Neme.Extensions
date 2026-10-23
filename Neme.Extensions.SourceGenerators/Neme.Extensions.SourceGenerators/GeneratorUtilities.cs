@@ -116,4 +116,21 @@ internal static class GeneratorUtilities
 
         return resultBuilder.DrainToImmutable();
     }
+
+    public static bool IsFlagsEnum(Compilation compilation, INamedTypeSymbol enumType, CancellationToken cancellationToken)
+    {
+        var flagsAttributeType = compilation.GetTypeByMetadataName("System.FlagsAttribute");
+        if (flagsAttributeType is null)
+            return false;
+
+        foreach (var attribute in enumType.GetAttributes())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, flagsAttributeType))
+                return true;
+        }
+
+        return false;
+    }
 }
