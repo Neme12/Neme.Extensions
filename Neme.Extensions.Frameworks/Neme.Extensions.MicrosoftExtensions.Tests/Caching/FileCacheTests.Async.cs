@@ -445,7 +445,7 @@ public sealed partial class FileCacheTests
             _clock.Advance(Duration.FromMinutes(15));
 
             // Act
-            await cache.CleanupExpiredFilesAsync();
+            await cache.CleanupExpiredFilesAsync(CancellationToken.None);
 
             // Assert
             using var expiredResult = await cache.GetAsync(expiredKey, FileCacheEntryReadOptions.Default);
@@ -496,7 +496,7 @@ public sealed partial class FileCacheTests
             _clock.Advance(Duration.FromMinutes(15));
 
             // Act - cleanup should delete file1 but keep folder and file2
-            await cache.CleanupExpiredFilesAsync();
+            await cache.CleanupExpiredFilesAsync(CancellationToken.None);
 
             // Assert - file1 deleted, file2 and folder still exist
             Assert.False(File.Exists(file1Path));
@@ -509,7 +509,7 @@ public sealed partial class FileCacheTests
             _clock.Advance(Duration.FromMinutes(20));
 
             // Act - cleanup should delete file2 and the folder
-            await cache.CleanupExpiredFilesAsync();
+            await cache.CleanupExpiredFilesAsync(CancellationToken.None);
 
             // Assert - both files and folder are deleted
             Assert.False(File.Exists(file1Path));
