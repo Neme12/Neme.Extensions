@@ -1191,7 +1191,7 @@ public sealed class FileReferenceTests
             {
                 File.WriteAllBytes(path, expectedBytes);
 
-                using (var stream = fileReference.OpenFileStream(FileAccess.ReadWrite))
+                using (var stream = fileReference.OpenFileStream(FileAccess.Read))
                 {
                     // Act
                     resultLength = stream.Length;
