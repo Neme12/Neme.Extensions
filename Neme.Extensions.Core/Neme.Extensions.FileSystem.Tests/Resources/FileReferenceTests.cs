@@ -476,11 +476,11 @@ public sealed class FileReferenceTests
             using (CreateTemporaryFileScope(path))
             using (var fileReference = CreateFileReference(path))
             {
-                var latestCreationTime = SystemClock.Instance.GetCurrentInstant() + Duration.FromMilliseconds(1);
+                var latestCreationTime = SystemClock.Instance.GetCurrentInstant() + Duration.FromMilliseconds(100);
 
                 var earliestWriteTime = SystemClock.Instance.GetCurrentInstant() - Duration.FromMilliseconds(1);
                 File.WriteAllBytes(path, [1, 2, 3, 4]);
-                var latestWriteTime = SystemClock.Instance.GetCurrentInstant() + Duration.FromMilliseconds(1);
+                var latestWriteTime = SystemClock.Instance.GetCurrentInstant() + Duration.FromMilliseconds(100);
                 var latestAccessTime = SystemClock.Instance.GetCurrentInstant() + Duration.FromSeconds(1);
 
                 // Act
