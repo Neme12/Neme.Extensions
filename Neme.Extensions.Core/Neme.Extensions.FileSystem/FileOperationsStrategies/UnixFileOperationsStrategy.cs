@@ -85,7 +85,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
             request.Type,
             request.Flags,
             request.Attributes,
-            request.UnixCreateMode ?? DefaultCreateMode,
+            request.UnixCreateMode,
             request.PreallocationSize));
 
         _handleMetadataTable.Add(handle.Value, new HandleMetadata(request.Access));
@@ -152,7 +152,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
                 throw UnixMarshal.GetExceptionForUnixError(error, path: null);
             }
 
-            if (InitHandle(null, handle.Value!, null, request.Mode, request.Access, request.Share, request.Type, request.Flags, request.Attributes, request.PreallocationSize))
+            if (InitHandle(null, handle.Value!, null, request.Mode, request.Access, request.Share, request.Type, request.Flags, request.Attributes, request.UnixCreateMode, request.PreallocationSize))
             {
                 _handleMetadataTable.Add(handle.Value, new HandleMetadata(request.Access));
 
@@ -179,7 +179,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
             request.Type,
             request.Flags,
             request.Attributes,
-            request.UnixCreateMode ?? DefaultCreateMode,
+            request.UnixCreateMode,
             request.PreallocationSize));
 
         _handleMetadataTable.Add(handle.Value, new HandleMetadata(request.Access));
@@ -372,10 +372,10 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
         if (_handleMetadataTable.TryGetValue(file, out var metadata) && (metadata.Access & FileSystemAccess.WriteAttributes) == 0)
             throw new UnauthorizedAccessException("The handle must have write attributes access.");
 
-        SetAttributesCore(file, attributes);
+        SetAttributesCore(file, attributes, setPermissions: true);
     }
 
-    private static void SetAttributesCore([Borrow] SafeFileHandle file, FileAttributes attributes)
+    private static void SetAttributesCore([Borrow] SafeFileHandle file, FileAttributes attributes, bool setPermissions)
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
@@ -405,28 +405,31 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
         if (result3 < 0)
             throw UnixMarshal.GetExceptionForLastStdlibError();
 
-        // The only thing we can reasonably change is whether the file object is readonly by changing permissions.
-
-        var oldMode = (UnixFileMode)(status.st_mode & FilePermissions.ALLPERMS);
-        var newMode = oldMode;
-        if ((attributes & FileAttributes.ReadOnly) != 0)
+        if (setPermissions)
         {
-            // Take away all write permissions from user/group/everyone
-            newMode &= ~(UnixFileMode.UserWrite | UnixFileMode.GroupWrite | UnixFileMode.OtherWrite);
-        }
-        else if ((newMode & UnixFileMode.UserRead) != 0)
-        {
-            // Give write permission to the owner if the owner has read permission
-            newMode |= UnixFileMode.UserWrite;
-        }
+            // The only thing we can reasonably change is whether the file object is readonly by changing permissions.
 
-        // Change the permissions on the file
-        if (newMode != oldMode)
-        {
-            int result4 = Syscall.fchmod(file, (FilePermissions)newMode);
+            var oldMode = (UnixFileMode)(status.st_mode & FilePermissions.ALLPERMS);
+            var newMode = oldMode;
+            if ((attributes & FileAttributes.ReadOnly) != 0)
+            {
+                // Take away all write permissions from user/group/everyone
+                newMode &= ~(UnixFileMode.UserWrite | UnixFileMode.GroupWrite | UnixFileMode.OtherWrite);
+            }
+            else if ((newMode & UnixFileMode.UserRead) != 0)
+            {
+                // Give write permission to the owner if the owner has read permission
+                newMode |= UnixFileMode.UserWrite;
+            }
 
-            if (result4 < 0)
-                throw UnixMarshal.GetExceptionForLastStdlibError();
+            // Change the permissions on the file
+            if (newMode != oldMode)
+            {
+                int result4 = Syscall.fchmod(file, (FilePermissions)newMode);
+
+                if (result4 < 0)
+                    throw UnixMarshal.GetExceptionForLastStdlibError();
+            }
         }
     }
 
@@ -820,7 +823,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
         FileHandleType type,
         FileOptions flags,
         FileAttributes attributes,
-        UnixFileMode openPermissions,
+        UnixFileMode? unixCreateMode,
         long preallocationSize)
     {
         Debug.Assert(fullPath != null);
@@ -832,13 +835,15 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
             type.ToUnix() |
             flags.ToUnix();
 
+        var openPermissions = (FilePermissions)(unixCreateMode ?? DefaultCreateMode);
+
         // O_PATH cannot be combined with O_CREAT on Linux (the kernel ignores O_CREAT when O_PATH is set).
         // When both are requested, create the file first with a write-only open, then reopen with O_PATH.
         SafeFileHandle? firstOpenHandle = null;
         if ((openFlags & OpenFlags.O_PATH) != 0 && (openFlags & OpenFlags.O_CREAT) != 0)
         {
             var createFlags = OpenFlags.O_WRONLY | (openFlags & (OpenFlags.O_CREAT | OpenFlags.O_EXCL));
-            var createRawHandle = Syscall.open(fullPath!, createFlags, (FilePermissions)openPermissions);
+            var createRawHandle = Syscall.open(fullPath!, createFlags, openPermissions);
             if (createRawHandle == -1)
             {
                 var createError = Stdlib.GetLastError();
@@ -858,13 +863,13 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
             SafeFileHandle safeHandle;
             if (firstOpenHandle is not null)
             {
-                safeHandle = Syscall.open_handle(GetFdLinkPath(firstOpenHandle), openFlags, (FilePermissions)openPermissions);
+                safeHandle = Syscall.open_handle(GetFdLinkPath(firstOpenHandle), openFlags, openPermissions);
                 firstOpenHandle.Dispose();
                 firstOpenHandle = null;
             }
             else
             {
-                var rawHandle = Syscall.open(fullPath!, openFlags, (FilePermissions)openPermissions);
+                var rawHandle = Syscall.open(fullPath!, openFlags, openPermissions);
                 safeHandle = new SafeFileHandle((nint)rawHandle, ownsHandle: true);
             }
             handle.SetValue(safeHandle);
@@ -886,7 +891,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
                 throw UnixMarshal.GetExceptionForUnixError(error, fullPath);
             }
 
-            if (InitHandle(null, handle.Value!, fullPath, mode, access, share, type, flags, attributes, preallocationSize))
+            if (InitHandle(null, handle.Value!, fullPath, mode, access, share, type, flags, attributes, unixCreateMode, preallocationSize))
             {
                 return handle.Move()!;
             }
@@ -906,7 +911,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
         FileHandleType type,
         FileOptions options,
         FileAttributes attributes,
-        UnixFileMode openPermissions,
+        UnixFileMode? unixCreateMode,
         long preallocationSize)
 #pragma warning disable RS0042
     {
@@ -922,6 +927,8 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
             type.ToUnix() |
             options.ToUnix();
 
+        var openPermissions = (FilePermissions)(unixCreateMode ?? DefaultCreateMode);
+
         // O_PATH cannot be combined with O_CREAT on Linux (the kernel ignores O_CREAT when O_PATH is set).
         // When both are requested, create the file first with a write-only open, then reopen with O_PATH.
         SafeFileHandle? firstOpenHandle = null;
@@ -930,7 +937,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
             var createRootHandle = rootHandle ?? Interop.Libc.AT_FDCWD_HANDLE;
             var createPath = path ?? GetFdLinkPath(rootHandle!);
             var createFlags = OpenFlags.O_WRONLY | (openFlags & (OpenFlags.O_CREAT | OpenFlags.O_EXCL));
-            firstOpenHandle = Syscall.openat(createRootHandle, createPath, createFlags, (FilePermissions)openPermissions);
+            firstOpenHandle = Syscall.openat(createRootHandle, createPath, createFlags, openPermissions);
             if (firstOpenHandle.IsInvalid)
             {
                 firstOpenHandle.Dispose();
@@ -954,19 +961,19 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
                 if (firstOpenHandle is not null)
                 {
                     path = GetFdLinkPath(firstOpenHandle);
-                    rawHandle = Syscall.open_handle(path, openFlags, (FilePermissions)openPermissions);
+                    rawHandle = Syscall.open_handle(path, openFlags, openPermissions);
                     firstOpenHandle.Dispose();
                     firstOpenHandle = null;
                 }
                 else
-                    rawHandle = Syscall.openat(rootHandle ?? Interop.Libc.AT_FDCWD_HANDLE, path, openFlags, (FilePermissions)openPermissions);
+                    rawHandle = Syscall.openat(rootHandle ?? Interop.Libc.AT_FDCWD_HANDLE, path, openFlags, openPermissions);
             }
             else
             {
                 if (firstOpenHandle is not null)
                 {
                     path = GetFdLinkPath(firstOpenHandle);
-                    rawHandle = Syscall.open_handle(path, openFlags, (FilePermissions)openPermissions);
+                    rawHandle = Syscall.open_handle(path, openFlags, openPermissions);
                     firstOpenHandle.Dispose();
                     firstOpenHandle = null;
                 }
@@ -974,7 +981,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
                 {
                     path = GetFdLinkPath(rootHandle!);
                     rootHandle = null;
-                    rawHandle = Syscall.open_handle(path, openFlags, (FilePermissions)openPermissions);
+                    rawHandle = Syscall.open_handle(path, openFlags, openPermissions);
                 }
             }
 
@@ -991,7 +998,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
                 throw UnixMarshal.GetExceptionForUnixError(error, path);
             }
 
-            if (InitHandle(rootHandle, handle.Value!, path, mode, access, share, type, options, attributes, preallocationSize))
+            if (InitHandle(rootHandle, handle.Value!, path, mode, access, share, type, options, attributes, unixCreateMode, preallocationSize))
             {
                 return handle.Move()!;
             }
@@ -1013,6 +1020,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
         FileHandleType type,
         FileOptions options,
         FileAttributes attributes,
+        UnixFileMode? unixCreateMode,
         long preallocationSize)
     {
         Stat status = default;
@@ -1201,7 +1209,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
         }
 
         if (attributes != default && attributes != FileAttributes.Normal)
-            SetAttributesCore(handle, attributes);
+            SetAttributesCore(handle, attributes, setPermissions: unixCreateMode is null);
 
         return true;
     }
