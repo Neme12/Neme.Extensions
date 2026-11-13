@@ -857,8 +857,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
             SafeFileHandle safeHandle;
             if (firstOpenHandle is not null)
             {
-                fullPath = GetFdLinkPath(firstOpenHandle);
-                safeHandle = Syscall.open_handle(fullPath, openFlags, (FilePermissions)openPermissions);
+                safeHandle = Syscall.open_handle(GetFdLinkPath(firstOpenHandle), openFlags, (FilePermissions)openPermissions);
                 firstOpenHandle.Dispose();
                 firstOpenHandle = null;
             }
