@@ -792,9 +792,9 @@ public sealed partial class FileCache : IFileCache, IDisposable
         return updatedMetadata;
     }
 
-    internal async Task CleanupExpiredFilesAsync()
+    internal async Task CleanupExpiredFilesAsync(CancellationToken cancellationToken)
     {
-        using (await _globalLock.WaitScopeAsync(CancellationToken.None))
+        using (await _globalLock.WaitScopeAsync(cancellationToken))
         {
             var deletedCount = 0;
 
@@ -811,7 +811,7 @@ public sealed partial class FileCache : IFileCache, IDisposable
                     }
                     else
                     {
-                        var metadata = await ReadMetadataAsync<IAsyncState.Async>(filePath, CancellationToken.None);
+                        var metadata = await ReadMetadataAsync<IAsyncState.Async>(filePath, cancellationToken);
                         if (metadata is null)
                             Log.MetadataMissingForFile(_logger, filePath);
 

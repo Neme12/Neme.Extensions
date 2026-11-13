@@ -69,7 +69,7 @@ internal sealed partial class FileCacheCleanupService : IHostedService, IDisposa
         using var timer = new PeriodicTimer(_fileCache.CleanupInterval.ToTimeSpan());
 
         while (await timer.WaitForNextTickAsync(cancellationToken))
-            await _fileCache.CleanupExpiredFilesAsync();
+            await _fileCache.CleanupExpiredFilesAsync(cancellationToken);
     }
 
     private static partial class Log
