@@ -152,7 +152,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
                 throw UnixMarshal.GetExceptionForUnixError(error, path: null);
             }
 
-            if (InitHandle(null, handle.Value!, null, request.Mode, request.Access, request.Share, request.Flags, request.Attributes, request.PreallocationSize))
+            if (InitHandle(null, handle.Value!, null, request.Mode, request.Access, request.Share, request.Type, request.Flags, request.Attributes, request.PreallocationSize))
             {
                 _handleMetadataTable.Add(handle.Value, new HandleMetadata(request.Access));
 
@@ -176,6 +176,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
             request.Mode,
             request.Access,
             request.Share,
+            request.Type,
             request.Flags,
             request.Attributes,
             request.UnixCreateMode ?? DefaultCreateMode,
@@ -885,7 +886,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
                 throw UnixMarshal.GetExceptionForUnixError(error, fullPath);
             }
 
-            if (InitHandle(null, handle.Value!, fullPath, mode, access, share, flags, attributes, preallocationSize))
+            if (InitHandle(null, handle.Value!, fullPath, mode, access, share, type, flags, attributes, preallocationSize))
             {
                 return handle.Move()!;
             }
@@ -902,6 +903,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
         FileMode mode,
         FileSystemAccess access,
         FileShare share,
+        FileHandleType type,
         FileOptions options,
         FileAttributes attributes,
         UnixFileMode openPermissions,
@@ -917,6 +919,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
             mode.ToUnix() |
             access.ToUnix() |
             share.ToUnix() |
+            type.ToUnix() |
             options.ToUnix();
 
         // O_PATH cannot be combined with O_CREAT on Linux (the kernel ignores O_CREAT when O_PATH is set).
@@ -988,7 +991,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
                 throw UnixMarshal.GetExceptionForUnixError(error, path);
             }
 
-            if (InitHandle(rootHandle, handle.Value!, path, mode, access, share, options, attributes, preallocationSize))
+            if (InitHandle(rootHandle, handle.Value!, path, mode, access, share, type, options, attributes, preallocationSize))
             {
                 return handle.Move()!;
             }
@@ -1007,6 +1010,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
         FileMode mode,
         FileSystemAccess access,
         FileShare share,
+        FileHandleType type,
         FileOptions options,
         FileAttributes attributes,
         long preallocationSize)
@@ -1021,7 +1025,7 @@ internal sealed class UnixFileOperationsStrategy : FileOperationsStrategy
             FStatCheckIO(handle, path, ref status, ref statusHasValue);
 
             var stMode = status.st_mode & FilePermissions.S_IFMT;
-            var shouldBeDirectory = (attributes & FileAttributes.Directory) != 0;
+            var shouldBeDirectory = type == FileHandleType.Directory;
 
             if (shouldBeDirectory && stMode != FilePermissions.S_IFDIR ||
                 !shouldBeDirectory && stMode == FilePermissions.S_IFDIR)
