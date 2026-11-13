@@ -48,7 +48,7 @@ public sealed class PartialFile<TFile> : IDisposable, IAsyncDisposable
     {
         if (!(
             typeof(TFile) == typeof(SafeFileHandle) ||
-            typeof(TFile) == typeof(FileStream) ||
+            typeof(TFile) == typeof(CheckedFileStream) ||
             typeof(TFile) == typeof(FileSession) ||
             typeof(TFile) == typeof(FileReference)))
         {

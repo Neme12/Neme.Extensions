@@ -94,7 +94,7 @@ public static class PartialFile
     /// <param name="request">The options used to open the temporary file. Delete access is required so the temporary file can be cleaned up.</param>
     /// <param name="createDirectory"><see langword="true"/> to create the destination directory if it does not already exist.</param>
     /// <returns>A <see cref="PartialFileWithStream"/> for writing the temporary file.</returns>
-    public static PartialFile<FileStream> CreateStreamFile(
+    public static PartialFile<CheckedFileStream> CreateStreamFile(
         string finalPath,
         FileHandleRequest request,
         bool createDirectory = false)
@@ -109,7 +109,7 @@ public static class PartialFile
             Directory.CreateDirectory(Path.GetDirectoryName(finalPath)!);
 
         var fileStream = FileSession.Open(partialPath, request).CreateFileStream(request.Access.ToFileAccess(), ownsHandle: true);
-        return new PartialFile<FileStream>(
+        return new PartialFile<CheckedFileStream>(
             fileStream,
             static file => file,
             finalPath,
