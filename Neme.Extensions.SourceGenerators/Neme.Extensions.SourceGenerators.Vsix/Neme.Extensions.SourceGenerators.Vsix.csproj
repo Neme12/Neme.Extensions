@@ -6,7 +6,18 @@
     <TargetFramework>net48</TargetFramework>
     <RootNamespace>Neme.Extensions.SourceGenerators.Vsix</RootNamespace>
     <AssemblyName>Neme.Extensions.SourceGenerators.Vsix</AssemblyName>
+    <IsWindows>$([MSBuild]::IsOSPlatform('Windows'))</IsWindows>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsWindows)' != 'true'">
+    <BuildDependsOn>_SkipWindowsOnlyProject</BuildDependsOn>
+    <RebuildDependsOn>_SkipWindowsOnlyProject</RebuildDependsOn>
+    <CleanDependsOn>_SkipWindowsOnlyProject</CleanDependsOn>
+  </PropertyGroup>
+
+  <Target Name="_SkipWindowsOnlyProject">
+    <Message Importance="high" Text="Skipping $(MSBuildProjectName): Windows-only project." />
+  </Target>
 
   <PropertyGroup>
     <GeneratePkgDefFile>false</GeneratePkgDefFile>
