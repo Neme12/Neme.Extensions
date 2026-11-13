@@ -5,6 +5,7 @@ using Neme.Extensions.FileSystem.Tests.TestUtilities;
 using Neme.Extensions.IO;
 using Neme.Extensions.Tests.Utilities;
 using NodaTime;
+using System.Runtime.InteropServices;
 using IOPath = System.IO.Path;
 
 namespace Neme.Extensions.FileSystem.Tests.Resources;
@@ -1008,7 +1009,12 @@ public sealed class FileReferenceTests
             var requestedFlags = FileReferenceFlags.Transient;
             var expectedFlags = requestedFlags | FileReferenceFlags.DeleteOnClose;
             var requestedAttributes = FileAttributes.Hidden;
-            var expectedAttributes = FileAttributes.Hidden | FileAttributes.Archive | FileAttributes.Temporary;
+            var expectedAttributes =
+                RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                    ? FileAttributes.Hidden | FileAttributes.Archive | FileAttributes.Temporary :
+                RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
+                    ? FileAttributes.Hidden
+                    : FileAttributes.Normal;
             string? resultPath = null;
             FileReferenceOptions resultOptions = default;
             FileAttributes resultAttributes = default;
