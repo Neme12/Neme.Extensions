@@ -29,7 +29,7 @@
     <VSSDKTargetPlatformRegRootSuffix>Roslyn</VSSDKTargetPlatformRegRootSuffix>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(IsWindows)' == 'true'">
     <PackageReference Include="Microsoft.VSSDK.BuildTools" PrivateAssets="all" />
   </ItemGroup>
 
@@ -41,7 +41,7 @@
 
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" />
 
-  <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="Exists('$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets')" />
+  <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(IsWindows)' == 'true' and Exists('$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets')" />
 
   <ItemGroup>
     <ProjectReference Include="..\..\Neme.Polyfills\Neme.Polyfills\Neme.Polyfills.csproj">
