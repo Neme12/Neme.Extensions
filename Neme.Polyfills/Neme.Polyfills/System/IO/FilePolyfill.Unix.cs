@@ -22,7 +22,7 @@ public static partial class FilePolyfill
 
         public static SafeFileHandle OpenNullHandle()
         {
-            using var handle = new SafeFileHandle(
+            var handle = new SafeFileHandle(
                 (nint)Syscall.open(NullDevicePath, OpenFlags.O_RDWR, (FilePermissions)DefaultCreateMode),
                 ownsHandle: true);
 

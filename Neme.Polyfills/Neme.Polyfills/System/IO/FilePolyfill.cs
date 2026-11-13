@@ -27,7 +27,7 @@ public static partial class FilePolyfill
         {
 #if NET11_0_OR_GREATER
             return File.OpenNullHandle();
-#elif NET6_0
+#elif NET6_0_OR_GREATER
             return File.OpenHandle(NullDevicePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
 #else
             return
